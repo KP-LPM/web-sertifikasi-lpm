@@ -9,6 +9,7 @@ import id.ac.uinsgd.lembaga_penjaminan_mutu.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class AuthService {
@@ -18,6 +19,9 @@ public class AuthService {
 
     @Autowired
     private ProfilPenggunaRepository profilPenggunaRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public String registerUser(RegisterRequest request) {
@@ -37,7 +41,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); 
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setIsVerified(false);
         
@@ -63,7 +67,7 @@ public class AuthService {
 
         User user = userOpt.get();
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return "Gagal: Password salah!";
         }
 
