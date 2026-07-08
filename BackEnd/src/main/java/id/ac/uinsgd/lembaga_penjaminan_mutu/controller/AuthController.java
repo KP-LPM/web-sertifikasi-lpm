@@ -1,5 +1,6 @@
 package id.ac.uinsgd.lembaga_penjaminan_mutu.controller;
 
+import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.LoginRequest;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.RegisterRequest;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,17 @@ public class AuthController {
         
         if (result.startsWith("Gagal")) {
             return ResponseEntity.badRequest().body(result);
+        }
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        String result = authService.loginUser(request);
+        
+        if (result.startsWith("Gagal")) {
+            return ResponseEntity.status(401).body(result);
         }
         
         return ResponseEntity.ok(result);

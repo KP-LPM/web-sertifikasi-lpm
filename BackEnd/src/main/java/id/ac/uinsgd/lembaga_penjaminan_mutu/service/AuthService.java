@@ -1,5 +1,6 @@
 package id.ac.uinsgd.lembaga_penjaminan_mutu.service;
 
+import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.LoginRequest;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.RegisterRequest;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.entity.ProfilPengguna;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.entity.User;
@@ -51,5 +52,21 @@ public class AuthService {
         profilPenggunaRepository.save(profil);
 
         return "Sukses: Registrasi berhasil!";
+    }
+
+    public String loginUser(LoginRequest request) {
+        var userOpt = userRepository.findByEmail(request.getEmail());
+
+        if (userOpt.isEmpty()) {
+            return "Gagal: Email tidak terdaftar!";
+        }
+
+        User user = userOpt.get();
+
+        if (!user.getPassword().equals(request.getPassword())) {
+            return "Gagal: Password salah!";
+        }
+
+        return "Sukses: Login berhasil sebagai " + user.getRole();
     }
 }
