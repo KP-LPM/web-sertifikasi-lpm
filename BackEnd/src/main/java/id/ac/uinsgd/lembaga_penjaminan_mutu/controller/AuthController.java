@@ -1,5 +1,6 @@
 package id.ac.uinsgd.lembaga_penjaminan_mutu.controller;
 
+import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.JwtResponse;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.LoginRequest;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.dto.RegisterRequest;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.service.AuthService;
@@ -25,15 +26,15 @@ public class AuthController {
         
         return ResponseEntity.ok(result);
     }
-
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        String result = authService.loginUser(request);
-        
-        if (result.startsWith("Gagal")) {
-            return ResponseEntity.status(401).body(result);
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        try {
+            String jwt = authService.loginUser(loginRequest); 
+            return ResponseEntity.ok(new JwtResponse(jwt));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        
-        return ResponseEntity.ok(result);
     }
 }
+
+

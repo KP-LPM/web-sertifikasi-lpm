@@ -6,6 +6,8 @@ import id.ac.uinsgd.lembaga_penjaminan_mutu.entity.ProfilPengguna;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.entity.User;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.repository.ProfilPenggunaRepository;
 import id.ac.uinsgd.lembaga_penjaminan_mutu.repository.UserRepository;
+import id.ac.uinsgd.lembaga_penjaminan_mutu.security.JwtUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Transactional
     public String registerUser(RegisterRequest request) {
@@ -62,15 +67,15 @@ public class AuthService {
         var userOpt = userRepository.findByEmail(request.getEmail());
 
         if (userOpt.isEmpty()) {
-            return "Gagal: Email tidak terdaftar!";
+            throw new RuntimeException("Gagal: Email tidak terdaftar!");
         }
 
         User user = userOpt.get();
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return "Gagal: Password salah!";
+            throw new RuntimeException("Gagal: Password salah!");
         }
 
-        return "Sukses: Login berhasil sebagai " + user.getRole();
+        return jwtUtils.generateJwtToken(user.getEmail(), user.getRole());
     }
 }
