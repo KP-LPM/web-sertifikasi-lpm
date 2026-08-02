@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  username   String   @unique @db.VarChar(100)
+  email      String   @unique @db.VarChar(255)
+  password   String   @db.VarChar(255)
+  role       Role
+  isVerified Boolean  @default(false) @map("is_verified")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profil     ProfilPengguna?
+
+  @@map("users")
+}
+
+model ProfilPengguna {
+  id                 Int           @id @default(autoincrement())
+  userId             Int           @unique @map("user_id")
+  
+  // Data Umum
+  nik                String        @unique @db.VarChar(16)
+  namaLengkap        String        @map("nama_lengkap") @db.VarChar(255)
+  tempatLahir        String?       @map("tempat_lahir") @db.VarChar(100)
+  tanggalLahir       DateTime?     @map("tanggal_lahir") @db.Date
+  jenisKelamin       JenisKelamin? @map("jenis_kelamin")
+  kewarganegaraan    String?       @db.VarChar(100)
+  noHp               String?       @map("no_hp") @db.VarChar(20)
+  pendidikanTerakhir String?       @map("pendidikan_terakhir") @db.VarChar(100)
+  pekerjaan          String?       @db.VarChar(100)
+  alamat             String?       // Di Postgres, String otomatis jadi tipe text
+  alamatWilayah      String?       @map("alamat_wilayah") @db.VarChar(255)
+  kodePos            String?       @map("kode_pos") @db.VarChar(10)
+  tandaTangan        String?       @map("tanda_tangan") // Di Postgres String cukup untuk Base64
+  
+  // Khusus Asesor
+  nomorRegistrasiMet String?       @map("nomor_registrasi_met") @db.VarChar(100)
+  
+  // Khusus Asesi
+  namaInstitusi      String?       @map("nama_institusi") @db.VarChar(255)
+  jabatan            String?       @db.VarChar(255)
+  emailInstitusi     String?       @map("email_institusi") @db.VarChar(255)
+  kodePosInstitusi   String?       @map("kode_pos_institusi") @db.VarChar(10)
+  noHpInstitusi      String?       @map("no_hp_institusi") @db.VarChar(20)
+  alamatInstitusi    String?       @map("alamat_institusi") 
+  noFaxInstitusi     String?       @map("no_fax_institusi") @db.VarChar(20)
+
+  // Relasi
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profil_pengguna")
+}
+
+enum Role {
+  asesi
+  asesor
+  admin
+}
+
+enum JenisKelamin {
+  Perempuan
+  Laki_laki @map("Laki-laki")
+}
