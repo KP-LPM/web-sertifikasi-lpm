@@ -14,6 +14,8 @@ model User {
   role       Role
   isVerified Boolean  @default(false) @map("is_verified")
   createdAt  DateTime @default(now()) @map("created_at")
+  resetToken         String?  @map("reset_token") @db.VarChar(255)
+  resetTokenExpiry   DateTime? @map("reset_token_expiry")
 
   profil     ProfilPengguna?
 
