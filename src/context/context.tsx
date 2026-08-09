@@ -1,0 +1,423 @@
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+// ... (keep the rest of the file exactly as is, but we'll add the useEffect after the states)
+import { PlenoSession, Role, User } from "../types/types";
+import { currentUser as mockAdmin } from "../app/data";
+import {
+  Option,
+  Question,
+  Assessment,
+  SubPertanyaanItem,
+  PersonItem,
+  PertanyaanAsesmenItem,
+  KonfigurasiPertanyaanItem,
+  CrumbItem,
+} from "../types/types";
+
+interface AppContextType {
+  extraCrumbs: CrumbItem[];
+  setExtraCrumbs: (crumbs: CrumbItem[]) => void;
+  plenoSessions: PlenoSession[];
+  addPlenoSession: (session: PlenoSession) => void;
+  updatePlenoSession: (id: string, data: Partial<PlenoSession>) => void;
+  deletePlenoSession: (id: string) => void;
+  user: User | null;
+  login: (role: Role) => void;
+  logout: () => void;
+  updateUser: (data: Partial<User>) => void;
+  currentView: string;
+  setCurrentView: (view: string) => void;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  pertanyaanAsesmen: PertanyaanAsesmenItem[];
+  addPertanyaanAsesmen: (item: Omit<PertanyaanAsesmenItem, "id">) => void;
+  updatePertanyaanAsesmen: (
+    id: number,
+    item: Omit<PertanyaanAsesmenItem, "id">,
+  ) => void;
+  deletePertanyaanAsesmen: (id: number) => void;
+  selectedPertanyaanId: number | null;
+  setSelectedPertanyaanId: (id: number | null) => void;
+  konfigurasiPertanyaan: KonfigurasiPertanyaanItem[];
+  addKonfigurasiPertanyaan: (
+    item: Omit<KonfigurasiPertanyaanItem, "id">,
+  ) => void;
+  updateKonfigurasiPertanyaan: (
+    id: string,
+    item: Omit<KonfigurasiPertanyaanItem, "id">,
+  ) => void;
+  deleteKonfigurasiPertanyaan: (id: string) => void;
+  selectedKonfigurasiId: string | null;
+  setSelectedKonfigurasiId: (id: string | null) => void;
+
+  registeredProfile: Record<string, unknown> | null;
+  setRegisteredProfile: (val: Record<string, unknown> | null) => void;
+
+  selectedAsesmen: Assessment | null;
+  setSelectedAsesmen: (val: Assessment | null) => void;
+
+  assessments: Assessment[];
+  updateAssessment: (id: number, data: Partial<Assessment>) => void;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [extraCrumbs, setExtraCrumbs] = useState<CrumbItem[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [currentView, setCurrentView] = useState<string>("login");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
+    window.innerWidth < 1024,
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarCollapsed(false);
+      } else {
+        setSidebarCollapsed(true);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<
+    number | null
+  >(null);
+  const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<
+    string | null
+  >(null);
+  const [registeredProfile, setRegisteredProfile] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [selectedAsesmen, setSelectedAsesmen] = useState<Assessment | null>(
+    null,
+  );
+
+  const [plenoSessions, setPlenoSessions] = useState<PlenoSession[]>([
+    {
+      id: "PLN-001",
+      tanggal: "2026-10-15",
+      waktu: "09:00",
+      skema: "Pemrograman Web",
+      jumlahAsesi: 24,
+      status: "Terjadwal",
+      lokasi: "Ruang Rapat Utama (Offline)",
+      detailLokasi: "Gedung A, Lantai 2",
+      deskripsi:
+        "Sidang pleno penetapan kelulusan uji kompetensi skema Pemrograman Web gelombang 1.",
+      asesiList: ["Ahmad Fauzi", "Budi Santoso", "Citra Kirana"],
+    },
+    {
+      id: "PLN-002",
+      tanggal: "2026-10-18",
+      waktu: "13:00",
+      skema: "Desain Grafis",
+      jumlahAsesi: 15,
+      status: "Menunggu Persetujuan",
+      lokasi: "Zoom Meeting (Online)",
+      detailLokasi: "https://zoom.us/j/123456789",
+      deskripsi:
+        "Sidang pleno penetapan kelulusan uji kompetensi skema Desain Grafis gelombang 2.",
+      asesiList: ["Dewi Lestari", "Eko Prasetyo"],
+    },
+  ]);
+
+  const addPlenoSession = (session: PlenoSession) => {
+    setPlenoSessions((prev) => [session, ...prev]);
+  };
+
+  const deletePlenoSession = (id: string) => {
+    setPlenoSessions((prev) => prev.filter((session) => session.id !== id));
+  };
+
+  const updatePlenoSession = (id: string, data: Partial<PlenoSession>) => {
+    setPlenoSessions((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...data } : p)),
+    );
+  };
+
+  const [assessments, setAssessments] = useState<Assessment[]>(() => {
+    return Array.from({ length: 25 }).map((_, idx) => {
+      let metode = idx % 2 === 0 ? "Offline" : "Online";
+      let status = "Belum Selesai";
+      if (metode === "Offline") {
+        status = idx % 3 === 0 ? "Selesai" : "Belum Selesai";
+      } else {
+        if (idx % 4 === 1) status = "Menunggu Asesi";
+        else status = "Belum Selesai";
+        if (idx % 7 === 0) status = "Selesai";
+      }
+      // Ensure we have at least one of each for testing
+      if (idx === 1) {
+        metode = "Online";
+        status = "Menunggu Asesi";
+      }
+      if (idx === 3) {
+        metode = "Online";
+        status = "Belum Selesai";
+      }
+      if (idx === 5) {
+        metode = "Online";
+        status = "Belum Selesai";
+      }
+      if (idx === 0) {
+        metode = "Offline";
+        status = "Belum Selesai";
+      }
+
+      let waktu = idx % 2 === 0 ? "09:00 WIB" : "13:00 WIB";
+      let linkVideo = "-";
+
+      if (metode === "Online") {
+        if (status === "Belum Selesai" && idx % 2 !== 0 && idx !== 3) {
+          waktu = "-";
+        } else {
+          linkVideo = "https://meet.google.com/abc-defg-hij";
+        }
+      }
+
+      return {
+        id: idx + 1,
+        nama: `Kandidat ${idx + 1}`,
+        asesmen: `Asesmen Reguler - ${idx + 1}`,
+        tuk:
+          idx % 3 === 0
+            ? "Sewaktu"
+            : idx % 3 === 1
+              ? "Tempat Kerja"
+              : "Mandiri",
+        hasil: idx % 2 === 0 ? "Kompeten" : "Belum Kompeten",
+        isBanding: idx % 2 !== 0 && idx % 3 === 0 ? true : false,
+        alasanBanding:
+          idx % 2 !== 0 && idx % 3 === 0
+            ? "Saya merasa sudah menjawab semua pertanyaan dengan benar saat wawancara."
+            : undefined,
+        skema:
+          idx % 3 === 0
+            ? "Teknisi Muda Jaringan Komputer"
+            : idx % 3 === 1
+              ? "Melaksanakan Komunikasi Dengan Pemangku Kepentingan"
+              : "Network Administrator",
+        metode: metode,
+        jenis_asesmen: metode,
+        metode_pelaksanaan: metode,
+        tglPra: `${(idx % 28) + 1} Okt 2023`,
+        tglAsesmen: `${(idx % 28) + 3} Okt 2023`,
+        waktu: waktu,
+        linkVideo: linkVideo,
+        status: status,
+        riwayat: idx % 3 === 0 ? "Belum ada" : "Tinjauan Awal",
+      };
+    });
+  });
+
+  const updateAssessment = (id: number, data: Partial<Assessment>) => {
+    setAssessments((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...data } : a)),
+    );
+  };
+
+  const [konfigurasiPertanyaan, setKonfigurasiPertanyaan] = useState<
+    KonfigurasiPertanyaanItem[]
+  >([]);
+  const [pertanyaanAsesmen, setPertanyaanAsesmen] = useState<
+    PertanyaanAsesmenItem[]
+  >([
+    {
+      id: 1,
+      nama: "wadw",
+      skema: "Pembukuan",
+      tipeForm: "FR.IA-01",
+      tipePertanyaan: "Esai",
+      penyusun: [
+        { value: "aditya_rahman", label: "Aditya Rahman Syach - Asesor" },
+      ],
+      questions: [
+        {
+          id: "q1",
+          text: "easd",
+          options: [],
+        },
+        {
+          id: "q2",
+          text: "wadsd",
+          options: [],
+        },
+      ],
+    },
+    {
+      id: 2,
+      nama: "adwdasd",
+      skema: "Pembukuan",
+      tipeForm: "FR.IA-05A_MERGE",
+      tipePertanyaan: "Pilihan Ganda",
+      penyusun: [{ value: "aditya_rahman", label: "Aditya Rahman Syach" }],
+      questions: [
+        {
+          id: "q1",
+          text: "awdsadasdsdasd",
+          options: [
+            { id: "o1", text: "asdasdasd", isCorrect: true },
+            { id: "o2", text: "wadsasd" },
+            { id: "o3", text: "asdasd" },
+            { id: "o4", text: "awdasdas" },
+          ],
+        },
+        {
+          id: "q2",
+          text: "dasdadas",
+          options: [
+            { id: "o5", text: "sdadasd" },
+            { id: "o6", text: "sdasdsada", isCorrect: true },
+            { id: "o7", text: "asdadasd" },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  const addPertanyaanAsesmen = (item: Omit<PertanyaanAsesmenItem, "id">) => {
+    setPertanyaanAsesmen((prev) => [
+      ...prev,
+      { ...item, id: prev.length > 0 ? prev[prev.length - 1].id + 1 : 1 },
+    ]);
+  };
+
+  const updatePertanyaanAsesmen = (
+    id: number,
+    item: Omit<PertanyaanAsesmenItem, "id">,
+  ) => {
+    setPertanyaanAsesmen((prev) =>
+      prev.map((p) => (p.id === id ? { ...item, id } : p)),
+    );
+  };
+
+  const deletePertanyaanAsesmen = (id: number) => {
+    setPertanyaanAsesmen((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const addKonfigurasiPertanyaan = (
+    item: Omit<KonfigurasiPertanyaanItem, "id">,
+  ) => {
+    setKonfigurasiPertanyaan((prev) => [
+      ...prev,
+      { ...item, id: Date.now().toString() } as KonfigurasiPertanyaanItem,
+    ]);
+  };
+
+  const updateKonfigurasiPertanyaan = (
+    id: string,
+    item: Omit<KonfigurasiPertanyaanItem, "id">,
+  ) => {
+    setKonfigurasiPertanyaan((prev) =>
+      prev.map((p) =>
+        p.id === id ? ({ ...item, id } as KonfigurasiPertanyaanItem) : p,
+      ),
+    );
+  };
+
+  const deleteKonfigurasiPertanyaan = (id: string) => {
+    setKonfigurasiPertanyaan((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const updateUser = (data: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...data } : null));
+  };
+
+  const login = (role: Role) => {
+    let mockUser: User;
+    if (role === "admin") {
+      mockUser = mockAdmin;
+    } else if (role === "asesor") {
+      mockUser = {
+        id: "u2",
+        name: "Dr. Aris Thorne",
+        email: "aris@uin.ac.id",
+        role: "asesor",
+        avatar: "AT",
+      };
+    } else if (role === "direktur") {
+      mockUser = {
+        id: "u4",
+        name: "Prof. Direktur",
+        email: "direktur@lsp.com",
+        role: "direktur",
+        avatar: "DR",
+      };
+    } else if (role === "manajer") {
+      mockUser = {
+        id: "u5",
+        name: "Bapak Manajer",
+        email: "manajer@lsp.com",
+        role: "manajer",
+        avatar: "MN",
+      };
+    } else {
+      mockUser = {
+        id: "u3",
+        name: "Ahmad Fauzi",
+        email: "ahmad.fauzi@uin-suka.ac.id",
+        role: "asesi",
+        avatar: "AF",
+      };
+    }
+    setUser(mockUser);
+    setCurrentView("dashboard");
+  };
+
+  const logout = () => {
+    setUser(null);
+    setCurrentView("login");
+  };
+
+  return (
+    <AppContext.Provider
+      value={{
+        extraCrumbs,
+        setExtraCrumbs,
+        user,
+        plenoSessions,
+        addPlenoSession,
+        updatePlenoSession,
+        deletePlenoSession,
+        login,
+        logout,
+        updateUser,
+        currentView,
+        setCurrentView,
+        sidebarCollapsed,
+        setSidebarCollapsed,
+        pertanyaanAsesmen,
+        addPertanyaanAsesmen,
+        updatePertanyaanAsesmen,
+        deletePertanyaanAsesmen,
+        selectedPertanyaanId,
+        setSelectedPertanyaanId,
+        konfigurasiPertanyaan,
+        addKonfigurasiPertanyaan,
+        updateKonfigurasiPertanyaan,
+        deleteKonfigurasiPertanyaan,
+        selectedKonfigurasiId,
+        setSelectedKonfigurasiId,
+        registeredProfile,
+        setRegisteredProfile,
+        selectedAsesmen,
+        setSelectedAsesmen,
+        assessments,
+        updateAssessment,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export function useAppContext() {
+  const context = useContext(AppContext);
+  if (!context)
+    throw new Error("useAppContext must be used within AppProvider");
+  return context;
+}
