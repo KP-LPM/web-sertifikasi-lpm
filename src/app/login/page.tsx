@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  GraduationCap,
   LogIn,
   Mail,
   Lock,
@@ -21,9 +20,24 @@ import {
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
-const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
-  ssr: false,
-}) as any;
+type SignatureCanvasRef = {
+  clear: () => void;
+  fromDataURL: (dataURL: string) => void;
+  toDataURL: () => string;
+  isEmpty: () => boolean;
+};
+
+type SignatureCanvasProps = {
+  canvasProps?: React.CanvasHTMLAttributes<HTMLCanvasElement>;
+  backgroundColor?: string;
+};
+
+const SignatureCanvas = dynamic(
+  () => import("react-signature-canvas"),
+  { ssr: false },
+) as React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<SignatureCanvasProps> & React.RefAttributes<SignatureCanvasRef>
+>;
 
 export default function Login() {
   const router = useRouter();
@@ -51,7 +65,7 @@ export default function Login() {
 
   // State Signature
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
-  const signatureRef = useRef<any>(null);
+  const signatureRef = useRef<SignatureCanvasRef | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tandaTangan, setTandaTangan] = useState("");
 
@@ -169,7 +183,7 @@ export default function Login() {
       } else {
         showNotification("Gagal Daftar: " + result.message, "error");
       }
-    } catch (error) {
+    } catch {
       showNotification(
         "Terjadi kesalahan pada server saat mendaftar.",
         "error",
@@ -207,7 +221,7 @@ export default function Login() {
       } else {
         showNotification(result.message, "error");
       }
-    } catch (error) {
+    } catch {
       showNotification("Terjadi kesalahan saat mengirim instruksi.", "error");
     } finally {
       setIsLoading(false);
