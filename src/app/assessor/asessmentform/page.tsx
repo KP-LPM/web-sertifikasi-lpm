@@ -9,6 +9,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
+import { Assessment } from "@/types/types";
 
 export function AssessmentForm() {
   const { setCurrentView, selectedAsesmen, updateAssessment } = useAppContext();
@@ -27,7 +28,7 @@ export function AssessmentForm() {
     tuk: String(selectedAsesmen?.tuk || "TUK Sewaktu LSP"),
     tanggal: "11 Oktober 2024",
     asesor: "Ichsan Taufik",
-  };
+  } as unknown as Assessment;
   // Step 1: Form FR.APL.02 State
   const [rekomendasiApl02, setRekomendasiApl02] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
@@ -421,7 +422,7 @@ export function AssessmentForm() {
   const handleAdjChange = (
     id: string,
     field: "required" | "note" | "selectedOptions",
-    value: boolean | string | string[],
+    value: boolean | string | string[] | null,
   ) => {
     setAdjustments((prev) => ({
       ...prev,
@@ -540,7 +541,7 @@ export function AssessmentForm() {
   const handleStep3Change = (
     id: string,
     field: "answer" | "achievement",
-    value: boolean | string | string[],
+    value: boolean | string | null,
   ) => {
     setStep3Answers((prev) => ({
       ...prev,
@@ -735,7 +736,7 @@ export function AssessmentForm() {
   const handleStep4Change = (
     id: string,
     field: "answer" | "achievement",
-    value: boolean | string | string[],
+    value: boolean | string | null,
   ) => {
     setStep4Answers((prev) => ({
       ...prev,
@@ -759,12 +760,12 @@ export function AssessmentForm() {
         if (adj.required === true && !adj.note?.trim()) return false;
         return true;
       })) &&
-    !!asesorName?.trim() &&
-    !!asesiName?.trim() &&
+    !!String(asesorName || "").trim() &&
+    !!String(asesiName || "").trim() &&
     !!asesorSignature &&
     !!asesiSignature &&
-    !!asesorDate?.trim() &&
-    !!asesiDate?.trim();
+    !!String(asesorDate || "").trim() &&
+    !!String(asesiDate || "").trim();
   const isStep2Valid =
     !!umpanBalikStep2?.trim() &&
     !!asesiSignatureStep2 &&
@@ -842,7 +843,7 @@ export function AssessmentForm() {
               Nomor Skema
             </td>
             <td className="border border-slate-300 p-2">
-              {asesmenData.noSkema}
+              {String(asesmenData.noSkema || "")}
             </td>
           </tr>
           <tr>
@@ -856,7 +857,7 @@ export function AssessmentForm() {
               Nama Asesor
             </td>
             <td className="border border-slate-300 p-2">
-              {asesmenData.asesor}
+              {String(asesmenData.asesor || "")}
             </td>
           </tr>
         </tbody>
@@ -879,18 +880,20 @@ export function AssessmentForm() {
   const renderStep1 = () => (
     <div className="space-y-6">
       <FormFRAPL02
-        asesmenData={{
-          nama: asesmenData.nama,
-          skema: asesmenData.skema,
-          noSkema:
-            selectedAsesmen?.noSkema ||
-            selectedAsesmen?.nomorSkema ||
-            "04/SKM/LSP P1 UIN SGD/V/2022",
-          tuk: asesmenData.tuk,
-          tanggal: asesmenData.tanggal,
-          asesor: asesmenData.asesor,
-          asesorReg: "MET.000.001234 2021",
-        }}
+        asesmenData={
+          {
+            nama: asesmenData.nama,
+            skema: asesmenData.skema,
+            noSkema:
+              selectedAsesmen?.noSkema ||
+              selectedAsesmen?.nomorSkema ||
+              "04/SKM/LSP P1 UIN SGD/V/2022",
+            tuk: asesmenData.tuk,
+            tanggal: asesmenData.tanggal,
+            asesor: asesmenData.asesor,
+            asesorReg: "MET.000.001234 2021",
+          } as unknown as Assessment
+        }
         answers={answersApl02}
         onAnswerChange={(key, val) =>
           setAnswersApl02((prev) => ({ ...prev, [key]: val }))
@@ -899,8 +902,8 @@ export function AssessmentForm() {
         onRekomendasiChange={setRekomendasiApl02}
         asesiName={asesmenData.nama}
         asesiSignature={asesmenData.nama}
-        asesiDate={asesmenData.tanggal}
-        asesorName={asesmenData.asesor}
+        asesiDate={String(asesmenData.tanggal || "")}
+        asesorName={String(asesmenData.asesor || "")}
         asesorReg="MET.000.001234 2021"
         asesorSignature={asesorSignatureApl02}
         onAsesorSignatureChange={setAsesorSignatureApl02}
@@ -929,7 +932,7 @@ export function AssessmentForm() {
       onMetodeAsesmenChange={setMetodeAsesmen}
       instrumenAsesmen={instrumenAsesmen}
       onInstrumenAsesmenChange={setInstrumenAsesmen}
-      asesorName={asesorName}
+      asesorName={String(asesorName || "")}
       onAsesorNameChange={setAsesorName}
       asesorSignature={asesorSignature}
       onAsesorSignatureChange={setAsesorSignature}
@@ -960,7 +963,9 @@ export function AssessmentForm() {
       onSupervisorNameChange={setSupervisorNameStep2}
       supervisorSignature={supervisorSignatureStep2}
       onSupervisorSignatureChange={setSupervisorSignatureStep2}
-      penyusun={penyusun}
+      penyusun={
+        penyusun as Array<{ nama: string; noMet: string; ttdTanggal: string }>
+      }
       onPenyusunChange={setPenyusun}
       validator={validator}
       onValidatorChange={setValidator}
@@ -984,7 +989,7 @@ export function AssessmentForm() {
       onAsesiSignatureStep3Change={setAsesiSignatureStep3}
       asesiDateStep3={asesiDateStep3}
       onAsesiDateStep3Change={setAsesiDateStep3}
-      asesorNameStep3={asesorNameStep3}
+      asesorNameStep3={String(asesorNameStep3 || "")}
       onAsesorNameStep3Change={setAsesorNameStep3}
       asesorRegStep3={asesorRegStep3}
       onAsesorRegStep3Change={setAsesorRegStep3}
@@ -992,7 +997,9 @@ export function AssessmentForm() {
       onAsesorSignatureStep3Change={setAsesorSignatureStep3}
       asesorDateStep3={asesorDateStep3}
       onAsesorDateStep3Change={setAsesorDateStep3}
-      penyusunStep3={penyusunStep3}
+      penyusunStep3={
+        penyusun as Array<{ nama: string; noMet: string; ttdTanggal: string }>
+      }
       onPenyusunStep3Change={setPenyusunStep3}
       validatorStep3={validatorStep3}
       onPrev={() => setCurrentStep(3)}
@@ -1015,7 +1022,7 @@ export function AssessmentForm() {
       onAsesiSignatureStep4Change={setAsesiSignatureStep4}
       asesiDateStep4={asesiDateStep4}
       onAsesiDateStep4Change={setAsesiDateStep4}
-      asesorNameStep4={asesorNameStep4}
+      asesorNameStep4={String(asesorNameStep4 || "")}
       onAsesorNameStep4Change={setAsesorNameStep4}
       asesorRegStep4={asesorRegStep4}
       onAsesorRegStep4Change={setAsesorRegStep4}
@@ -1023,7 +1030,9 @@ export function AssessmentForm() {
       onAsesorSignatureStep4Change={setAsesorSignatureStep4}
       asesorDateStep4={asesorDateStep4}
       onAsesorDateStep4Change={setAsesorDateStep4}
-      penyusunStep4={penyusunStep4}
+      penyusunStep4={
+        penyusun as Array<{ nama: string; noMet: string; ttdTanggal: string }>
+      }
       onPenyusunStep4Change={setPenyusunStep4}
       validatorStep4={validatorStep4}
       onPrev={() => setCurrentStep(4)}

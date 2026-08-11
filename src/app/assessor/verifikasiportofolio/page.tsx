@@ -373,7 +373,7 @@ export function VerifikasiPortofolio() {
       {/* Main Table */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[650px] sm:min-w-[1000px]">
+          <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -460,7 +460,7 @@ export function VerifikasiPortofolio() {
                         className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Eye size={14} />
-                        <span className="truncate max-w-[120px]">
+                        <span className="truncate max-w-30">
                           {item.fileName}
                         </span>
                       </button>
@@ -1071,7 +1071,7 @@ export function VerifikasiPortofolio() {
       {/* MODAL: Preview File */}
       <AnimatePresence>
         {previewFile && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4">
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-3 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -18,6 +18,7 @@ import {
   FormFRIA07,
   FormFRAPL02,
 } from "@/components/forms";
+import { Assessment } from "@/types/types";
 
 export function DetailRiwayatAsesmen() {
   const { setCurrentView, selectedAsesmen } = useAppContext();
@@ -380,67 +381,77 @@ export function DetailRiwayatAsesmen() {
                 {previewForm === "FR.APL.02" && (
                   <FormFRAPL02
                     readOnly={true}
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: "006/SKM/LSP-KJN/II/2023",
-                      tuk: selectedAsesmen.tuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: "Dr. Aris Thorne",
-                    }}
+                    asesmenData={
+                      {
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: "006/SKM/LSP-KJN/II/2023",
+                        tuk: selectedAsesmen.tuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: "Dr. Aris Thorne",
+                      } as unknown as Assessment
+                    }
                   />
                 )}
                 {previewForm === "FR.AK.07" && (
                   <FormFRAK07
                     readOnly={true}
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: "SKM-2024-001",
-                      tuk: selectedAsesmen.tuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: "Dr. Aris Thorne",
-                    }}
+                    asesmenData={
+                      {
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: "SKM-2024-001",
+                        tuk: selectedAsesmen.tuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: "Dr. Aris Thorne",
+                      } as unknown as Assessment
+                    }
                   />
                 )}
                 {previewForm === "FR.IA.04A" && (
                   <FormFRIA04A
                     readOnly={true}
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: "SKM-2024-001",
-                      tuk: selectedAsesmen.tuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: "Dr. Aris Thorne",
-                    }}
+                    asesmenData={
+                      {
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: "SKM-2024-001",
+                        tuk: selectedAsesmen.tuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: "Dr. Aris Thorne",
+                      } as unknown as Assessment
+                    }
                   />
                 )}
                 {previewForm === "FR.IA.04B" && (
                   <FormFRIA04B
                     readOnly={true}
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: "SKM-2024-001",
-                      tuk: selectedAsesmen.tuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: "Dr. Aris Thorne",
-                    }}
+                    asesmenData={
+                      {
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: "SKM-2024-001",
+                        tuk: selectedAsesmen.tuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: "Dr. Aris Thorne",
+                      } as unknown as Assessment
+                    }
                     rekomendasi={selectedAsesmen.hasil}
                   />
                 )}
                 {previewForm === "FR.IA.07" && (
                   <FormFRIA07
                     readOnly={true}
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: "SKM-2024-001",
-                      tuk: selectedAsesmen.tuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: "Dr. Aris Thorne",
-                    }}
+                    asesmenData={
+                      {
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: "SKM-2024-001",
+                        tuk: selectedAsesmen.tuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: "Dr. Aris Thorne",
+                      } as unknown as Assessment
+                    }
                   />
                 )}
               </div>

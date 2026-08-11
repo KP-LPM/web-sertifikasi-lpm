@@ -1,18 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-// ... (keep the rest of the file exactly as is, but we'll add the useEffect after the states)
-import { PlenoSession, Role, User } from "../types/types";
-import { currentUser as mockAdmin } from "../app/data";
 import {
-  Option,
-  Question,
+  PlenoSession,
+  Role,
+  User,
   Assessment,
-  SubPertanyaanItem,
-  PersonItem,
   PertanyaanAsesmenItem,
   KonfigurasiPertanyaanItem,
   CrumbItem,
 } from "../types/types";
+import { currentUser as mockAdmin } from "../app/data";
 
 interface AppContextType {
   extraCrumbs: CrumbItem[];
@@ -58,6 +54,18 @@ interface AppContextType {
 
   assessments: Assessment[];
   updateAssessment: (id: number, data: Partial<Assessment>) => void;
+
+  // Fitur Konfirmasi Navigasi Form
+  isFormDirty: boolean;
+  setIsFormDirty: (dirty: boolean) => void;
+  pendingNavigation: {
+    type: "view" | "action";
+    target: string | (() => void);
+  } | null;
+  setPendingNavigation: (
+    nav: { type: "view" | "action"; target: string | (() => void) } | null,
+  ) => void;
+  requestNavigation: (target: string | (() => void)) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -67,8 +75,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<string>("login");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
-    window.innerWidth < 1024,
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false,
   );
+
+  // State Konfirmasi Navigasi
+  const [isFormDirty, setIsFormDirty] = useState<boolean>(false);
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    type: "view" | "action";
+    target: string | (() => void);
+  } | null>(null);
+
+  const requestNavigation = (target: string | (() => void)) => {
+    if (isFormDirty) {
+      if (typeof target === "string") {
+        setPendingNavigation({ type: "view", target });
+      } else {
+        setPendingNavigation({ type: "action", target });
+      }
+    } else {
+      if (typeof target === "string") {
+        setCurrentView(target);
+      } else {
+        target();
+      }
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -141,7 +172,61 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [assessments, setAssessments] = useState<Assessment[]>(() => {
     return Array.from({ length: 25 }).map((_, idx) => {
-      let metode = idx % 2 === 0 ? "Offline" : "Online";
+      const batchConfigs = [
+        {
+          code: "BATCH-IT-2026-001",
+          name: "Batch 1 - Teknisi Jaringan",
+          skema: "Teknisi Muda Jaringan Komputer",
+          jenis: "Offline",
+          tuk: "Gedung L PTIPD Lab 1 (Sewaktu)",
+          tgl: "05 Okt 2023",
+          waktu: "09:00 WIB",
+          link: "-",
+        },
+        {
+          code: "BATCH-NET-2026-002",
+          name: "Batch 2 - Network Admin Online",
+          skema: "Network Administrator",
+          jenis: "Online",
+          tuk: "Online Meeting (Google Meet)",
+          tgl: "06 Okt 2023",
+          waktu: "13:00 WIB",
+          link: "https://meet.google.com/abc-defg-hij",
+        },
+        {
+          code: "BATCH-PRG-2026-003",
+          name: "Batch 3 - Pemangku Kepentingan",
+          skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+          jenis: "Offline",
+          tuk: "Ruang Rapat Utama (Tempat Kerja)",
+          tgl: "08 Okt 2023",
+          waktu: "09:00 WIB",
+          link: "-",
+        },
+        {
+          code: "BATCH-SEC-2026-004",
+          name: "Batch 4 - Cyber Security Online",
+          skema: "Network Administrator",
+          jenis: "Online",
+          tuk: "Online Meeting (Google Meet)",
+          tgl: "10 Okt 2023",
+          waktu: "09:00 WIB",
+          link: "https://meet.google.com/xyz-uvwx-rst",
+        },
+        {
+          code: "BATCH-DES-2026-005",
+          name: "Batch 5 - Teknisi Jaringan Gel. 2",
+          skema: "Teknisi Muda Jaringan Komputer",
+          jenis: "Offline",
+          tuk: "Gedung H Lab Terpadu (Sewaktu)",
+          tgl: "12 Okt 2023",
+          waktu: "13:00 WIB",
+          link: "-",
+        },
+      ];
+
+      const batch = batchConfigs[idx % batchConfigs.length];
+      const metode = batch.jenis;
       let status = "Belum Selesai";
       if (metode === "Offline") {
         status = idx % 3 === 0 ? "Selesai" : "Belum Selesai";
@@ -150,62 +235,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         else status = "Belum Selesai";
         if (idx % 7 === 0) status = "Selesai";
       }
-      // Ensure we have at least one of each for testing
-      if (idx === 1) {
-        metode = "Online";
-        status = "Menunggu Asesi";
-      }
-      if (idx === 3) {
-        metode = "Online";
-        status = "Belum Selesai";
-      }
-      if (idx === 5) {
-        metode = "Online";
-        status = "Belum Selesai";
-      }
-      if (idx === 0) {
-        metode = "Offline";
-        status = "Belum Selesai";
-      }
 
-      let waktu = idx % 2 === 0 ? "09:00 WIB" : "13:00 WIB";
-      let linkVideo = "-";
+      if (idx === 1) status = "Menunggu Asesi";
+      if (idx === 3) status = "Belum Selesai";
+      if (idx === 5) status = "Belum Selesai";
+      if (idx === 0) status = "Belum Selesai";
 
-      if (metode === "Online") {
-        if (status === "Belum Selesai" && idx % 2 !== 0 && idx !== 3) {
-          waktu = "-";
-        } else {
-          linkVideo = "https://meet.google.com/abc-defg-hij";
-        }
+      let waktu = batch.waktu;
+      const linkVideo = batch.link;
+
+      if (metode === "Online" && status === "Menunggu Asesi" && idx === 1) {
+        waktu = "-";
       }
 
       return {
         id: idx + 1,
         nama: `Kandidat ${idx + 1}`,
+        nik: `32730128${(1000 + idx).toString()}0001`,
+        aplStatus:
+          idx % 4 === 3 ? "APL-01 Valid" : "APL-01 & APL-02 Terverifikasi",
+        batchCode: batch.code,
+        batchName: batch.name,
         asesmen: `Asesmen Reguler - ${idx + 1}`,
-        tuk:
-          idx % 3 === 0
-            ? "Sewaktu"
-            : idx % 3 === 1
-              ? "Tempat Kerja"
-              : "Mandiri",
+        tuk: batch.tuk,
         hasil: idx % 2 === 0 ? "Kompeten" : "Belum Kompeten",
-        isBanding: idx % 2 !== 0 && idx % 3 === 0 ? true : false,
+        isBanding: idx % 2 !== 0 && idx % 3 === 0,
         alasanBanding:
           idx % 2 !== 0 && idx % 3 === 0
             ? "Saya merasa sudah menjawab semua pertanyaan dengan benar saat wawancara."
             : undefined,
-        skema:
-          idx % 3 === 0
-            ? "Teknisi Muda Jaringan Komputer"
-            : idx % 3 === 1
-              ? "Melaksanakan Komunikasi Dengan Pemangku Kepentingan"
-              : "Network Administrator",
-        metode: metode,
+        skema: batch.skema,
         jenis_asesmen: metode,
         metode_pelaksanaan: metode,
+        metode: metode,
         tglPra: `${(idx % 28) + 1} Okt 2023`,
-        tglAsesmen: `${(idx % 28) + 3} Okt 2023`,
+        tglAsesmen: batch.tgl,
         waktu: waktu,
         linkVideo: linkVideo,
         status: status,
@@ -222,7 +286,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [konfigurasiPertanyaan, setKonfigurasiPertanyaan] = useState<
     KonfigurasiPertanyaanItem[]
-  >([]);
+  >(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("konfigurasi_pertanyaan_data");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [
+      {
+        id: "1",
+        nama: "Set Konfigurasi Pertanyaan Asesmen Komprehensif",
+        skema: "Teknisi Muda Jaringan Komputer",
+        tipeForm: "Multi-Step Wizard",
+        versi: "1.0",
+        penyusun: [
+          {
+            value: "aditya_rahman",
+            label: "Aditya Rahman Syach, M.Kom (Asesor Utama)",
+          },
+        ],
+        validator: [
+          {
+            value: "made_jaya",
+            label: "I Made Jaya Artana, S.T., M.T. (Asesor)",
+          },
+        ],
+        isDefault: false,
+        status: "published",
+        subPertanyaans: [],
+      },
+    ];
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(
+          "konfigurasi_pertanyaan_data",
+          JSON.stringify(konfigurasiPertanyaan),
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [konfigurasiPertanyaan]);
+
   const [pertanyaanAsesmen, setPertanyaanAsesmen] = useState<
     PertanyaanAsesmenItem[]
   >([
@@ -236,16 +350,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         { value: "aditya_rahman", label: "Aditya Rahman Syach - Asesor" },
       ],
       questions: [
-        {
-          id: "q1",
-          text: "easd",
-          options: [],
-        },
-        {
-          id: "q2",
-          text: "wadsd",
-          options: [],
-        },
+        { id: "q1", text: "easd", options: [] },
+        { id: "q2", text: "wadsd", options: [] },
       ],
     },
     {
@@ -408,6 +514,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setSelectedAsesmen,
         assessments,
         updateAssessment,
+        isFormDirty,
+        setIsFormDirty,
+        pendingNavigation,
+        setPendingNavigation,
+        requestNavigation,
       }}
     >
       {children}

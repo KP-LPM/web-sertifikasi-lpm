@@ -194,6 +194,20 @@ export interface WizardFormState {
   step4: Step4Data;
 }
 
+export interface PenyusunValidator {
+  nama: string;
+  noMet: string;
+  ttdTanggal: string;
+}
+
+export interface EvidenceFileItem {
+  id?: string;
+  name?: string;
+  url?: string;
+  file?: File;
+  [key: string]: unknown;
+}
+
 /* ==========================================================================
    QUESTION & ASSESSMENT CONFIGURATION INTERFACES
    ========================================================================== */

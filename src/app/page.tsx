@@ -24,7 +24,7 @@ import { Profile } from "./profile/page";
 
 // Assessor Pages
 import { AssessorOverview } from "../app/assessor/overview/page";
-import { Candidates } from "../app/assessor/candidates/page";
+import { AsesiList } from "../app/assessor/candidates/page";
 import { AssessmentForm } from "../app/assessor/asessmentform/page";
 import { AssessmentFinalization } from "../app/assessor/finalization/page";
 import { VerifikasiAPL02 } from "../app/assessor/verifikasiapl02/page";
@@ -91,7 +91,7 @@ function AppContent() {
         case "dashboard":
           return <AssessorOverview />;
         case "candidates":
-          return <Candidates />;
+          return <AsesiList />;
         case "history-asesmen":
           return <RiwayatAsesmen />;
         case "detail-riwayat-asesmen":
@@ -176,13 +176,13 @@ function AppContent() {
         href="https://wa.me/628123456789"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-[100] flex items-center justify-center w-14 h-14 bg-[#007A55] hover:bg-[#006044] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
+        className="fixed bottom-6 right-6 z-25 flex items-center justify-center w-14 h-14 bg-[#007A55] hover:bg-[#006044] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
       >
         <Headset size={24} />
         <span className="absolute right-16 px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md">
           Butuh bantuan?
         </span>
-        <span className="absolute right-[60px] top-1/2 -translate-y-1/2 border-8 border-transparent border-l-gray-900 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity"></span>
+        <span className="absolute right-15 top-1/2 -translate-y-1/2 border-8 border-transparent border-l-gray-900 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity"></span>
       </a>
     </div>
   );
