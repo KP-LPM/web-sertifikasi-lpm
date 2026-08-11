@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Providers from "@/components/Providers";
+import ClientLayout from "@/components/ClientLayouts";
 
 // Konfigurasi font Plus Jakarta Sans
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -10,7 +11,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata = {
   title: "Web Sertifikasi LPM",
-  description: "Aplikasi Login",
+  description: "Sistem Sertifikasi Kompetensi UIN Bandung",
 };
 
 export default function RootLayout({
@@ -22,7 +23,9 @@ export default function RootLayout({
     <html lang="id">
       {/* Memasukkan font Plus Jakarta Sans ke seluruh tag body */}
       <Providers>
-        <body className={plusJakartaSans.className}>{children}</body>
+        <ClientLayout>
+          <body className={plusJakartaSans.className}>{children}</body>
+        </ClientLayout>
       </Providers>
     </html>
   );
