@@ -1,18 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+'use client';
 
-// ... (keep the rest of the file exactly as is, but we'll add the useEffect after the states)
-import { PlenoSession, Role, User } from "../types/types";
-import { currentUser as mockAdmin } from "../app/data";
-import {
-  Option,
-  Question,
-  Assessment,
-  SubPertanyaanItem,
-  PersonItem,
-  PertanyaanAsesmenItem,
-  KonfigurasiPertanyaanItem,
-  CrumbItem,
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSession } from 'next-auth/react';
+import { 
+  PlenoSession, 
+  Role, 
+  User, 
+  Option, 
+  Question, 
+  Assessment, 
+  SubPertanyaanItem, 
+  PersonItem, 
+  PertanyaanAsesmenItem, 
+  KonfigurasiPertanyaanItem, 
+  CrumbItem 
 } from "../types/types";
+import { currentUser as mockAdmin } from "../app/data";
 
 interface AppContextType {
   extraCrumbs: CrumbItem[];
@@ -31,31 +34,20 @@ interface AppContextType {
   setSidebarCollapsed: (collapsed: boolean) => void;
   pertanyaanAsesmen: PertanyaanAsesmenItem[];
   addPertanyaanAsesmen: (item: Omit<PertanyaanAsesmenItem, "id">) => void;
-  updatePertanyaanAsesmen: (
-    id: number,
-    item: Omit<PertanyaanAsesmenItem, "id">,
-  ) => void;
+  updatePertanyaanAsesmen: (id: number, item: Omit<PertanyaanAsesmenItem, "id">) => void;
   deletePertanyaanAsesmen: (id: number) => void;
   selectedPertanyaanId: number | null;
   setSelectedPertanyaanId: (id: number | null) => void;
   konfigurasiPertanyaan: KonfigurasiPertanyaanItem[];
-  addKonfigurasiPertanyaan: (
-    item: Omit<KonfigurasiPertanyaanItem, "id">,
-  ) => void;
-  updateKonfigurasiPertanyaan: (
-    id: string,
-    item: Omit<KonfigurasiPertanyaanItem, "id">,
-  ) => void;
+  addKonfigurasiPertanyaan: (item: Omit<KonfigurasiPertanyaanItem, "id">) => void;
+  updateKonfigurasiPertanyaan: (id: string, item: Omit<KonfigurasiPertanyaanItem, "id">) => void;
   deleteKonfigurasiPertanyaan: (id: string) => void;
   selectedKonfigurasiId: string | null;
   setSelectedKonfigurasiId: (id: string | null) => void;
-
   registeredProfile: Record<string, unknown> | null;
   setRegisteredProfile: (val: Record<string, unknown> | null) => void;
-
   selectedAsesmen: Assessment | null;
   setSelectedAsesmen: (val: Assessment | null) => void;
-
   assessments: Assessment[];
   updateAssessment: (id: number, data: Partial<Assessment>) => void;
 }
@@ -63,12 +55,33 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  // --- NEXTAUTH SESSION INTEGRATION ---
+  const { data: session } = useSession();
+  
+  // --- STATES ---
   const [extraCrumbs, setExtraCrumbs] = useState<CrumbItem[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<string>("login");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
-    window.innerWidth < 1024,
+    typeof window !== 'undefined' ? window.innerWidth < 1024 : false
   );
+  const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<number | null>(null);
+  const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<string | null>(null);
+  const [registeredProfile, setRegisteredProfile] = useState<Record<string, unknown> | null>(null);
+  const [selectedAsesmen, setSelectedAsesmen] = useState<Assessment | null>(null);
+
+  // Update otomatis state user setiap kali berhasil login via NextAuth
+  useEffect(() => {
+    if (session?.user) {
+      setUser({
+        id: session.user.name || 'u1',
+        name: session.user.name || 'Asesi',
+        email: session.user.email || '',
+        role: (session.user.role as Role) || 'asesi',
+        avatar: session.user.image || '',
+      });
+    }
+  }, [session]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -82,20 +95,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<
-    number | null
-  >(null);
-  const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<
-    string | null
-  >(null);
-  const [registeredProfile, setRegisteredProfile] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
-  const [selectedAsesmen, setSelectedAsesmen] = useState<Assessment | null>(
-    null,
-  );
-
   const [plenoSessions, setPlenoSessions] = useState<PlenoSession[]>([
     {
       id: "PLN-001",
@@ -106,8 +105,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: "Terjadwal",
       lokasi: "Ruang Rapat Utama (Offline)",
       detailLokasi: "Gedung A, Lantai 2",
-      deskripsi:
-        "Sidang pleno penetapan kelulusan uji kompetensi skema Pemrograman Web gelombang 1.",
+      deskripsi: "Sidang pleno penetapan kelulusan uji kompetensi skema Pemrograman Web gelombang 1.",
       asesiList: ["Ahmad Fauzi", "Budi Santoso", "Citra Kirana"],
     },
     {
@@ -119,8 +117,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: "Menunggu Persetujuan",
       lokasi: "Zoom Meeting (Online)",
       detailLokasi: "https://zoom.us/j/123456789",
-      deskripsi:
-        "Sidang pleno penetapan kelulusan uji kompetensi skema Desain Grafis gelombang 2.",
+      deskripsi: "Sidang pleno penetapan kelulusan uji kompetensi skema Desain Grafis gelombang 2.",
       asesiList: ["Dewi Lestari", "Eko Prasetyo"],
     },
   ]);
@@ -150,7 +147,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         else status = "Belum Selesai";
         if (idx % 7 === 0) status = "Selesai";
       }
-      // Ensure we have at least one of each for testing
       if (idx === 1) {
         metode = "Online";
         status = "Menunggu Asesi";
@@ -183,24 +179,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         id: idx + 1,
         nama: `Kandidat ${idx + 1}`,
         asesmen: `Asesmen Reguler - ${idx + 1}`,
-        tuk:
-          idx % 3 === 0
-            ? "Sewaktu"
-            : idx % 3 === 1
-              ? "Tempat Kerja"
-              : "Mandiri",
+        tuk: idx % 3 === 0 ? "Sewaktu" : idx % 3 === 1 ? "Tempat Kerja" : "Mandiri",
         hasil: idx % 2 === 0 ? "Kompeten" : "Belum Kompeten",
         isBanding: idx % 2 !== 0 && idx % 3 === 0 ? true : false,
-        alasanBanding:
-          idx % 2 !== 0 && idx % 3 === 0
-            ? "Saya merasa sudah menjawab semua pertanyaan dengan benar saat wawancara."
-            : undefined,
-        skema:
-          idx % 3 === 0
-            ? "Teknisi Muda Jaringan Komputer"
-            : idx % 3 === 1
-              ? "Melaksanakan Komunikasi Dengan Pemangku Kepentingan"
-              : "Network Administrator",
+        alasanBanding: idx % 2 !== 0 && idx % 3 === 0 ? "Saya merasa sudah menjawab semua pertanyaan dengan benar saat wawancara." : undefined,
+        skema: idx % 3 === 0 ? "Teknisi Muda Jaringan Komputer" : idx % 3 === 1 ? "Melaksanakan Komunikasi Dengan Pemangku Kepentingan" : "Network Administrator",
         metode: metode,
         jenis_asesmen: metode,
         metode_pelaksanaan: metode,
@@ -220,32 +203,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const [konfigurasiPertanyaan, setKonfigurasiPertanyaan] = useState<
-    KonfigurasiPertanyaanItem[]
-  >([]);
-  const [pertanyaanAsesmen, setPertanyaanAsesmen] = useState<
-    PertanyaanAsesmenItem[]
-  >([
+  const [konfigurasiPertanyaan, setKonfigurasiPertanyaan] = useState<KonfigurasiPertanyaanItem[]>([]);
+  const [pertanyaanAsesmen, setPertanyaanAsesmen] = useState<PertanyaanAsesmenItem[]>([
     {
       id: 1,
       nama: "wadw",
       skema: "Pembukuan",
       tipeForm: "FR.IA-01",
       tipePertanyaan: "Esai",
-      penyusun: [
-        { value: "aditya_rahman", label: "Aditya Rahman Syach - Asesor" },
-      ],
+      penyusun: [{ value: "aditya_rahman", label: "Aditya Rahman Syach - Asesor" }],
       questions: [
-        {
-          id: "q1",
-          text: "easd",
-          options: [],
-        },
-        {
-          id: "q2",
-          text: "wadsd",
-          options: [],
-        },
+        { id: "q1", text: "easd", options: [] },
+        { id: "q2", text: "wadsd", options: [] },
       ],
     },
     {
@@ -286,10 +255,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     ]);
   };
 
-  const updatePertanyaanAsesmen = (
-    id: number,
-    item: Omit<PertanyaanAsesmenItem, "id">,
-  ) => {
+  const updatePertanyaanAsesmen = (id: number, item: Omit<PertanyaanAsesmenItem, "id">) => {
     setPertanyaanAsesmen((prev) =>
       prev.map((p) => (p.id === id ? { ...item, id } : p)),
     );
@@ -299,19 +265,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPertanyaanAsesmen((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const addKonfigurasiPertanyaan = (
-    item: Omit<KonfigurasiPertanyaanItem, "id">,
-  ) => {
+  const addKonfigurasiPertanyaan = (item: Omit<KonfigurasiPertanyaanItem, "id">) => {
     setKonfigurasiPertanyaan((prev) => [
       ...prev,
       { ...item, id: Date.now().toString() } as KonfigurasiPertanyaanItem,
     ]);
   };
 
-  const updateKonfigurasiPertanyaan = (
-    id: string,
-    item: Omit<KonfigurasiPertanyaanItem, "id">,
-  ) => {
+  const updateKonfigurasiPertanyaan = (id: string, item: Omit<KonfigurasiPertanyaanItem, "id">) => {
     setKonfigurasiPertanyaan((prev) =>
       prev.map((p) =>
         p.id === id ? ({ ...item, id } as KonfigurasiPertanyaanItem) : p,
@@ -332,37 +293,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (role === "admin") {
       mockUser = mockAdmin;
     } else if (role === "asesor") {
-      mockUser = {
-        id: "u2",
-        name: "Dr. Aris Thorne",
-        email: "aris@uin.ac.id",
-        role: "asesor",
-        avatar: "AT",
-      };
+      mockUser = { id: "u2", name: "Dr. Aris Thorne", email: "aris@uin.ac.id", role: "asesor", avatar: "AT" };
     } else if (role === "direktur") {
-      mockUser = {
-        id: "u4",
-        name: "Prof. Direktur",
-        email: "direktur@lsp.com",
-        role: "direktur",
-        avatar: "DR",
-      };
+      mockUser = { id: "u4", name: "Prof. Direktur", email: "direktur@lsp.com", role: "direktur", avatar: "DR" };
     } else if (role === "manajer") {
-      mockUser = {
-        id: "u5",
-        name: "Bapak Manajer",
-        email: "manajer@lsp.com",
-        role: "manajer",
-        avatar: "MN",
-      };
+      mockUser = { id: "u5", name: "Bapak Manajer", email: "manajer@lsp.com", role: "manajer", avatar: "MN" };
     } else {
-      mockUser = {
-        id: "u3",
-        name: "Ahmad Fauzi",
-        email: "ahmad.fauzi@uin-suka.ac.id",
-        role: "asesi",
-        avatar: "AF",
-      };
+      mockUser = { id: "u3", name: "Ahmad Fauzi", email: "ahmad.fauzi@uin-suka.ac.id", role: "asesi", avatar: "AF" };
     }
     setUser(mockUser);
     setCurrentView("dashboard");
@@ -376,38 +313,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider
       value={{
-        extraCrumbs,
-        setExtraCrumbs,
-        user,
-        plenoSessions,
-        addPlenoSession,
-        updatePlenoSession,
-        deletePlenoSession,
-        login,
-        logout,
-        updateUser,
-        currentView,
-        setCurrentView,
-        sidebarCollapsed,
-        setSidebarCollapsed,
-        pertanyaanAsesmen,
-        addPertanyaanAsesmen,
-        updatePertanyaanAsesmen,
-        deletePertanyaanAsesmen,
-        selectedPertanyaanId,
-        setSelectedPertanyaanId,
-        konfigurasiPertanyaan,
-        addKonfigurasiPertanyaan,
-        updateKonfigurasiPertanyaan,
-        deleteKonfigurasiPertanyaan,
-        selectedKonfigurasiId,
-        setSelectedKonfigurasiId,
-        registeredProfile,
-        setRegisteredProfile,
-        selectedAsesmen,
-        setSelectedAsesmen,
-        assessments,
-        updateAssessment,
+        extraCrumbs, setExtraCrumbs, user, plenoSessions, addPlenoSession, updatePlenoSession, deletePlenoSession,
+        login, logout, updateUser, currentView, setCurrentView, sidebarCollapsed, setSidebarCollapsed, pertanyaanAsesmen,
+        addPertanyaanAsesmen, updatePertanyaanAsesmen, deletePertanyaanAsesmen, selectedPertanyaanId, setSelectedPertanyaanId,
+        konfigurasiPertanyaan, addKonfigurasiPertanyaan, updateKonfigurasiPertanyaan, deleteKonfigurasiPertanyaan,
+        selectedKonfigurasiId, setSelectedKonfigurasiId, registeredProfile, setRegisteredProfile, selectedAsesmen,
+        setSelectedAsesmen, assessments, updateAssessment,
       }}
     >
       {children}
