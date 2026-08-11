@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Providers from "@/components/Providers";
 
 // Konfigurasi font Plus Jakarta Sans
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="id">
       {/* Memasukkan font Plus Jakarta Sans ke seluruh tag body */}
-      <body className={plusJakartaSans.className}>{children}</body>
+      <Providers>
+        <body className={plusJakartaSans.className}>{children}</body>
+      </Providers>
     </html>
   );
 }

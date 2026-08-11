@@ -105,7 +105,7 @@ export default function Login() {
       showNotification("Gagal Masuk: Username atau Password salah!", "error");
     } else {
       showNotification("Berhasil Masuk! Mengalihkan...", "success");
-      setTimeout(() => router.push("/dashboard"), 1500);
+      setTimeout(() => router.push("/asesi/overview"), 1500);
     }
   }; // <--- INI DIA YANG HILANG SEBELUMNYA!
 
@@ -229,7 +229,7 @@ export default function Login() {
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
               notification.type === "success"
                 ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
                 : "bg-rose-50/90 border-rose-200 text-rose-800"
@@ -314,7 +314,7 @@ export default function Login() {
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
               notification.type === "success"
                 ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
                 : "bg-rose-50/90 border-rose-200 text-rose-800"

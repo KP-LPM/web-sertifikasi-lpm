@@ -1,9 +1,15 @@
+"use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   PlenoSession,
   Role,
   User,
+  Option,
+  Question,
   Assessment,
+  SubPertanyaanItem,
+  PersonItem,
   PertanyaanAsesmenItem,
   KonfigurasiPertanyaanItem,
   CrumbItem,
@@ -45,13 +51,10 @@ interface AppContextType {
   deleteKonfigurasiPertanyaan: (id: string) => void;
   selectedKonfigurasiId: string | null;
   setSelectedKonfigurasiId: (id: string | null) => void;
-
   registeredProfile: Record<string, unknown> | null;
   setRegisteredProfile: (val: Record<string, unknown> | null) => void;
-
   selectedAsesmen: Assessment | null;
   setSelectedAsesmen: (val: Assessment | null) => void;
-
   assessments: Assessment[];
   updateAssessment: (id: number, data: Partial<Assessment>) => void;
 
@@ -71,12 +74,45 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  // --- NEXTAUTH SESSION INTEGRATION ---
+  const { data: session } = useSession();
+
+  // --- STATES ---
   const [extraCrumbs, setExtraCrumbs] = useState<CrumbItem[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<string>("login");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
     typeof window !== "undefined" ? window.innerWidth < 1024 : false,
   );
+  const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<
+    number | null
+  >(null);
+  const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<
+    string | null
+  >(null);
+  const [registeredProfile, setRegisteredProfile] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [selectedAsesmen, setSelectedAsesmen] = useState<Assessment | null>(
+    null,
+  );
+
+  const [prevSession, setPrevSession] = useState(session);
+
+  // Sinkronisasi state saat render jika session berubah
+  if (session !== prevSession) {
+    setPrevSession(session);
+    if (session?.user) {
+      setUser({
+        id: session.user.name || "u1",
+        name: session.user.name || "Asesi",
+        email: session.user.email || "",
+        role: (session.user.role as Role) || "asesi",
+        avatar: session.user.image || "",
+      });
+    }
+  }
 
   // State Konfirmasi Navigasi
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false);
@@ -112,20 +148,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<
-    number | null
-  >(null);
-  const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<
-    string | null
-  >(null);
-  const [registeredProfile, setRegisteredProfile] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
-  const [selectedAsesmen, setSelectedAsesmen] = useState<Assessment | null>(
-    null,
-  );
 
   const [plenoSessions, setPlenoSessions] = useState<PlenoSession[]>([
     {
@@ -226,7 +248,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ];
 
       const batch = batchConfigs[idx % batchConfigs.length];
-      const metode = batch.jenis;
+      let metode = batch.jenis;
       let status = "Belum Selesai";
       if (metode === "Offline") {
         status = idx % 3 === 0 ? "Selesai" : "Belum Selesai";
@@ -234,6 +256,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (idx % 4 === 1) status = "Menunggu Asesi";
         else status = "Belum Selesai";
         if (idx % 7 === 0) status = "Selesai";
+      }
+
+      if (idx === 1) {
+        metode = "Online";
+        status = "Menunggu Asesi";
+      }
+      if (idx === 3) {
+        metode = "Online";
+        status = "Belum Selesai";
+      }
+      if (idx === 5) {
+        metode = "Online";
+        status = "Belum Selesai";
+      }
+      if (idx === 0) {
+        metode = "Offline";
+        status = "Belum Selesai";
       }
 
       if (idx === 1) status = "Menunggu Asesi";
