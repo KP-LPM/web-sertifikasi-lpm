@@ -1,15 +1,13 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { FileEdit, CheckCircle, Video, Eye, AlertCircle, ArrowLeft, Calendar, User } from 'lucide-react';
 import { useAppContext } from '@/context/context';
 
 import { FormFRIA04A } from '@/components/forms/FormFRIA04A';
-import { FormFRIA04B } from '@/components/forms/FormFRIA04B';
-import { FormFRIA07 } from '@/components/forms/FormFRIA07';
 import { FormFRAK07 } from '@/components/forms/FormFRAK07';
 import { FormFRAPL02 } from '@/components/forms/FormFRAPL02';
-import { AVAILABLE_SCHEMES } from '@/data/schemes';
 
 export default function UjianAsesi() {
   const { setCurrentView } = useAppContext();
@@ -55,6 +53,12 @@ export default function UjianAsesi() {
   const activeExam = examItems.find(item => item.actionType === activeModal);
   const activeExamName = activeExam?.name || 'Pratinjau Dokumen';
 
+  function requestNavigation(destination: string): void {
+    setActiveModal(null);
+    setShowConfirmFinish(false);
+    setCurrentView(destination);
+  }
+
   return (
     <>
       {!activeModal ? (
@@ -76,7 +80,7 @@ export default function UjianAsesi() {
                   <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
                     Ujian & Dokumen Asesmen
                   </h2>
-                  <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] md:whitespace-nowrap">
+                  <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
                     Skema: Penerjemah Teks Umum
                   </p>
                 </div>
@@ -126,7 +130,7 @@ export default function UjianAsesi() {
                <h3 className="font-bold text-lg text-slate-900">Daftar Ujian</h3>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[600px]">
+              <table className="w-full text-left border-collapse min-w-150">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left w-16">No</th>
@@ -194,7 +198,16 @@ export default function UjianAsesi() {
                 <>
                 {activeModal === 'form_apl02' && (
                   <FormFRAPL02 
-                    asesmenData={{ nama: 'Ahmad Supriyadi', skema: 'Penerjemah Teks Umum', noSkema: 'CERT-03', tuk: 'Mandiri', tanggal: '14/10/2026' }}
+                    asesmenData={{
+                      id: 1,
+                      nama: 'Ahmad Supriyadi',
+                      skema: 'Penerjemah Teks Umum',
+                      noSkema: 'CERT-03',
+                      tuk: 'Mandiri',
+                      tanggal: '14/10/2026',
+                      metode: 'Mandiri',
+                      status: 'Preview',
+                    }}
                     readOnly={true}
                     asesiSignature={"Telah Ditandatangani"}
                     asesorSignature={"Telah Ditandatangani"}
@@ -204,7 +217,16 @@ export default function UjianAsesi() {
                 )}
                 {activeModal === 'form_penyesuaian' && (
                   <FormFRAK07 
-                    asesmenData={{ nama: 'Ahmad Supriyadi', skema: 'Penerjemah Teks Umum', noSkema: 'CERT-03', tuk: 'Mandiri', tanggal: '14/10/2026' }}
+                    asesmenData={{
+                      id: 2,
+                      nama: 'Ahmad Supriyadi',
+                      skema: 'Penerjemah Teks Umum',
+                      noSkema: 'CERT-03',
+                      tuk: 'Mandiri',
+                      tanggal: '14/10/2026',
+                      metode: 'Mandiri',
+                      status: 'Preview',
+                    }}
                     readOnly={true}
                     asesiSignature={"Telah Ditandatangani"}
                     asesorSignature={"Telah Ditandatangani"}
@@ -215,7 +237,16 @@ export default function UjianAsesi() {
                 )}
                 {activeModal === 'form_proyek_a' && (
                   <FormFRIA04A 
-                    asesmenData={{ nama: 'Ahmad Supriyadi', skema: 'Penerjemah Teks Umum', noSkema: 'CERT-03', tuk: 'Mandiri', tanggal: '14/10/2026' }}
+                    asesmenData={{
+                      id: 3,
+                      nama: 'Ahmad Supriyadi',
+                      skema: 'Penerjemah Teks Umum',
+                      noSkema: 'CERT-03',
+                      tuk: 'Mandiri',
+                      tanggal: '14/10/2026',
+                      metode: 'Mandiri',
+                      status: 'Preview',
+                    }}
                     readOnly={true}
                     asesiSignature={"Telah Ditandatangani"}
                     asesorSignature={"Telah Ditandatangani"}
@@ -237,7 +268,7 @@ export default function UjianAsesi() {
 
       {/* Confirm Finish All Modal */}
       {showConfirmFinish && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-150">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0 mx-auto mb-4">

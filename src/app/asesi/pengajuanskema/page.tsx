@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
   Trash2, FileText, Plus, Search, Calendar, ArrowLeft, ArrowRight, 
-  Upload, Info, BadgeCheck, Eye, CheckCircle, Clock, AlertTriangle, Download, X
+  Upload, BadgeCheck, CheckCircle, AlertTriangle, Download, X
 } from 'lucide-react';
 
 // 1. Path Import disesuaikan dengan struktur folder barumu
@@ -14,7 +14,31 @@ import { EFormApl02 } from '@/components/forms/asesi/FormFRAPL02';
 import { AVAILABLE_SCHEMES } from '@/data/schemes'; 
 import { useAppContext } from '@/context/context';
 
-const getPendidikanOptions = (scheme: any) => {
+interface SchemeRequirement {
+  name: string;
+}
+
+type SchemeRequirementItem = string | SchemeRequirement;
+
+interface SchemeUnit {
+  code: string;
+  title: string;
+  elemen?: {
+    title: string;
+    kuk: string[];
+  }[];
+}
+
+interface Scheme {
+  name?: string;
+  code?: string;
+  units?: SchemeUnit[];
+  persyaratanDasar?: SchemeRequirementItem[];
+  buktiAdministratif?: SchemeRequirementItem[];
+  [key: string]: string | string[] | SchemeRequirementItem[] | SchemeUnit[] | undefined;
+}
+
+const getPendidikanOptions = (scheme: Scheme | null): string[] => {
   const allOptions = ['SMA', 'D3', 'S1', 'S2', 'S3'];
   if (!scheme) return allOptions;
 
@@ -39,7 +63,7 @@ const getPendidikanOptions = (scheme: any) => {
 interface Submission {
   noHp?: string;
   telepon?: string;
-  units?: any;
+  units?: { code: string; title: string }[];
   penyesuaianWajar?: boolean;
   id: string;
   name: string;
@@ -75,7 +99,7 @@ export default function PengajuanSkemaPage() {
   
   // Navigation states
   const [subView, setSubView] = useState<'list' | 'choose-scheme' | 'apply-form'>('list');
-  const [selectedScheme, setSelectedScheme] = useState<any | null>(null);
+  const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
 
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [exitDestination, setExitDestination] = useState<'list' | 'choose-scheme' | null>(null);
@@ -113,10 +137,17 @@ export default function PengajuanSkemaPage() {
     }
   }, [subView, setExtraCrumbs, handleExitRequest]);
   const [step, setStep] = useState(1);
-  const [activeModalDoc, setActiveModalDoc] = useState<any>(null);
+  interface ActiveModalDoc {
+    isEForm?: boolean;
+    isPreview?: boolean;
+    name?: string;
+    [key: string]: unknown;
+  }
+
+  const [activeModalDoc, setActiveModalDoc] = useState<ActiveModalDoc | null>(null);
   const [tempFiles, setTempFiles] = useState<File[]>([]);
-  const [eFormData, setEFormData] = useState<Record<string, any>>({});
-  const [tempEFormData, setTempEFormData] = useState<Record<string, any>>({});
+  const [eFormData, setEFormData] = useState<Record<string, unknown>>({});
+  const [tempEFormData, setTempEFormData] = useState<Record<string, unknown>>({});
   const [alertMsg, setAlertMsg] = useState('');
   const showAlert = (msg: string) => {
     setAlertMsg(msg);
@@ -125,9 +156,10 @@ export default function PengajuanSkemaPage() {
 
   React.useEffect(() => {
     if (activeModalDoc && !activeModalDoc.isEForm && !activeModalDoc.isPreview) {
-      setTempFiles(eFormData[activeModalDoc.name] || []);
+      const key = typeof activeModalDoc.name === 'string' ? activeModalDoc.name : undefined;
+      setTempFiles((key ? (eFormData[key] as File[]) : []) || []);
     }
-  }, [activeModalDoc]);
+  }, [activeModalDoc, eFormData]);
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
   const [submissions, setSubmissions] = useState<Submission[]>(() => {
@@ -135,8 +167,8 @@ export default function PengajuanSkemaPage() {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('lsp_submissions');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        const filtered = parsed.filter((p: any) => p.name !== 'Pelayanan Pelanggan');
+        const parsed = JSON.parse(saved) as Submission[];
+        const filtered = parsed.filter((p: Submission) => p.name !== 'Pelayanan Pelanggan');
         if (filtered.length !== parsed.length) {
           localStorage.setItem('lsp_submissions', JSON.stringify(filtered));
           return filtered;
@@ -190,8 +222,16 @@ export default function PengajuanSkemaPage() {
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
+  interface Step1Errors {
+    tempatLahir: boolean;
+    alamat: boolean;
+    nik: boolean;
+    kodePos: boolean;
+    tuk: boolean;
+  }
+
   // Step 1 Validation Errors
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<Step1Errors>({
     tempatLahir: false,
     alamat: false,
     nik: false,
@@ -210,22 +250,25 @@ export default function PengajuanSkemaPage() {
     };
 
     if (step === 1) {
-      const newErrors = {
+      const newErrors: Step1Errors = {
         tempatLahir: tempatLahir.trim() === '',
         alamat: alamat.trim() === '',
         nik: nik.trim() === '',
         kodePos: kodePos.trim() === '',
         tuk: tuk === '',
       };
-      setErrors(newErrors as any);
+      setErrors(newErrors);
   
       if (!newErrors.tempatLahir && !newErrors.alamat && !newErrors.nik && !newErrors.kodePos && !newErrors.tuk) {
         setStep(2);
         scrollToTopMobile();
       }
     } else if (step === 2) {
-      const reqs = (selectedScheme as any)?.persyaratanDasar || [];
-      const valid = reqs.every((req: any) => eFormData[typeof req === 'string' ? req : req.name]);
+      const reqs = selectedScheme?.persyaratanDasar || [];
+      const valid = reqs.every((req: SchemeRequirementItem) => {
+        const key = typeof req === 'string' ? req : req.name;
+        return Boolean(eFormData[key]);
+      });
       if (!valid) {
         setShowStep2Errors(true);
       } else {
@@ -234,8 +277,11 @@ export default function PengajuanSkemaPage() {
         scrollToTopMobile();
       }
     } else if (step === 3) {
-      const reqs = (selectedScheme as any)?.buktiAdministratif || [];
-      const valid = reqs.every((req: any) => eFormData[typeof req === 'string' ? req : req.name]);
+      const reqs = selectedScheme?.buktiAdministratif || [];
+      const valid = reqs.every((req: SchemeRequirementItem) => {
+        const key = typeof req === 'string' ? req : req.name;
+        return Boolean(eFormData[key]);
+      });
       if (!valid) {
         setShowStep3Errors(true);
       } else {
@@ -334,10 +380,11 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
-  const filteredSchemes = AVAILABLE_SCHEMES.filter((item) => 
-    item.name.toLowerCase().includes(searchScheme.toLowerCase()) || 
-    item.code.toLowerCase().includes(searchScheme.toLowerCase())
-  );
+  const filteredSchemes = (AVAILABLE_SCHEMES as Scheme[]).filter((item) => {
+    const name = item.name?.toLowerCase() ?? '';
+    const code = item.code?.toLowerCase() ?? '';
+    return name.includes(searchScheme.toLowerCase()) || code.includes(searchScheme.toLowerCase());
+  });
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const paginatedSubmissions = filteredSubmissions.slice((subPage - 1) * itemsPerPage, subPage * itemsPerPage);
@@ -350,7 +397,7 @@ export default function PengajuanSkemaPage() {
   if (subView === 'list') {
     return (
       <>
-      {alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-[9999] font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
+      {alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
       <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
         {/* Header Block matching mockup */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -362,7 +409,7 @@ export default function PengajuanSkemaPage() {
               <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
                 Pengajuan Skema
               </h2>
-              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] md:whitespace-nowrap">
+              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
                 Daftar permohonan sertifikasi skema Anda
               </p>
               
@@ -376,7 +423,7 @@ export default function PengajuanSkemaPage() {
             }}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
           >
-            <Plus size={16} className="stroke-[3]" />
+            <Plus size={16} className="stroke-3" />
             <span>Ajukan Skema</span>
           </button>
         </div>
@@ -390,7 +437,7 @@ export default function PengajuanSkemaPage() {
             
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
               {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                 <Search className="text-gray-400" size={16} />
                 <input
                   type="text"
@@ -411,7 +458,7 @@ export default function PengajuanSkemaPage() {
                   setStatusSubFilter(e.target.value);
                   setSubPage(1); setSchemePage(1);
                 }}
-                className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-[42px] outline-none text-gray-700 cursor-pointer font-bold"
+                className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
               >
                 <option value="Semua">Semua Status</option>
                 <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
@@ -420,7 +467,7 @@ export default function PengajuanSkemaPage() {
               </select>
 
               {/* Date Input/Filter */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                 
                 <input
                   type="date"
@@ -440,10 +487,10 @@ export default function PengajuanSkemaPage() {
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">Tanggal Pengajuan</th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">Tanggal Pengajuan</th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Status</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 sticky top-0">Aksi</th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 top-0">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100/60 font-medium">
@@ -460,7 +507,7 @@ export default function PengajuanSkemaPage() {
                         </div>
                       </td>
                       {/* Column 1: Skema Sertifikasi with colorful mockup-themed icon box */}
-                      <td className="px-6 py-4 min-w-[350px] max-w-[500px]">
+                      <td className="px-6 py-4 min-w-87.5 max-w-125">
                         <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-gray-900">
                           <div className="min-w-0">
                             <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">{item.name}</div>
@@ -529,7 +576,7 @@ export default function PengajuanSkemaPage() {
               >
                 Sebelumnya
               </button>
-              <div className="flex items-center gap-1 hidden sm:flex">
+              <div className="hidden items-center gap-1 sm:flex">
                 {Array.from({ length: totalSubPages }, (_, i) => i + 1).map(page => (
                   <button
                     key={page}
@@ -558,7 +605,7 @@ export default function PengajuanSkemaPage() {
         {/* Beautiful Detail Modal Popup */}
         {selectedDetailSubmission && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-100 p-4 md:p-8 pb-24 w-full">
-            <div className="max-w-[800px] mx-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
               <div className="mb-4">
                 <button 
                   onClick={() => setSelectedDetailSubmission(null)}
@@ -569,7 +616,7 @@ export default function PengajuanSkemaPage() {
                 </button>
               </div>
 
-              <div className="max-w-[800px] mx-auto bg-white shadow-xl min-h-[1123px] relative mb-8 text-slate-800 text-sm flex flex-col">
+              <div className="max-w-200 mx-auto bg-white shadow-xl min-h-280.75 relative mb-8 text-slate-800 text-sm flex flex-col">
                 
                 {/* Modal Header */}
                 <div className="p-8 md:p-12 border-b-2 border-slate-800 flex flex-col gap-4">
@@ -715,7 +762,7 @@ export default function PengajuanSkemaPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group block"
+                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -732,7 +779,7 @@ export default function PengajuanSkemaPage() {
 
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group block"
+                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -749,7 +796,7 @@ export default function PengajuanSkemaPage() {
 
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group block"
+                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -766,7 +813,7 @@ export default function PengajuanSkemaPage() {
 
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group block"
+                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -822,7 +869,7 @@ export default function PengajuanSkemaPage() {
   if (subView === 'choose-scheme') {
     return (
       <>
-{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-[9999] font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
+{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
 <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
         {/* Header Block exactly like mockup */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -838,7 +885,7 @@ export default function PengajuanSkemaPage() {
               <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
                 Daftar Skema Sertifikasi
               </h2>
-              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] md:whitespace-nowrap">
+              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
                 Pilih skema yang tersedia
               </p>
               
@@ -846,7 +893,7 @@ export default function PengajuanSkemaPage() {
           </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
               {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                 <Search className="text-gray-400" size={16} />
                 <input
                   type="text"
@@ -868,25 +915,27 @@ export default function PengajuanSkemaPage() {
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Kode Skema</th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-36 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 top-0">Ajukan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100/60 font-medium">
                 {paginatedSchemes.length > 0 ? (
-                  paginatedSchemes.map((scheme, idx) => (
-                    <React.Fragment key={scheme.code}>
-                      <tr 
-                        className="hover:bg-[#F9FAFC] transition-colors cursor-pointer group/row"
-                        onClick={() => {
-                          setExpandedSchemes(prev => 
-                            prev.includes(scheme.code) 
-                              ? prev.filter(c => c !== scheme.code)
-                              : [...prev, scheme.code]
-                          );
-                        }}
-                      >
+                  paginatedSchemes.map((scheme, idx) => {
+                    const schemeKey = scheme.code ?? `scheme-${idx}`;
+                    return (
+                      <React.Fragment key={schemeKey}>
+                        <tr 
+                          className="hover:bg-[#F9FAFC] transition-colors cursor-pointer group/row"
+                          onClick={() => {
+                            setExpandedSchemes(prev => 
+                              prev.includes(schemeKey) 
+                                ? prev.filter(c => c !== schemeKey)
+                                : [...prev, schemeKey]
+                            );
+                          }}
+                        >
                         <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
                             idx % 3 === 0 ? 'bg-[#008BE3]/10 text-[#008BE3]' :
@@ -896,14 +945,14 @@ export default function PengajuanSkemaPage() {
                             {idx + 1}
                           </div>
                         </td>
-                        <td className="px-6 py-4 flex items-center gap-3 min-w-[350px] max-w-[500px]">
+                        <td className="px-6 py-4 flex items-center gap-3 min-w-87.5 max-w-125">
                           {/* Chevron icon for expanding */}
                           <button 
                             className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-[#008BE3] transition-colors shrink-0"
                           >
                             <svg 
                               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                              className={`transition-transform duration-200 ${expandedSchemes.includes(scheme.code) ? 'rotate-90' : ''}`}
+                              className={`transition-transform duration-200 ${expandedSchemes.includes(schemeKey) ? 'rotate-90' : ''}`}
                             >
                               <path d="M9 18l6-6-6-6" />
                             </svg>
@@ -924,20 +973,20 @@ export default function PengajuanSkemaPage() {
                           </button>
                         </td>
                       </tr>
-                      {expandedSchemes.includes(scheme.code) && (
+                      {expandedSchemes.includes(schemeKey) && (
                         <tr className="bg-slate-50/50 border-t border-b border-gray-100">
                           <td colSpan={4} className="px-6 py-4">
                             <div className="pl-10">
                               <table className="w-full border-collapse text-xs text-slate-600 font-medium">
                                 
                                 <tbody>
-                                  {((scheme as any).units || []).map((unit: any, idx: number) => (
-                                    <tr key={idx} className="border-b border-slate-100 last:border-0">
+                                  {(scheme.units ?? []).map((unit, idx) => (
+                                    <tr key={`${unit.code}-${idx}`} className="border-b border-slate-100 last:border-0">
                                       <td className="py-2 font-mono text-slate-500">{unit.code}</td>
                                       <td className="py-2">{unit.title}</td>
                                     </tr>
                                   ))}
-                                  {!(scheme as any).units?.length && (
+                                  {!scheme.units?.length && (
                                     <tr>
                                       <td colSpan={2} className="py-2 italic text-slate-400">Tidak ada unit.</td>
                                     </tr>
@@ -1020,7 +1069,7 @@ export default function PengajuanSkemaPage() {
     <>
       {!activeModalDoc ? (
       <>
-{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-[9999] font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
+{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
 <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
       
       {/* Header exactly like Image 3 */}
@@ -1215,12 +1264,12 @@ export default function PengajuanSkemaPage() {
                     setAlamat(e.target.value);
                     if (errors.alamat) setErrors({ ...errors, alamat: false });
                   }}
-                  className={`w-full px-3 py-2 text-xs rounded-lg border outline-none focus:ring-1 font-semibold text-slate-800 h-[38px] resize-none transition-all ${
+                  className={
                     errors.alamat
-                      ? 'border-red-400 bg-red-50/10 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-slate-300 focus:border-[#008BE3] focus:ring-[#008BE3]'
-                  }`}
-                />
+                      ? "w-full px-3 py-2 text-xs rounded-lg border outline-none focus:ring-1 font-semibold text-slate-800 h-9.5 resize-none transition-all border-red-400 bg-red-50/10 focus:border-red-500 focus:ring-red-500/20"
+                      : "w-full px-3 py-2 text-xs rounded-lg border outline-none focus:ring-1 font-semibold text-slate-800 h-9.5 resize-none transition-all border-slate-300 focus:border-[#008BE3] focus:ring-[#008BE3]"
+                  }
+                ></textarea>
                 {errors.alamat ? (
                   <p className="text-[10px] text-red-500 mt-1 font-bold">Alamat Tidak Boleh Kosong</p>
                 ) : (
@@ -1326,9 +1375,9 @@ export default function PengajuanSkemaPage() {
 
             {/* Detail Pendidikan Section */}
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Detail Pendidikan</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="grow border-t border-slate-200"></div>
+              <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Detail Pendidikan</span>
+              <div className="grow border-t border-slate-200"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1351,9 +1400,9 @@ export default function PengajuanSkemaPage() {
 
             {/* Detail Pekerjaan Section */}
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Detail Pekerjaan</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="grow border-t border-slate-200"></div>
+              <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Detail Pekerjaan</span>
+              <div className="grow border-t border-slate-200"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1453,7 +1502,7 @@ export default function PengajuanSkemaPage() {
                   placeholder="Masukkan Alamat Institusi/Perusahaan"
                   value={alamatInstitusi}
                   onChange={(e) => setAlamatInstitusi(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] bg-white font-semibold text-slate-800 h-[38px] resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] bg-white font-semibold text-slate-800 h-9.5 resize-none"
                 />
               </div>
 
@@ -1474,9 +1523,9 @@ export default function PengajuanSkemaPage() {
 
             {/* Lainnya Section */}
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Lainnya</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="grow border-t border-slate-200"></div>
+              <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Lainnya</span>
+              <div className="grow border-t border-slate-200"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

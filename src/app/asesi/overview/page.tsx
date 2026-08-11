@@ -170,7 +170,7 @@ export default function AsesiOverviewPage() {
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
               Dashboard Asesi
             </h2>
-            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] md:whitespace-nowrap">
+            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
               Pusat Informasi dan Status Sertifikasi Kompetensi Anda
             </p>
           </div>
@@ -179,7 +179,7 @@ export default function AsesiOverviewPage() {
           onClick={() => router.push('/asesi/pengajuanskema')} // Routing pindah halaman pakai Next.js
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
         >
-          <Plus size={16} className="stroke-[3]" />
+          <Plus size={16} className="stroke-3" />
           <span>Ajukan Sertifikasi Baru</span>
         </button>
       </div>
@@ -188,7 +188,7 @@ export default function AsesiOverviewPage() {
       <div className="bg-[#E6F4FF] rounded-lg border border-sky-200 p-4 md:p-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 overflow-hidden relative shadow-2xs">
         <div className="space-y-2 z-10 max-w-xl">
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none">
-            Selamat Datang, {user?.name || 'Oya'}
+            Selamat Datang, {user?.name || 'Asesi'}
           </h2>
           <p className="text-slate-700 text-xs md:text-sm font-medium leading-relaxed">
             Sudah siap untuk melangkah lebih dekat menuju kompetensi bersertifikasi? Pantau status ujian mandiri Anda di bawah ini.
@@ -230,7 +230,7 @@ export default function AsesiOverviewPage() {
               <span className="text-[10px] font-black text-sky-800 uppercase tracking-wider block">Total Terdaftar</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">{totalAsesmen}</span>
-                <span className="text-base font-bold text-sky-700 ml-[3px]">Asesmen</span>
+                <span className="text-base font-bold text-sky-700 ml-0.75">Asesmen</span>
               </div>
               <p className="text-[11px] font-bold text-sky-600">Kegiatan Terjadwal</p>
             </div>
@@ -243,7 +243,7 @@ export default function AsesiOverviewPage() {
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">Selesai</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">{selesaiCount}</span>
-                <span className="text-base font-bold text-emerald-700 ml-[3px]">Kompeten</span>
+                <span className="text-base font-bold text-emerald-700 ml-0.75">Kompeten</span>
               </div>
               <p className="text-[11px] font-bold text-emerald-600">Uji Mandiri Lulus</p>
             </div>
@@ -256,7 +256,7 @@ export default function AsesiOverviewPage() {
               <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider block">Berjalan</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">{inProgressCount}</span>
-                <span className="text-base font-bold text-slate-700 ml-[3px]">Evaluasi</span>
+                <span className="text-base font-bold text-slate-700 ml-0.75">Evaluasi</span>
               </div>
               <p className="text-[11px] font-bold text-slate-500">Dalam Penilaian</p>
             </div>
@@ -274,7 +274,7 @@ export default function AsesiOverviewPage() {
             <h3 className="text-base font-black text-slate-900">Cari Asesmen Anda</h3>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search className="text-gray-400" size={16} />
               <input 
                 type="text" 
@@ -287,7 +287,7 @@ export default function AsesiOverviewPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-[42px] outline-none text-gray-700 cursor-pointer font-bold"
+              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
             >
               <option value="Semua">Semua Status</option>
               <option value="Belum Mulai">Belum Mulai</option>
@@ -295,7 +295,7 @@ export default function AsesiOverviewPage() {
               <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
               <option value="Selesai">Selesai</option>
             </select>
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <input
                 type="date"
                 value={dateFilter}
@@ -310,16 +310,16 @@ export default function AsesiOverviewPage() {
           <table className="w-full text-left border-collapse min-w-[1600px]">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[60px] sticky top-0 z-20 bg-[#0F172A]">No</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">TUK</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[300px] sticky top-0 z-20 bg-[#0F172A]">Alamat</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">Tanggal Asesmen</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">Asesor</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">Virtual Meeting</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">Hasil</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[160px] sticky top-0 z-20 bg-[#0F172A]">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-[160px] sticky top-0">Aksi</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-15 sticky top-0 z-20 bg-[#0F172A]">No</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">TUK</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-75 sticky top-0 z-20 bg-[#0F172A]">Alamat</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">Tanggal Asesmen</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">Asesor</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">Virtual Meeting</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">Hasil</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-40 top-0">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
@@ -335,7 +335,7 @@ export default function AsesiOverviewPage() {
                         {(currentPage - 1) * itemsPerPage + idx + 1}
                       </div>
                     </td>
-                    <td className="px-6 py-4 min-w-[350px] max-w-[500px]">
+                    <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
                         <span className="line-clamp-2 leading-tight">{item.skemaSertifikasi}</span>
                       </div>
@@ -433,7 +433,7 @@ export default function AsesiOverviewPage() {
               >
                 Sebelumnya
               </button>
-              <div className="flex items-center gap-1 hidden sm:flex">
+              <div className="hidden sm:flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <button
                     key={page}

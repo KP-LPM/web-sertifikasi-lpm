@@ -2,11 +2,10 @@
 
 import React, { useState } from 'react';
 import { 
-  Search, FileText, Calendar, User, Video, Award, Download, History, CheckCircle, Clock, AlertTriangle, Eye, X, Scale, ArrowLeft
+  Search, Award, Download, History, CheckCircle, Clock, AlertTriangle, Eye, X, Scale, ArrowLeft
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/context';
-import BreadcrumbAsesi from '@/components/BreadcrumbAsesi';
 
 interface AssessmentHistory {
   id: string;
@@ -173,10 +172,11 @@ export default function AsesiHistoryPage() {
   const totalPages = Math.ceil((filteredHistory?.length || 0) / itemsPerPage);
   const currentRecords = filteredHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getRekomendasiBadge = (rek: string) => {
     if (rek === 'Kompeten') {
       return (
-        <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-green-200 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-green-200">
           <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
           K (Kompeten)
         </span>
@@ -184,7 +184,7 @@ export default function AsesiHistoryPage() {
     }
     if (rek === 'Belum Kompeten') {
       return (
-        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-red-200 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-red-200">
           <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
           BK (Belum Kompeten)
         </span>
@@ -271,7 +271,7 @@ export default function AsesiHistoryPage() {
         )}
 
       <div className="w-full space-y-6 text-sm text-gray-700">
-        <div className="max-w-[800px] mx-auto animate-in fade-in zoom-in-95 duration-200">
+        <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
               <button 
                 onClick={() => {
                   setIsBandingFormOpen(false);
@@ -283,7 +283,7 @@ export default function AsesiHistoryPage() {
               >
                 <ArrowLeft size={18} />
               </button>
-            <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
+            <div className="max-w-200 mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
                         <Scale className="text-[#008BE3]" size={20} /> Form Ajukan Banding
@@ -335,7 +335,7 @@ export default function AsesiHistoryPage() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-slate-300 p-2">Apakah Anda mau melibatkan "orang lain" membantu Anda dalam Proses Banding?</td>
+                    <td className="border border-slate-300 p-2">Apakah Anda mau melibatkan &quot;orang lain&quot; membantu Anda dalam Proses Banding?</td>
                     <td className="border border-slate-300 p-2 text-center align-middle">
                       <input type="checkbox" className="w-4 h-4 cursor-pointer" checked={bandingForm.melibatkanOrangLain === true} onChange={() => setBandingForm({...bandingForm, melibatkanOrangLain: true})} />
                     </td>
@@ -443,7 +443,7 @@ export default function AsesiHistoryPage() {
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
             Riwayat Asesmen
           </h2>
-          <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] md:whitespace-nowrap">
+          <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
             Daftar Portofolio & Kelulusan Sertifikasi Anda
           </p>
           
@@ -458,11 +458,11 @@ export default function AsesiHistoryPage() {
             <span className="text-[10px] font-black text-sky-800 uppercase tracking-wider block">Total Selesai</span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-black text-slate-900 tracking-tight">{totalAsesmenSelesai}</span>
-              <span className="text-base font-bold text-sky-700 ml-[3px]">Asesmen</span>
+              <span className="text-base font-bold text-sky-700 ml-0.75">Asesmen</span>
             </div>
             <p className="text-[11px] font-bold text-sky-600">Selesai Evaluasi</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-[#008BE3] text-white flex items-center justify-center shrink-0 shadow-xs shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[#008BE3] text-white flex items-center justify-center shrink-0 shadow-xs">
             <CheckCircle size={18} />
           </div>
         </div>
@@ -473,11 +473,11 @@ export default function AsesiHistoryPage() {
             <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">Sertifikat Aktif</span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-black text-slate-900 tracking-tight">{totalSertifikat}</span>
-              <span className="text-base font-bold text-emerald-700 ml-[3px]">Diterbitkan</span>
+              <span className="text-base font-bold text-emerald-700 ml-0.75">Diterbitkan</span>
             </div>
             <p className="text-[11px] font-bold text-emerald-600">Lembaga Sertifikasi</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-[#84CC16] text-white flex items-center justify-center shrink-0 shadow-xs shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[#84CC16] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Award size={18} />
           </div>
         </div>
@@ -488,11 +488,11 @@ export default function AsesiHistoryPage() {
             <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider block">Total Kegiatan</span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-black text-slate-900 tracking-tight">{ASSESSMENT_HISTORY_DATA.length}</span>
-              <span className="text-base font-bold text-slate-600 ml-[3px]">Terdaftar</span>
+              <span className="text-base font-bold text-slate-600 ml-0.75">Terdaftar</span>
             </div>
-            <p className="text-[11px] font-bold text-slate-500 font-medium">Semua Sesi Aktif & Selesai</p>
+            <p className="text-[11px] font-bold text-slate-500">Semua Sesi Aktif & Selesai</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-slate-500 text-white flex items-center justify-center shrink-0 shadow-xs shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-slate-500 text-white flex items-center justify-center shrink-0 shadow-xs">
             <History size={18} />
           </div>
         </div>
@@ -507,7 +507,7 @@ export default function AsesiHistoryPage() {
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
             {/* Search */}
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search className="text-gray-400" size={16} />
               <input 
                 type="text" 
@@ -522,14 +522,14 @@ export default function AsesiHistoryPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-[42px] outline-none text-gray-700 cursor-pointer font-bold"
+              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
             >
               <option value="Semua">Semua Status</option>
               <option value="Selesai">Selesai</option>
             </select>
 
             {/* Date Filter */}
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <input
                 type="date"
                 value={dateFilter}
@@ -545,14 +545,14 @@ export default function AsesiHistoryPage() {
           <table className="w-full text-left border-collapse min-w-[1600px]">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[60px] sticky top-0 z-20 bg-[#0F172A]">No</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">TUK</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">Metode Pelaksanaan</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[220px] sticky top-0 z-20 bg-[#0F172A]">Nomor Sertifikat</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">Tanggal Berlaku</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[160px] sticky top-0 z-20 bg-[#0F172A]">Hasil</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs whitespace-nowrap min-w-[160px] sticky top-0">Aksi</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-15 sticky top-0 z-20 bg-[#0F172A]">No</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">TUK</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">Metode Pelaksanaan</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-55 sticky top-0 z-20 bg-[#0F172A]">Nomor Sertifikat</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">Tanggal Berlaku</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-40 sticky top-0 z-20 bg-[#0F172A]">Hasil</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs whitespace-nowrap min-w-40 top-0">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
@@ -569,7 +569,7 @@ export default function AsesiHistoryPage() {
                       </div>
                     </td>
                     {/* Column 2: Skema Sertifikasi */}
-                    <td className="px-6 py-4 min-w-[350px] max-w-[500px]">
+                    <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
                         <span className="line-clamp-2 leading-tight">{item.skemaSertifikasi}</span>
                       </div>
@@ -682,7 +682,7 @@ export default function AsesiHistoryPage() {
               >
                 Sebelumnya
               </button>
-              <div className="flex items-center gap-1 hidden sm:flex">
+              <div className="hidden sm:flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <button
                     key={page}

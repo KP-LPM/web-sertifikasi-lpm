@@ -2,10 +2,8 @@
 
 import React, { useState } from 'react';
 import { 
-  Search, Scale, Calendar, User, FileText, AlertTriangle, CheckCircle, Clock, Plus, X, Eye, HelpCircle, ArrowLeft 
+  Search, Scale, AlertTriangle, Eye, ArrowLeft 
 } from 'lucide-react';
-import { useAppContext } from '@/context/context';
-import BreadcrumbAsesi from '@/components/BreadcrumbAsesi';
 
 interface AppealRecord {
   id: string;
@@ -105,7 +103,6 @@ const INITIAL_APPEALS: AppealRecord[] = [
 ];
 
 export default function AsesiAppeals() {
-  const { user } = useAppContext();
   const [appeals, setAppeals] = useState<AppealRecord[]>(INITIAL_APPEALS);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
@@ -178,7 +175,7 @@ export default function AsesiAppeals() {
   if (selectedAppeal) {
     return (
       <div className="min-h-screen bg-slate-100 p-4 md:p-8 pb-24 w-full">
-        <div className="max-w-[800px] mx-auto animate-in fade-in zoom-in-95 duration-200">
+        <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button 
                 onClick={() => setSelectedAppeal(null)}
@@ -188,7 +185,7 @@ export default function AsesiAppeals() {
                 <ArrowLeft size={18} />
               </button>
             </div>
-            <div className="max-w-[800px] mx-auto bg-white shadow-xl p-8 md:p-12 min-h-[1123px] space-y-8 relative mb-8 text-slate-800 text-sm">
+            <div className="max-w-200 mx-auto bg-white shadow-xl p-8 md:p-12 min-h-280.75 space-y-8 relative mb-8 text-slate-800 text-sm">
               
               <div className="flex items-center justify-between p-3.5 rounded-lg bg-white border border-slate-100 mb-4">
                 <span className="text-xs font-bold text-slate-500">Status Tindak Lanjut</span>
@@ -233,7 +230,7 @@ export default function AsesiAppeals() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-slate-300 p-2">Apakah Anda mau melibatkan "orang lain" membantu Anda dalam Proses Banding?</td>
+                    <td className="border border-slate-300 p-2">Apakah Anda mau melibatkan &quot;orang lain&quot; membantu Anda dalam Proses Banding?</td>
                     <td className="border border-slate-300 p-2 text-center align-middle">
                       <input type="checkbox" checked={selectedAppeal.melibatkanOrangLain === true} readOnly className="w-4 h-4 cursor-default" />
                     </td>
@@ -313,7 +310,7 @@ export default function AsesiAppeals() {
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
               Banding Asesmen
             </h2>
-            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] md:whitespace-nowrap">
+            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
               Daftar pengajuan banding hasil asesmen Anda
             </p>
             
@@ -339,7 +336,7 @@ export default function AsesiAppeals() {
             <h3 className="text-base font-black text-slate-900">Daftar Banding Hasil Asesmen</h3>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search className="text-gray-400" size={16} />
               <input
                 type="text"
@@ -350,7 +347,7 @@ export default function AsesiAppeals() {
               />
             </div>
             <select
-              className="bg-gray-50/80 border border-gray-200/50 text-slate-700 text-[14px] rounded-lg px-3 h-[42px] outline-none focus:border-[#008BE3]/40 transition-colors font-semibold appearance-none cursor-pointer"
+              className="bg-gray-50/80 border border-gray-200/50 text-slate-700 text-[14px] rounded-lg px-3 h-10.5 outline-none focus:border-[#008BE3]/40 transition-colors font-semibold appearance-none cursor-pointer"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -361,7 +358,7 @@ export default function AsesiAppeals() {
               <option value="Ditolak">Ditolak</option>
             </select>
             {/* Date Filter */}
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <input
                 type="date"
                 value={dateFilter}
@@ -375,13 +372,13 @@ export default function AsesiAppeals() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[60px] sticky top-0 z-20 bg-[#0F172A]">No</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">ID Banding</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">Tanggal</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">Alasan Utama</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-15 sticky top-0 z-20 bg-[#0F172A]">No</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">ID Banding</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">Tanggal</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-50 sticky top-0 z-20 bg-[#0F172A]">Alasan Utama</th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[160px] sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 sticky top-0">Aksi</th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-40 sticky right-0 top-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
@@ -400,14 +397,14 @@ export default function AsesiAppeals() {
                     <td className="px-6 py-4 text-sm font-bold text-slate-800 whitespace-nowrap">
                       <span>{rec.id}</span>
                     </td>
-                    <td className="px-6 py-4 min-w-[350px] max-w-[500px]">
+                    <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="text-sm font-bold text-[#008BE3] line-clamp-2">{rec.skemaSertifikasi}</div>
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-slate-600 whitespace-nowrap">
                       {formatTanggal(rec.tanggalPengajuan)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm text-slate-600 line-clamp-1 max-w-[200px] font-medium" title={rec.alasan}>
+                      <p className="text-sm text-slate-600 line-clamp-1 max-w-50 font-medium" title={rec.alasan}>
                         {rec.alasan}
                       </p>
                     </td>
@@ -450,7 +447,7 @@ export default function AsesiAppeals() {
               >
                 Sebelumnya
               </button>
-              <div className="flex items-center gap-1 hidden sm:flex">
+              <div className="hidden sm:flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <button
                     key={page}
