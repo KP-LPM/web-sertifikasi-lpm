@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
@@ -20,7 +21,7 @@ import {
 import { Assessment, BatchGroup, JenisAsesmen } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
-export function AsesiList() {
+export default function AsesiList() {
   const { setCurrentView, setSelectedAsesmen, selectedAsesmen, assessments } =
     useAppContext();
 

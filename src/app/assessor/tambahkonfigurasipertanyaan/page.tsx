@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
@@ -237,7 +238,7 @@ const initialWizardState: WizardFormState = {
 // MAIN COMPONENT: TambahKonfigurasiPertanyaan Wizard
 // ============================================================================
 
-export function TambahKonfigurasiPertanyaan() {
+export default function TambahKonfigurasiPertanyaan() {
   const {
     setCurrentView,
     addKonfigurasiPertanyaan,

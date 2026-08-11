@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
@@ -17,19 +18,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-export interface PortfolioItem {
-  id: string;
-  skema: string;
-  namaDokumen: string;
-  deskripsi?: string;
-  tanggal: string;
-  fileName: string;
-  fileSize?: string;
-  fileType?: string;
-  status: "Menunggu Verifikasi" | "Terverifikasi" | "Ditolak";
-  catatanAdmin?: string;
-}
+import { PortfolioItem } from "@/types/types";
 
 const AVAILABLE_SCHEMES = [
   "Pemrograman Web",
@@ -40,7 +29,7 @@ const AVAILABLE_SCHEMES = [
   "Kewirausahaan Industri",
 ];
 
-export function VerifikasiPortofolio() {
+export default function VerifikasiPortofolio() {
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([
     {
       id: "PF-001",

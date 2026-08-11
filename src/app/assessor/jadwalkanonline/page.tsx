@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Video,
@@ -8,7 +9,7 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 
-export function JadwalkanOnline() {
+export default function JadwalkanOnline() {
   const { setCurrentView, selectedAsesmen, updateAssessment } = useAppContext();
   const [tanggal, setTanggal] = useState("");
   const [waktu, setWaktu] = useState("");

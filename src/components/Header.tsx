@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useAppContext } from "@/context/context";
 import {
   Menu,
@@ -10,14 +13,26 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+// Path halaman profile per role. Sesuaikan kalau ada struktur folder yang beda.
+function getProfilePath(role: string | null | undefined) {
+  switch (role) {
+    case "asesi":
+      return "/asesi/profile";
+    case "asesor":
+      return "/assessor/profile";
+    case "admin":
+      return "/admin/profile";
+    case "direktur":
+    case "manajer":
+      return "/direktur/profile";
+    default:
+      return "/profile";
+  }
+}
+
 export function Header() {
-  const {
-    user,
-    sidebarCollapsed,
-    setSidebarCollapsed,
-    setCurrentView,
-    logout,
-  } = useAppContext();
+  const { user, sidebarCollapsed, setSidebarCollapsed, logout } =
+    useAppContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -107,16 +122,18 @@ export function Header() {
               <Image
                 src={user.avatar}
                 alt="Avatar"
+                width={32}
+                height={32}
                 className="w-8 h-8 rounded-lg object-cover shadow-xs"
               />
             ) : (
               <div className="w-8 h-8 rounded-lg bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center font-extrabold text-xs shadow-xs">
-                {getInitials(user.name || "Ahmad Fauzi")}
+                {getInitials(user.name || "Pengguna")}
               </div>
             )}
             <div className="hidden md:flex flex-col items-start">
               <span className="text-xs font-black text-slate-900 leading-none">
-                {user.name || "Ahmad Fauzi"}
+                {user.name || "Pengguna"}
               </span>
               <span className="text-[9px] text-slate-500 font-bold tracking-wider uppercase mt-0.5">
                 {user.role}
@@ -130,15 +147,13 @@ export function Header() {
 
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-              <button
-                onClick={() => {
-                  setCurrentView("profile");
-                  setIsDropdownOpen(false);
-                }}
+              <Link
+                href={getProfilePath(user.role)}
+                onClick={() => setIsDropdownOpen(false)}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors"
               >
                 <UserIcon size={16} /> Profile
-              </button>
+              </Link>
               <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors">
                 <Languages size={16} /> Indonesia
               </button>

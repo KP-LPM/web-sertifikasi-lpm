@@ -1,3 +1,4 @@
+import React from "react";
 import "./globals.css";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Providers from "@/components/Providers";
@@ -20,13 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
-      {/* Memasukkan font Plus Jakarta Sans ke seluruh tag body */}
-      <Providers>
-        <ClientLayout>
-          <body className={plusJakartaSans.className}>{children}</body>
-        </ClientLayout>
-      </Providers>
+    <html lang="id" className={plusJakartaSans.className}>
+      <body suppressHydrationWarning>
+        <Providers>
+          <ClientLayout>{children}</ClientLayout>
+        </Providers>
+      </body>
     </html>
   );
 }

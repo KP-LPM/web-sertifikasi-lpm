@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   ArrowLeft,
@@ -20,7 +21,7 @@ import {
 } from "@/components/forms";
 import { Assessment } from "@/types/types";
 
-export function DetailRiwayatAsesmen() {
+export default function DetailRiwayatAsesmen() {
   const { setCurrentView, selectedAsesmen } = useAppContext();
   const [previewForm, setPreviewForm] = useState<
     "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null

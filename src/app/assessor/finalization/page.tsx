@@ -1,8 +1,9 @@
+"use client";
 import React, { useState } from "react";
 import { Send, CheckCircle, PenTool } from "lucide-react";
 import { useAppContext } from "@/context/context";
 
-export function AssessmentFinalization() {
+export default function AssessmentFinalization() {
   const { setCurrentView } = useAppContext();
   const [signed, setSigned] = useState(false);
   const [submitting, setSubmitting] = useState(false);

@@ -1,7 +1,7 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
-  ChevronLeft,
   ArrowLeft,
   CheckCircle,
   Clock,
@@ -20,7 +20,7 @@ import {
 import { useAppContext } from "@/context/context";
 import { Assessment } from "@/types/types";
 
-export function VerifikasiBanding() {
+export default function VerifikasiBanding() {
   const [mode, setMode] = useState<"list" | "detail">("list");
   const { setSelectedAsesmen, selectedAsesmen } = useAppContext();
 

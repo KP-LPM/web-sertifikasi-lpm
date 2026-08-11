@@ -1,4 +1,8 @@
+"use client";
+
 import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
   LayoutList,
@@ -19,14 +23,9 @@ import {
 } from "lucide-react";
 
 export function Sidebar() {
-  const {
-    user,
-    currentView,
-    requestNavigation,
-    logout,
-    sidebarCollapsed,
-    setSidebarCollapsed,
-  } = useAppContext();
+  const { user, logout, sidebarCollapsed, setSidebarCollapsed } =
+    useAppContext();
+  const pathname = usePathname();
 
   if (!user) return null;
 
@@ -90,14 +89,15 @@ export function Sidebar() {
         <nav className="flex-1 flex flex-col justify-between">
           <div className="space-y-1">
             {navItems.map((item) => {
+              // Aktif jika path saat ini sama atau merupakan sub-halaman dari item ini
               const isActive =
-                currentView === item.id ||
-                (currentView.startsWith(item.id) && item.id !== "dashboard");
+                pathname === item.path ||
+                (pathname.startsWith(item.path) && item.path !== "/dashboard");
               return (
-                <button
+                <Link
                   key={item.id}
+                  href={item.path}
                   onClick={() => {
-                    requestNavigation(item.id);
                     if (window.innerWidth < 1024) setSidebarCollapsed(true);
                   }}
                   title={sidebarCollapsed ? item.label : undefined}
@@ -120,7 +120,7 @@ export function Sidebar() {
                       {item.label}
                     </span>
                   )}
-                </button>
+                </Link>
               );
             })}
           </div>
@@ -149,45 +149,132 @@ function getNavItems(role: string | null | undefined) {
     case "direktur":
     case "manajer":
       return [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { id: "users", label: "Daftar Pengguna", icon: Users },
-        { id: "schemes", label: "Skema Sertifikasi", icon: FolderTree },
-        { id: "schedules", label: "Jadwal & Penugasan", icon: CalendarDays },
-        { id: "tuk", label: "Manajemen TUK", icon: Building2 },
-        { id: "reports", label: "Laporan", icon: ClipboardList },
+        {
+          id: "dashboard",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+          path: "/dashboard",
+        },
+        { id: "users", label: "Daftar Pengguna", icon: Users, path: "/users" },
+        {
+          id: "schemes",
+          label: "Skema Sertifikasi",
+          icon: FolderTree,
+          path: "/schemes",
+        },
+        {
+          id: "schedules",
+          label: "Jadwal & Penugasan",
+          icon: CalendarDays,
+          path: "/schedules",
+        },
+        { id: "tuk", label: "Manajemen TUK", icon: Building2, path: "/tuk" },
+        {
+          id: "reports",
+          label: "Laporan",
+          icon: ClipboardList,
+          path: "/reports",
+        },
       ];
     case "admin":
       return [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { id: "users", label: "Verifikasi Berkas", icon: Users },
-        { id: "schemes", label: "Skema Sertifikasi", icon: FolderTree },
-        { id: "schedules", label: "Jadwal & Penugasan", icon: CalendarDays },
-        { id: "tuk", label: "Manajemen TUK", icon: Building2 },
-        { id: "reports", label: "Laporan", icon: ClipboardList },
+        {
+          id: "dashboard",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+          path: "/dashboard",
+        },
+        {
+          id: "users",
+          label: "Verifikasi Berkas",
+          icon: Users,
+          path: "/users",
+        },
+        {
+          id: "schemes",
+          label: "Skema Sertifikasi",
+          icon: FolderTree,
+          path: "/schemes",
+        },
+        {
+          id: "schedules",
+          label: "Jadwal & Penugasan",
+          icon: CalendarDays,
+          path: "/schedules",
+        },
+        { id: "tuk", label: "Manajemen TUK", icon: Building2, path: "/tuk" },
+        {
+          id: "reports",
+          label: "Laporan",
+          icon: ClipboardList,
+          path: "/reports",
+        },
       ];
     case "asesor":
       return [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { id: "candidates", label: "Daftar Asesmen", icon: LayoutList },
-        { id: "history-asesmen", label: "Riwayat Asesmen", icon: History },
+        {
+          id: "dashboard",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+          path: "/assessor/overview",
+        },
+        {
+          id: "candidates",
+          label: "Daftar Asesmen",
+          icon: LayoutList,
+          path: "/assessor/candidates",
+        },
+        {
+          id: "history-asesmen",
+          label: "Riwayat Asesmen",
+          icon: History,
+          path: "/assessor/riwayatasesmen",
+        },
         {
           id: "verifikasi-portofolio",
           label: "Verifikasi Portofolio",
           icon: FolderCheck,
+          path: "/assessor/verifikasiportofolio",
         },
-        { id: "verifikasi-banding", label: "Verifikasi Banding", icon: Scale },
+        {
+          id: "verifikasi-banding",
+          label: "Verifikasi Banding",
+          icon: Scale,
+          path: "/assessor/verifikasibanding",
+        },
         {
           id: "konfigurasi-pertanyaan",
           label: "Konfigurasi Pertanyaan",
           icon: FileEdit,
+          path: "/assessor/konfigurasipertanyaan",
         },
       ];
     case "asesi":
       return [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { id: "apply", label: "Pengajuan Skema", icon: FileText },
-        { id: "history", label: "Riwayat Asesmen", icon: History },
-        { id: "appeals", label: "Banding Asesmen", icon: Scale },
+        {
+          id: "overview",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+          path: "/asesi/overview",
+        },
+        {
+          id: "pengajuanskema",
+          label: "Pengajuan Skema",
+          icon: FileText,
+          path: "/asesi/pengajuanskema",
+        },
+        {
+          id: "riwayatasesmen",
+          label: "Riwayat Asesmen",
+          icon: History,
+          path: "/asesi/riwayatasesmen",
+        },
+        {
+          id: "banding",
+          label: "Banding Asesmen",
+          icon: Scale,
+          path: "/asesi/banding",
+        },
       ];
     default:
       return [];

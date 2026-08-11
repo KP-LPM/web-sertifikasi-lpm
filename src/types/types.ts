@@ -32,7 +32,7 @@ declare module "next-auth/jwt" {
    USER & SYSTEM TYPES
    ========================================================================== */
 
-export type Role = "admin" | "asesor" | "asesi" | "direktur" | "manajer" | null;
+export type Role = "admin" | "asesor" | "asesi" | "direktur" | "manajer";
 
 export interface User {
   id: string;
@@ -62,7 +62,7 @@ export interface Candidate {
   avatar?: string;
 }
 
-export interface Session {
+export interface ExamSession {
   id: string;
   date: string;
   time: string;
@@ -312,4 +312,17 @@ export interface BatchGroup {
   tuk: string;
   linkVideo: string;
   candidates: Assessment[];
+}
+
+export interface PortfolioItem {
+  id: string;
+  skema: string;
+  namaDokumen: string;
+  deskripsi?: string;
+  tanggal: string;
+  fileName: string;
+  fileSize?: string;
+  fileType?: string;
+  status: "Menunggu Verifikasi" | "Terverifikasi" | "Ditolak";
+  catatanAdmin?: string;
 }

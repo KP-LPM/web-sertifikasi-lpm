@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
@@ -13,7 +14,7 @@ import { PersonItem } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function KonfigurasiPertanyaan() {
+export default function KonfigurasiPertanyaan() {
   const {
     setCurrentView,
     konfigurasiPertanyaan,

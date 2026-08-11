@@ -11,7 +11,7 @@ import {
 } from "@/components/forms";
 import { Assessment } from "@/types/types";
 
-export function AssessmentForm() {
+export default function AssessmentForm() {
   const { setCurrentView, selectedAsesmen, updateAssessment } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);

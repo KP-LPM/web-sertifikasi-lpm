@@ -19,7 +19,18 @@ export default function ClientLayout({
     setPendingNavigation,
     setIsFormDirty,
     setCurrentView,
+    isLoggingOut,
   } = useAppContext();
+
+  // Selama proses logout, tampilkan overlay penuh layar
+  // supaya tidak ada jeda "sidebar hilang tapi konten masih ada".
+  if (isLoggingOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]">
+        <p className="text-sm text-slate-500 font-bold">Keluar dari akun...</p>
+      </div>
+    );
+  }
 
   // Jika user belum login, tampilkan children langsung (misal: halaman Login)
   if (!user) {
@@ -28,24 +39,25 @@ export default function ClientLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8F9FC]">
-      {/* Header Utama */}
-      <Header />
-
       <div className="flex flex-1">
         {/* Sidebar Navigasi */}
         <Sidebar />
 
-        {/* Area Konten Utama */}
-        <main
-          className={`flex-1 md:ml-20 ${
+        {/* Kolom kanan: Header + Konten, satu wrapper, satu sumber offset */}
+        <div
+          className={`flex-1 flex flex-col min-h-screen min-w-0 md:ml-20 ${
             sidebarCollapsed ? "lg:ml-20" : "lg:ml-72"
-          } transition-all flex flex-col`}
+          } transition-all duration-300`}
         >
-          <div className="px-4 md:px-6 pt-4 pb-1">
-            <Breadcrumb />
-          </div>
-          <div className="flex-1">{children}</div>
-        </main>
+          <Header />
+
+          <main className="flex-1 flex flex-col min-w-0">
+            <div className="px-4 md:px-6 pt-4 pb-1">
+              <Breadcrumb />
+            </div>
+            <div className="flex-1 min-w-0">{children}</div>
+          </main>
+        </div>
       </div>
 
       {/* Floating Help Button (WhatsApp) */}

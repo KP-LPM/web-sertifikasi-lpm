@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
   PlenoSession,
   Role,
@@ -26,6 +26,7 @@ interface AppContextType {
   user: User | null;
   login: (role: Role) => void;
   logout: () => void;
+  isLoggingOut: boolean;
   updateUser: (data: Partial<User>) => void;
   currentView: string;
   setCurrentView: (view: string) => void;
@@ -106,9 +107,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (session?.user) {
       setUser({
         id: session.user.name || "u1",
-        name: session.user.name || "Asesi",
+        name: session.user.name || "",
         email: session.user.email || "",
-        role: (session.user.role as Role) || "asesi",
+        role: session.user.role as Role,
         avatar: session.user.image || "",
       });
     }
@@ -512,12 +513,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser(mockUser);
     setCurrentView("dashboard");
   };
-
-  const logout = () => {
-    setUser(null);
-    setCurrentView("login");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const logout = async () => {
+    setIsLoggingOut(true);
+    await signOut({ redirect: false });
+    window.location.href = "/login";
   };
-
   return (
     <AppContext.Provider
       value={{
@@ -530,6 +531,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deletePlenoSession,
         login,
         logout,
+        isLoggingOut,
         updateUser,
         currentView,
         setCurrentView,

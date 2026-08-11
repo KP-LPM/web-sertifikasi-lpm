@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Clock,
@@ -9,7 +10,7 @@ import {
 import { useAppContext } from "@/context/context";
 import { Assessment, QueueItemProps, StatCardProps } from "@/types/types";
 
-export function AssessorOverview() {
+export default function AssessorOverview() {
   const { setCurrentView, assessments } = useAppContext();
 
   // Get active assessments from assessments list (take top 3)

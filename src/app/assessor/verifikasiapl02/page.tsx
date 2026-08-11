@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
@@ -12,7 +13,7 @@ import { useAppContext } from "@/context/context";
 import { Assessment } from "@/types/types";
 import { FormFRAPL02 } from "@/components/forms";
 
-export function VerifikasiAPL02() {
+export default function VerifikasiAPL02() {
   const [mode, setMode] = useState<"list" | "form">("list");
   const { setSelectedAsesmen } = useAppContext();
 
@@ -380,14 +381,16 @@ function VerifikasiForm({ onBack }: { onBack: () => void }) {
       {/* Interactive Form Component */}
       <div className="bg-white shadow-sm border border-slate-200/80 overflow-hidden p-4 sm:p-8 rounded-2xl">
         <FormFRAPL02
-          asesmenData={{
-            nama: selectedAsesmen.nama,
-            skema: selectedAsesmen.skema,
-            noSkema: selectedAsesmen.noSkema || "006/SKM/LSP-KJN/II/2023",
-            tuk: selectedAsesmen.tuk,
-            tanggal: selectedAsesmen.tglAsesmen,
-            asesor: "Dr. Aris Thorne",
-          }}
+          asesmenData={
+            {
+              nama: selectedAsesmen.nama,
+              skema: selectedAsesmen.skema,
+              noSkema: selectedAsesmen.noSkema || "006/SKM/LSP-KJN/II/2023",
+              tuk: selectedAsesmen.tuk,
+              tanggal: selectedAsesmen.tglAsesmen,
+              asesor: "Dr. Aris Thorne",
+            } as unknown as Assessment
+          }
           answers={answers}
           onAnswerChange={(key, val) =>
             setAnswers((prev) => ({ ...prev, [key]: val }))

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -32,11 +31,11 @@ type SignatureCanvasProps = {
   backgroundColor?: string;
 };
 
-const SignatureCanvas = dynamic(
-  () => import("react-signature-canvas"),
-  { ssr: false },
-) as React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<SignatureCanvasProps> & React.RefAttributes<SignatureCanvasRef>
+const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
+  ssr: false,
+}) as React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<SignatureCanvasProps> &
+    React.RefAttributes<SignatureCanvasRef>
 >;
 
 export default function Login() {
@@ -119,7 +118,10 @@ export default function Login() {
       showNotification("Gagal Masuk: Username atau Password salah!", "error");
     } else {
       showNotification("Berhasil Masuk! Mengalihkan...", "success");
-      setTimeout(() => router.push("/asesi/overview"), 1500);
+      // JANGAN hardcode "/asesi/overview" di sini.
+      // Cukup redirect ke root — page.tsx (root) yang akan membaca
+      // role dari session dan mengarahkan ke dashboard yang benar.
+      setTimeout(() => router.push("/"), 1000);
     }
   }; // <--- INI DIA YANG HILANG SEBELUMNYA!
 

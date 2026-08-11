@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
@@ -9,7 +10,7 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 
-export function RiwayatAsesmen() {
+export default function RiwayatAsesmen() {
   const { setCurrentView, setSelectedAsesmen, assessments } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [hasilFilter, setHasilFilter] = useState("");
