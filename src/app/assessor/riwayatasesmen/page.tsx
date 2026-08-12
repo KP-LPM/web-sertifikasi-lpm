@@ -9,9 +9,11 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
+import { useRouter } from "next/navigation";
 
 export default function RiwayatAsesmen() {
-  const { setCurrentView, setSelectedAsesmen, assessments } = useAppContext();
+  const router = useRouter();
+  const { setSelectedAsesmen, assessments } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [hasilFilter, setHasilFilter] = useState("");
 
@@ -186,7 +188,7 @@ export default function RiwayatAsesmen() {
                           <button
                             onClick={() => {
                               setSelectedAsesmen(item);
-                              setCurrentView("detail-riwayat-asesmen");
+                              router.push("/assessor/detailriwayatasesmen");
                             }}
                             className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-2 sm:px-4 py-1 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
                           >

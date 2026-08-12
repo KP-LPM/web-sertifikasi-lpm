@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   LayoutList,
@@ -22,8 +23,8 @@ import { Assessment, BatchGroup, JenisAsesmen } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
 export default function AsesiList() {
-  const { setCurrentView, setSelectedAsesmen, selectedAsesmen, assessments } =
-    useAppContext();
+  const router = useRouter();
+  const { setSelectedAsesmen, selectedAsesmen, assessments } = useAppContext();
 
   // State
   const [activeTab, setActiveTab] = useState<"Semua" | "Offline" | "Online">(
@@ -608,7 +609,7 @@ export default function AsesiList() {
                             <button
                               onClick={() => {
                                 setSelectedAsesmen(candidate);
-                                setCurrentView("assessment-form");
+                                router.push("/assessor/assessmentform");
                               }}
                               className="bg-slate-900 text-white hover:bg-slate-800 px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                             >

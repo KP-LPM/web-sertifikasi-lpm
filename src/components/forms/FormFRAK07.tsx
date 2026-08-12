@@ -3,7 +3,7 @@ import { ChevronRight, ArrowLeft } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Assessment } from "@/types/types";
-import Image from "next/image";
+ 
 
 export const DEFAULT_ADJUSTMENT_OPTIONS = [
   {
@@ -486,7 +486,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
           </span>
           <div className="mb-4">
             {asesorSignature ? (
-              <Image
+              <img
                 src={asesorSignature}
                 alt="Tanda Tangan Asesor"
                 className="h-20 object-contain cursor-pointer"
@@ -546,7 +546,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
           </span>
           <div className="mb-4">
             {asesiSignature ? (
-              <Image
+              <img
                 id="signature-container"
                 src={asesiSignature}
                 alt="Tanda Tangan Asesi"

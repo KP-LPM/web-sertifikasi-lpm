@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -15,8 +16,8 @@ import { useAppContext } from "@/context/context";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function KonfigurasiPertanyaan() {
+  const router = useRouter();
   const {
-    setCurrentView,
     konfigurasiPertanyaan,
     deleteKonfigurasiPertanyaan,
     setSelectedKonfigurasiId,
@@ -45,7 +46,7 @@ export default function KonfigurasiPertanyaan() {
           </div>
         </div>
         <button
-          onClick={() => setCurrentView("tambah-konfigurasi-pertanyaan")}
+          onClick={() => router.push("/assessor/tambahkonfigurasipertanyaan")}
           className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors shrink-0"
         >
           <Plus size={16} strokeWidth={2} /> Tambah Data
@@ -178,7 +179,9 @@ export default function KonfigurasiPertanyaan() {
                           <button
                             onClick={() => {
                               setSelectedKonfigurasiId(item.id);
-                              setCurrentView("ubah-konfigurasi-pertanyaan");
+                              router.push(
+                                `/assessor/tambahkonfigurasipertanyaan?id=${item.id}&mode=edit`,
+                              );
                             }}
                             className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer"
                           >
@@ -187,7 +190,9 @@ export default function KonfigurasiPertanyaan() {
                           <button
                             onClick={() => {
                               setSelectedKonfigurasiId(item.id);
-                              setCurrentView("detail-konfigurasi-pertanyaan");
+                              router.push(
+                                `/assessor/tambahkonfigurasipertanyaan?id=${item.id}&mode=view`,
+                              );
                             }}
                             className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer"
                           >

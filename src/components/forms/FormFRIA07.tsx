@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Assessment, PenyusunValidator } from "@/types/types";
-import Image from "next/image";
+ 
 
 export const DEFAULT_STEP4_QUESTIONS = [
   {
@@ -580,7 +580,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                     }
                   >
                     {asesiSignature ? (
-                      <Image
+                      <img
                         src={asesiSignature}
                         alt="TTD Asesi"
                         className="h-full object-contain"
@@ -649,7 +649,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                     }
                   >
                     {asesorSignature ? (
-                      <Image
+                      <img
                         src={asesorSignature}
                         alt="TTD Asesor"
                         className="h-full object-contain"

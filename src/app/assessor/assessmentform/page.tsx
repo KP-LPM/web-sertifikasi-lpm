@@ -1,6 +1,8 @@
+"use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { ArrowLeft, Check, ChevronRight, Save, X } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
   FormFRAPL02,
@@ -12,7 +14,8 @@ import {
 import { Assessment } from "@/types/types";
 
 export default function AssessmentForm() {
-  const { setCurrentView, selectedAsesmen, updateAssessment } = useAppContext();
+  const router = useRouter();
+  const { selectedAsesmen, updateAssessment } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,8 +36,7 @@ export default function AssessmentForm() {
   const [rekomendasiApl02, setRekomendasiApl02] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
   >("Dapat dilanjutkan");
-  const [asesorSignatureApl02, setAsesorSignatureApl02] =
-    useState("Dr. Aris Thorne");
+  const [asesorSignatureApl02, setAsesorSignatureApl02] = useState("");
   const [answersApl02, setAnswersApl02] = useState<Record<string, "K" | "BK">>({
     u0e0: "K",
     u0e1: "K",
@@ -804,8 +806,7 @@ export default function AssessmentForm() {
       });
     }
 
-    alert("Data asesmen berhasil disubmit!");
-    setCurrentView("history-asesmen");
+    router.push("/assessor/riwayatasesmen");
   };
 
   const renderHeader = (title: string, formCode: string) => (
@@ -901,7 +902,7 @@ export default function AssessmentForm() {
         rekomendasi={rekomendasiApl02}
         onRekomendasiChange={setRekomendasiApl02}
         asesiName={asesmenData.nama}
-        asesiSignature={asesmenData.nama}
+        asesiSignature=""
         asesiDate={String(asesmenData.tanggal || "")}
         asesorName={String(asesmenData.asesor || "")}
         asesorReg="MET.000.001234 2021"
@@ -1216,7 +1217,7 @@ export default function AssessmentForm() {
 
       <div className="max-w-200 mx-auto mb-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center gap-3">
         <button
-          onClick={() => setCurrentView("candidates")}
+          onClick={() => router.push("/assessor/candidates")}
           className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
           title="Kembali"
         >

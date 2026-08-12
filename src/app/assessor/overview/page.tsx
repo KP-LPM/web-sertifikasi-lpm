@@ -7,11 +7,13 @@ import {
   FileText,
   LayoutDashboard,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import { Assessment, QueueItemProps, StatCardProps } from "@/types/types";
 
 export default function AssessorOverview() {
-  const { setCurrentView, assessments } = useAppContext();
+  const router = useRouter();
+  const { assessments } = useAppContext();
 
   // Get active assessments from assessments list (take top 3)
   const queueItems = (assessments || [])
@@ -80,7 +82,7 @@ export default function AssessorOverview() {
               Antrean Asesmen
             </h3>
             <button
-              onClick={() => setCurrentView("candidates")}
+              onClick={() => router.push("/assessor/candidates")}
               className="text-[11px] font-bold text-[#008BE3] hover:underline cursor-pointer"
             >
               Lihat Semua
@@ -94,7 +96,7 @@ export default function AssessorOverview() {
                 candidate={item.nama || "Kandidat"}
                 time={item.tglAsesmen || "-"}
                 badge={item.jenis_asesmen}
-                onClick={() => setCurrentView("candidates")}
+                onClick={() => router.push("/assessor/candidates")}
               />
             ))}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   FileDown,
@@ -22,7 +23,8 @@ import {
 import { Assessment } from "@/types/types";
 
 export default function DetailRiwayatAsesmen() {
-  const { setCurrentView, selectedAsesmen } = useAppContext();
+  const router = useRouter();
+  const { selectedAsesmen } = useAppContext();
   const [previewForm, setPreviewForm] = useState<
     "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
   >(null);
@@ -34,7 +36,7 @@ export default function DetailRiwayatAsesmen() {
           Tidak ada data asesmen yang dipilih.
         </p>
         <button
-          onClick={() => setCurrentView("history-asesmen")}
+          onClick={() => router.push("/assessor/riwayatasesmen")}
           className="text-blue-500 font-bold hover:underline"
         >
           Kembali ke Riwayat Asesmen
@@ -52,7 +54,7 @@ export default function DetailRiwayatAsesmen() {
           <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => setCurrentView("history-asesmen")}
+                onClick={() => router.push("/assessor/riwayatasesmen")}
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
                 title="Kembali"
               >

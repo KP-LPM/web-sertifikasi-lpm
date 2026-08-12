@@ -1,14 +1,7 @@
 import React from "react";
 import "./globals.css";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import Providers from "@/components/Providers";
 import ClientLayout from "@/components/ClientLayouts";
-
-// Konfigurasi font Plus Jakarta Sans
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export const metadata = {
   title: "Web Sertifikasi LPM",
@@ -21,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={plusJakartaSans.className}>
+    <html lang="id">
       <body suppressHydrationWarning>
         <Providers>
           <ClientLayout>{children}</ClientLayout>

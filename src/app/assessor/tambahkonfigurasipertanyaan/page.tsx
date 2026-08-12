@@ -32,6 +32,7 @@ import {
 } from "@/types/types";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Options for Dropdowns
 const skemaOptions = [
@@ -239,30 +240,31 @@ const initialWizardState: WizardFormState = {
 // ============================================================================
 
 export default function TambahKonfigurasiPertanyaan() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const {
-    setCurrentView,
     addKonfigurasiPertanyaan,
     updateKonfigurasiPertanyaan,
     konfigurasiPertanyaan,
-    selectedKonfigurasiId,
-    currentView,
   } = useAppContext();
-  const isReadOnly = currentView === "detail-konfigurasi-pertanyaan";
-  const isEdit = currentView === "ubah-konfigurasi-pertanyaan";
 
-  // Active step state (1 to 5)
+  // Active step state (1 to 5)s
   const [activeStep, setActiveStep] = useState<number>(1);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSuccessToast, setIsSuccessToast] = useState<string | null>(null);
-
+  const konfigurasiId = searchParams.get("id");
+  const mode = searchParams.get("mode");
+  const isEdit = mode === "edit";
+  const isReadOnly = mode === "view";
   // Central Wizard Form State
   const [formData, setFormData] = useState<WizardFormState>(initialWizardState);
 
   // Load existing data if editing or viewing detail
   useEffect(() => {
-    if ((isEdit || isReadOnly) && selectedKonfigurasiId) {
+    if ((isEdit || isReadOnly) && konfigurasiId) {
       const existing = konfigurasiPertanyaan.find(
-        (k) => k.id === selectedKonfigurasiId,
+        (k) => k.id === konfigurasiId,
       );
       if (existing) {
         const existingWithData = existing as unknown as {
@@ -309,7 +311,7 @@ export default function TambahKonfigurasiPertanyaan() {
         });
       }
     }
-  }, [isEdit, isReadOnly, selectedKonfigurasiId, konfigurasiPertanyaan]);
+  }, [isEdit, isReadOnly, konfigurasiId, konfigurasiPertanyaan]);
 
   // Toast auto-hide
   useEffect(() => {
@@ -960,8 +962,8 @@ export default function TambahKonfigurasiPertanyaan() {
       ],
     };
 
-    if (isEdit && selectedKonfigurasiId) {
-      updateKonfigurasiPertanyaan(selectedKonfigurasiId, payload);
+    if (isEdit && konfigurasiId) {
+      updateKonfigurasiPertanyaan(konfigurasiId, payload);
     } else {
       addKonfigurasiPertanyaan(payload);
     }
@@ -972,7 +974,7 @@ export default function TambahKonfigurasiPertanyaan() {
         : "Draft Konfigurasi Pertanyaan berhasil disimpan.",
     );
     setTimeout(() => {
-      setCurrentView("konfigurasi-pertanyaan");
+      router.push("/assessor/konfigurasipertanyaan");
     }, 1200);
   };
 
@@ -1047,7 +1049,7 @@ export default function TambahKonfigurasiPertanyaan() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={() => setCurrentView("konfigurasi-pertanyaan")}
+            onClick={() => router.push("/assessor/konfigurasipertanyaan")}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali"
           >

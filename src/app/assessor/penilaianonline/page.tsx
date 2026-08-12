@@ -9,16 +9,18 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
+import { useRouter } from "next/navigation";
 
 export default function PenilaianOnline() {
-  const { setCurrentView, selectedAsesmen } = useAppContext();
+  const router = useRouter();
+  const { selectedAsesmen } = useAppContext();
   const [keputusan, setKeputusan] = useState("");
 
   const [pencapaian, setPencapaian] = useState<Record<string, string>>({});
 
   const handleSimpan = () => {
     alert(`Penilaian akhir berhasil disimpan.\nKeputusan: ${keputusan}`);
-    setCurrentView("candidates");
+    router.push("assessor/candidates");
   };
 
   const handlePencapaian = (code: string, value: string) => {
@@ -30,7 +32,7 @@ export default function PenilaianOnline() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={() => setCurrentView("candidates")}
+            onClick={() => router.push("/assessor/candidates")}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali"
           >
@@ -57,7 +59,7 @@ export default function PenilaianOnline() {
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
-                onClick={() => setCurrentView("jadwalkan-online")}
+                onClick={() => router.push("/assessor/jadwalkanonline")}
                 className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-md text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-2"
               >
                 <Calendar size={14} /> Reschedule
@@ -89,7 +91,7 @@ export default function PenilaianOnline() {
               kompetensi asesi.
             </p>
             <button
-              onClick={() => setCurrentView("assessment-form")}
+              onClick={() => router.push("/assessor/assessmentform")}
               className="w-full sm:w-auto px-8 bg-[#008BE3] hover:bg-[#0076C2] text-white py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
               <FileText size={18} /> Beri Penilaian

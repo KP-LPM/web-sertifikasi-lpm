@@ -11,7 +11,7 @@ import {
   Languages,
   LogOut,
 } from "lucide-react";
-import Image from "next/image";
+ 
 
 // Path halaman profile per role. Sesuaikan kalau ada struktur folder yang beda.
 function getProfilePath(role: string | null | undefined) {
@@ -119,7 +119,7 @@ export function Header() {
             className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-100 rounded-lg p-1 pr-2 transition-colors"
           >
             {user.avatar ? (
-              <Image
+              <img
                 src={user.avatar}
                 alt="Avatar"
                 width={32}

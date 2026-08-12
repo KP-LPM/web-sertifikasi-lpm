@@ -4,7 +4,7 @@ import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { Assessment, EvidenceFileItem, PenyusunValidator } from "@/types/types";
-import Image from "next/image";
+ 
 
 export const DEFAULT_APL02_UNITS = [
   {
@@ -563,7 +563,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           </span>
           <div className="mb-4">
             {asesorSignature ? (
-              <Image
+              <img
                 src={asesorSignature}
                 alt="Tanda Tangan Asesor"
                 className="h-20 object-contain cursor-pointer"
@@ -623,7 +623,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           </span>
           <div className="mb-4">
             {asesiSignature ? (
-              <Image
+              <img
                 id="signature-container"
                 src={asesiSignature}
                 alt="Tanda Tangan Asesi"

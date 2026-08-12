@@ -86,8 +86,7 @@ export interface PlenoSession {
 
 export interface CrumbItem {
   label: string;
-  onClick?: () => void;
-  view?: string;
+  path?: string;
 }
 
 export interface StatCardProps {

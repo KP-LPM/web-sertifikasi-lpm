@@ -22,9 +22,6 @@ export default function Page() {
   const { user } = useAppContext();
 
   useEffect(() => {
-    // Tunggu sampai NextAuth benar-benar selesai resolve sesi.
-    // Jangan redirect sama sekali selama masih "loading" — ini
-    // mencegah redirect prematur ke halaman yang salah.
     if (status === "loading") return;
 
     if (status === "unauthenticated" || !user || !user.role) {
@@ -35,9 +32,6 @@ export default function Page() {
     const target = ROLE_HOME[user.role] ?? "/login";
     router.replace(target);
   }, [status, user, router]);
-
-  // Halaman ini hanya transisi/redirect, tidak pernah benar-benar
-  // menampilkan konten dashboard apa pun.
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]">
       <p className="text-sm text-slate-500">Mengalihkan...</p>

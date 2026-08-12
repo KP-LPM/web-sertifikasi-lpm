@@ -3,7 +3,6 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Assessment, PenyusunValidator } from "@/types/types";
-import Image from "next/image";
 
 export interface FormFRIA04AProps {
   asesmenData?: Assessment;
@@ -357,7 +356,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                               Tanda Tangan Asesi
                             </div>
                             {asesiSignature ? (
-                              <Image
+                              <img
                                 src={asesiSignature}
                                 alt="Tanda Tangan Asesi"
                                 className="h-20 object-contain cursor-pointer"
@@ -382,7 +381,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                               Tanda Tangan Asesor
                             </div>
                             {asesorSignature ? (
-                              <Image
+                              <img
                                 src={asesorSignature}
                                 alt="Tanda Tangan Asesor"
                                 className="h-20 object-contain cursor-pointer"
@@ -420,7 +419,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                               }
                             />
                             {supervisorSignature ? (
-                              <Image
+                              <img
                                 src={supervisorSignature}
                                 alt="Tanda Tangan Supervisor"
                                 className="h-20 object-contain cursor-pointer"

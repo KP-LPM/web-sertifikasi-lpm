@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
 import React, { useState, useRef } from "react";
 import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "../../context/context";
-import Breadcrumb from "@/components/Breadcrumb";
 import SignatureCanvas from "react-signature-canvas";
 
 export function Profile() {

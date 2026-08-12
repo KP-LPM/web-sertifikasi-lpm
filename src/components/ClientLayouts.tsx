@@ -1,26 +1,34 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import { Headset, AlertTriangle } from "lucide-react";
 import { useAppContext } from "../context/context";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { Breadcrumb } from "./Breadcrumb";
+import { useRouter } from "next/navigation";
+
+// Halaman-halaman yang TIDAK PERNAH boleh dibungkus Header/Sidebar,
+// terlepas dari status login user (mencegah flash saat transisi login).
+const AUTH_ROUTES = ["/login", "/register"];
 
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const {
     user,
     sidebarCollapsed,
     pendingNavigation,
     setPendingNavigation,
     setIsFormDirty,
-    setCurrentView,
     isLoggingOut,
   } = useAppContext();
+  const router = useRouter();
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname?.startsWith(route));
 
   // Selama proses logout, tampilkan overlay penuh layar
   // supaya tidak ada jeda "sidebar hilang tapi konten masih ada".
@@ -32,8 +40,10 @@ export default function ClientLayout({
     );
   }
 
-  // Jika user belum login, tampilkan children langsung (misal: halaman Login)
-  if (!user) {
+  // Di halaman auth, atau saat user belum login, tampilkan children polos
+  // tanpa Header/Sidebar — walaupun context.user sudah sempat sinkron
+  // duluan sebelum redirect selesai.
+  if (isAuthRoute || !user) {
     return <>{children}</>;
   }
 
@@ -106,7 +116,7 @@ export default function ClientLayout({
                 onClick={() => {
                   setIsFormDirty(false);
                   if (pendingNavigation.type === "view") {
-                    setCurrentView(String(pendingNavigation.target || ""));
+                    router.push(String(pendingNavigation.target || ""));
                   } else if (typeof pendingNavigation.target === "function") {
                     pendingNavigation.target();
                   }

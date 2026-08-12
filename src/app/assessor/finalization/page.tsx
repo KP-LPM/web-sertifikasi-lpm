@@ -1,10 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { Send, CheckCircle, PenTool } from "lucide-react";
-import { useAppContext } from "@/context/context";
-
+import { useRouter } from "next/navigation";
 export default function AssessmentFinalization() {
-  const { setCurrentView } = useAppContext();
+  const router = useRouter();
   const [signed, setSigned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -13,7 +12,7 @@ export default function AssessmentFinalization() {
     setSubmitting(true);
     setTimeout(() => {
       alert("Hasil Difinalisasi!");
-      setCurrentView("dashboard");
+      router.push("/assessor/dashboard");
     }, 1000);
   };
 

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Video,
   Clock,
@@ -10,7 +11,8 @@ import {
 import { useAppContext } from "@/context/context";
 
 export default function JadwalkanOnline() {
-  const { setCurrentView, selectedAsesmen, updateAssessment } = useAppContext();
+  const router = useRouter();
+  const { selectedAsesmen, updateAssessment } = useAppContext();
   const [tanggal, setTanggal] = useState("");
   const [waktu, setWaktu] = useState("");
   const [linkMeet, setLinkMeet] = useState("");
@@ -55,7 +57,7 @@ export default function JadwalkanOnline() {
     alert(
       `Jadwal presentasi online berhasil disimpan untuk ${selectedAsesmen?.nama}\nTanggal: ${tanggal}\nWaktu: ${waktu}\nLink: ${linkMeet}`,
     );
-    setCurrentView("candidates");
+    router.push("/assessor/candidates");
   };
 
   return (
@@ -64,7 +66,7 @@ export default function JadwalkanOnline() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
           <div className="flex items-center gap-3 min-w-0">
             <button
-              onClick={() => setCurrentView("candidates")}
+              onClick={() => router.push("/assessor/candidates")}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
               title="Kembali"
             >
