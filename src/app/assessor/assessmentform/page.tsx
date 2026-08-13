@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { ArrowLeft, Check, ChevronRight, Save, X } from "lucide-react";
-import SignatureCanvas from "react-signature-canvas";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
@@ -12,6 +12,24 @@ import {
   FormFRIA07,
 } from "@/components/forms";
 import { Assessment } from "@/types/types";
+
+type SignatureCanvasRef = {
+  clear: () => void;
+  fromDataURL: (dataURL: string) => void;
+  toDataURL: () => string;
+  isEmpty: () => boolean;
+};
+
+type SignatureCanvasProps = {
+  canvasProps?: React.CanvasHTMLAttributes<HTMLCanvasElement>;
+  backgroundColor?: string;
+};
+
+const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
+  ssr: false,
+}) as React.ForwardRefExoticComponent<
+  SignatureCanvasProps & React.RefAttributes<SignatureCanvasRef>
+>;
 
 export default function AssessmentForm() {
   const router = useRouter();
@@ -57,8 +75,8 @@ export default function AssessmentForm() {
   // Signature Modals
   const [isAsesorSigOpen, setIsAsesorSigOpen] = useState(false);
   const [isAsesiSigOpen, setIsAsesiSigOpen] = useState(false);
-  const asesorSigRef = React.useRef<SignatureCanvas>(null);
-  const asesiSigRef = React.useRef<SignatureCanvas>(null);
+  const asesorSigRef = React.useRef<SignatureCanvasRef>(null);
+  const asesiSigRef = React.useRef<SignatureCanvasRef>(null);
   const asesorFileRef = React.useRef<HTMLInputElement | null>(null);
   const asesiFileRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -125,9 +143,9 @@ export default function AssessmentForm() {
   const [isAsesorStep2SigOpen, setIsAsesorStep2SigOpen] = useState(false);
   const [isSupervisorSigOpen, setIsSupervisorSigOpen] = useState(false);
 
-  const asesiStep2SigRef = React.useRef<SignatureCanvas>(null);
-  const asesorStep2SigRef = React.useRef<SignatureCanvas>(null);
-  const supervisorSigRef = React.useRef<SignatureCanvas>(null);
+  const asesiStep2SigRef = React.useRef<SignatureCanvasRef>(null);
+  const asesorStep2SigRef = React.useRef<SignatureCanvasRef>(null);
+  const supervisorSigRef = React.useRef<SignatureCanvasRef>(null);
   const asesiStep2FileRef = React.useRef<HTMLInputElement | null>(null);
   const asesorStep2FileRef = React.useRef<HTMLInputElement | null>(null);
   const supervisorFileRef = React.useRef<HTMLInputElement | null>(null);
@@ -254,8 +272,8 @@ export default function AssessmentForm() {
   const [isAsesiStep3SigOpen, setIsAsesiStep3SigOpen] = useState(false);
   const [isAsesorStep3SigOpen, setIsAsesorStep3SigOpen] = useState(false);
 
-  const asesiStep3SigRef = React.useRef<SignatureCanvas>(null);
-  const asesorStep3SigRef = React.useRef<SignatureCanvas>(null);
+  const asesiStep3SigRef = React.useRef<SignatureCanvasRef>(null);
+  const asesorStep3SigRef = React.useRef<SignatureCanvasRef>(null);
   const asesiStep3FileRef = React.useRef<HTMLInputElement | null>(null);
   const asesorStep3FileRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -650,9 +668,9 @@ export default function AssessmentForm() {
   const [isAsesiStep4SigOpen, setIsAsesiStep4SigOpen] = useState(false);
   const [isAsesorStep4SigOpen, setIsAsesorStep4SigOpen] = useState(false);
 
-  const asesiStep4SigRef = React.useRef<SignatureCanvas>(null);
+  const asesiStep4SigRef = React.useRef<SignatureCanvasRef>(null);
   const asesiStep4FileRef = React.useRef<HTMLInputElement>(null);
-  const asesorStep4SigRef = React.useRef<SignatureCanvas>(null);
+  const asesorStep4SigRef = React.useRef<SignatureCanvasRef>(null);
   const asesorStep4FileRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {

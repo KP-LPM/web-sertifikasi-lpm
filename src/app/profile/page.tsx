@@ -5,7 +5,7 @@ import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "../../context/context";
 import SignatureCanvas from "react-signature-canvas";
 
-export function Profile() {
+export default function Profile() {
   const { user, registeredProfile, updateUser } = useAppContext();
   const profileImageRef = useRef<HTMLInputElement>(null);
 

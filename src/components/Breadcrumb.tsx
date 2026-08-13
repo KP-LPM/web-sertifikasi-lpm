@@ -10,6 +10,23 @@ interface Crumb {
   path?: string; // undefined = bukan link (misal breadcrumb terakhir/aktif)
 }
 
+function getDashboardPath(role: string | null | undefined): string {
+  switch (role) {
+    case "asesor":
+      return "/assessor/overview";
+    case "asesi":
+      return "/asesi/overview";
+    case "admin":
+      return "/admin/overview";
+    case "direktur":
+      return "/direktur/dashboard";
+    case "manajer":
+      return "/manajer/dashboard";
+    default:
+      return "/";
+  }
+}
+
 // ==========================================================================
 // PETA RUTE -> BREADCRUMB
 // Key = path (tanpa trailing slash). Value = rantai breadcrumb dari root.
@@ -83,10 +100,6 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
     },
     { label: "Detail Paket Soal" },
   ],
-  "/assessor/profile": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Profil Saya" },
-  ],
 
   // ---------------- ASESI ----------------
   "/asesi/overview": [{ label: "Dashboard" }],
@@ -101,10 +114,6 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/asesi/banding": [
     { label: "Dashboard", path: "/asesi/overview" },
     { label: "Banding Asesmen" },
-  ],
-  "/asesi/profile": [
-    { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Profil Saya" },
   ],
 
   // ---------------- ADMIN / DIREKTUR / MANAJER ----------------
@@ -138,14 +147,20 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
 
   if (!user || !pathname) return null;
 
-  const baseCrumbs = ROUTE_CRUMBS[pathname];
+  let baseCrumbs: Crumb[] | undefined;
+  if (pathname === "/profile") {
+    baseCrumbs = [
+      { label: "Dashboard", path: getDashboardPath(user.role) },
+      { label: "Profil Saya" },
+    ];
+  } else {
+    baseCrumbs = ROUTE_CRUMBS[pathname];
+  }
 
-  // Rute tidak terdaftar di peta (misal halaman baru yang belum ditambahkan) → sembunyikan.
   if (!baseCrumbs) return null;
 
   const crumbs = [...baseCrumbs, ...(extraCrumbs || [])];
 
-  // Halaman utama/dashboard saja → tidak perlu breadcrumb.
   if (crumbs.length <= 1) return null;
 
   return (

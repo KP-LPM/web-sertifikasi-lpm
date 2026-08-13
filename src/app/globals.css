@@ -3,3 +3,33 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Global Custom Slim Dark Blue Scrollbar (Sidebar Color) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #0f172a #e2e8f0;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0f172a;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1e293b;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+/* ... */

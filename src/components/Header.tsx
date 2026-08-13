@@ -11,23 +11,10 @@ import {
   Languages,
   LogOut,
 } from "lucide-react";
- 
 
 // Path halaman profile per role. Sesuaikan kalau ada struktur folder yang beda.
-function getProfilePath(role: string | null | undefined) {
-  switch (role) {
-    case "asesi":
-      return "/asesi/profile";
-    case "asesor":
-      return "/assessor/profile";
-    case "admin":
-      return "/admin/profile";
-    case "direktur":
-    case "manajer":
-      return "/direktur/profile";
-    default:
-      return "/profile";
-  }
+function getProfilePath() {
+  return "/profile";
 }
 
 export function Header() {
@@ -148,7 +135,7 @@ export function Header() {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
               <Link
-                href={getProfilePath(user.role)}
+                href={getProfilePath()}
                 onClick={() => setIsDropdownOpen(false)}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors"
               >
