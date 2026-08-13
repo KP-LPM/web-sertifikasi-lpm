@@ -5,7 +5,8 @@ root {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-html, body {
+html,
+body {
   font-family: "Plus Jakarta Sans", sans-serif !important;
   background-color: #F8F9FC;
 }

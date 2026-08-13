@@ -478,19 +478,19 @@ export default function VerifikasiPortofolio() {
                     </td>
 
                     {/* Aksi */}
-                    <td className="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white z-10 border-l border-slate-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.04)]">
-                      <div className="flex items-center justify-center gap-2">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white z-10 border-l border-slate-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.04)]">
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                         {/* Lihat Detail */}
                         <button
                           onClick={() => {
                             setSelectedPortfolio(item);
                             setIsDetailModalOpen(true);
                           }}
-                          className="px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg border border-slate-200 hover:border-sky-200 transition-colors cursor-pointer flex items-center gap-1"
+                          className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-slate-700 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg border border-slate-200 hover:border-sky-200 transition-colors cursor-pointer flex items-center gap-1"
                           title="Lihat Detail"
                         >
                           <Eye size={14} />
-                          <span>Detail</span>
+                          <span className="hidden sm:inline">Detail</span>
                         </button>
 
                         {/* Hapus (Hanya bisa kalau Menunggu Verifikasi) */}
@@ -500,11 +500,11 @@ export default function VerifikasiPortofolio() {
                               setSelectedPortfolio(item);
                               setIsDeleteModalOpen(true);
                             }}
-                            className="px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer flex items-center gap-1"
+                            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer flex items-center gap-1"
                             title="Hapus Portofolio"
                           >
                             <Trash2 size={14} />
-                            <span>Hapus</span>
+                            <span className="hidden sm:inline">Hapus</span>
                           </button>
                         )}
 
@@ -512,11 +512,13 @@ export default function VerifikasiPortofolio() {
                         {item.status === "Ditolak" && (
                           <button
                             onClick={() => openReuploadModal(item)}
-                            className="px-2.5 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                             title="Upload Ulang Portofolio"
                           >
                             <RefreshCw size={14} />
-                            <span>Upload Ulang</span>
+                            <span className="hidden sm:inline">
+                              Upload Ulang
+                            </span>
                           </button>
                         )}
                       </div>

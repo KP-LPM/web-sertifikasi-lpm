@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   LayoutList,
+  Filter,
+  ChevronDown,
   CheckCircle,
   Video,
   Clock,
@@ -120,16 +122,16 @@ export default function AsesiList() {
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Banner */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
-        <div className="flex items-center gap-2 sm:gap-3.5">
-          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-sky-50 items-center justify-center text-[#008BE3] border border-sky-100 shrink-0 shadow-2xs">
-            <LayoutList size={24} className="stroke-[2.5]" />
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-50 flex items-center justify-center text-[#008BE3] border border-sky-100 shrink-0 shadow-2xs mt-0.5 sm:mt-0">
+            <LayoutList size={22} className="sm:w-6 sm:h-6 stroke-[2.5]" />
           </div>
-          <div className="min-w-0">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight mb-1">
               Daftar Asesmen
             </h2>
-            <p className="text-[10px] sm:text-sm text-slate-600 font-medium max-w-37.5 sm:max-w-md leading-tight">
+            <p className="text-xs sm:text-sm text-slate-600 font-medium sm:max-w-md leading-relaxed">
               Kelola dan pantau proses asesmen kandidat asesi yang terkelompok
               berdasarkan Batch Penugasan.
             </p>
@@ -137,20 +139,20 @@ export default function AsesiList() {
         </div>
 
         {/* Top High-Level Metrics */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-3 w-27.5 sm:w-auto shrink-0">
-          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-50 border border-slate-200 shrink-0 flex items-center justify-between sm:block sm:text-center gap-1.5">
+        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 mt-1 sm:mt-0">
+          <div className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-center">
             <span className="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               Total
             </span>
-            <span className="text-[11px] sm:text-sm font-black text-slate-900">
+            <span className="text-xs sm:text-sm font-black text-slate-900">
               {allBatches.length}
             </span>
           </div>
-          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 shrink-0 flex items-center justify-between sm:block sm:text-center gap-1.5">
+          <div className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-center">
             <span className="block text-[9px] sm:text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
               Offline
             </span>
-            <span className="text-[11px] sm:text-sm font-black text-emerald-800">
+            <span className="text-xs sm:text-sm font-black text-emerald-800">
               {
                 allBatches.filter(
                   (b) => b.jenis_asesmen.toLowerCase() === "offline",
@@ -158,11 +160,11 @@ export default function AsesiList() {
               }
             </span>
           </div>
-          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-purple-50 border border-purple-200 shrink-0 flex items-center justify-between sm:block sm:text-center gap-1.5">
+          <div className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-center">
             <span className="block text-[9px] sm:text-[10px] font-bold text-purple-600 uppercase tracking-wider">
               Online
             </span>
-            <span className="text-[11px] sm:text-sm font-black text-purple-800">
+            <span className="text-xs sm:text-sm font-black text-purple-800">
               {
                 allBatches.filter(
                   (b) => b.jenis_asesmen.toLowerCase() === "online",
@@ -179,52 +181,45 @@ export default function AsesiList() {
         <div className="space-y-6">
           {/* Filters & Search Row */}
           <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/60 w-full md:w-auto overflow-x-auto">
-              <button
-                onClick={() => setActiveTab("Semua")}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                  activeTab === "Semua"
-                    ? "bg-white text-slate-900 shadow-xs border border-slate-200/60"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Semua Batch ({allBatches.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("Offline")}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                  activeTab === "Offline"
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Building2 size={14} />
-                Offline Batch (
-                {
-                  allBatches.filter(
-                    (b) => b.jenis_asesmen.toLowerCase() === "offline",
-                  ).length
+            {/* Filter Dropdown */}
+            <div className="relative w-full md:w-64">
+              <Filter
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                size={16}
+              />
+              <select
+                value={activeTab}
+                onChange={(e) =>
+                  setActiveTab(e.target.value as "Semua" | "Offline" | "Online")
                 }
-                )
-              </button>
-              <button
-                onClick={() => setActiveTab("Online")}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                  activeTab === "Online"
-                    ? "bg-purple-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                className="w-full appearance-none pl-10 pr-9 py-2.5 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
               >
-                <Video size={14} />
-                Online Batch (
-                {
-                  allBatches.filter(
-                    (b) => b.jenis_asesmen.toLowerCase() === "online",
-                  ).length
-                }
-                )
-              </button>
+                {" "}
+                <option value="Semua">Semua Batch ({allBatches.length})</option>
+                <option value="Offline">
+                  Offline Batch (
+                  {
+                    allBatches.filter(
+                      (b) => b.jenis_asesmen.toLowerCase() === "offline",
+                    ).length
+                  }
+                  )
+                </option>
+                <option value="Online">
+                  {" "}
+                  Online Batch (
+                  {
+                    allBatches.filter(
+                      (b) => b.jenis_asesmen.toLowerCase() === "online",
+                    ).length
+                  }
+                  )
+                </option>
+              </select>
+              <ChevronDown
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                size={16}
+              />
             </div>
 
             {/* Search Input */}

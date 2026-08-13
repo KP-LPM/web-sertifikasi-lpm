@@ -146,6 +146,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setSidebarCollapsed(true);
       }
     };
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);

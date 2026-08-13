@@ -80,11 +80,6 @@ export default function RiwayatAsesmen() {
                 <option value="Kompeten">Kompeten</option>
                 <option value="Belum Kompeten">Belum Kompeten</option>
               </select>
-              {/* Status Select Filter */}
-              <select className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold">
-                <option value="">Semua Status</option>
-                <option value="Selesai">Selesai</option>
-              </select>
 
               {/* Date Input/Filter */}
               <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 py-2 w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">

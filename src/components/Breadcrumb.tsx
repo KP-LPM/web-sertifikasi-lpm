@@ -7,8 +7,24 @@ import { useAppContext } from "@/context/context";
 
 interface Crumb {
   label: string;
-  path?: string; // Untuk pindah URL
-  onClick?: () => void; // Untuk pindah state/tampilan di halaman yang sama
+  path?: string; // undefined = bukan link (misal breadcrumb terakhir/aktif)
+}
+
+function getDashboardPath(role: string | null | undefined): string {
+  switch (role) {
+    case "asesor":
+      return "/assessor/overview";
+    case "asesi":
+      return "/asesi/overview";
+    case "admin":
+      return "/admin/overview";
+    case "direktur":
+      return "/direktur/dashboard";
+    case "manajer":
+      return "/manajer/dashboard";
+    default:
+      return "/";
+  }
 }
 
 // ==========================================================================
@@ -82,22 +98,18 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
     },
     { label: "Detail Paket Soal" },
   ],
-  "/assessor/profile": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Profil Saya" },
-  ],
 
   // ---------------- ASESI ----------------
   "/asesi/overview": [{ label: "Dashboard" }],
   "/asesi/pengajuanskema": [
     { label: "Dashboard", path: "/asesi/overview" },
     // Diberi path agar saat masuk form detail, teks ini menjadi Link yang bisa diklik
-    { label: "Pengajuan Skema", path: "/asesi/pengajuanskema" }, 
+    { label: "Pengajuan Skema", path: "/asesi/pengajuanskema" },
   ],
   "/asesi/riwayatasesmen": [
     { label: "Dashboard", path: "/asesi/overview" },
     // Label disesuaikan dengan kode asesi lama
-    { label: "Riwayat & Sertifikat", path: "/asesi/riwayatasesmen" }, 
+    { label: "Riwayat & Sertifikat", path: "/asesi/riwayatasesmen" },
   ],
   "/asesi/banding": [
     { label: "Dashboard", path: "/asesi/overview" },
@@ -107,10 +119,6 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/asesi/ujian": [
     { label: "Dashboard", path: "/asesi/overview" },
     { label: "Ujian Online", path: "/asesi/ujian" },
-  ],
-  "/asesi/profile": [
-    { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Profil Saya", path: "/asesi/profile" },
   ],
 
   // ---------------- ADMIN / DIREKTUR / MANAJER ----------------
@@ -144,7 +152,15 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
 
   if (!user || !pathname) return null;
 
-  const baseCrumbs = ROUTE_CRUMBS[pathname];
+  let baseCrumbs: Crumb[] | undefined;
+  if (pathname === "/profile") {
+    baseCrumbs = [
+      { label: "Dashboard", path: getDashboardPath(user.role) },
+      { label: "Profil Saya" },
+    ];
+  } else {
+    baseCrumbs = ROUTE_CRUMBS[pathname];
+  }
 
   if (!baseCrumbs) return null;
 
@@ -159,11 +175,11 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
     >
       {crumbs.map((crumb, idx) => {
         const isLast = idx === crumbs.length - 1;
-        
+
         return (
           <React.Fragment key={idx}>
             {idx > 0 && <span className="text-slate-400 mx-1">/</span>}
-            
+
             {isLast ? (
               // Jika ini langkah terakhir, tampilkan teks tebal berwarna biru
               <span className="text-[#008BE3] font-black">{crumb.label}</span>
