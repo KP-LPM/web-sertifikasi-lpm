@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import {
   Trash2, FileText, Plus, Search, Calendar, ArrowLeft, ArrowRight, 
   Upload, BadgeCheck, CheckCircle, AlertTriangle, Download, X
@@ -127,11 +127,11 @@ export default function PengajuanSkemaPage() {
       setExtraCrumbs([]);
     } else if (subView === 'choose-scheme') {
       setExtraCrumbs([
-        { label: 'Daftar Skema', onClick: () => handleExitRequest('choose-scheme') }
+        { label: 'Daftar Skema', path: '#' }
       ]);
     } else if (subView === 'apply-form') {
       setExtraCrumbs([
-        { label: 'Daftar Skema', onClick: () => handleExitRequest('choose-scheme') },
+        { label: 'Daftar Skema', path: '#' },
         { label: 'Ajukan Skema' }
       ]);
     }
@@ -869,30 +869,34 @@ export default function PengajuanSkemaPage() {
   if (subView === 'choose-scheme') {
     return (
       <>
-{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
-<div className="w-full space-y-6 pb-12 text-sm text-gray-700">
-        {/* Header Block exactly like mockup */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-           <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={() => setSubView('list')}
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
-              title="Kembali"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <div className="min-w-0">
-              <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
-                Daftar Skema Sertifikasi
-              </h2>
-              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
-                Pilih skema yang tersedia
-              </p>
-              
-            </div>
+        {alertMsg && (
+          <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">
+            {alertMsg}
           </div>
+        )}
+
+        <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => setSubView('list')}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
+                title="Kembali"
+              >
+                <ArrowLeft size={18} />
+              </button>
+
+              <div className="min-w-0">
+                <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
+                  Daftar Skema Sertifikasi
+                </h2>
+                <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
+                  Pilih skema yang tersedia
+                </p>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
-              {/* Search Input */}
               <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                 <Search className="text-gray-400" size={16} />
                 <input
@@ -909,158 +913,178 @@ export default function PengajuanSkemaPage() {
             </div>
           </div>
 
-        <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
-          <div className="overflow-x-auto relative ">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Kode Skema</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-36 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 top-0">Ajukan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100/60 font-medium">
-                {paginatedSchemes.length > 0 ? (
-                  paginatedSchemes.map((scheme, idx) => {
-                    const schemeKey = scheme.code ?? `scheme-${idx}`;
-                    return (
-                      <React.Fragment key={schemeKey}>
-                        <tr 
-                          className="hover:bg-[#F9FAFC] transition-colors cursor-pointer group/row"
-                          onClick={() => {
-                            setExpandedSchemes(prev => 
-                              prev.includes(schemeKey) 
-                                ? prev.filter(c => c !== schemeKey)
-                                : [...prev, schemeKey]
-                            );
-                          }}
-                        >
-                        <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                            idx % 3 === 0 ? 'bg-[#008BE3]/10 text-[#008BE3]' :
-                            idx % 3 === 1 ? 'bg-[#84CC16]/10 text-[#73B412]' :
-                            'bg-slate-100 text-slate-600'
-                          }`}>
-                            {idx + 1}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 flex items-center gap-3 min-w-87.5 max-w-125">
-                          {/* Chevron icon for expanding */}
-                          <button 
-                            className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-[#008BE3] transition-colors shrink-0"
-                          >
-                            <svg 
-                              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                              className={`transition-transform duration-200 ${expandedSchemes.includes(schemeKey) ? 'rotate-90' : ''}`}
-                            >
-                              <path d="M9 18l6-6-6-6" />
-                            </svg>
-                          </button>
-                          <span className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">{scheme.name}</span>
-                        </td>
-                        <td className="px-6 py-4 text-gray-400 font-mono text-xs">{scheme.code}</td>
-                        <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
-                          <button
-                            onClick={() => {
-                              setSelectedScheme(scheme);
-                              setSubView('apply-form');
-                              setStep(1);
-                            }}
-                            className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all"
-                          >
-                            Ajukan
-                          </button>
-                        </td>
-                      </tr>
-                      {expandedSchemes.includes(schemeKey) && (
-                        <tr className="bg-slate-50/50 border-t border-b border-gray-100">
-                          <td colSpan={4} className="px-6 py-4">
-                            <div className="pl-10">
-                              <table className="w-full border-collapse text-xs text-slate-600 font-medium">
-                                
-                                <tbody>
-                                  {(scheme.units ?? []).map((unit, idx) => (
-                                    <tr key={`${unit.code}-${idx}`} className="border-b border-slate-100 last:border-0">
-                                      <td className="py-2 font-mono text-slate-500">{unit.code}</td>
-                                      <td className="py-2">{unit.title}</td>
-                                    </tr>
-                                  ))}
-                                  {!scheme.units?.length && (
-                                    <tr>
-                                      <td colSpan={2} className="py-2 italic text-slate-400">Tidak ada unit.</td>
-                                    </tr>
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-400 font-medium">
-                      Tidak ada skema sertifikasi yang ditemukan.
-                    </td>
+          <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto relative ">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Kode Skema</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-36 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 top-0">Ajukan</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
 
-          {/* Footer Pagination */}
-          <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row justify-end items-center gap-4 text-xs font-medium text-slate-500 bg-slate-50/50">
-            <div className="flex items-center gap-2">
-              <button
-                disabled={schemePage === 1}
-                onClick={() => setSchemePage(schemePage - 1)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 transition-all font-bold text-slate-700"
-              >
-                Sebelumnya
-              </button>
-              
-              {/* Generate dynamic numbers */}
-              {Array.from({ length: totalSchemePages }).map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSchemePage(idx + 1)}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all font-bold ${
-                    schemePage === idx + 1 
-                      ? 'bg-[#008BE3] text-white' 
-                      : 'border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
-                  }`}
-                >
-                  {idx + 1}
-                </button>
-              ))}
+                <tbody className="divide-y divide-gray-100/60 font-medium">
+                  {paginatedSchemes.length > 0 ? (
+                    paginatedSchemes.map((scheme, idx) => {
+                      const schemeKey = scheme.code ?? `scheme-${idx}`;
 
-              <button
-                disabled={schemePage === totalSchemePages}
-                onClick={() => setSchemePage(schemePage + 1)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 transition-all font-bold text-slate-700"
-              >
-                Selanjutnya
-              </button>
-              <select 
-                value={itemsPerPage} 
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setSubPage(1); setSchemePage(1);
-                }} 
-                className="border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none font-bold text-slate-600 bg-white ml-2"
-              >
-                <option value={5}>5 / halaman</option>
-                <option value={10}>10 / halaman</option>
-                <option value={20}>20 / halaman</option>
-                <option value={50}>50 / halaman</option>
-              </select>
+                      return (
+                        <React.Fragment key={schemeKey}>
+                          <tr
+                            className="hover:bg-[#F9FAFC] transition-colors cursor-pointer group/row"
+                            onClick={() => {
+                              setExpandedSchemes((prev) =>
+                                prev.includes(schemeKey)
+                                  ? prev.filter((c) => c !== schemeKey)
+                                  : [...prev, schemeKey]
+                              );
+                            }}
+                          >
+                            <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
+                              <div
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? 'bg-[#008BE3]/10 text-[#008BE3]'
+                                    : idx % 3 === 1
+                                      ? 'bg-[#84CC16]/10 text-[#73B412]'
+                                      : 'bg-slate-100 text-slate-600'
+                                }`}
+                              >
+                                {idx + 1}
+                              </div>
+                            </td>
+
+                            <td className="px-6 py-4 flex items-center gap-3 min-w-87.5 max-w-125">
+                              <button
+                                className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-[#008BE3] transition-colors shrink-0"
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className={`transition-transform duration-200 ${expandedSchemes.includes(schemeKey) ? 'rotate-90' : ''}`}
+                                >
+                                  <path d="M9 18l6-6-6-6" />
+                                </svg>
+                              </button>
+
+                              <span className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                                {scheme.name}
+                              </span>
+                            </td>
+
+                            <td className="px-6 py-4 text-gray-400 font-mono text-xs">{scheme.code}</td>
+
+                            <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
+                              <button
+                                onClick={() => {
+                                  setSelectedScheme(scheme);
+                                  setSubView('apply-form');
+                                  setStep(1);
+                                }}
+                                className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all"
+                              >
+                                Ajukan
+                              </button>
+                            </td>
+                          </tr>
+
+                          {expandedSchemes.includes(schemeKey) && (
+                            <tr className="bg-slate-50/50 border-t border-b border-gray-100">
+                              <td colSpan={4} className="px-6 py-4">
+                                <div className="pl-10">
+                                  <table className="w-full border-collapse text-xs text-slate-600 font-medium">
+                                    <tbody>
+                                      {(scheme.units ?? []).map((unit, unitIdx) => (
+                                        <tr key={`${unit.code}-${unitIdx}`} className="border-b border-slate-100 last:border-0">
+                                          <td className="py-2 font-mono text-slate-500">{unit.code}</td>
+                                          <td className="py-2">{unit.title}</td>
+                                        </tr>
+                                      ))}
+
+                                      {!scheme.units?.length && (
+                                        <tr>
+                                          <td colSpan={2} className="py-2 italic text-slate-400">Tidak ada unit.</td>
+                                        </tr>
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-8 text-center text-gray-400 font-medium">
+                        Tidak ada skema sertifikasi yang ditemukan.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </section>
-      </div>
-</>
+
+            <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row justify-end items-center gap-4 text-xs font-medium text-slate-500 bg-slate-50/50">
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={schemePage === 1}
+                  onClick={() => setSchemePage(schemePage - 1)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 transition-all font-bold text-slate-700"
+                >
+                  Sebelumnya
+                </button>
+
+                {Array.from({ length: totalSchemePages }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSchemePage(idx + 1)}
+                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold ${
+                      schemePage === idx + 1
+                        ? 'bg-[#008BE3] text-white'
+                        : 'border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+
+                <button
+                  disabled={schemePage === totalSchemePages}
+                  onClick={() => setSchemePage(schemePage + 1)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-50 transition-all font-bold text-slate-700"
+                >
+                  Selanjutnya
+                </button>
+
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setSubPage(1);
+                    setSchemePage(1);
+                  }}
+                  className="border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none font-bold text-slate-600 bg-white ml-2"
+                >
+                  <option value={5}>5 / halaman</option>
+                  <option value={10}>10 / halaman</option>
+                  <option value={20}>20 / halaman</option>
+                  <option value={50}>50 / halaman</option>
+                </select>
+              </div>
+            </div>
+          </section>
+        </div>
+      </>
     );
   }
 
@@ -1113,21 +1137,21 @@ export default function PengajuanSkemaPage() {
                   onClick={() => {
                     // Check validation if moving beyond step 1
                     if (step === 1 && tabStep > 1) {
-                      const newErrors = {
+                      const newErrors: Step1Errors = {
                         tempatLahir: tempatLahir.trim() === '',
                         alamat: alamat.trim() === '',
                         nik: nik.trim() === '',
                         kodePos: kodePos.trim() === '',
                         tuk: tuk === '',
                       };
-                      setErrors(newErrors as any);
+                      setErrors(newErrors);
                       if (!newErrors.tempatLahir && !newErrors.alamat && !newErrors.nik && !newErrors.kodePos && !newErrors.tuk) {
                         setStep(tabStep);
                         if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: 'smooth' });
                       }
                     } else if (step === 2 && tabStep > 2) {
-                      const reqs = (selectedScheme as any)?.persyaratanDasar || [];
-                      const valid = reqs.every((req: any) => eFormData[typeof req === 'string' ? req : req.name]);
+                      const reqs = (selectedScheme as Scheme)?.persyaratanDasar || [];
+                      const valid = reqs.every((req: SchemeRequirementItem) => eFormData[typeof req === 'string' ? req : req.name]);
                       if (!valid) {
                         setShowStep2Errors(true);
                       } else {
@@ -1135,8 +1159,8 @@ export default function PengajuanSkemaPage() {
                         setStep(tabStep);
                       }
                     } else if (step === 3 && tabStep > 3) {
-                      const reqs = (selectedScheme as any)?.buktiAdministratif || [];
-                      const valid = reqs.every((req: any) => eFormData[typeof req === 'string' ? req : req.name]);
+                      const reqs = (selectedScheme as Scheme)?.buktiAdministratif || [];
+                      const valid = reqs.every((req: SchemeRequirementItem) => eFormData[typeof req === 'string' ? req : req.name]);
                       if (!valid) {
                         setShowStep3Errors(true);
                       } else {
@@ -1538,10 +1562,10 @@ export default function PengajuanSkemaPage() {
                   value={tuk}
                   onChange={(e) => {
                     setTuk(e.target.value);
-                    if ((errors as any).tuk) setErrors({ ...errors, tuk: false } as any);
+                    if (errors.tuk) setErrors({ ...errors, tuk: false });
                   }}
                   className={`w-full px-3 py-2 text-xs rounded-lg border outline-none focus:ring-1 font-semibold text-slate-800 transition-all ${
-                    (errors as any).tuk
+                    errors.tuk
                       ? 'border-red-400 bg-red-50/10 focus:border-red-500 focus:ring-red-500/20'
                       : 'border-slate-300 focus:border-[#008BE3] focus:ring-[#008BE3] bg-white'
                   }`}
@@ -1550,7 +1574,7 @@ export default function PengajuanSkemaPage() {
                   <option value="Mandiri (Online)">Mandiri (Online)</option>
                   <option value="Sewaktu">Sewaktu</option>
                 </select>
-                {(errors as any).tuk && (
+                {errors.tuk && (
                   <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih TUK</p>
                 )}
               </div>
@@ -1596,13 +1620,13 @@ export default function PengajuanSkemaPage() {
         )}        {/* STEP 2: PERSYARATAN DASAR */}
         {step === 2 && (
           <FormDocumentTable
-            onAction={(doc: any) => { setActiveModalDoc(doc); if (doc.isEForm) setTempEFormData(eFormData[doc.name] || {}); }}
+            onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) ?? ({} as Record<string, unknown>)); }}
             title="Persyaratan Dasar"
             infoText="File Persyaratan Dasar akan ditampilkan pada Form APL - 01"
-            documents={((selectedScheme as any)?.persyaratanDasar || []).map((req: any) => ({
+            documents={((selectedScheme as Scheme)?.persyaratanDasar || []).map((req: SchemeRequirementItem) => ({
               required: true,
               name: typeof req === 'string' ? req : req.name,
-              description: typeof req === 'string' ? '' : req.description,
+              description: typeof req === 'string' ? '' : ('description' in req ? req.description : ''),
               type: 'File Upload'
             }))}
             eFormData={eFormData}
@@ -1613,12 +1637,12 @@ export default function PengajuanSkemaPage() {
         {/* STEP 3: BUKTI ADMINISTRATIF */}
         {step === 3 && (
           <FormDocumentTable
-            onAction={(doc: any) => { setActiveModalDoc(doc); if (doc.isEForm) setTempEFormData(eFormData[doc.name] || {}); }}
+            onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) || ({} as Record<string, unknown>)); }}
             title="Bukti Administratif"
             infoText="File Bukti Administratif akan ditampilkan pada Form APL - 01"
-            documents={((selectedScheme as any)?.buktiAdministratif || []).map((req: string) => ({
+            documents={((selectedScheme as Scheme)?.buktiAdministratif || []).map((req: SchemeRequirementItem) => ({
               required: true,
-              name: req,
+              name: typeof req === 'string' ? req : req.name,
               type: 'File Upload'
             }))}
             eFormData={eFormData}
@@ -1629,12 +1653,12 @@ export default function PengajuanSkemaPage() {
         {/* STEP 4: BUKTI KOMPETENSI */}
         {step === 4 && (
           <FormKompetensiTable
-            onAction={(doc: any) => { setActiveModalDoc(doc); if (doc.isEForm) setTempEFormData(eFormData[doc.name] || {}); }}
+            onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) || ({} as Record<string, unknown>)); }}
             eFormData={eFormData}
             title="Bukti Kompetensi"
             infoText="File Bukti Kompetensi akan ditampilkan pada Form APL - 02"
-            kompetensiList={((selectedScheme as any)?.units || []).flatMap((unit: any, uIdx: number) => 
-              (unit.elemen || []).map((el: any, eIdx: number) => ({
+            kompetensiList={((selectedScheme as Scheme)?.units || []).flatMap((unit: SchemeUnit, uIdx: number) => 
+              (unit.elemen || []).map((el: { title: string; kuk: string[] }, eIdx: number) => ({
                   id: `u${uIdx}e${eIdx}`,
                   unitTitle: unit.title,
                   unitCode: unit.code,
@@ -1650,7 +1674,7 @@ export default function PengajuanSkemaPage() {
         {step === 5 && (
           <div className="space-y-4">
             <FormDocumentTable
-              onAction={(doc: any) => { setActiveModalDoc(doc); if (doc.isEForm) setTempEFormData(eFormData[doc.name] || {}); }}
+              onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) || ({} as Record<string, unknown>)); }}
               title="Persyaratan Pendaftaran"
               infoText="Lengkapi formulir permohonan sertifikasi mandiri di bawah ini"
               documents={[
@@ -1692,9 +1716,9 @@ export default function PengajuanSkemaPage() {
 </>
       ) : activeModalDoc && activeModalDoc.isEForm ? (
         <>
-{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-[9999] font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
+{alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
 <div className="min-h-screen bg-slate-100 p-4 md:p-8 pb-24 w-full">
-          <div className="max-w-[800px] mx-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button 
                 onClick={() => setActiveModalDoc(null)}
@@ -1705,8 +1729,8 @@ export default function PengajuanSkemaPage() {
               </button>
             </div>
             
-            <div className="max-w-[800px] mx-auto bg-white shadow-xl p-8 md:p-12 min-h-[1123px] space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
-                {activeModalDoc.name.includes('APL.01') ? (
+            <div className="max-w-200 mx-auto bg-white shadow-xl p-8 md:p-12 min-h-280.75 space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
+                {activeModalDoc?.name?.includes('APL.01') ? (
                   <EFormApl01 
                     formData={{
                       namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, alamat: alamatWilayah, nik, 
@@ -1721,14 +1745,17 @@ export default function PengajuanSkemaPage() {
                     onChange={(val) => setTempEFormData(val)}
                       onSave={() => {
                         
-                        setEFormData({...eFormData, [activeModalDoc.name]: tempEFormData});
+                        {
+                          const key = String(activeModalDoc?.name ?? '');
+                          setEFormData({...eFormData, [key]: tempEFormData});
+                        }
                         showAlert('Data berhasil disimpan!');
                         setActiveModalDoc(null);
                         setTempFiles([]);
                       }}
                    
                   />
-                ) : activeModalDoc.name.includes('APL.02') ? (
+                ) : activeModalDoc?.name?.includes('APL.02') ? (
                   <EFormApl02 allData={eFormData} 
                     formData={{
                       namaLengkap,
@@ -1742,7 +1769,10 @@ export default function PengajuanSkemaPage() {
                     onChange={(val) => setTempEFormData(val)}
                       onSave={() => {
                         
-                        setEFormData({...eFormData, [activeModalDoc.name]: tempEFormData});
+                        {
+                          const key = String(activeModalDoc?.name ?? '');
+                          setEFormData({...eFormData, [key]: tempEFormData});
+                        }
                         showAlert('Data berhasil disimpan!');
                         setActiveModalDoc(null);
                         setTempFiles([]);
@@ -1759,15 +1789,15 @@ export default function PengajuanSkemaPage() {
                         Keterangan <span className="text-red-500">*</span>
                       </label>
                       <textarea 
-                        className="w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:border-[#008BE3] min-h-[100px]"
-                        value={eFormData[activeModalDoc.name] || ''}
-                        onChange={(e) => setEFormData({...eFormData, [activeModalDoc.name]: e.target.value})}
+                        className="w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:border-[#008BE3] min-h-25"
+                        value={(eFormData[activeModalDoc?.name ?? ''] as string) || ''}
+                        onChange={(e) => setEFormData({...eFormData, [activeModalDoc?.name ?? '']: e.target.value})}
                       ></textarea>
                     </div>
                   </>
                 )}
             </div>
-            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shadow-xl max-w-[800px] mx-auto rounded-b-lg mb-8">
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shadow-xl max-w-200 mx-auto rounded-b-lg mb-8">
               <button
                 onClick={() => {
                   setActiveModalDoc(null);
@@ -1780,23 +1810,23 @@ export default function PengajuanSkemaPage() {
               {!activeModalDoc.isPreview && (
                 <button
                   onClick={() => {
-                    if (activeModalDoc.name.includes('APL.01')) {
+                    if (activeModalDoc?.name?.includes('APL.01')) {
                       if (!tempEFormData.tujuan) {
                         showAlert('Harap isi Tujuan Asesmen');
                         return;
                       }
-                    } else if (activeModalDoc.name.includes('APL.02')) {
-                      let firstUnfilled = null;
-                      const elements = selectedScheme?.units?.flatMap((u: any, uIdx: number) => 
-                        (u.elemen || []).map((e: any, eIdx: number) => {
+                    } else if (activeModalDoc?.name?.includes('APL.02')) {
+                      let firstUnfilled: string | null = null;
+                      const elements: string[] = selectedScheme?.units?.flatMap((u: SchemeUnit, uIdx: number) => 
+                        (u.elemen || []).map((e: { title: string; kuk: string[] }, eIdx: number) => {
                           const key = `u${uIdx}e${eIdx}`;
-                          if (!tempEFormData.kompetensi?.[key] && !firstUnfilled) {
+                          if (!(tempEFormData.kompetensi as Record<string, unknown>)?.[key] && !firstUnfilled) {
                             firstUnfilled = key;
                           }
                           return key;
                         })
                       ) || [];
-                      const isAllChecked = elements.every((k: string) => tempEFormData.kompetensi?.[k]);
+                      const isAllChecked: boolean = elements.every((k: string) => (tempEFormData.kompetensi as Record<string, unknown>)?.[k]);
                       if (!isAllChecked) {
                         showAlert('Harap beri tanda K atau BK pada seluruh kriteria!');
                         if (firstUnfilled) {
@@ -1805,7 +1835,7 @@ export default function PengajuanSkemaPage() {
                         return;
                       }
                     }
-                    setEFormData({...eFormData, [activeModalDoc.name]: tempEFormData});
+                    setEFormData({...eFormData, [activeModalDoc.name || '']: tempEFormData});
                     showAlert('Data berhasil disimpan!');
                     setActiveModalDoc(null);
                     setTempFiles([]);
@@ -1825,7 +1855,7 @@ export default function PengajuanSkemaPage() {
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">
                 {activeModalDoc.isPreview ? 'Pratinjau Dokumen: ' : 'Lampirkan File: '}
-                {activeModalDoc.name || activeModalDoc.unit}
+                {(activeModalDoc.name as ReactNode) || (activeModalDoc.unit as ReactNode)}
               </h3>
               <button 
                 onClick={() => {
@@ -1841,7 +1871,7 @@ export default function PengajuanSkemaPage() {
             <div className="p-6">
               {activeModalDoc.isPreview ? (
                 <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative aspect-[4/3] flex items-center justify-center">
+                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative aspect-4/3 flex items-center justify-center">
                     <div className="text-center p-6 opacity-60">
                       <FileText size={48} className="mx-auto text-slate-400 mb-3" />
                       <p className="font-bold text-slate-500">Pratinjau Dokumen</p>
@@ -1854,7 +1884,9 @@ export default function PengajuanSkemaPage() {
                     </button>
                     <button onClick={() => {
                         const newEFormData = { ...eFormData };
-                        delete newEFormData[activeModalDoc.name];
+                        if (typeof activeModalDoc.name === 'string') {
+                          delete newEFormData[activeModalDoc.name];
+                        }
                         setEFormData(newEFormData);
                         setActiveModalDoc(null);
                         setTempFiles([]);
@@ -1873,17 +1905,17 @@ export default function PengajuanSkemaPage() {
                         onChange={(e) => {
                            if (e.target.value) {
                              const docName = e.target.value;
-                             const files = eFormData[docName] || [];
-                             setTempFiles([...tempFiles, ...files]);
+                             const files = (eFormData[docName] as File[]) || [];
+                             setTempFiles([...tempFiles, ...(Array.isArray(files) ? files : [])]);
                              e.target.value = "";
                            }
                         }}
                       >
                         <option value="">-- Pilih Dokumen --</option>
                         {[
-                          ...((selectedScheme as any)?.persyaratanDasar || []).map((req: any) => typeof req === 'string' ? req : req.name),
-                          ...((selectedScheme as any)?.buktiAdministratif || [])
-                        ].filter(docName => eFormData[docName] && eFormData[docName].length > 0).map((docName: string, idx: number) => (
+                          ...(selectedScheme?.persyaratanDasar || []).map((req: SchemeRequirementItem) => typeof req === 'string' ? req : req.name),
+                          ...(selectedScheme?.buktiAdministratif || []).map((req: SchemeRequirementItem) => typeof req === 'string' ? req : req.name)
+                        ].filter((docName: string) => (eFormData[docName] as File[]) && (eFormData[docName] as File[]).length > 0).map((docName: string, idx: number) => (
                           <option key={idx} value={docName}>{docName}</option>
                         ))}
                       </select>
@@ -1916,7 +1948,7 @@ export default function PengajuanSkemaPage() {
                         <div key={idx} className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
                           <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold">
                             <CheckCircle size={16} className="text-emerald-600 shrink-0" />
-                            <span className="truncate max-w-[200px] sm:max-w-xs">{file.name || 'Telah diunggah'}</span>
+                            <span className="truncate max-w-50 sm:max-w-xs">{file.name || 'Telah diunggah'}</span>
                           </div>
                           <button
                             onClick={() => {
@@ -1951,10 +1983,12 @@ export default function PengajuanSkemaPage() {
                       showAlert('Harap pilih file terlebih dahulu.');
                       return;
                     }
-                    setEFormData({...eFormData, [activeModalDoc.name]: tempFiles});
-                    showAlert('Data berhasil disimpan!');
-                    setActiveModalDoc(null);
-                    setTempFiles([]);
+                    if (typeof activeModalDoc.name === 'string') {
+                      setEFormData({...eFormData, [activeModalDoc.name]: tempFiles});
+                      showAlert('Data berhasil disimpan!');
+                      setActiveModalDoc(null);
+                      setTempFiles([]);
+                    }
                   }}
                   className="px-4 py-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold hover:bg-[#0076C2] transition-colors"
                 >
@@ -1966,7 +2000,7 @@ export default function PengajuanSkemaPage() {
         </div>
       )}
       {showExitWarning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <h3 className="font-black text-slate-800 text-lg">Peringatan</h3>
