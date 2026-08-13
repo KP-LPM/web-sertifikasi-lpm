@@ -18,6 +18,9 @@ export function EFormApl02({ formData, onChange, allData = {}, onSave }: { formD
     <div className="w-full bg-white">
       <FormFRAPL02
         asesmenData={{
+          id: formData.id || 0,
+          metode: formData.metode || '',
+          status: formData.status || '',
           nama: formData.namaLengkap || 'AHMAD FAUZI',
           skema: formData.skema || formData.schemeDetail?.name || 'Pengelolaan Pinjaman / Pembiayaan',
           noSkema: formData.nomorSkema || formData.schemeDetail?.code || '006/SKM/LSP-KJN/II/2023',
