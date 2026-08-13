@@ -93,6 +93,12 @@ interface Submission {
   berpengalaman?: boolean;
 }
 
+  // Breadcrumb type used with setExtraCrumbs
+  interface Breadcrumb {
+    label: string;
+    onClick?: () => void;
+  }
+
 // 2. Wajib menggunakan 'export default' untuk page.tsx di Next.js
 export default function PengajuanSkemaPage() {
   const { user, setExtraCrumbs } = useAppContext();
@@ -113,6 +119,9 @@ export default function PengajuanSkemaPage() {
     }
   }, [subView]);
 
+  // Selected submission to show in details modal
+  const [selectedDetailSubmission, setSelectedDetailSubmission] = useState<Submission | null>(null);
+
   React.useEffect(() => {
     const handleReset = () => setSubView('list');
     window.addEventListener('reset-eform', handleReset);
@@ -123,19 +132,24 @@ export default function PengajuanSkemaPage() {
   }, [setExtraCrumbs]);
 
   React.useEffect(() => {
-    if (subView === 'list') {
+    if (selectedDetailSubmission) {
+      // Saat melihat detail, munculkan breadcrumb ini
+      setExtraCrumbs([
+        { label: 'Detail Pengajuan' }
+      ] as Breadcrumb[]);
+    } else if (subView === 'list') {
       setExtraCrumbs([]);
     } else if (subView === 'choose-scheme') {
       setExtraCrumbs([
-        { label: 'Daftar Skema', path: '#' }
-      ]);
+        { label: 'Daftar Skema', onClick: () => handleExitRequest('list') }
+      ] as Breadcrumb[]);
     } else if (subView === 'apply-form') {
       setExtraCrumbs([
-        { label: 'Daftar Skema', path: '#' },
+        { label: 'Daftar Skema', onClick: () => handleExitRequest('list') },
         { label: 'Ajukan Skema' }
-      ]);
+      ] as Breadcrumb[]);
     }
-  }, [subView, setExtraCrumbs, handleExitRequest]);
+  }, [subView, selectedDetailSubmission]);  
   const [step, setStep] = useState(1);
   interface ActiveModalDoc {
     isEForm?: boolean;
@@ -178,8 +192,6 @@ export default function PengajuanSkemaPage() {
     }
     return [];
   });
-  // Selected submission to show in details modal
-  const [selectedDetailSubmission, setSelectedDetailSubmission] = useState<Submission | null>(null);
 
   // Filters for Submissions List (View 1)
   const [searchSub, setSearchSub] = useState('');
@@ -394,232 +406,229 @@ export default function PengajuanSkemaPage() {
   const totalSchemePages = Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
 
   // View 1: List View
+  // View 1: List View
   if (subView === 'list') {
     return (
       <>
       {alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
       <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
-        {/* Header Block matching mockup */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
-              <FileText size={20} className="stroke-[2.5]" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
-                Pengajuan Skema
-              </h2>
-              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
-                Daftar permohonan sertifikasi skema Anda
-              </p>
-              
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setSubView('choose-scheme');
-              setSchemePage(1);
-              setSearchScheme('');
-            }}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
-          >
-            <Plus size={16} className="stroke-3" />
-            <span>Ajukan Skema</span>
-          </button>
-        </div>
-
-        {/* Table representation matching other pages */}
-        <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <div className="min-w-0">
-              <h3 className="text-base font-black text-slate-900">Daftar Permohonan Sertifikasi</h3>
-            </div>
-            
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
-              {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
-                <Search className="text-gray-400" size={16} />
-                <input
-                  type="text"
-                  placeholder="Cari Skema Sertifikasi..."
-                  value={searchSub}
-                  onChange={(e) => {
-                    setSearchSub(e.target.value);
-                    setSubPage(1); setSchemePage(1);
-                  }}
-                  className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
-                />
+        
+        {/* --- BAGIAN TABEL (Disembunyikan jika detail sedang dibuka) --- */}
+        {!selectedDetailSubmission && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Header Block matching mockup */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+                  <FileText size={20} className="stroke-[2.5]" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
+                    Pengajuan Skema
+                  </h2>
+                  <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
+                    Daftar permohonan sertifikasi skema Anda
+                  </p>
+                </div>
               </div>
-
-              {/* Status Select Filter */}
-              <select
-                value={statusSubFilter}
-                onChange={(e) => {
-                  setStatusSubFilter(e.target.value);
-                  setSubPage(1); setSchemePage(1);
+              <button
+                onClick={() => {
+                  setSubView('choose-scheme');
+                  setSchemePage(1);
+                  setSearchScheme('');
                 }}
-                className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
               >
-                <option value="Semua">Semua Status</option>
-                <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
-                <option value="Disetujui">Disetujui</option>
-                <option value="Ditolak">Ditolak</option>
-              </select>
+                <Plus size={16} className="stroke-3" />
+                <span>Ajukan Skema</span>
+              </button>
+            </div>
 
-              {/* Date Input/Filter */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
+              <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-slate-900">Daftar Permohonan Sertifikasi</h3>
+                </div>
                 
-                <input
-                  type="date"
-                  value={dateSubFilter}
-                  onChange={(e) => {
-                    setDateSubFilter(e.target.value);
-                    setSubPage(1); setSchemePage(1);
-                  }}
-                  className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 font-semibold"
-                />
-              </div>
-            </div>
-          </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
+                  <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                    <Search className="text-gray-400" size={16} />
+                    <input
+                      type="text"
+                      placeholder="Cari Skema Sertifikasi..."
+                      value={searchSub}
+                      onChange={(e) => {
+                        setSearchSub(e.target.value);
+                        setSubPage(1); setSchemePage(1);
+                      }}
+                      className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+                    />
+                  </div>
 
-          <div className="overflow-x-auto relative ">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">Tanggal Pengajuan</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Status</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 top-0">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100/60 font-medium">
-                {paginatedSubmissions.length > 0 ? (
-                  paginatedSubmissions.map((item, idx) => (
-                    <tr key={item.id} className="group/row hover:bg-[#F9FAFC] transition-colors">
-                      <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          idx % 3 === 0 ? 'bg-[#008BE3]/10 text-[#008BE3]' :
-                          idx % 3 === 1 ? 'bg-[#84CC16]/10 text-[#73B412]' :
-                          'bg-slate-100 text-slate-600'
-                        }`}>
-                          {idx + 1}
-                        </div>
-                      </td>
-                      {/* Column 1: Skema Sertifikasi with colorful mockup-themed icon box */}
-                      <td className="px-6 py-4 min-w-87.5 max-w-125">
-                        <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-gray-900">
-                          <div className="min-w-0">
-                            <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">{item.name}</div>
-                            <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">{item.code}</div>
-                          </div>
-                        </div>
-                      </td>
-                      
-                      {/* Column 2: Tanggal Pengajuan */}
-                      <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Calendar size={14} className="text-gray-400" />
-                          {formatTanggal(item.date)}
-                        </span>
-                      </td>
-                      
-                      {/* Column 3: Status Badge */}
-                      <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                        {item.status === 'Disetujui' ? (
-                          <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                            Disetujui
-                          </span>
-                        ) : item.status === 'Ditolak' ? (
-                          <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
-                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                            Ditolak
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
-                            {item.status}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setSelectedDetailSubmission(item); }}
-                          className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors"
-                        >
-                          Detail
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 font-medium">
-                      Belum ada permohonan sertifikasi.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50">
-            <div className="min-w-0">
-              Menampilkan {submissions.length > 0 ? (subPage - 1) * itemsPerPage + 1 : 0} - {Math.min(subPage * itemsPerPage, submissions.length)} dari {submissions.length} permohonan
-            </div>
-            <div className="flex gap-2">
-              <button 
-                disabled={subPage === 1}
-                onClick={() => setSubPage(p => Math.max(1, p - 1))}
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Sebelumnya
-              </button>
-              <div className="hidden items-center gap-1 sm:flex">
-                {Array.from({ length: totalSubPages }, (_, i) => i + 1).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setSubPage(page)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
-                      subPage === page
-                        ? 'bg-[#008BE3] text-white border border-[#008BE3]'
-                        : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
-                    }`}
+                  <select
+                    value={statusSubFilter}
+                    onChange={(e) => {
+                      setStatusSubFilter(e.target.value);
+                      setSubPage(1); setSchemePage(1);
+                    }}
+                    className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
                   >
-                    {page}
-                  </button>
-                ))}
-              </div>
-              <button 
-                disabled={subPage === totalSubPages}
-                onClick={() => setSubPage(p => Math.min(totalSubPages, p + 1))}
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Selanjutnya
-              </button>
-            </div>
-          </div>
-        </section>
+                    <option value="Semua">Semua Status</option>
+                    <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
+                    <option value="Disetujui">Disetujui</option>
+                    <option value="Ditolak">Ditolak</option>
+                  </select>
 
-        {/* Beautiful Detail Modal Popup */}
+                  <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                    <input
+                      type="date"
+                      value={dateSubFilter}
+                      onChange={(e) => {
+                        setDateSubFilter(e.target.value);
+                        setSubPage(1); setSchemePage(1);
+                      }}
+                      className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto relative ">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">Tanggal Pengajuan</th>
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Status</th>
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs z-30 border-l border-white/10 top-0">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100/60 font-medium">
+                    {paginatedSubmissions.length > 0 ? (
+                      paginatedSubmissions.map((item, idx) => (
+                        <tr key={item.id} className="group/row hover:bg-[#F9FAFC] transition-colors">
+                          <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                              idx % 3 === 0 ? 'bg-[#008BE3]/10 text-[#008BE3]' :
+                              idx % 3 === 1 ? 'bg-[#84CC16]/10 text-[#73B412]' :
+                              'bg-slate-100 text-slate-600'
+                            }`}>
+                              {idx + 1}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 min-w-87.5 max-w-125">
+                            <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-gray-900">
+                              <div className="min-w-0">
+                                <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">{item.name}</div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">{item.code}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Calendar size={14} className="text-gray-400" />
+                              {formatTanggal(item.date)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                            {item.status === 'Disetujui' ? (
+                              <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                Disetujui
+                              </span>
+                            ) : item.status === 'Ditolak' ? (
+                              <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                Ditolak
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
+                                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                                {item.status}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setSelectedDetailSubmission(item); }}
+                              className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors"
+                            >
+                              Detail
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-8 text-center text-gray-500 font-medium">
+                          Belum ada permohonan sertifikasi.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50">
+                <div className="min-w-0">
+                  Menampilkan {submissions.length > 0 ? (subPage - 1) * itemsPerPage + 1 : 0} - {Math.min(subPage * itemsPerPage, submissions.length)} dari {submissions.length} permohonan
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    disabled={subPage === 1}
+                    onClick={() => setSubPage(p => Math.max(1, p - 1))}
+                    className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Sebelumnya
+                  </button>
+                  <div className="hidden items-center gap-1 sm:flex">
+                    {Array.from({ length: totalSubPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setSubPage(page)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                          subPage === page
+                            ? 'bg-[#008BE3] text-white border border-[#008BE3]'
+                            : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <button 
+                    disabled={subPage === totalSubPages}
+                    onClick={() => setSubPage(p => Math.min(totalSubPages, p + 1))}
+                    className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Selanjutnya
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* --- BAGIAN DETAIL PENGAJUAN (Inline, Bukan Modal) --- */}
         {selectedDetailSubmission && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-100 p-4 md:p-8 pb-24 w-full">
-            <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full pt-2 animate-in fade-in zoom-in-95 duration-200">
+            <div className="max-w-225 mx-auto">
               <div className="mb-4">
                 <button 
                   onClick={() => setSelectedDetailSubmission(null)}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-4 mt-0.5"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-4 mt-0.5 shadow-sm"
                   title="Kembali ke Daftar Pengajuan"
                 >
                   <ArrowLeft size={18} />
                 </button>
               </div>
 
-              <div className="max-w-200 mx-auto bg-white shadow-xl min-h-280.75 relative mb-8 text-slate-800 text-sm flex flex-col">
+              {/* Tampilan Kartu Detail yang Elegan */}
+              <div className="bg-white shadow-sm border border-slate-200 rounded-2xl relative mb-8 text-slate-800 text-sm flex flex-col overflow-hidden">
                 
                 {/* Modal Header */}
-                <div className="p-8 md:p-12 border-b-2 border-slate-800 flex flex-col gap-4">
+                <div className="p-8 md:p-10 border-b border-slate-200 flex flex-col gap-4 bg-slate-50/50">
                   <div className="flex justify-between items-start">
                     <div className="min-w-0">
                       <h1 className="font-serif text-xl font-bold text-slate-900">DETAIL PENGAJUAN</h1>
@@ -631,20 +640,20 @@ export default function PengajuanSkemaPage() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 mt-4">
+                  <div className="flex items-center gap-3 mt-2">
                     <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Status:</span>
                     {selectedDetailSubmission.status === 'Disetujui' ? (
-                      <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-xs uppercase tracking-wider font-bold">
+                      <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                         <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                         {selectedDetailSubmission.status}
                       </span>
                     ) : selectedDetailSubmission.status === 'Ditolak' ? (
-                      <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-xs uppercase tracking-wider font-bold">
+                      <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                         <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                         {selectedDetailSubmission.status}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full text-xs uppercase tracking-wider font-bold">
+                      <span className="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                         <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
                         {selectedDetailSubmission.status}
                       </span>
@@ -653,37 +662,37 @@ export default function PengajuanSkemaPage() {
                 </div>
                 
                 {/* Modal Content - Scrollable */}
-                <div className="p-8 md:p-12 overflow-y-auto space-y-8 flex-1">
+                <div className="p-8 md:p-10 space-y-8 flex-1 bg-white">
                   
                   {/* Row 1: Data Pribadi */}
                   <div className="min-w-0">
-                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-300 pb-2">Data Pribadi & Kontak</h4>
+                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Data Pribadi & Kontak</h4>
                     
-                    <table className="w-full border-collapse border border-slate-300 text-sm">
-                      <tbody>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold w-1/3">Nama Lengkap</td>
-                          <td className="border border-slate-300 p-2 font-bold">{selectedDetailSubmission.namaLengkap || '-'}</td>
+                    <table className="w-full border-collapse border border-slate-200 text-sm rounded-lg overflow-hidden">
+                      <tbody className="divide-y divide-slate-200">
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">Nama Lengkap</td>
+                          <td className="p-3 font-bold">{selectedDetailSubmission.namaLengkap || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">NIK</td>
-                          <td className="border border-slate-300 p-2">{selectedDetailSubmission.nik || '-'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">NIK</td>
+                          <td className="p-3">{selectedDetailSubmission.nik || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Tempat, Tanggal Lahir</td>
-                          <td className="border border-slate-300 p-2">{selectedDetailSubmission.tempatLahir ? `${selectedDetailSubmission.tempatLahir}, ${selectedDetailSubmission.tanggalLahir ? formatTanggal(selectedDetailSubmission.tanggalLahir) : '-'}` : '-'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Tempat, Tanggal Lahir</td>
+                          <td className="p-3">{selectedDetailSubmission.tempatLahir ? `${selectedDetailSubmission.tempatLahir}, ${selectedDetailSubmission.tanggalLahir ? formatTanggal(selectedDetailSubmission.tanggalLahir) : '-'}` : '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Jenis Kelamin</td>
-                          <td className="border border-slate-300 p-2">{selectedDetailSubmission.jenisKelamin || '-'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Jenis Kelamin</td>
+                          <td className="p-3">{selectedDetailSubmission.jenisKelamin || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Alamat Wilayah</td>
-                          <td className="border border-slate-300 p-2">{selectedDetailSubmission.alamatWilayah || '-'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Alamat Wilayah</td>
+                          <td className="p-3">{selectedDetailSubmission.alamatWilayah || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Kontak</td>
-                          <td className="border border-slate-300 p-2">
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Kontak</td>
+                          <td className="p-3">
                             {selectedDetailSubmission.noHp ? `HP: ${selectedDetailSubmission.noHp}` : ''} 
                             {selectedDetailSubmission.telepon ? ` | Telp: ${selectedDetailSubmission.telepon}` : ''}
                             {!selectedDetailSubmission.noHp && !selectedDetailSubmission.telepon ? '-' : ''}
@@ -695,25 +704,25 @@ export default function PengajuanSkemaPage() {
 
                   {/* Row 2: Pekerjaan */}
                   <div className="min-w-0">
-                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-300 pb-2">Data Pekerjaan</h4>
+                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Data Pekerjaan</h4>
                     
-                    <table className="w-full border-collapse border border-slate-300 text-sm">
-                      <tbody>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold w-1/3">Institusi / Perusahaan</td>
-                          <td className="border border-slate-300 p-2 font-bold">{selectedDetailSubmission.institusiPerusahaan || '-'}</td>
+                    <table className="w-full border-collapse border border-slate-200 text-sm rounded-lg overflow-hidden">
+                      <tbody className="divide-y divide-slate-200">
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">Institusi / Perusahaan</td>
+                          <td className="p-3 font-bold">{selectedDetailSubmission.institusiPerusahaan || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Jabatan</td>
-                          <td className="border border-slate-300 p-2">{selectedDetailSubmission.jabatan || '-'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Jabatan</td>
+                          <td className="p-3">{selectedDetailSubmission.jabatan || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Alamat Institusi</td>
-                          <td className="border border-slate-300 p-2">{selectedDetailSubmission.alamatInstitusi || '-'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Alamat Institusi</td>
+                          <td className="p-3">{selectedDetailSubmission.alamatInstitusi || '-'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-2 bg-slate-50 font-semibold">Kontak Institusi</td>
-                          <td className="border border-slate-300 p-2">
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Kontak Institusi</td>
+                          <td className="p-3">
                             {selectedDetailSubmission.kodePosInstitusi ? `Pos: ${selectedDetailSubmission.kodePosInstitusi}` : ''} 
                             {selectedDetailSubmission.faxInstitusi ? ` | Fax: ${selectedDetailSubmission.faxInstitusi}` : ''}
                             {!selectedDetailSubmission.kodePosInstitusi && !selectedDetailSubmission.faxInstitusi ? '-' : ''}
@@ -725,29 +734,29 @@ export default function PengajuanSkemaPage() {
 
                   {/* Row 3: Detail Skema */}
                   <div className="min-w-0">
-                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-300 pb-2">Detail Pelaksanaan Ujian</h4>
+                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Detail Pelaksanaan Ujian</h4>
                     
-                    <table className="w-full border-collapse border border-slate-300 text-sm">
-                      <tbody>
-                        <tr>
-                          <td className="border border-slate-300 p-1.5 sm:p-2 bg-slate-50 font-semibold w-2/5 sm:w-1/3">Kode Skema</td>
-                          <td className="border border-slate-300 p-1.5 sm:p-2 font-mono break-all">{selectedDetailSubmission.code}</td>
+                    <table className="w-full border-collapse border border-slate-200 text-sm rounded-lg overflow-hidden">
+                      <tbody className="divide-y divide-slate-200">
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">Kode Skema</td>
+                          <td className="p-3 font-mono break-all font-semibold text-slate-600">{selectedDetailSubmission.code}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-1.5 sm:p-2 bg-slate-50 font-semibold">Tanggal Pengajuan</td>
-                          <td className="border border-slate-300 p-1.5 sm:p-2">{formatTanggal(selectedDetailSubmission.date)}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Tanggal Pengajuan</td>
+                          <td className="p-3">{formatTanggal(selectedDetailSubmission.date)}</td>
                         </tr>
-                        <tr>
-                    <td className="border border-slate-300 p-1.5 sm:p-2 bg-slate-50 font-semibold">TUK</td>
-                    <td className="border border-slate-300 p-1.5 sm:p-2">{selectedDetailSubmission.tuk || 'Mandiri (Online)'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">TUK</td>
+                          <td className="p-3">{selectedDetailSubmission.tuk || 'Mandiri (Online)'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-1.5 sm:p-2 bg-slate-50 font-semibold">Penyesuaian Wajar</td>
-                          <td className="border border-slate-300 p-1.5 sm:p-2">{selectedDetailSubmission.penyesuaianWajar ? 'Ya' : 'Tidak'}</td>
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Penyesuaian Wajar</td>
+                          <td className="p-3">{selectedDetailSubmission.penyesuaianWajar ? 'Ya' : 'Tidak'}</td>
                         </tr>
-                        <tr>
-                          <td className="border border-slate-300 p-1.5 sm:p-2 bg-slate-50 font-semibold">Berpengalaman</td>
-                          <td className="border border-slate-300 p-1.5 sm:p-2">
+                        <tr className="hover:bg-slate-50 transition-colors">
+                          <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Berpengalaman</td>
+                          <td className="p-3">
                             {selectedDetailSubmission.berpengalaman ? 'Ya' : 'Belum'}
                           </td>
                         </tr>
@@ -757,12 +766,12 @@ export default function PengajuanSkemaPage() {
 
                   {/* Row 4: Lampiran Dokumen */}
                   <div className="min-w-0">
-                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-300 pb-2">Lampiran Dokumen & Persyaratan</h4>
+                    <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Lampiran Dokumen & Persyaratan</h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
+                        className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -779,7 +788,7 @@ export default function PengajuanSkemaPage() {
 
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
+                        className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -796,7 +805,7 @@ export default function PengajuanSkemaPage() {
 
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
+                        className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -813,7 +822,7 @@ export default function PengajuanSkemaPage() {
 
                       <a 
                         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer"
-                        className="p-4 border border-slate-300 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group"
+                        className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
@@ -832,7 +841,7 @@ export default function PengajuanSkemaPage() {
                 </div>
                 
                 {/* Modal Footer */}
-                <div className="p-6 md:p-8 border-t border-slate-300 bg-slate-50 flex justify-end gap-3 mt-auto">
+                <div className="p-6 md:p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 mt-auto">
                   <button
                     onClick={() => {
                       const printContent = `
@@ -846,7 +855,7 @@ export default function PengajuanSkemaPage() {
                       `;
                       showAlert(`Simulasi Cetak Bukti Pendaftaran:\n\n${printContent}`);
                     }}
-                    className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold text-sm px-4 py-2.5 rounded-lg transition-all"
+                    className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold text-sm px-4 py-2.5 rounded-lg transition-all shadow-xs"
                   >
                     Cetak Bukti
                   </button>
@@ -862,7 +871,7 @@ export default function PengajuanSkemaPage() {
           </div>
         )}
       </div>
-</>
+      </>
     );
   }
   // View 2: Choose Scheme View

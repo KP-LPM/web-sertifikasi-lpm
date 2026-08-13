@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
   Menu,
@@ -11,28 +12,15 @@ import {
   Languages,
   LogOut,
 } from "lucide-react";
- 
 
-// Path halaman profile per role. Sesuaikan kalau ada struktur folder yang beda.
 function getProfilePath(role: string | null | undefined) {
-  switch (role) {
-    case "asesi":
-      return "/asesi/profile";
-    case "asesor":
-      return "/assessor/profile";
-    case "admin":
-      return "/admin/profile";
-    case "direktur":
-    case "manajer":
-      return "/direktur/profile";
-    default:
-      return "/profile";
-  }
+  return "/profile";
 }
 
 export function Header() {
-  const { user, sidebarCollapsed, setSidebarCollapsed, logout } =
+  const { user, sidebarCollapsed, setSidebarCollapsed, logout, requestNavigation } =
     useAppContext();
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -59,7 +47,6 @@ export function Header() {
 
   if (!user) return null;
 
-  // Get initials for avatar badge
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -147,13 +134,15 @@ export function Header() {
 
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-              <Link
-                href={getProfilePath(user.role)}
-                onClick={() => setIsDropdownOpen(false)}
+              <button
+                onClick={() => {
+                  setIsDropdownOpen(false);
+                  requestNavigation(() => router.push(getProfilePath(user.role)));
+                }}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors"
               >
                 <UserIcon size={16} /> Profile
-              </Link>
+              </button>
               <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors">
                 <Languages size={16} /> Indonesia
               </button>

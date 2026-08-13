@@ -234,7 +234,7 @@ export default function Login() {
   if (isForgotPasswordView) {
     return (
       <div
-        className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 md:p-6 font-sans bg-cover bg-center bg-no-repeat"
+        className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 md:p-6 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage:
             "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
@@ -319,7 +319,7 @@ export default function Login() {
   if (!isLoginView) {
     return (
       <div
-        className="min-h-screen w-full overflow-y-auto flex items-center justify-center p-4 md:p-6 font-sans bg-cover bg-center bg-no-repeat"
+        className="min-h-screen w-full overflow-y-auto flex items-center justify-center p-4 md:p-6 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage:
             "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
@@ -718,14 +718,14 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setIsLoginView(true)}
-                  className="text-black w-full sm:w-auto px-5 py-2 border bg-white rounded-lg text-xs font-bold shadow-2xs"
+                  className="text-black w-full sm:w-auto px-5 py-2 border border-slate-200 bg-white hover:bg-slate-100 rounded-lg text-xs font-bold shadow-2xs transition-all cursor-pointer"
                 >
                   Kembali ke Login
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full sm:w-auto bg-[#008BE3] text-white px-6 py-2 rounded-lg text-xs font-bold shadow-xs"
+                  className="w-full sm:w-auto bg-[#008BE3] hover:bg-[#0076C2] active:scale-[0.99] text-white px-6 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow-md transition-all cursor-pointer"
                 >
                   {isLoading ? "Memproses..." : "Daftar Akun Baru"}
                 </button>
@@ -808,7 +808,7 @@ export default function Login() {
   // --- TAMPILAN LOGIN ---
   return (
     <div
-      className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 md:p-6 font-sans bg-cover bg-center bg-no-repeat"
+      className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 md:p-6 bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage:
           "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
@@ -899,14 +899,22 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setMode("asesi")}
-                  className={`flex-1 py-2 text-xs font-bold rounded-md ${mode === "asesi" ? "bg-white text-[#008BE3] shadow-xs" : "text-slate-500"}`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    mode === "asesi"
+                      ? "bg-white text-[#008BE3] shadow-xs border border-[#008BE3]"
+                      : "text-slate-500 border border-transparent hover:text-slate-700"
+                  }`}
                 >
                   Login Asesi
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("asesor")}
-                  className={`flex-1 py-2 text-xs font-bold rounded-md ${mode === "asesor" ? "bg-white text-[#008BE3] shadow-xs" : "text-slate-500"}`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    mode === "asesor"
+                      ? "bg-white text-[#008BE3] shadow-xs border border-[#008BE3]"
+                      : "text-slate-500 border border-transparent hover:text-slate-700"
+                  }`}
                 >
                   Login Asesor
                 </button>
@@ -973,16 +981,14 @@ export default function Login() {
                 </button>
               </div>
 
-              <div className="pt-1.5">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#008BE3] text-white font-bold py-2.5 rounded-lg text-xs flex justify-center gap-1.5"
-                >
+                  className="w-full bg-[#008BE3] hover:bg-[#0076C2] active:scale-[0.99] text-white font-bold py-2.5 rounded-lg text-xs flex justify-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer"
+                  >
                   <LogIn size={13} />
                   {isLoading ? "Memproses..." : "Masuk ke Aplikasi"}
                 </button>
-              </div>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
@@ -998,7 +1004,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setIsLoginView(false)}
-                className="w-full bg-white border text-slate-700 font-bold py-2.5 rounded-lg text-xs flex justify-center gap-1.5"
+                className="w-full bg-white border border-slate-200 hover:border-[#008BE3]/50 hover:bg-sky-50/30 text-slate-700 hover:text-[#008BE3] font-bold py-2.5 rounded-lg text-xs flex justify-center gap-1.5 transition-all shadow-2xs hover:shadow-sm cursor-pointer"
               >
                 <UserPlus size={13} />
                 Buat Akun

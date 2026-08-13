@@ -7,13 +7,12 @@ import { useAppContext } from "@/context/context";
 
 interface Crumb {
   label: string;
-  path?: string; // undefined = bukan link (misal breadcrumb terakhir/aktif)
+  path?: string; // Untuk pindah URL
+  onClick?: () => void; // Untuk pindah state/tampilan di halaman yang sama
 }
 
 // ==========================================================================
 // PETA RUTE -> BREADCRUMB
-// Key = path (tanpa trailing slash). Value = rantai breadcrumb dari root.
-// Tambahkan entri baru di sini setiap kali ada halaman baru.
 // ==========================================================================
 const ROUTE_CRUMBS: Record<string, Crumb[]> = {
   // ---------------- ASESOR ----------------
@@ -92,19 +91,26 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/asesi/overview": [{ label: "Dashboard" }],
   "/asesi/pengajuanskema": [
     { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Pengajuan Skema" },
+    // Diberi path agar saat masuk form detail, teks ini menjadi Link yang bisa diklik
+    { label: "Pengajuan Skema", path: "/asesi/pengajuanskema" }, 
   ],
   "/asesi/riwayatasesmen": [
     { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Riwayat & Sertifikat" },
+    // Label disesuaikan dengan kode asesi lama
+    { label: "Riwayat & Sertifikat", path: "/asesi/riwayatasesmen" }, 
   ],
   "/asesi/banding": [
     { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Banding Asesmen" },
+    { label: "Banding Asesmen", path: "/asesi/banding" },
+  ],
+  // Tambahan rute Ujian Online yang sebelumnya hilang
+  "/asesi/ujian": [
+    { label: "Dashboard", path: "/asesi/overview" },
+    { label: "Ujian Online", path: "/asesi/ujian" },
   ],
   "/asesi/profile": [
     { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Profil Saya" },
+    { label: "Profil Saya", path: "/asesi/profile" },
   ],
 
   // ---------------- ADMIN / DIREKTUR / MANAJER ----------------
@@ -140,12 +146,11 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
 
   const baseCrumbs = ROUTE_CRUMBS[pathname];
 
-  // Rute tidak terdaftar di peta (misal halaman baru yang belum ditambahkan) → sembunyikan.
   if (!baseCrumbs) return null;
 
+  // Gabungkan rute dasar dengan rute tambahan dari form/state
   const crumbs = [...baseCrumbs, ...(extraCrumbs || [])];
 
-  // Halaman utama/dashboard saja → tidak perlu breadcrumb.
   if (crumbs.length <= 1) return null;
 
   return (
@@ -154,24 +159,35 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
     >
       {crumbs.map((crumb, idx) => {
         const isLast = idx === crumbs.length - 1;
+        
         return (
           <React.Fragment key={idx}>
             {idx > 0 && <span className="text-slate-400 mx-1">/</span>}
-            {isLast || !crumb.path ? (
-              <span
-                className={
-                  isLast ? "text-[#008BE3] font-black" : "text-slate-500"
-                }
+            
+            {isLast ? (
+              // Jika ini langkah terakhir, tampilkan teks tebal berwarna biru
+              <span className="text-[#008BE3] font-black">{crumb.label}</span>
+            ) : "onClick" in crumb && crumb.onClick ? (
+              // type-narrow: extraCrumbs from context can have different shape,
+              // so ensure safe check for onClick
+              // Jika ini rute state (seperti saat klik kembali ke Daftar Skema), gunakan tombol
+              <button
+                onClick={crumb.onClick as React.MouseEventHandler<HTMLButtonElement>}
+                className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
               >
                 {crumb.label}
-              </span>
-            ) : (
+              </button>
+            ) : crumb.path ? (
+              // Jika ini rute URL normal, gunakan Link Next.js
               <Link
                 href={crumb.path}
-                className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase"
+                className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
               >
                 {crumb.label}
               </Link>
+            ) : (
+              // Jika tidak ada onClick dan tidak ada path, jadikan teks biasa
+              <span className="text-slate-500">{crumb.label}</span>
             )}
           </React.Fragment>
         );
