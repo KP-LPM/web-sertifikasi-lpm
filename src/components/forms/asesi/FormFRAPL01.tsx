@@ -2,10 +2,69 @@ import { SignatureField } from '@/components/forms/asesi/SignatureField';
 import React from 'react';
 import { Eye } from 'lucide-react';
 
-export function EFormApl01({ formData, onChange, onSave }: { formData: any, onChange: (val: any) => void, onSave?: () => void }) {
-  const Input = ({ field, label, fallback }: { field: string, label?: string, fallback?: string }) => {
-    if (formData?.readOnly) return <span>{formData[field] || fallback || ''}</span>;
-    return <input type="text" className="w-full border border-slate-300 rounded p-1 text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]" value={formData[field] || ''} onChange={(e) => onChange({...formData, [field]: e.target.value})} placeholder={fallback || ''} />;
+export interface FormDataType {
+  readOnly?: boolean;
+  isAdmin?: boolean;
+  tujuan?: string;
+  checklist?: Record<string, 'memenuhi' | 'tidak_memenuhi'>;
+  nik?: string;
+  tempatLahir?: string;
+  tanggalLahir?: string;
+  institusiPerusahaan?: string;
+  schemeDetail?: {
+    persyaratanDasar?: (string | { name: string })[];
+    buktiAdministratif?: string[];
+    buktiKompetensi?: string[];
+    [key: string]: unknown;
+  };
+  onPreview?: (req: string) => void;
+  [key: string]: unknown;
+}
+
+type SignatureValue = {
+  type: 'auto' | 'upload' | 'draw';
+  data?: string;
+};
+
+export function EFormApl01({ formData, onChange }: { formData: FormDataType, onChange: (val: FormDataType) => void }) {
+  const getSignatureValue = (value: unknown): SignatureValue | undefined => {
+    if (typeof value === 'object' && value !== null) {
+      const candidate = value as Partial<SignatureValue>;
+      if (candidate.type === 'auto' || candidate.type === 'upload' || candidate.type === 'draw') {
+        return {
+          type: candidate.type,
+          data: typeof candidate.data === 'string' ? candidate.data : undefined,
+        };
+      }
+    }
+
+    return value ? { type: 'auto' } : undefined;
+  };
+
+  const Input = ({ field, fallback }: { field: string, fallback?: string }) => {
+    const value = formData[field] as string | undefined;
+    if (formData?.readOnly) return <span>{value || fallback || ''}</span>;
+    return <input type="text" className="w-full border border-slate-300 rounded p-1 text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]" value={value || ''} onChange={(e) => onChange({...formData, [field]: e.target.value})} placeholder={fallback || ''} />;
+  };
+
+  // Menggunakan React.useState agar tidak error
+  const [highlightTujuan, setHighlightTujuan] = React.useState(false);
+
+  // Menggunakan React.useEffect
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setHighlightTujuan(true);
+      setTimeout(() => {
+        document.getElementById('tujuan-asesmen-row')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    };
+    window.addEventListener('scroll-to-apl01-error', handleScroll);
+    return () => window.removeEventListener('scroll-to-apl01-error', handleScroll);
+  }, []);
+
+  const handleChangeTujuan = (val: string) => {
+    setHighlightTujuan(false);
+    onChange({...formData, tujuan: val});
   };
 
   const handleCheck = (key: string, value: 'memenuhi' | 'tidak_memenuhi') => {
@@ -89,31 +148,39 @@ export function EFormApl01({ formData, onChange, onSave }: { formData: any, onCh
               <td className="border border-slate-300 p-2 font-semibold bg-white">Nomor :</td>
               <td className="border border-slate-300 p-2">006/SKM/LSP-KJN/II/2023</td>
             </tr>
-            <tr>
-              <td className="border border-slate-300 p-2 font-semibold bg-white" rowSpan={4}>Tujuan Asesmen {formData?.readOnly ? '' : <span className="text-red-500">*</span>} :</td>
+            
+            {/* Bagian Tujuan Asesmen yang sudah disempurnakan */}
+            <tr 
+              id="tujuan-asesmen-row" 
+              className={highlightTujuan && !formData.tujuan ? "bg-red-50 transition-colors shadow-inner" : ""}
+            >
+              <td className={`border border-slate-300 p-2 font-semibold bg-white ${highlightTujuan && !formData.tujuan ? "text-red-600 border-l-4 border-l-red-500" : ""}`} rowSpan={4}>
+                Tujuan Asesmen {formData?.readOnly ? '' : <span className="text-red-500">*</span>} :
+              </td>
               <td className="border border-slate-300 p-2 text-center">
-                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'Sertifikasi'} onChange={() => onChange({...formData, tujuan: 'Sertifikasi'})} />
+                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'Sertifikasi'} onChange={() => handleChangeTujuan('Sertifikasi')} />
               </td>
               <td className="border border-slate-300 p-2">Sertifikasi</td>
             </tr>
-            <tr>
+            <tr className={highlightTujuan && !formData.tujuan ? "bg-red-50" : ""}>
               <td className="border border-slate-300 p-2 text-center">
-                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'PKT'} onChange={() => onChange({...formData, tujuan: 'PKT'})} />
+                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'PKT'} onChange={() => handleChangeTujuan('PKT')} />
               </td>
               <td className="border border-slate-300 p-2">Pengakuan Kompetensi Terkini (PKT)</td>
             </tr>
-            <tr>
+            <tr className={highlightTujuan && !formData.tujuan ? "bg-red-50" : ""}>
               <td className="border border-slate-300 p-2 text-center">
-                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'RPL'} onChange={() => onChange({...formData, tujuan: 'RPL'})} />
+                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'RPL'} onChange={() => handleChangeTujuan('RPL')} />
               </td>
               <td className="border border-slate-300 p-2">Rekognisi Pembelajaran Lampau (RPL)</td>
             </tr>
-            <tr>
+            <tr className={highlightTujuan && !formData.tujuan ? "bg-red-50" : ""}>
               <td className="border border-slate-300 p-2 text-center">
-                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'Lainnya'} onChange={() => onChange({...formData, tujuan: 'Lainnya'})} />
+                <input type="radio" disabled={formData?.readOnly || formData?.isAdmin} name="tujuan" checked={formData.tujuan === 'Lainnya'} onChange={() => handleChangeTujuan('Lainnya')} />
               </td>
               <td className="border border-slate-300 p-2">Lainnya</td>
             </tr>
+
           </tbody>
         </table>
         </div>
@@ -131,23 +198,23 @@ export function EFormApl01({ formData, onChange, onSave }: { formData: any, onCh
             </tr>
           </thead>
           <tbody>
-            {(formData.schemeDetail?.persyaratanDasar || []).map((req: any, idx: number) => (
+            {(formData.schemeDetail?.persyaratanDasar || []).map((req: string | { name: string }, idx: number) => (
               <tr key={`dasar-${idx}`}>
                 <td className="border border-slate-300 p-2 whitespace-nowrap">
                   <div className="flex items-center justify-between gap-4">
                     <span className="whitespace-nowrap">{typeof req === 'string' ? req : req.name}</span>
                     {formData.onPreview && (
-                      <button type="button" onClick={() => formData.onPreview(typeof req === 'string' ? req : req.name)} className="text-[#008BE3] hover:text-[#0076C2] shrink-0">
+                      <button type="button" onClick={() => formData.onPreview?.(typeof req === 'string' ? req : req.name)} className="text-[#008BE3] hover:text-[#0076C2] shrink-0">
                          <Eye size={14} />
                       </button>
                     )}
                   </div>
                 </td>
                 <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                  <input type="checkbox" checked={formData?.checklist?.[typeof req === 'string' ? req : req.name] === 'memenuhi'} onChange={(e) => handleCheck(typeof req === 'string' ? req : req.name, 'memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"/>
+                  <input type="checkbox" checked={formData?.checklist?.[typeof req === 'string' ? req : req.name] === 'memenuhi'} onChange={() => handleCheck(typeof req === 'string' ? req : req.name, 'memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"/>
                 </td>
                 <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                  <input type="checkbox" checked={formData?.checklist?.[typeof req === 'string' ? req : req.name] === 'tidak_memenuhi'} onChange={(e) => handleCheck(typeof req === 'string' ? req : req.name, 'tidak_memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-red-500 focus:ring-red-500 rounded border-gray-300"/>
+                  <input type="checkbox" checked={formData?.checklist?.[typeof req === 'string' ? req : req.name] === 'tidak_memenuhi'} onChange={() => handleCheck(typeof req === 'string' ? req : req.name, 'tidak_memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-red-500 focus:ring-red-500 rounded border-gray-300"/>
                 </td>
               </tr>
             ))}
@@ -157,17 +224,17 @@ export function EFormApl01({ formData, onChange, onSave }: { formData: any, onCh
                   <div className="flex items-center justify-between gap-4">
                     <span className="whitespace-nowrap">{req}</span>
                     {formData.onPreview && (
-                      <button type="button" onClick={() => formData.onPreview(req)} className="text-[#008BE3] hover:text-[#0076C2] shrink-0">
+                      <button type="button" onClick={() => formData.onPreview?.(req)} className="text-[#008BE3] hover:text-[#0076C2] shrink-0">
                          <Eye size={14} />
                       </button>
                     )}
                   </div>
                 </td>
                 <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                  <input type="checkbox" checked={formData?.checklist?.[req] === 'memenuhi'} onChange={(e) => handleCheck(req, 'memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"/>
+                  <input type="checkbox" checked={formData?.checklist?.[req] === 'memenuhi'} onChange={() => handleCheck(req, 'memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"/>
                 </td>
                 <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                  <input type="checkbox" checked={formData?.checklist?.[req] === 'tidak_memenuhi'} onChange={(e) => handleCheck(req, 'tidak_memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-red-500 focus:ring-red-500 rounded border-gray-300"/>
+                  <input type="checkbox" checked={formData?.checklist?.[req] === 'tidak_memenuhi'} onChange={() => handleCheck(req, 'tidak_memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-red-500 focus:ring-red-500 rounded border-gray-300"/>
                 </td>
               </tr>
             ))}
@@ -177,17 +244,17 @@ export function EFormApl01({ formData, onChange, onSave }: { formData: any, onCh
                   <div className="flex items-center justify-between gap-4">
                     <span className="whitespace-nowrap">{req}</span>
                     {formData.onPreview && (
-                      <button type="button" onClick={() => formData.onPreview(req)} className="text-[#008BE3] hover:text-[#0076C2] shrink-0">
+                      <button type="button" onClick={() => formData.onPreview?.(req)} className="text-[#008BE3] hover:text-[#0076C2] shrink-0">
                          <Eye size={14} />
                       </button>
                     )}
                   </div>
                 </td>
                 <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                  <input type="checkbox" checked={formData?.checklist?.[req] === 'memenuhi'} onChange={(e) => handleCheck(req, 'memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"/>
+                  <input type="checkbox" checked={formData?.checklist?.[req] === 'memenuhi'} onChange={() => handleCheck(req, 'memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"/>
                 </td>
                 <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                  <input type="checkbox" checked={formData?.checklist?.[req] === 'tidak_memenuhi'} onChange={(e) => handleCheck(req, 'tidak_memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-red-500 focus:ring-red-500 rounded border-gray-300"/>
+                  <input type="checkbox" checked={formData?.checklist?.[req] === 'tidak_memenuhi'} onChange={() => handleCheck(req, 'tidak_memenuhi')} disabled={formData?.readOnly || !formData?.isAdmin} className="text-red-500 focus:ring-red-500 rounded border-gray-300"/>
                 </td>
               </tr>
             ))}
@@ -218,7 +285,7 @@ export function EFormApl01({ formData, onChange, onSave }: { formData: any, onCh
                 <p className="mt-2">sebagai peserta sertifikasi</p>
                 <div className="mt-4">
                   <p className="font-bold">Catatan:</p>
-                  <textarea value={formData?.catatan || ''} onChange={(e) => formData?.isAdmin && onChange({...formData, catatan: e.target.value})} disabled={!formData?.isAdmin} className="w-full h-16 border border-slate-300 bg-white p-1"></textarea>
+                  <textarea value={(formData?.catatan as string) || ''} onChange={(e) => formData?.isAdmin && onChange({...formData, catatan: e.target.value})} disabled={!formData?.isAdmin} className="w-full h-16 border border-slate-300 bg-white p-1"></textarea>
                 </div>
               </td>
               <td className="border border-slate-300 p-4 w-1/2 align-top">
@@ -229,22 +296,22 @@ export function EFormApl01({ formData, onChange, onSave }: { formData: any, onCh
                 </div>
                 <div className="mb-4">
                   <span className="font-semibold inline-block mb-1">Tanda Tangan dan Tanggal: {(!formData.readOnly && !formData.isAdmin) ? <span className="text-red-500">*</span> : ''}</span>
-                  <SignatureField value={typeof formData.ttdAsesi === 'object' ? formData.ttdAsesi : (formData.ttdAsesi ? {type: 'auto'} : undefined)} onChange={(val) => onChange({...formData, ttdAsesi: val})} readOnly={formData.readOnly || formData.isAdmin} fallbackName={formData.signature || formData.namaLengkap} />
+                  <SignatureField value={getSignatureValue(formData.ttdAsesi)} onChange={(val) => onChange({...formData, ttdAsesi: val})} readOnly={formData.readOnly || formData.isAdmin} fallbackName={(formData.signature as string) || (formData.namaLengkap as string)} />
                 </div>
                 <div className="border-t border-slate-300 pt-4 mt-6">
                   <p className="font-bold mb-2">Admin LSP :</p>
                   <div className="mb-4">
                     <span className="font-semibold inline-block w-20">Nama:</span>
                     {formData?.isAdmin ? (
-                      <input type="text" className="border border-slate-300 rounded p-1 text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]" value={formData.namaAdmin || ''} onChange={(e) => onChange({...formData, namaAdmin: e.target.value})} placeholder="Nama Admin" />
+                      <input type="text" className="border border-slate-300 rounded p-1 text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]" value={(formData.namaAdmin as string) || ''} onChange={(e) => onChange({...formData, namaAdmin: e.target.value})} placeholder="Nama Admin" />
                     ) : (
-                      <span className="text-gray-400">{formData.namaAdmin || '....................'}</span>
+                      <span className="text-gray-400">{(formData.namaAdmin as string) || '....................'}</span>
                     )}
                   </div>
                   <div className="min-w-0">
                     <span className="font-semibold inline-block mb-1">Tanda Tangan dan Tanggal: {formData.isAdmin ? <span className="text-red-500">*</span> : ''}</span>
                     {formData?.isAdmin || formData?.ttdAdmin ? (
-                      <SignatureField value={typeof formData.ttdAdmin === 'object' ? formData.ttdAdmin : (formData.ttdAdmin ? {type: 'auto'} : undefined)} onChange={(val) => onChange({...formData, ttdAdmin: val})} readOnly={!formData?.isAdmin} fallbackName={formData.namaAdmin} />
+                      <SignatureField value={getSignatureValue(formData.ttdAdmin)} onChange={(val) => onChange({...formData, ttdAdmin: val})} readOnly={!formData?.isAdmin} fallbackName={(formData.namaAdmin as string)} />
                     ) : (
                       <div className="border border-slate-300 rounded bg-white p-2 h-16 text-center text-gray-400 flex items-center justify-center">
                         (Diisi oleh LSP)

@@ -9,8 +9,6 @@ import { Sidebar } from "./Sidebar";
 import { Breadcrumb } from "./Breadcrumb";
 import { useRouter } from "next/navigation";
 
-// Halaman-halaman yang TIDAK PERNAH boleh dibungkus Header/Sidebar,
-// terlepas dari status login user (mencegah flash saat transisi login).
 const AUTH_ROUTES = ["/login", "/register"];
 
 export default function ClientLayout({
@@ -30,8 +28,6 @@ export default function ClientLayout({
   const router = useRouter();
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname?.startsWith(route));
 
-  // Selama proses logout, tampilkan overlay penuh layar
-  // supaya tidak ada jeda "sidebar hilang tapi konten masih ada".
   if (isLoggingOut) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]">
@@ -40,20 +36,17 @@ export default function ClientLayout({
     );
   }
 
-  // Di halaman auth, atau saat user belum login, tampilkan children polos
-  // tanpa Header/Sidebar — walaupun context.user sudah sempat sinkron
-  // duluan sebelum redirect selesai.
   if (isAuthRoute || !user) {
     return <>{children}</>;
   }
 
+  // SEMUA ROLE (Asesi, Asesor, Admin) AKAN MENGGUNAKAN LAYOUT INI
   return (
     <div className="min-h-screen flex flex-col bg-[#F8F9FC]">
       <div className="flex flex-1">
-        {/* Sidebar Navigasi */}
+        
         <Sidebar />
 
-        {/* Kolom kanan: Header + Konten, satu wrapper, satu sumber offset */}
         <div
           className={`flex-1 flex flex-col min-h-screen min-w-0 md:ml-20 ${
             sidebarCollapsed ? "lg:ml-20" : "lg:ml-72"
@@ -61,16 +54,19 @@ export default function ClientLayout({
         >
           <Header />
 
-          <main className="flex-1 flex flex-col min-w-0">
-            <div className="px-4 md:px-6 pt-4 pb-1">
+
+          <main className="flex-1 flex flex-col min-w-0 px-4 md:px-8 pt-6 pb-12">
+            
+            <div className="empty:hidden -mt-2 md:-mt-2 pb-5">
               <Breadcrumb />
             </div>
+            
             <div className="flex-1 min-w-0">{children}</div>
           </main>
         </div>
       </div>
 
-      {/* Floating Help Button (WhatsApp) */}
+      {/* Floating Help Button */}
       <a
         href="https://wa.me/628123456789"
         target="_blank"
@@ -84,7 +80,7 @@ export default function ClientLayout({
         <span className="absolute right-[60px] top-1/2 -translate-y-1/2 border-8 border-transparent border-l-gray-900 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity"></span>
       </a>
 
-      {/* Global Navigation Warning Modal (Form Dirty Protection) */}
+      {/* Warning Modal */}
       {pendingNavigation && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div

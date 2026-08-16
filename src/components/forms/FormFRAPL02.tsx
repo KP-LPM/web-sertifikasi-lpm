@@ -47,7 +47,7 @@ export interface FormFRAPL02Props {
   units?: Array<{
     code: string;
     title: string;
-    elemen: Array<{
+    elemen?: Array<{
       title: string;
       kuk: string[];
     }>;
@@ -124,9 +124,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     matchedScheme?.units ||
     DEFAULT_APL02_UNITS;
   const [localAnswers, setLocalAnswers] = useState<Record<string, "K" | "BK">>({
-    u0e0: "K",
-    u0e1: "K",
-    u1e0: "K",
   });
   const [localRekomendasi, setLocalRekomendasi] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
@@ -407,7 +404,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                           type="radio"
                           disabled={props.readOnly}
                           name={fieldKey}
-                          checked={(answers[fieldKey] || "K") === "K"}
+                          checked={answers[fieldKey] === "K"}
                           onChange={() =>
                             handleAnswerChangeInternal(fieldKey, "K")
                           }

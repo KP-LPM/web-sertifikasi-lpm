@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
-import { useAppContext } from "../../context/context";
+import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
 
 export default function Profile() {
@@ -34,25 +34,23 @@ export default function Profile() {
           ? "Admin"
           : "Asesi",
     username: registeredProfile?.nama
-      ? registeredProfile.nama.toLowerCase().replace(/\s+/g, "")
-      : "ahmadfauzi96",
+      ? (registeredProfile.nama as string).toLowerCase().replace(/\s+/g, "")
+      : "",
     email:
-      registeredProfile?.email || user?.email || "ahmad.fauzi@uin-suka.ac.id",
-    namaLengkap: registeredProfile?.nama || user?.name || "Ahmad Fauzi",
-    tempatLahir: "Bandung",
-    tanggalLahir: "1996-07-13",
-    jenisKelamin: registeredProfile?.jenisKelamin || "Laki-laki",
-    alamat: registeredProfile?.alamatRumah || "Jl Cipadung",
-    alamatWilayah:
-      registeredProfile?.alamatWilayah ||
-      "CILEUNYI KULON - CILEUNYI - KABUPATEN BANDUNG - JAWA BARAT",
-    kodePos: registeredProfile?.kodePos || "40261",
-    nik: registeredProfile?.nik || "3273253011090045",
-    noRegistrasi: registeredProfile?.noRegistrasi || "REG-2023-0001",
-    noTelp: registeredProfile?.noTelp || "081234567890",
-    pekerjaan: registeredProfile?.pekerjaan || "PNS",
-    pendidikanTerakhir: registeredProfile?.pendidikanTerakhir || "SMA",
-    tandaTangan: registeredProfile?.tandaTangan || "",
+      (registeredProfile?.email as string) || user?.email || "",
+    namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
+    tempatLahir: (registeredProfile?.tempatLahir as string) || "",
+    tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
+    jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
+    alamat: (registeredProfile?.alamatRumah as string) || "",
+    alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
+    kodePos: (registeredProfile?.kodePos as string) || "",
+    nik: (registeredProfile?.nik as string) || "",
+    noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
+    noTelp: (registeredProfile?.noTelp as string) || "",
+    pekerjaan: (registeredProfile?.pekerjaan as string) || "",
+    pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
+    tandaTangan: (registeredProfile?.tandaTangan as string) || "",
   });
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +82,7 @@ export default function Profile() {
     if (isSignatureModalOpen && formData.tandaTangan && signatureRef.current) {
       // Small timeout to ensure canvas is fully mounted and sized
       setTimeout(() => {
-        signatureRef.current?.fromDataURL(formData.tandaTangan);
+        signatureRef.current?.fromDataURL(formData.tandaTangan as string);
       }, 50);
     }
   }, [isSignatureModalOpen, formData.tandaTangan]);
@@ -118,7 +116,7 @@ export default function Profile() {
             <h2 className="text-xl font-black text-slate-800 tracking-tight">
               Profil Pengguna
             </h2>
-            <p className="text-slate-500 font-medium text-xs mt-0 leading-[15px]">
+            <p className="text-slate-500 font-medium text-xs mt-0 leading-3.75">
               Kelola data diri dan informasi akun Anda
             </p>
           </div>
