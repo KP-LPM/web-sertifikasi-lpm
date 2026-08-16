@@ -18,6 +18,7 @@ model User {
   resetTokenExpiry   DateTime? @map("reset_token_expiry")
 
   profil     ProfilPengguna?
+  pengajuanSkema   PengajuanSkema[]
 
   @@map("users")
 }
@@ -36,10 +37,14 @@ model ProfilPengguna {
   noHp               String?       @map("no_hp") @db.VarChar(20)
   pendidikanTerakhir String?       @map("pendidikan_terakhir") @db.VarChar(100)
   pekerjaan          String?       @db.VarChar(100)
-  alamat             String?       // Di Postgres, String otomatis jadi tipe text
-  alamatWilayah      String?       @map("alamat_wilayah") @db.VarChar(255)
+  alamat             String?       
+  
+  // SUDAH DIPERBAIKI: Menggunakan kode wilayah
+  kodeProvinsi       String?       @map("kode_provinsi") @db.VarChar(10)
+  kodeKota           String?       @map("kode_kota") @db.VarChar(10)
+  
   kodePos            String?       @map("kode_pos") @db.VarChar(10)
-  tandaTangan        String?       @map("tanda_tangan") // Di Postgres String cukup untuk Base64
+  tandaTangan        String?       @map("tanda_tangan") 
   
   // Khusus Asesor
   nomorRegistrasiMet String?       @map("nomor_registrasi_met") @db.VarChar(100)
@@ -68,4 +73,138 @@ enum Role {
 enum JenisKelamin {
   Perempuan
   Laki_laki @map("Laki-laki")
+}
+
+model MasterSkema {
+  id             Int      @id @default(autoincrement())
+  kodeSkema      String   @unique @map("kode_skema")
+  namaSkema      String   @map("nama_skema")
+  statusAktif    Boolean  @map("status_aktif")
+
+  persyaratanDasar  MasterPersyaratanDasar[]
+  unitKompetensi    MasterUnitKompetensi[]
+  pengajuanSkema    PengajuanSkema[]
+
+  @@map("master_skema")
+}
+
+model MasterPersyaratanDasar {
+  id          Int         @id @default(autoincrement())
+  skemaId     Int         @map("skema_id")
+  skema       MasterSkema @relation(fields: [skemaId], references: [id])
+  namaDokumen String      @map("nama_dokumen")
+  deskripsi   String
+  urutan      Int
+  isWajib     Boolean     @default(true) @map("is_wajib")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@map("master_persyaratan_dasar")
+}
+
+model MasterBuktiAdministratif {
+  id          Int      @id @default(autoincrement())
+  namaDokumen String   @map("nama_dokumen")
+  isWajib     Boolean  @default(true) @map("is_wajib")
+  isAktif     Boolean  @default(true) @map("is_aktif")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // pendaftaranBuktiAdministratif PendaftaranBuktiAdministratif[]
+
+  @@map("master_bukti_administratif")
+}
+
+model MasterUnitKompetensi {
+  id         Int         @id @default(autoincrement())
+  skemaId    Int         @map("skema_id")
+  skema      MasterSkema @relation(fields: [skemaId], references: [id])
+  kodeUnit   String      @map("kode_unit")
+  judulUnit  String      @map("judul_unit")
+  urutan     Int
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  elemenKompetensi MasterElemenKompetensi[]
+  asesmenMandiri   AsesmenMandiri[]
+
+  @@map("master_unit_kompetensi")
+}
+
+model MasterElemenKompetensi {
+  id                 Int                  @id @default(autoincrement())
+  unitId             Int                  @map("unit_id")
+  unit               MasterUnitKompetensi @relation(fields: [unitId], references: [id])
+  namaElemen         String               @map("nama_elemen")
+  kriteriaUnjukKerja String               @map("kriteria_unjuk_kerja")
+  urutan             Int
+  isWajib            Boolean              @default(true) @map("is_wajib")
+  createdAt          DateTime             @default(now()) @map("created_at")
+
+  @@map("master_elemen_kompetensi")
+}
+
+model PengajuanSkema {
+  id             Int           @id @default(autoincrement())
+  nomorPengajuan String        @unique @map("nomor_pengajuan")
+  userId         Int           @map("user_id")
+  user           User          @relation(fields: [userId], references: [id])
+  skemaId        Int           @map("skema_id")
+  skema          MasterSkema   @relation(fields: [skemaId], references: [id])
+  tuk            String        @map("tuk") @db.VarChar(100)
+  jenisAsesmen   String        @map("jenis_asesmen") @db.VarChar(100)
+  status         String        @db.VarChar(50)
+  tglPengajuan   DateTime      @default(now()) @map("tgl_pengajuan")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  dataPribadi    PendaftaranDataPribadi?
+  asesmenMandiri AsesmenMandiri[]
+
+  @@map("pengajuan_skema")
+}
+
+model PendaftaranDataPribadi {
+  id                        Int             @id @default(autoincrement())
+  pengajuanId               Int             @unique @map("pengajuan_id")
+  pengajuan                 PengajuanSkema  @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+  
+  // Snapshot Data Saat Mendaftar
+  nik                       String          @db.VarChar(16)
+  namaLengkap               String          @map("nama_lengkap")
+  tempatLahir               String          @map("tempat_lahir")
+  tanggalLahir              DateTime        @db.Date @map("tanggal_lahir")
+  jenisKelamin              JenisKelamin    @map("jenis_kelamin")
+  alamat                    String          
+  kodeProvinsi              String          @map("kode_provinsi") @db.VarChar(10)
+  kodeKota                  String          @map("kode_kota") @db.VarChar(10)
+  kodePosAsesi              String          @map("kode_pos_asesi") @db.VarChar(10)
+  kebangsaan                String
+  noHp                      String          @map("no_hp")
+  pendidikanTerakhir        String          @map("pendidikan_terakhir")
+  pekerjaan                 String
+  tandaTangan               String          @map("tanda_tangan")
+  
+  memerlukanPenyesuaianWajar Boolean        @default(false) @map("memerlukan_penyesuaian_wajar")
+  isBerpengalaman           Boolean         @default(false) @map("is_berpengalaman")
+  
+  createdAt                 DateTime        @default(now()) @map("created_at")
+  updatedAt                 DateTime        @updatedAt @map("updated_at")
+
+  @@map("pendaftaran_data_pribadi")
+}
+
+// INI TABEL UNTUK FORM APL 02
+model AsesmenMandiri {
+  id              Int                  @id @default(autoincrement())
+  pengajuanId     Int                  @map("pengajuan_id")
+  pengajuan       PengajuanSkema       @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+  unitId          Int                  @map("unit_id")
+  unitKompetensi  MasterUnitKompetensi @relation(fields: [unitId], references: [id])
+  
+  penilaianAsesi  String               @map("penilaian_asesi") @db.VarChar(5) // K atau BK
+  penilaianAsesor String?              @map("penilaian_asesor") @db.VarChar(5) // MS atau BMS
+  catatanAsesor   String?              @map("catatan_asesor")
+  
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@map("asesmen_mandiri")
 }
