@@ -1,4 +1,4 @@
-import { User, Scheme, Candidate, Session } from "../types/types";
+import { User, Scheme, Candidate, ExamSession } from "../types/types";
 
 export const currentUser: User = {
   id: "u1",
@@ -85,7 +85,7 @@ export const candidatesData: Candidate[] = [
   },
 ];
 
-export const sessionsData: Session[] = [
+export const sessionsData: ExamSession[] = [
   {
     id: "s1",
     date: "Oct 24, 2023",

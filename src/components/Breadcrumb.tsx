@@ -103,8 +103,6 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
   "/asesi/overview": [{ label: "Dashboard" }],
   "/asesi/pengajuanskema": [
     { label: "Dashboard", path: "/asesi/overview" },
-    // Diberi path agar saat masuk form detail, teks ini menjadi Link yang bisa diklik
-    { label: "Pengajuan Skema", path: "/asesi/pengajuanskema" },
   ],
   "/asesi/riwayatasesmen": [
     { label: "Dashboard", path: "/asesi/overview" },
