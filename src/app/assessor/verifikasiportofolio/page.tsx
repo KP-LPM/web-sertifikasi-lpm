@@ -35,6 +35,8 @@ export default function VerifikasiPortofolio() {
       id: "PF-001",
       skema: "Pemrograman Web",
       namaDokumen: "Sertifikat Industri Web Developer",
+      statusAsesor: "Asesor dari UIN Bandung",
+      alamatLsp: "UIN Sunan Gunung Djati Bandung",
       deskripsi:
         "Sertifikat pelatihan intensif Fullstack Web Development dan uji kompetensi aplikasi web.",
       tanggal: "25 Jul 2026",
@@ -49,10 +51,14 @@ export default function VerifikasiPortofolio() {
       id: "PF-002",
       skema: "Teknisi Muda Jaringan Komputer",
       namaDokumen: "Portofolio Implementasi Network Topology",
+      statusAsesor: "Asesor dari Luar",
+      alamatLsp: "LSP Komputer Indonesia, Jl. Gatot Subroto No. 45 Jakarta",
       deskripsi:
         "Laporan dokumentasi hasil proyek perancangan dan instalasi jaringan LAN UIN SGD.",
       tanggal: "26 Jul 2026",
-      fileName: "Portofolio_Network_Topology.pdf",
+      fileName: "File_Peminjaman_Asesor_Networking.pdf",
+      filePeminjamanName: "File_Peminjaman_Asesor_Networking.pdf",
+      fileJawabanName: "Konfirmasi_Peminjaman_LSP_Komputer.pdf",
       fileSize: "3.4 MB",
       fileType: "application/pdf",
       status: "Menunggu Verifikasi",
@@ -61,6 +67,8 @@ export default function VerifikasiPortofolio() {
       id: "PF-003",
       skema: "Desain Grafis",
       namaDokumen: "Sertifikat Kompetensi Adobe Illustrator",
+      statusAsesor: "Asesor dari UIN Bandung",
+      alamatLsp: "UIN Sunan Gunung Djati Bandung",
       deskripsi: "Sertifikat lisensi internasional kemampuan desain vektor.",
       tanggal: "20 Jul 2026",
       fileName: "Sertifikat_Adobe_Illustrator.pdf",
@@ -92,9 +100,17 @@ export default function VerifikasiPortofolio() {
   const [formData, setFormData] = useState({
     skema: AVAILABLE_SCHEMES[0],
     namaDokumen: "",
+    statusAsesor: "Asesor dari UIN Bandung" as
+      | "Asesor dari UIN Bandung"
+      | "Asesor dari Luar",
+    alamatLsp: "UIN Sunan Gunung Djati Bandung",
     deskripsi: "",
     selectedFile: null as File | null,
+    filePeminjaman: null as File | null,
+    fileJawaban: null as File | null,
     fileNamePlaceholder: "",
+    filePeminjamanPlaceholder: "",
+    fileJawabanPlaceholder: "",
   });
 
   const filteredPortfolios = portfolios.filter((p) => {
@@ -114,7 +130,7 @@ export default function VerifikasiPortofolio() {
   ).length;
   const rejectedCount = portfolios.filter((p) => p.status === "Ditolak").length;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSingleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFormData((prev) => ({
@@ -124,12 +140,57 @@ export default function VerifikasiPortofolio() {
       }));
     }
   };
+  const handlePeminjamanFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormData((prev) => ({
+        ...prev,
+        filePeminjaman: file,
+        filePeminjamanPlaceholder: file.name,
+      }));
+    }
+  };
 
+  const handleJawabanFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormData((prev) => ({
+        ...prev,
+        fileJawaban: file,
+        fileJawabanPlaceholder: file.name,
+      }));
+    }
+  };
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.namaDokumen.trim()) {
       alert("Mohon isi nama dokumen portofolio.");
       return;
+    }
+    const isLuar = formData.statusAsesor === "Asesor dari Luar";
+
+    if (isLuar) {
+      if (!formData.alamatLsp.trim()) {
+        alert("Mohon isi alamat LSP dari asesor luar.");
+        return;
+      }
+      if (!formData.filePeminjaman && !formData.filePeminjamanPlaceholder) {
+        alert("Mohon unggah File Peminjaman Asesor.");
+        return;
+      }
+      if (!formData.fileJawaban && !formData.fileJawabanPlaceholder) {
+        alert(
+          "Mohon unggah File Jawaban / Konfirmasi Peminjaman dari LSP luar.",
+        );
+        return;
+      }
+    } else {
+      if (!formData.selectedFile && !formData.fileNamePlaceholder) {
+        alert("Mohon unggah file dokumen portofolio.");
+        return;
+      }
     }
 
     const generatedId =
@@ -142,20 +203,37 @@ export default function VerifikasiPortofolio() {
       month: "short",
       year: "numeric",
     });
+    const finalAlamatLsp = isLuar
+      ? formData.alamatLsp
+      : "UIN Sunan Gunung Djati Bandung";
 
     const newPortfolio: PortfolioItem = {
       id: generatedId,
       skema: formData.skema,
       namaDokumen: formData.namaDokumen,
+      statusAsesor: formData.statusAsesor,
+      alamatLsp: finalAlamatLsp,
       deskripsi: formData.deskripsi,
       tanggal: todayStr,
-      fileName: formData.selectedFile
-        ? formData.selectedFile.name
-        : formData.fileNamePlaceholder || "Dokumen_Portofolio.pdf",
-      fileSize: formData.selectedFile
-        ? `${(formData.selectedFile.size / (1024 * 1024)).toFixed(1)} MB`
-        : "2.0 MB",
-      fileType: formData.selectedFile?.type || "application/pdf",
+      fileName: isLuar
+        ? formData.filePeminjaman?.name ||
+          formData.filePeminjamanPlaceholder ||
+          "File_Peminjaman_Asesor.pdf"
+        : formData.selectedFile?.name ||
+          formData.fileNamePlaceholder ||
+          "Dokumen_Portofolio.pdf",
+      filePeminjamanName: isLuar
+        ? formData.filePeminjaman?.name ||
+          formData.filePeminjamanPlaceholder ||
+          "File_Peminjaman_Asesor.pdf"
+        : undefined,
+      fileJawabanName: isLuar
+        ? formData.fileJawaban?.name ||
+          formData.fileJawabanPlaceholder ||
+          "Konfirmasi_Peminjaman_LSP.pdf"
+        : undefined,
+      fileSize: "2.0 MB",
+      fileType: "application/pdf",
       status: "Menunggu Verifikasi",
     };
 
@@ -167,11 +245,21 @@ export default function VerifikasiPortofolio() {
     e.preventDefault();
     if (!selectedPortfolio) return;
 
+    const isLuar = formData.statusAsesor === "Asesor dari Luar";
+    if (isLuar && !formData.alamatLsp.trim()) {
+      alert("Mohon isi alamat LSP dari asesor luar.");
+      return;
+    }
+
     const todayStr = new Date().toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+
+    const finalAlamatLsp = isLuar
+      ? formData.alamatLsp
+      : "UIN Sunan Gunung Djati Bandung";
 
     setPortfolios((prev) =>
       prev.map((p) => {
@@ -179,15 +267,31 @@ export default function VerifikasiPortofolio() {
           return {
             ...p,
             skema: formData.skema,
+            statusAsesor: formData.statusAsesor,
+            alamatLsp: finalAlamatLsp,
             namaDokumen: formData.namaDokumen,
             deskripsi: formData.deskripsi,
             tanggal: todayStr,
-            fileName: formData.selectedFile
-              ? formData.selectedFile.name
-              : p.fileName,
-            fileSize: formData.selectedFile
-              ? `${(formData.selectedFile.size / (1024 * 1024)).toFixed(1)} MB`
-              : p.fileSize,
+            fileName: isLuar
+              ? formData.filePeminjaman?.name ||
+                formData.filePeminjamanPlaceholder ||
+                p.filePeminjamanName ||
+                p.fileName
+              : formData.selectedFile?.name ||
+                formData.fileNamePlaceholder ||
+                p.fileName,
+            filePeminjamanName: isLuar
+              ? formData.filePeminjaman?.name ||
+                formData.filePeminjamanPlaceholder ||
+                p.filePeminjamanName ||
+                "File_Peminjaman_Asesor.pdf"
+              : undefined,
+            fileJawabanName: isLuar
+              ? formData.fileJawaban?.name ||
+                formData.fileJawabanPlaceholder ||
+                p.fileJawabanName ||
+                "Konfirmasi_Peminjaman_LSP.pdf"
+              : undefined,
             status: "Menunggu Verifikasi",
             catatanAdmin: undefined,
           };
@@ -214,21 +318,35 @@ export default function VerifikasiPortofolio() {
   const resetForm = () => {
     setFormData({
       skema: AVAILABLE_SCHEMES[0],
+      statusAsesor: "Asesor dari UIN Bandung",
+      alamatLsp: "UIN Sunan Gunung Djati Bandung",
       namaDokumen: "",
       deskripsi: "",
       selectedFile: null,
+      filePeminjaman: null,
+      fileJawaban: null,
       fileNamePlaceholder: "",
+      filePeminjamanPlaceholder: "",
+      fileJawabanPlaceholder: "",
     });
   };
 
   const openReuploadModal = (item: PortfolioItem) => {
     setSelectedPortfolio(item);
+    const isLuar = item.statusAsesor === "Asesor dari Luar";
     setFormData({
       skema: item.skema,
+      statusAsesor: item.statusAsesor || "Asesor dari UIN Bandung",
+      alamatLsp:
+        item.alamatLsp || (isLuar ? "" : "UIN Sunan Gunung Djati Bandung"),
       namaDokumen: item.namaDokumen,
       deskripsi: item.deskripsi || "",
       selectedFile: null,
+      filePeminjaman: null,
+      fileJawaban: null,
       fileNamePlaceholder: item.fileName,
+      filePeminjamanPlaceholder: item.filePeminjamanName || item.fileName,
+      fileJawabanPlaceholder: item.fileJawabanName || "",
     });
     setIsReuploadModalOpen(true);
   };
@@ -362,7 +480,7 @@ export default function VerifikasiPortofolio() {
       {/* Main Table */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
+          <table className="w-full text-left border-collapse min-w-[650px] sm:min-w-[1000px]">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -415,14 +533,36 @@ export default function VerifikasiPortofolio() {
                       </span>
                     </td>
 
-                    {/* Nama Dokumen */}
+                    {/* Nama Dokumen & Status Asesor */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 whitespace-nowrap">
                           {item.namaDokumen}
                         </p>
+
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                              item.statusAsesor === "Asesor dari Luar"
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : "bg-sky-50 text-sky-700 border-sky-200"
+                            }`}
+                          >
+                            {item.statusAsesor || "Asesor dari UIN Bandung"}
+                          </span>
+
+                          {item.alamatLsp && (
+                            <span
+                              className="text-[11px] text-slate-500 font-medium truncate max-w-[180px]"
+                              title={item.alamatLsp}
+                            >
+                              • {item.alamatLsp}
+                            </span>
+                          )}
+                        </div>
+
                         {item.deskripsi && (
-                          <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 whitespace-nowrap">
+                          <p className="text-xs text-slate-500 line-clamp-1 mt-1 whitespace-nowrap">
                             {item.deskripsi}
                           </p>
                         )}
@@ -439,20 +579,61 @@ export default function VerifikasiPortofolio() {
 
                     {/* File */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() =>
-                          setPreviewFile({
-                            name: item.fileName,
-                            type: item.fileType,
-                          })
-                        }
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Eye size={14} />
-                        <span className="truncate max-w-30">
-                          {item.fileName}
-                        </span>
-                      </button>
+                      {item.statusAsesor === "Asesor dari Luar" ? (
+                        <div className="flex flex-col gap-1.5">
+                          <button
+                            onClick={() =>
+                              setPreviewFile({
+                                name: item.filePeminjamanName || item.fileName,
+                                type: item.fileType,
+                              })
+                            }
+                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                            title="File Peminjaman Asesor"
+                          >
+                            <Eye size={12} />
+                            <span className="truncate max-w-[130px]">
+                              Peminjaman:{" "}
+                              {item.filePeminjamanName || item.fileName}
+                            </span>
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              setPreviewFile({
+                                name:
+                                  item.fileJawabanName ||
+                                  "Konfirmasi_Peminjaman.pdf",
+                                type: item.fileType,
+                              })
+                            }
+                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                            title="File Jawaban LSP Luar"
+                          >
+                            <Eye size={12} />
+                            <span className="truncate max-w-[130px]">
+                              Jawaban LSP:{" "}
+                              {item.fileJawabanName ||
+                                "Konfirmasi_Peminjaman.pdf"}
+                            </span>
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            setPreviewFile({
+                              name: item.fileName,
+                              type: item.fileType,
+                            })
+                          }
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Eye size={14} />
+                          <span className="truncate max-w-[140px]">
+                            {item.fileName}
+                          </span>
+                        </button>
+                      )}
                     </td>
 
                     {/* Status Verifikasi */}
@@ -568,6 +749,71 @@ export default function VerifikasiPortofolio() {
                 onSubmit={handleUploadSubmit}
                 className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1"
               >
+                {/* Status Asesor */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Status Asesor <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.statusAsesor}
+                    onChange={(e) => {
+                      const val = e.target.value as
+                        | "Asesor dari UIN Bandung"
+                        | "Asesor dari Luar";
+                      setFormData((prev) => ({
+                        ...prev,
+                        statusAsesor: val,
+                        alamatLsp:
+                          val === "Asesor dari UIN Bandung"
+                            ? "UIN Sunan Gunung Djati Bandung"
+                            : prev.statusAsesor === "Asesor dari Luar"
+                              ? prev.alamatLsp
+                              : "",
+                      }));
+                    }}
+                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
+                  >
+                    <option value="Asesor dari UIN Bandung">
+                      Asesor dari UIN Bandung
+                    </option>
+                    <option value="Asesor dari Luar">Asesor dari Luar</option>
+                  </select>
+                </div>
+
+                {/* Alamat LSP Asesor */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Alamat LSP Asesor{" "}
+                    {formData.statusAsesor === "Asesor dari Luar" && (
+                      <span className="text-red-500">*</span>
+                    )}
+                  </label>
+                  {formData.statusAsesor === "Asesor dari Luar" ? (
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Jl. Raya Padjadjaran No. 12, Bogor (LSP Informatika)"
+                      value={formData.alamatLsp}
+                      onChange={(e) =>
+                        setFormData({ ...formData, alamatLsp: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      readOnly
+                      value="UIN Sunan Gunung Djati Bandung"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-100 rounded-xl text-sm font-medium text-slate-600 outline-none cursor-not-allowed"
+                    />
+                  )}
+                  <p className="text-[11px] text-slate-400 font-medium mt-1">
+                    {formData.statusAsesor === "Asesor dari UIN Bandung"
+                      ? "Otomatis diisi UIN Bandung untuk asesor internal."
+                      : "Masukkan alamat lengkap LSP dari asal asesor luar."}
+                  </p>
+                </div>
+
                 {/* Skema */}
                 <div className="min-w-0">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -578,7 +824,7 @@ export default function VerifikasiPortofolio() {
                     onChange={(e) =>
                       setFormData({ ...formData, skema: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
+                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
                   >
                     {AVAILABLE_SCHEMES.map((scheme, idx) => (
                       <option key={idx} value={scheme}>
@@ -618,7 +864,7 @@ export default function VerifikasiPortofolio() {
                     </span>
                   </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     placeholder="Tambahkan keterangan rincian atau catatan pendukung untuk dokumen ini..."
                     value={formData.deskripsi}
                     onChange={(e) =>
@@ -628,45 +874,131 @@ export default function VerifikasiPortofolio() {
                   />
                 </div>
 
-                {/* Upload File */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Upload File (PDF / Gambar){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 sm:p-5 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors relative">
-                    <input
-                      type="file"
-                      accept=".pdf,.png,.jpg,.jpeg"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Upload size={32} className="mx-auto text-[#008BE3] mb-2" />
-                    {formData.selectedFile ? (
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-1.5 break-all">
-                          <CheckCircle size={16} className="shrink-0" />{" "}
-                          {formData.selectedFile.name}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          {(formData.selectedFile.size / (1024 * 1024)).toFixed(
-                            2,
-                          )}{" "}
-                          MB • Klik untuk mengganti file
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-700">
-                          Klik atau tarik file ke sini
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
+                {/* Upload File Section */}
+                {formData.statusAsesor === "Asesor dari Luar" ? (
+                  <div className="space-y-3 pt-1 border-t border-slate-200">
+                    <p className="text-xs font-extrabold text-purple-900 uppercase tracking-wider">
+                      Dokumen Asesor Luar (Wajib 2 File)
+                    </p>
+
+                    {/* File 1: File Peminjaman Asesor */}
+                    <div className="min-w-0">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        1. File Peminjaman Asesor{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="border-2 border-dashed border-sky-300 rounded-xl p-3 text-center bg-sky-50/40 hover:bg-sky-50 transition-colors relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg"
+                          onChange={handlePeminjamanFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Upload
+                          size={24}
+                          className="mx-auto text-[#008BE3] mb-1"
+                        />
+                        {formData.filePeminjaman ? (
+                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                            <CheckCircle size={14} className="shrink-0" />{" "}
+                            {formData.filePeminjaman.name}
+                          </p>
+                        ) : formData.filePeminjamanPlaceholder ? (
+                          <p className="text-xs font-bold text-slate-700">
+                            {formData.filePeminjamanPlaceholder}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-semibold text-slate-600">
+                            Klik / tarik File Surat Peminjaman Asesor
+                          </p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5">
                           Format PDF, PNG, JPG (Maks. 10MB)
                         </p>
                       </div>
-                    )}
+                    </div>
+
+                    {/* File 2: File Jawaban LSP Luar */}
+                    <div className="min-w-0">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        2. File Jawaban / Konfirmasi Peminjaman dari LSP Luar{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="border-2 border-dashed border-purple-300 rounded-xl p-3 text-center bg-purple-50/40 hover:bg-purple-50 transition-colors relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg"
+                          onChange={handleJawabanFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Upload
+                          size={24}
+                          className="mx-auto text-purple-600 mb-1"
+                        />
+                        {formData.fileJawaban ? (
+                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                            <CheckCircle size={14} className="shrink-0" />{" "}
+                            {formData.fileJawaban.name}
+                          </p>
+                        ) : formData.fileJawabanPlaceholder ? (
+                          <p className="text-xs font-bold text-slate-700">
+                            {formData.fileJawabanPlaceholder}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-semibold text-slate-600">
+                            Klik / tarik File Surat Konfirmasi / Balasan LSP
+                          </p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Format PDF, PNG, JPG (Maks. 10MB)
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="min-w-0">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Upload File Portofolio (PDF / Gambar){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={handleSingleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <Upload
+                        size={28}
+                        className="mx-auto text-[#008BE3] mb-1.5"
+                      />
+                      {formData.selectedFile ? (
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-1.5 break-all">
+                            <CheckCircle size={16} className="shrink-0" />{" "}
+                            {formData.selectedFile.name}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {(
+                              formData.selectedFile.size /
+                              (1024 * 1024)
+                            ).toFixed(2)}{" "}
+                            MB • Klik untuk mengganti file
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-700">
+                            Klik atau tarik file ke sini
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-1">
+                            Format PDF, PNG, JPG (Maks. 10MB)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Footer Buttons */}
                 <div className="pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
@@ -731,6 +1063,29 @@ export default function VerifikasiPortofolio() {
                   <p className="text-sm font-bold text-slate-900 mt-0.5">
                     {selectedPortfolio.skema}
                   </p>
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                    Status Asesor & Alamat LSP
+                  </p>
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${
+                        selectedPortfolio.statusAsesor === "Asesor dari Luar"
+                          ? "bg-purple-50 text-purple-700 border-purple-200"
+                          : "bg-sky-50 text-sky-700 border-sky-200"
+                      }`}
+                    >
+                      {selectedPortfolio.statusAsesor ||
+                        "Asesor dari UIN Bandung"}
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">
+                      •{" "}
+                      {selectedPortfolio.alamatLsp ||
+                        "UIN Sunan Gunung Djati Bandung"}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="min-w-0">
@@ -800,30 +1155,99 @@ export default function VerifikasiPortofolio() {
                   <p className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
                     Dokumen File
                   </p>
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <FileText size={20} className="text-[#008BE3] shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate">
-                          {selectedPortfolio.fileName}
-                        </p>
-                        <p className="text-[10px] text-slate-400">
-                          {selectedPortfolio.fileSize || "Dokumen PDF"}
-                        </p>
+                  {selectedPortfolio.statusAsesor === "Asesor dari Luar" ? (
+                    <div className="space-y-2">
+                      <div className="p-3 bg-sky-50/80 rounded-xl border border-sky-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <FileText
+                            size={20}
+                            className="text-[#008BE3] shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold text-sky-800 uppercase">
+                              1. File Peminjaman Asesor
+                            </p>
+                            <p className="text-xs font-bold text-slate-800 truncate">
+                              {selectedPortfolio.filePeminjamanName ||
+                                selectedPortfolio.fileName}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setPreviewFile({
+                              name:
+                                selectedPortfolio.filePeminjamanName ||
+                                selectedPortfolio.fileName,
+                              type: selectedPortfolio.fileType,
+                            })
+                          }
+                          className="w-full sm:w-auto px-3 py-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 shrink-0"
+                        >
+                          <Eye size={14} /> Tinjau
+                        </button>
+                      </div>
+
+                      <div className="p-3 bg-purple-50/80 rounded-xl border border-purple-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <FileText
+                            size={20}
+                            className="text-purple-600 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold text-purple-800 uppercase">
+                              2. File Jawaban LSP Luar
+                            </p>
+                            <p className="text-xs font-bold text-purple-950 truncate">
+                              {selectedPortfolio.fileJawabanName ||
+                                "Konfirmasi_Peminjaman.pdf"}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setPreviewFile({
+                              name:
+                                selectedPortfolio.fileJawabanName ||
+                                "Konfirmasi_Peminjaman.pdf",
+                              type: selectedPortfolio.fileType,
+                            })
+                          }
+                          className="w-full sm:w-auto px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 shrink-0"
+                        >
+                          <Eye size={14} /> Tinjau
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={() =>
-                        setPreviewFile({
-                          name: selectedPortfolio.fileName,
-                          type: selectedPortfolio.fileType,
-                        })
-                      }
-                      className="w-full sm:w-auto px-3 py-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 shrink-0"
-                    >
-                      <Eye size={14} /> Tinjau
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <FileText
+                          size={20}
+                          className="text-[#008BE3] shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">
+                            {selectedPortfolio.fileName}
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            {selectedPortfolio.fileSize || "Dokumen PDF"}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setPreviewFile({
+                            name: selectedPortfolio.fileName,
+                            type: selectedPortfolio.fileType,
+                          })
+                        }
+                        className="w-full sm:w-auto px-3 py-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 shrink-0"
+                      >
+                        <Eye size={14} /> Tinjau
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -898,6 +1322,71 @@ export default function VerifikasiPortofolio() {
                   </div>
                 )}
 
+                {/* Status Asesor */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Status Asesor <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.statusAsesor}
+                    onChange={(e) => {
+                      const val = e.target.value as
+                        | "Asesor dari UIN Bandung"
+                        | "Asesor dari Luar";
+                      setFormData((prev) => ({
+                        ...prev,
+                        statusAsesor: val,
+                        alamatLsp:
+                          val === "Asesor dari UIN Bandung"
+                            ? "UIN Sunan Gunung Djati Bandung"
+                            : prev.statusAsesor === "Asesor dari Luar"
+                              ? prev.alamatLsp
+                              : "",
+                      }));
+                    }}
+                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
+                  >
+                    <option value="Asesor dari UIN Bandung">
+                      Asesor dari UIN Bandung
+                    </option>
+                    <option value="Asesor dari Luar">Asesor dari Luar</option>
+                  </select>
+                </div>
+
+                {/* Alamat LSP Asesor */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Alamat LSP Asesor{" "}
+                    {formData.statusAsesor === "Asesor dari Luar" && (
+                      <span className="text-red-500">*</span>
+                    )}
+                  </label>
+                  {formData.statusAsesor === "Asesor dari Luar" ? (
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Jl. Raya Padjadjaran No. 12, Bogor (LSP Informatika)"
+                      value={formData.alamatLsp}
+                      onChange={(e) =>
+                        setFormData({ ...formData, alamatLsp: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      readOnly
+                      value="UIN Sunan Gunung Djati Bandung"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-100 rounded-xl text-sm font-medium text-slate-600 outline-none cursor-not-allowed"
+                    />
+                  )}
+                  <p className="text-[11px] text-slate-400 font-medium mt-1">
+                    {formData.statusAsesor === "Asesor dari UIN Bandung"
+                      ? "Otomatis diisi UIN Bandung untuk asesor internal."
+                      : "Masukkan alamat lengkap LSP dari asal asesor luar."}
+                  </p>
+                </div>
+
                 {/* Skema */}
                 <div className="min-w-0">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -940,7 +1429,7 @@ export default function VerifikasiPortofolio() {
                     Deskripsi / Keterangan
                   </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={formData.deskripsi}
                     onChange={(e) =>
                       setFormData({ ...formData, deskripsi: e.target.value })
@@ -949,42 +1438,131 @@ export default function VerifikasiPortofolio() {
                   />
                 </div>
 
-                {/* Upload File */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Upload File Baru (PDF / Gambar){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 sm:p-5 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors relative">
-                    <input
-                      type="file"
-                      accept=".pdf,.png,.jpg,.jpeg"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Upload size={32} className="mx-auto text-amber-600 mb-2" />
-                    {formData.selectedFile ? (
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-1.5 break-all">
-                          <CheckCircle size={16} className="shrink-0" />{" "}
-                          {formData.selectedFile.name}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          File baru terpilih • Klik untuk mengganti
+                {/* Upload File Section */}
+                {formData.statusAsesor === "Asesor dari Luar" ? (
+                  <div className="space-y-3 pt-1 border-t border-slate-200">
+                    <p className="text-xs font-extrabold text-purple-900 uppercase tracking-wider">
+                      Dokumen Asesor Luar (Wajib 2 File)
+                    </p>
+
+                    {/* File 1: File Peminjaman Asesor */}
+                    <div className="min-w-0">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        1. File Peminjaman Asesor{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="border-2 border-dashed border-sky-300 rounded-xl p-3 text-center bg-sky-50/40 hover:bg-sky-50 transition-colors relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg"
+                          onChange={handlePeminjamanFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Upload
+                          size={24}
+                          className="mx-auto text-[#008BE3] mb-1"
+                        />
+                        {formData.filePeminjaman ? (
+                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                            <CheckCircle size={14} className="shrink-0" />{" "}
+                            {formData.filePeminjaman.name}
+                          </p>
+                        ) : formData.filePeminjamanPlaceholder ? (
+                          <p className="text-xs font-bold text-slate-700">
+                            {formData.filePeminjamanPlaceholder}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-semibold text-slate-600">
+                            File Lama:{" "}
+                            {selectedPortfolio.filePeminjamanName ||
+                              selectedPortfolio.fileName}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Format PDF, PNG, JPG (Klik untuk ganti)
                         </p>
                       </div>
-                    ) : (
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-700 break-all">
-                          File Lama: {selectedPortfolio.fileName}
-                        </p>
-                        <p className="text-xs text-amber-700 font-medium mt-1">
-                          Klik di sini untuk memilih file baru pengganti
+                    </div>
+
+                    {/* File 2: File Jawaban LSP Luar */}
+                    <div className="min-w-0">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        2. File Jawaban / Konfirmasi Peminjaman dari LSP Luar{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="border-2 border-dashed border-purple-300 rounded-xl p-3 text-center bg-purple-50/40 hover:bg-purple-50 transition-colors relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg"
+                          onChange={handleJawabanFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Upload
+                          size={24}
+                          className="mx-auto text-purple-600 mb-1"
+                        />
+                        {formData.fileJawaban ? (
+                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                            <CheckCircle size={14} className="shrink-0" />{" "}
+                            {formData.fileJawaban.name}
+                          </p>
+                        ) : formData.fileJawabanPlaceholder ? (
+                          <p className="text-xs font-bold text-slate-700">
+                            {formData.fileJawabanPlaceholder}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-semibold text-purple-900">
+                            File Lama:{" "}
+                            {selectedPortfolio.fileJawabanName ||
+                              "Konfirmasi_Peminjaman.pdf"}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Format PDF, PNG, JPG (Klik untuk ganti)
                         </p>
                       </div>
-                    )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="min-w-0">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Upload File Baru (PDF / Gambar){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 sm:p-5 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={handleSingleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <Upload
+                        size={32}
+                        className="mx-auto text-amber-600 mb-2"
+                      />
+                      {formData.selectedFile ? (
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-1.5 break-all">
+                            <CheckCircle size={16} className="shrink-0" />{" "}
+                            {formData.selectedFile.name}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            File baru terpilih • Klik untuk mengganti
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-700 break-all">
+                            File Lama: {selectedPortfolio.fileName}
+                          </p>
+                          <p className="text-xs text-amber-700 font-medium mt-1">
+                            Klik di sini untuk memilih file baru pengganti
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Footer Buttons */}
                 <div className="pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">

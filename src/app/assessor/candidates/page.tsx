@@ -20,6 +20,7 @@ import {
   Layers,
   UserCheck,
   Globe,
+  Mail,
 } from "lucide-react";
 import { Assessment, BatchGroup, JenisAsesmen } from "@/types/types";
 import { useAppContext } from "@/context/context";
@@ -278,10 +279,10 @@ export default function AsesiList() {
 
                       {/* Batch Name & Scheme */}
                       <div className="min-w-0">
-                        <h3 className="text-base font-black text-slate-900 group-hover:text-[#008BE3] transition-colors line-clamp-1">
+                        <h3 className="text-base font-black text-slate-900 group-hover:text-[#008BE3] transition-colors leading-snug">
                           {batch.batchName}
                         </h3>
-                        <p className="text-xs font-semibold text-slate-500 mt-0.5 line-clamp-2">
+                        <p className="text-xs font-semibold text-slate-500 mt-0.5 leading-snug">
                           {batch.skema}
                         </p>
                       </div>
@@ -289,31 +290,35 @@ export default function AsesiList() {
                       {/* Meta Information */}
                       <div className="pt-2 border-t border-slate-100 space-y-2 text-xs font-medium text-slate-600">
                         {/* Date & Time */}
-                        <div className="flex items-center gap-2">
-                          <Calendar
-                            size={14}
-                            className="text-slate-400 shrink-0"
-                          />
-                          <span>{batch.tglAsesmen}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar
+                              size={14}
+                              className="text-slate-400 shrink-0"
+                            />
+                            <span>{batch.tglAsesmen}</span>
+                          </div>
                           <span className="text-slate-300">•</span>
-                          <Clock
-                            size={14}
-                            className="text-slate-400 shrink-0"
-                          />
-                          <span className="font-semibold text-slate-700">
-                            {batch.waktu}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <Clock
+                              size={14}
+                              className="text-slate-400 shrink-0"
+                            />
+                            <span className="font-semibold text-slate-700">
+                              {batch.waktu}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Location / TUK / Meeting Link */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-start gap-2">
                           {isOnline ? (
                             <>
                               <Globe
                                 size={14}
-                                className="text-purple-500 shrink-0"
+                                className="text-purple-500 shrink-0 mt-0.5"
                               />
-                              <span className="text-purple-700 font-semibold truncate">
+                              <span className="text-purple-700 font-semibold wrap-break-word leading-snug">
                                 {batch.tuk}
                               </span>
                             </>
@@ -321,9 +326,9 @@ export default function AsesiList() {
                             <>
                               <MapPin
                                 size={14}
-                                className="text-[#008BE3] shrink-0"
+                                className="text-[#008BE3] shrink-0 mt-0.5"
                               />
-                              <span className="text-slate-700 font-semibold truncate">
+                              <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
                                 {batch.tuk}
                               </span>
                             </>
@@ -331,12 +336,29 @@ export default function AsesiList() {
                         </div>
 
                         {/* Total Candidates & Progress */}
-                        <div className="flex items-center justify-between pt-1">
-                          <div className="flex items-center gap-1.5 text-slate-700 font-bold">
-                            <Users size={14} className="text-slate-400" />
-                            <span>{totalCount} Asesi</span>
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <div className="flex items-center gap-2 flex-wrap text-slate-700 font-bold">
+                            <div className="flex items-center gap-1.5">
+                              <Users size={14} className="text-slate-400" />
+                              <span>{totalCount} Asesi</span>
+                            </div>
+
+                            {/* Link Surat Penugasan (GDrive) */}
+                            <a
+                              href="https://drive.google.com"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#008BE3] hover:text-[#0070B8] bg-sky-50 hover:bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200 transition-colors"
+                              title="Buka Surat Penugasan (Google Drive)"
+                            >
+                              <Mail size={12} className="shrink-0" />
+                              <span>Surat Penugasan</span>
+                              <ExternalLink size={10} className="shrink-0" />
+                            </a>
                           </div>
-                          <span className="text-[11px] font-bold text-slate-500">
+
+                          <span className="text-[11px] font-bold text-slate-500 shrink-0">
                             {completedCount}/{totalCount} Selesai (
                             {progressPercent}%)
                           </span>
@@ -473,7 +495,7 @@ export default function AsesiList() {
               </div>
 
               {/* Batch Metadata Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                 <div className="flex items-center gap-2 text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <Calendar size={16} className="text-[#008BE3] shrink-0" />
                   <div className="min-w-0">
@@ -489,17 +511,17 @@ export default function AsesiList() {
 
                 <div className="flex items-center gap-2 text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <MapPin size={16} className="text-[#008BE3] shrink-0" />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="block text-[10px] text-slate-400 uppercase font-bold">
-                      Lokasi / TUK
+                      Lokasi
                     </span>
-                    <span className="font-bold text-slate-900 truncate block max-w-50">
+                    <span className="font-bold text-slate-900 break-words leading-snug block">
                       {currentSelectedBatch.tuk}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div className="flex items-center gap-2  text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <UserCheck size={16} className="text-[#008BE3] shrink-0" />
                   <div className="min-w-0">
                     <span className="block text-[10px] text-slate-400 uppercase font-bold">
@@ -508,6 +530,24 @@ export default function AsesiList() {
                     <span className="font-bold text-slate-900">
                       {currentSelectedBatch.candidates.length} Candidate Asesi
                     </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <Mail size={16} className="text-[#008BE3] shrink-0" />
+                  <div className="min-w-0">
+                    <span className="block text-[10px] text-slate-400 uppercase font-bold">
+                      Surat Penugasan
+                    </span>
+                    <a
+                      href="https://drive.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#008BE3] hover:text-[#0070B8] hover:underline transition-colors mt-0.5"
+                      title="Buka Surat Penugasan (Google Drive)"
+                    >
+                      <span>Lihat File</span>
+                      <ExternalLink size={12} />
+                    </a>
                   </div>
                 </div>
               </div>

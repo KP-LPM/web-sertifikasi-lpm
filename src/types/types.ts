@@ -317,9 +317,13 @@ export interface PortfolioItem {
   id: string;
   skema: string;
   namaDokumen: string;
+  statusAsesor?: "Asesor dari UIN Bandung" | "Asesor dari Luar";
+  alamatLsp?: string;
   deskripsi?: string;
   tanggal: string;
   fileName: string;
+  filePeminjamanName?: string;
+  fileJawabanName?: string;
   fileSize?: string;
   fileType?: string;
   status: "Menunggu Verifikasi" | "Terverifikasi" | "Ditolak";
