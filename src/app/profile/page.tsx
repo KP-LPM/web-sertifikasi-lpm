@@ -53,6 +53,17 @@ export default function Profile() {
     tandaTangan: (registeredProfile?.tandaTangan as string) || "",
   });
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "radio" ? value : value,
+    }));
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -87,20 +98,57 @@ export default function Profile() {
     }
   }, [isSignatureModalOpen, formData.tandaTangan]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  React.useEffect(() => {
+    if (registeredProfile) {
+      const data = registeredProfile as unknown as Record<string, string | undefined>; 
+      
+      // Ambil nama dari database atau user session
+      const namaAsli = data.nama_lengkap || data.nama || user?.name || "";
 
-  const handleSave = () => {
-    updateUser({
-      name: formData.namaLengkap,
+      setFormData(prev => ({
+        ...prev,
+        username: namaAsli ? namaAsli.toLowerCase().replace(/\s+/g, "") : prev.username,
+        email: data.email || user?.email || prev.email,
+        namaLengkap: namaAsli,
+        tempatLahir: data.tempat_lahir || data.tempatLahir || "",
+        tanggalLahir: data.tanggal_lahir || data.tanggalLahir || "",
+        jenisKelamin: data.jenis_kelamin || data.jenisKelamin || "",
+        alamat: data.alamat || data.alamat_rumah || prev.alamat,
+        alamatWilayah: data.alamat_wilayah || data.alamatWilayah || "",
+        kodePos: data.kode_pos || data.kodePos || "",
+        nik: data.nik || "",
+        noRegistrasi: data.no_registrasi || data.noRegistrasi || "",
+        noTelp: data.no_telp || data.noTelp || "",
+        pekerjaan: data.pekerjaan || "",
+        pendidikanTerakhir: data.pendidikan_terakhir || data.pendidikanTerakhir || "",
+        tandaTangan: data.tanda_tangan || data.tandaTangan || "",
+      }));
+    }
+  }, [registeredProfile, user]);
+
+const handleSave = () => {
+    // 1. Simpan semua data ke dalam satu variabel payload
+    const payload = {
+      name: formData.namaLengkap, 
       email: formData.email,
-      tandaTangan: formData.tandaTangan,
-    });
+      nama_lengkap: formData.namaLengkap, 
+      tempat_lahir: formData.tempatLahir,
+      tanggal_lahir: formData.tanggalLahir,
+      jenis_kelamin: formData.jenisKelamin,
+      alamat_rumah: formData.alamat,
+      alamat_wilayah: formData.alamatWilayah,
+      kode_pos: formData.kodePos,
+      nik: formData.nik,
+      no_registrasi: formData.noRegistrasi,
+      no_telp: formData.noTelp,
+      pekerjaan: formData.pekerjaan,
+      pendidikan_terakhir: formData.pendidikanTerakhir,
+      tanda_tangan: formData.tandaTangan,
+    };
+
+    // 2. Gunakan "as unknown" untuk melewati validasi ketat TypeScript
+    updateUser(payload as unknown as Record<string, string | undefined>);
+    
     alert("Profil berhasil disimpan!");
   };
 

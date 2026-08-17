@@ -26,7 +26,7 @@ model User {
 model ProfilPengguna {
   id                 Int           @id @default(autoincrement())
   userId             Int           @unique @map("user_id")
-  
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Data Umum
   nik                String        @unique @db.VarChar(16)
   namaLengkap        String        @map("nama_lengkap") @db.VarChar(255)
@@ -38,8 +38,7 @@ model ProfilPengguna {
   pendidikanTerakhir String?       @map("pendidikan_terakhir") @db.VarChar(100)
   pekerjaan          String?       @db.VarChar(100)
   alamat             String?       
-  
-  // SUDAH DIPERBAIKI: Menggunakan kode wilayah
+
   kodeProvinsi       String?       @map("kode_provinsi") @db.VarChar(10)
   kodeKota           String?       @map("kode_kota") @db.VarChar(10)
   
@@ -57,9 +56,6 @@ model ProfilPengguna {
   noHpInstitusi      String?       @map("no_hp_institusi") @db.VarChar(20)
   alamatInstitusi    String?       @map("alamat_institusi") 
   noFaxInstitusi     String?       @map("no_fax_institusi") @db.VarChar(20)
-
-  // Relasi
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profil_pengguna")
 }
@@ -176,14 +172,23 @@ model PendaftaranDataPribadi {
   kodeProvinsi              String          @map("kode_provinsi") @db.VarChar(10)
   kodeKota                  String          @map("kode_kota") @db.VarChar(10)
   kodePosAsesi              String          @map("kode_pos_asesi") @db.VarChar(10)
-  kebangsaan                String
+  kewarganegaraan           String
   noHp                      String          @map("no_hp")
   pendidikanTerakhir        String          @map("pendidikan_terakhir")
   pekerjaan                 String
   tandaTangan               String          @map("tanda_tangan")
   
-  memerlukanPenyesuaianWajar Boolean        @default(false) @map("memerlukan_penyesuaian_wajar")
-  isBerpengalaman           Boolean         @default(false) @map("is_berpengalaman")
+  // Detail Pekerjaan 
+  namaInstitusi            String?         @map("nama_institusi")
+  jabatan                  String?
+  emailInstitusi           String?         @map("email_institusi")
+  kodePosInstitusi         String?         @map("kode_pos_institusi")
+  telpInstitusi            String?         @map("telp_institusi")
+  alamatInstitusi          String?         @map("alamat_institusi")
+  faxInstitusi             String?         @map("fax_institusi")
+  
+  memerlukanPenyesuaianWajar Boolean       @default(false) @map("memerlukan_penyesuaian_wajar")
+  isBerpengalaman            Boolean       @default(false) @map("is_berpengalaman")
   
   createdAt                 DateTime        @default(now()) @map("created_at")
   updatedAt                 DateTime        @updatedAt @map("updated_at")

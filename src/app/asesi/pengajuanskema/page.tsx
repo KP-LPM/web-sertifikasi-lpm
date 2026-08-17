@@ -217,7 +217,7 @@ export default function PengajuanSkemaPage() {
   const [kota, setKota] = useState('');
   const alamatWilayah = [kota, provinsi].filter(Boolean).join(', ');
   const [nik, setNik] = useState('');
-  const [kebangsaan, setKebangsaan] = useState('WNI');
+  const [kewarganegaraan, setKewarganegaraan] = useState('WNI');
   const [kodePos, setKodePos] = useState('');
   const [noTelp, setNoTelp] = useState('081234567890');
 
@@ -234,6 +234,52 @@ export default function PengajuanSkemaPage() {
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
+// Fitur Auto-Fill Data Profil
+  React.useEffect(() => {
+    const fetchProfil = async () => {
+      try {
+        console.log("Mencoba mengambil data profil...");
+        const response = await fetch('/api/profil');
+        
+        if (response.ok) {
+          const dataProfil = await response.json();
+          console.log("Sukses dapat data dari database:", dataProfil);
+          
+          // Masukkan data dari database langsung ke state form!
+          if (dataProfil.namaLengkap) setNamaLengkap(dataProfil.namaLengkap);
+          if (dataProfil.nik) setNik(dataProfil.nik);
+          if (dataProfil.tempatLahir) setTempatLahir(dataProfil.tempatLahir);
+          
+          // Format tanggal ke YYYY-MM-DD biar cocok sama input type="date"
+          if (dataProfil.tanggalLahir) {
+            const dateObj = new Date(dataProfil.tanggalLahir);
+            setTanggalLahir(dateObj.toISOString().split('T')[0]);
+          }
+          
+          if (dataProfil.jenisKelamin) setJenisKelamin(dataProfil.jenisKelamin);
+          if (dataProfil.kewarganegaraan) setKewarganegaraan(dataProfil.kewarganegaraan);
+          if (dataProfil.noHp) setNoTelp(dataProfil.noHp);
+          if (dataProfil.alamat) setAlamat(dataProfil.alamat);
+          if (dataProfil.kodeProvinsi) setProvinsi(dataProfil.kodeProvinsi);
+          if (dataProfil.kodeKota) setKota(dataProfil.kodeKota);
+          if (dataProfil.kodePos) setKodePos(dataProfil.kodePos);
+          if (dataProfil.pendidikanTerakhir) setPendidikanTerakhir(dataProfil.pendidikanTerakhir);
+          if (dataProfil.pekerjaan) setPekerjaan(dataProfil.pekerjaan);
+          if (dataProfil.namaInstitusi) setInstitusiPerusahaan(dataProfil.namaInstitusi);
+          if (dataProfil.jabatan) setJabatan(dataProfil.jabatan);
+          if (dataProfil.emailInstitusi) setEmailInstitusi(dataProfil.emailInstitusi);
+          if (dataProfil.kodePosInstitusi) setKodePosInstitusi(dataProfil.kodePosInstitusi);
+          if (dataProfil.telpInstitusi) setTelpInstitusi(dataProfil.telpInstitusi);
+          if (dataProfil.alamatInstitusi) setAlamatInstitusi(dataProfil.alamatInstitusi);
+          if (dataProfil.faxInstitusi) setFaxInstitusi(dataProfil.faxInstitusi);
+        }
+      } catch (error) {
+        console.error("Yah, gagal mengambil data profil:", error);
+      }
+    };
+
+    fetchProfil();
+  }, []); 
   interface Step1Errors {
     tempatLahir: boolean;
     provinsi: boolean;
@@ -319,7 +365,7 @@ export default function PengajuanSkemaPage() {
       alamat,
       alamatWilayah,
       nik,
-      kebangsaan,
+      kewarganegaraan,
       kodePos,
       noTelp,
       pendidikanTerakhir,
@@ -1131,8 +1177,8 @@ export default function PengajuanSkemaPage() {
                     {errors.nik ? <p className="text-[10px] text-red-500 mt-1 font-bold">Nik tidak boleh kosong</p> : <p className="text-[10px] text-slate-400 mt-1 font-medium">Masukkan NIK</p>}
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Kebangsaan</label>
-                    <select value={kebangsaan} onChange={(e) => setKebangsaan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Kewarganegaraan</label>
+                    <select value={kewarganegaraan} onChange={(e) => setKewarganegaraan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer">
                       <option value="WNI">WNI</option>
                       <option value="WNA">WNA</option>
                     </select>
