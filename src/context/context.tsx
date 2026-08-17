@@ -201,8 +201,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           code: "BATCH-IT-2026-001",
           name: "Batch 1 - Teknisi Jaringan",
           skema: "Teknisi Muda Jaringan Komputer",
-          jenis: "Offline",
-          tuk: "Gedung L PTIPD Lab 1 (Sewaktu)",
+          tuk: "Offline",
+          alamat: "Gedung L PTIPD Lab 1 (Sewaktu)",
           tgl: "05 Okt 2023",
           waktu: "09:00 WIB",
           link: "-",
@@ -211,8 +211,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           code: "BATCH-NET-2026-002",
           name: "Batch 2 - Network Admin Online",
           skema: "Network Administrator",
-          jenis: "Online",
-          tuk: "Online Meeting (Google Meet)",
+          tuk: "Online",
+          alamat: "Online Meeting (Google Meet)",
           tgl: "06 Okt 2023",
           waktu: "13:00 WIB",
           link: "https://meet.google.com/abc-defg-hij",
@@ -221,8 +221,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           code: "BATCH-PRG-2026-003",
           name: "Batch 3 - Pemangku Kepentingan",
           skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-          jenis: "Offline",
-          tuk: "Ruang Rapat Utama (Tempat Kerja)",
+          tuk: "Offline",
+          alamat: "Ruang Rapat Utama (Tempat Kerja)",
           tgl: "08 Okt 2023",
           waktu: "09:00 WIB",
           link: "-",
@@ -231,8 +231,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           code: "BATCH-SEC-2026-004",
           name: "Batch 4 - Cyber Security Online",
           skema: "Network Administrator",
-          jenis: "Online",
-          tuk: "Online Meeting (Google Meet)",
+          tuk: "Online",
+          alamat: "Online Meeting (Google Meet)",
           tgl: "10 Okt 2023",
           waktu: "09:00 WIB",
           link: "https://meet.google.com/xyz-uvwx-rst",
@@ -241,8 +241,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           code: "BATCH-DES-2026-005",
           name: "Batch 5 - Teknisi Jaringan Gel. 2",
           skema: "Teknisi Muda Jaringan Komputer",
-          jenis: "Offline",
-          tuk: "Gedung H Lab Terpadu (Sewaktu)",
+          tuk: "Offline",
+          alamat: "Gedung H Lab Terpadu (Sewaktu)",
           tgl: "12 Okt 2023",
           waktu: "13:00 WIB",
           link: "-",
@@ -250,7 +250,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ];
 
       const batch = batchConfigs[idx % batchConfigs.length];
-      let metode = batch.jenis;
+      let metode = batch.tuk;
       let status = "Belum Selesai";
       if (metode === "Offline") {
         status = idx % 3 === 0 ? "Selesai" : "Belum Selesai";
@@ -298,7 +298,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         batchCode: batch.code,
         batchName: batch.name,
         asesmen: `Asesmen Reguler - ${idx + 1}`,
-        tuk: batch.tuk,
+        tuk: metode,
         hasil: idx % 2 === 0 ? "Kompeten" : "Belum Kompeten",
         isBanding: idx % 2 !== 0 && idx % 3 === 0,
         alasanBanding:
@@ -306,7 +306,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ? "Saya merasa sudah menjawab semua pertanyaan dengan benar saat wawancara."
             : undefined,
         skema: batch.skema,
-        jenis_asesmen: metode,
+        alamat: batch.alamat,
         metode_pelaksanaan: metode,
         metode: metode,
         tglPra: `${(idx % 28) + 1} Okt 2023`,

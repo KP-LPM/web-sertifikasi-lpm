@@ -22,7 +22,7 @@ import {
   Globe,
   Mail,
 } from "lucide-react";
-import { Assessment, BatchGroup, JenisAsesmen } from "@/types/types";
+import { Assessment, BatchGroup, JenisTUK } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
 export default function AsesiList() {
@@ -58,12 +58,10 @@ export default function AsesiList() {
         batchCode: code,
         batchName: name,
         skema: skemaNama,
-        jenis_asesmen: (item.jenis_asesmen ||
-          item.metode_pelaksanaan ||
-          "Offline") as JenisAsesmen,
+        tuk: (item.tuk || "-") as JenisTUK,
         tglAsesmen: item.tglAsesmen || "05 Okt 2026",
         waktu: item.waktu || "09:00 WIB",
-        tuk: item.tuk || "Gedung TUK Utama",
+        alamat: (item.alamat || "-") as string,
         linkVideo: item.linkVideo || "-",
         candidates: [],
       });
@@ -81,15 +79,9 @@ export default function AsesiList() {
   // 2. Filter batches according to active tab and search query
   const filteredBatches = allBatches.filter((batch) => {
     // Tab filter
-    if (
-      activeTab === "Offline" &&
-      batch.jenis_asesmen.toLowerCase() !== "offline"
-    )
+    if (activeTab === "Offline" && batch.tuk.toLowerCase() !== "offline")
       return false;
-    if (
-      activeTab === "Online" &&
-      batch.jenis_asesmen.toLowerCase() !== "online"
-    )
+    if (activeTab === "Online" && batch.tuk.toLowerCase() !== "online")
       return false;
 
     // Search query matches Batch Code, Batch Name, Scheme Name, or Candidate Name
@@ -155,9 +147,8 @@ export default function AsesiList() {
             </span>
             <span className="text-xs sm:text-sm font-black text-emerald-800">
               {
-                allBatches.filter(
-                  (b) => b.jenis_asesmen.toLowerCase() === "offline",
-                ).length
+                allBatches.filter((b) => b.tuk.toLowerCase() === "offline")
+                  .length
               }
             </span>
           </div>
@@ -167,9 +158,8 @@ export default function AsesiList() {
             </span>
             <span className="text-xs sm:text-sm font-black text-purple-800">
               {
-                allBatches.filter(
-                  (b) => b.jenis_asesmen.toLowerCase() === "online",
-                ).length
+                allBatches.filter((b) => b.tuk.toLowerCase() === "online")
+                  .length
               }
             </span>
           </div>
@@ -200,9 +190,8 @@ export default function AsesiList() {
                 <option value="Offline">
                   Offline Batch (
                   {
-                    allBatches.filter(
-                      (b) => b.jenis_asesmen.toLowerCase() === "offline",
-                    ).length
+                    allBatches.filter((b) => b.tuk.toLowerCase() === "offline")
+                      .length
                   }
                   )
                 </option>
@@ -210,9 +199,8 @@ export default function AsesiList() {
                   {" "}
                   Online Batch (
                   {
-                    allBatches.filter(
-                      (b) => b.jenis_asesmen.toLowerCase() === "online",
-                    ).length
+                    allBatches.filter((b) => b.tuk.toLowerCase() === "online")
+                      .length
                   }
                   )
                 </option>
@@ -240,7 +228,7 @@ export default function AsesiList() {
           {filteredBatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBatches.map((batch) => {
-                const isOnline = batch.jenis_asesmen.toLowerCase() === "online";
+                const isOnline = batch.tuk.toLowerCase() === "online";
                 const completedCount = batch.candidates.filter(
                   (c) => c.status === "Selesai",
                 ).length;
@@ -319,7 +307,7 @@ export default function AsesiList() {
                                 className="text-purple-500 shrink-0 mt-0.5"
                               />
                               <span className="text-purple-700 font-semibold wrap-break-word leading-snug">
-                                {batch.tuk}
+                                {batch.alamat}
                               </span>
                             </>
                           ) : (
@@ -329,7 +317,7 @@ export default function AsesiList() {
                                 className="text-[#008BE3] shrink-0 mt-0.5"
                               />
                               <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
-                                {batch.tuk}
+                                {batch.alamat}
                               </span>
                             </>
                           )}
@@ -453,8 +441,7 @@ export default function AsesiList() {
                       <h3 className="text-lg md:text-xl font-black text-slate-900">
                         {currentSelectedBatch.batchName}
                       </h3>
-                      {currentSelectedBatch.jenis_asesmen.toLowerCase() ===
-                      "online" ? (
+                      {currentSelectedBatch.tuk.toLowerCase() === "online" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                           <Video size={13} /> Online
                         </span>
@@ -471,8 +458,7 @@ export default function AsesiList() {
                 </div>
 
                 {/* Direct "Buka Link Meeting" Quick Button for Online Batches */}
-                {currentSelectedBatch.jenis_asesmen.toLowerCase() ===
-                  "online" && (
+                {currentSelectedBatch.tuk.toLowerCase() === "online" && (
                   <div className="shrink-0">
                     {currentSelectedBatch.linkVideo !== "-" ? (
                       <a
@@ -516,7 +502,7 @@ export default function AsesiList() {
                       Lokasi
                     </span>
                     <span className="font-bold text-slate-900 break-words leading-snug block">
-                      {currentSelectedBatch.tuk}
+                      {currentSelectedBatch.alamat}
                     </span>
                   </div>
                 </div>
