@@ -100,7 +100,7 @@ export default function DetailRiwayatAsesmen() {
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                 <Building size={14} className="text-slate-400 shrink-0" />
-                {selectedAsesmen.jenis_asesmen}
+                {selectedAsesmen.tuk}
               </div>
             </div>
             <div className="min-w-0">

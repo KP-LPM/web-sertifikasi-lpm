@@ -50,17 +50,17 @@ export default function RiwayatAsesmen() {
 
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div className="min-w-0">
-              <h3 className="text-base font-black text-slate-900">
+              <h3 className="text-base font-black text-slate-900 shrink-0">
                 Riwayat Asesmen
               </h3>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto xl:justify-end">
               {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
-                <Search className="text-gray-400" size={16} />
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-64 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <Search className="text-gray-400 shrink-0" size={16} />
                 <input
                   type="text"
                   placeholder="Cari Skema Sertifikasi..."
@@ -82,11 +82,11 @@ export default function RiwayatAsesmen() {
               </select>
 
               {/* Date Input/Filter */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 py-2 w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
-                <Calendar className="text-gray-400" size={16} />
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <Calendar className="text-gray-400 shrink-0" size={16} />
                 <input
                   type="text"
-                  placeholder="Pilih Tanggal Pengajuan..."
+                  placeholder="Pilih Tanggal ..."
                   className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
                 />
               </div>
@@ -153,7 +153,7 @@ export default function RiwayatAsesmen() {
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <div className="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-medium border bg-slate-50 text-slate-700 border-slate-200 shadow-3xs">
-                          {item.jenis_asesmen}
+                          {item.tuk}
                         </div>
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-gray-500 whitespace-nowrap">

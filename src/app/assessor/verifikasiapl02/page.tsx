@@ -100,7 +100,7 @@ function VerifikasiAPL02List({
 
     const matchesJenis =
       jenisFilter === "" ||
-      (item.jenis_asesmen || "").toLowerCase() === jenisFilter.toLowerCase();
+      (item.tuk || "").toLowerCase() === jenisFilter.toLowerCase();
 
     return matchesSearch && matchesJenis && matchesDate;
   });
@@ -232,7 +232,7 @@ function VerifikasiAPL02List({
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                       <div className="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-medium border bg-slate-50 text-slate-700 border-slate-200 shadow-3xs">
-                        {item.jenis_asesmen}
+                        {item.tuk}
                       </div>
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">

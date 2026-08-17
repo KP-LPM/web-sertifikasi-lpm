@@ -95,7 +95,7 @@ export default function AssessorOverview() {
                 title={item.skema || "Skema Asesmen"}
                 candidate={item.nama || "Kandidat"}
                 time={item.tglAsesmen || "-"}
-                badge={item.jenis_asesmen}
+                badge={item.tuk}
                 onClick={() => router.push("/assessor/candidates")}
               />
             ))}

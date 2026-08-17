@@ -26,7 +26,6 @@ export default function KonfigurasiPertanyaan() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-  // Use context data instead of empty placeholder
   const konfigurasiData = konfigurasiPertanyaan;
 
   return (
@@ -55,17 +54,17 @@ export default function KonfigurasiPertanyaan() {
 
       <div className="space-y-4">
         <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div className="min-w-0">
-              <h3 className="text-base font-black text-slate-900">
+              <h3 className="text-base font-black text-slate-900 shrink-0">
                 Daftar Konfigurasi
               </h3>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto xl:justify-end">
               {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
-                <Search className="text-gray-400" size={16} />
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-64 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <Search className="text-gray-400 shrink-0" size={16} />
                 <input
                   type="text"
                   placeholder="Cari Konfigurasi..."
@@ -77,17 +76,14 @@ export default function KonfigurasiPertanyaan() {
 
               {/* Status Select Filter */}
               <select className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold">
-                <option value="">Semua Tipe Form</option>
-                <option value="Penyesuaian Wajar">Penyesuaian Wajar</option>
-                <option value="Penjelasan Proyek Singkat">
-                  Penjelasan Proyek Singkat
-                </option>
-                <option value="Pertanyaan Lisan">Pertanyaan Lisan</option>
+                <option value="">Semua Status</option>
+                <option value="Terbit">Terbit</option>
+                <option value="Draft">Draft</option>
               </select>
 
               {/* Date Input/Filter */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 py-2 w-full sm:w-56 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
-                <Calendar className="text-gray-400" size={16} />
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <Calendar className="text-gray-400 shrink-0" size={16} />
                 <input
                   type="text"
                   placeholder="Pilih Tanggal Dibuat..."
@@ -214,7 +210,7 @@ export default function KonfigurasiPertanyaan() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={6}
                       className="px-6 py-20 text-center text-gray-500"
                     >
                       <div className="flex flex-col items-center justify-center">
