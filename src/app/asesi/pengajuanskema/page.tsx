@@ -79,7 +79,7 @@ interface Submission {
   alamat?: string;
   alamatWilayah?: string;
   nik?: string;
-  kebangsaan?: string;
+  kewarganegaraan?: string;
   kodePos?: string;
   noTelp?: string;
   pendidikanTerakhir?: string;
