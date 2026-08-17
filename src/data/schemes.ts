@@ -1,123 +1,1408 @@
 export const AVAILABLE_SCHEMES = [
   {
-    name: 'Jenjang 5 Bidang Kewirausahaan Industri',
-    code: '06/LSPUINBdg/XI/2023',
+    name: "Jenjang 5 Bidang Kewirausahaan Industri",
+    code: "06/LSPUINBdg/XI/2023",
     units: [
-      { code: 'M.741000.010.01', title: 'Melakukan rekrutmen tenaga kerja.', elemen: [{"title":"Menyiapkan rekrutmen tenaga kerja","kuk":["1.1 Persyaratan atau kualifikasi calon tenaga kerja ditentukan sesuai kebutuhan.","1.2 Prosedur rekrutmen tenaga kerja dijelaskan."]},{"title":"Memeriksa berkas lamaran kerja","kuk":["2.1 Berkas lamaran diperiksa.","2.2 Calon pelamar yang tidak memenuhi persyaratan atau kualifikasi berkasnya dipisahkan.","2.3 Berkas lamaran dari pelamar yang memenuhi syarat diproses sesuai prosedur."]},{"title":"Melakukan proses rekrutmen tenaga kerja","kuk":["3.1 Tahapan penyaringan bagi pelamar yang memenuhi persyaratan dilakukan sesuai prosedur.","3.2 Hasil penyaringan diperiksa sesuai prosedur.","3.3 Hasil pemeriksaan dianalisis."]}] },
-      { code: 'M.741000.011.01', title: 'Menyusun struktur organisasi sesuai kebutuhan.', elemen: [{"title":"Menyiapkan penyusunan struktur organisasi","kuk":["1.1 Informasi tentang struktur organisasi perusahaan diinventarisasi.","1.2 Fungsi-fungsi yang ada dalam perusahaan diinventarisasi.","1.3 Struktur jabatan yang ada dalam perusahaan diinventarisasi."]},{"title":"Menyusun struktur organisasi","kuk":["2.1 Setiap jabatan ditentukan posisinya dalam organisasi.","2.2 Bagan struktur organisasi dibuat.","2.3 Penjelasan struktur organisasi dibuat."]}] },
-      { code: 'M.741000.012.01', title: 'Membuat uraian pekerjaan untuk setiap personil.', elemen: [{"title":"Menyiapkan pembuatan uraian pekerjaan","kuk":["1.1 Fungsi-fungsi dalam organisasi diinventarisasi.","1.2 Tugas-tugas yang harus dilaksanakan setiap personil dalam perusahaan diinventarisasi.","1.3 Relasi antar personil dalam melaksanakan tugas diinventarisasi.","1.4 Lingkup wewenang dan tanggungjawab setiap personil diinventarisasi."]},{"title":"Membuat uraian pekerjaan","kuk":["2.1 Uraian pekerjaan untuk masing-masing personil dibuat berdasarkan tugas dan tanggung jawabnya.","2.2 Uraian pekerjaan diverifikasi di lapangan."]},{"title":"Mensosialisasikan uraian pekerjaan","kuk":["3.1 Uraian pekerjaan untuk setiap personil disiapkan dalam bentuk tertulis (print-out) sesuai prosedur.","3.2 Uraian pekerjaan dijelaskan kepada setiap personil."]}] },
-      { code: 'M.741000.013.01', title: 'Membuat prosedur kerja untuk setiap tugas.', elemen: [{"title":"Menyiapkan pembuatan prosedur kerja","kuk":["1.1 Tahapan proses kerja diinventarisasi.","1.2 Persyaratan pada setiap tahapan diinventarisasi.","1.3 Setiap tugas dalam tahapan proses kerja diinventarisasi.","1.4 Tugas-tugas yang harus dilaksanakan setiap personil dalam perusahaan diinventarisasi."]},{"title":"Membuat prosedur kerja","kuk":["2.1 Prosedur kerja untuk setiap tugas dibuat.","2.2 Prosedur kerja diverifikasi di lapangan."]},{"title":"Mensosialisasikan prosedur kerja","kuk":["3.1 Prosedur kerja untuk setiap personil disiapkan dalam bentuk tertulis (print-out) sesuai prosedur.","3.2 Prosedur kerja dijelaskan kepada setiap personil."]}] },
-      { code: 'M.741000.015.01', title: 'Melakukan pengawasan atas kinerja tenaga kerja.' },
-      { code: 'M.741000.016.01', title: 'Menyusun rencana produksi.', elemen: [{"title":"Menyiapkan penyusunan rencana produksi","kuk":["1.1 Pengetahuan tentang manajemen produksi dijelaskan.","1.2 Pengetahuan tentang perencanaan produksi dijelaskan.","1.3 Data spesifikasi produk dan kapasitas terpasang dari mesin dan peralatan disiapkan sesuai prosedur.","1.4 Data personil bagian produksi disiapkan sesuai prosedur.","1.5 Data ketersediaan bahan baku dan bahan pembantu diperiksa sesuai prosedur."]},{"title":"Menyusun rencana produksi untuk satu periode","kuk":["2.1 Target produksi ditentukan berdasarkan pesanan atau permintaan pasar.","2.2 Volume kebutuhan bahan baku dan bahan pembantu ditentukan berdasarkan target produksi.","2.3 Mesin dan peralatan yang akan digunakan ditentukan sesuai prosedur.","2.4 Jumlah tenaga kerja yang dibutuhkan dalam proses produksi ditentukan.","2.5 Target waktu produksi ditentukan sesuai pesanan atau permintaan pasar.","2.6 Rencana produksi disusun untuk satu periode waktu tertentu."]},{"title":"Melaporkan hasil perencanaan produksi","kuk":["3.1 Hasil perencanaan produksi dilaporkan sesuai prosedur.","3.2 Hasil perencanaan produksi didokumentasikan."]}] },
-      { code: 'M.741000.017.01', title: 'Menyusun rencana kerja di ruang produksi.', elemen: [{"title":"Menyiapkan penyusunan rencana kerja","kuk":["1.1 Pengetahuan tentang manajemen produksi dijelaskan.","1.2 Pengetahuan tentang perencanaan produksi dijelaskan.","1.3 Pengetahuan tentang manajemen supervisi dijelaskan.","1.4 Data personil bagian produksi diidentifikasi.","1.5 Rencana produksi diidentifikasi."]},{"title":"Menyusun rencana kerja di ruang produksi","kuk":["2.1 Proses produksi ditentukan sesuai prosedur","2.2 Penempatan personil produksi ditentukan sesuai prosedur.","2.3 Rencana kerja di ruang produksi disusun sesuai kebutuhan lapangan."]},{"title":"Melaporkan hasil rencana kerja","kuk":["3.1 Hasil rencana kerja di ruang produksi dilaporkan sesuai prosedur","3.2 Hasil rencana kerja di ruang produksi didokumentasikan."]}] },
-      { code: 'M.741000.022.01', title: 'Melaksanakan pengawasan jalannya proses produksi', elemen: [{"title":"Menyiapkan pelaksanaan pengawasan jalannya proses produksi","kuk":["1.1 Pengetahuan tentang manajemen supervisi dan manajemen produksi dijelaskan.","1.2 Rencana produksi dan rencana kerja di ruang produksi diperiksa.","1.3 Prosedur pengawasan proses produksi disiapkan."]},{"title":"Melakukan pengawasan jalannya proses produksi","kuk":["2.1 Pengawasan proses produksi dilakukan sesuai prosedur.","2.2 Perbaikan terhadap unit proses yang tidak lancar dilakukan sesuai prosedur.","2.3 Penggunaan unit proses diatur kembali sesuai prosedur."]},{"title":"Melaporkan pelaksanaan pengawasan jalannya proses produksi","kuk":["3.1 Semua kegiatan pengawasan proses produksi yang dilakukan dicatat.","3.2 Kegiatan pengawasan proses produksi dilaporkan sesuai prosedur."]}] },
-      { code: 'M.741000.026.01', title: 'Menjalin hubungan dengan pelanggan.', elemen: [{"title":"Menyiapkan jalinan hubungan dengan pelanggan","kuk":["1.1 Pengetahuan tentang komunikasi dijelaskan.","1.2 Spesifikasi dan manfaat produk dijelaskan.","1.3 Kebiasaan dan minat setiap kelompok pelanggan diidentifikasi.","1.4 Layanan informasi dan aduan pelanggan disediakan.","1.5 Acara-acara untuk setiap kelompok atau beberapa kelompok pelanggan disiapkan.","1.6 Biaya penyelenggaraan acara dihitung."]},{"title":"Menjalin hubungan dengan pelanggan","kuk":["2.1 Informasi yang jelas diberikan kepada pelanggan.","2.2 Komunikasi langsung dengan pelanggan dilakukan sesuai prosedur.","2.3 Acara-acara untuk setiap kelompok atau beberapa kelompok pelanggan diadakan sesuai rencana."]},{"title":"Menjaga hubungan dengan pelanggan","kuk":["3.1 Aduan dan saran pelanggan diproses sesuai prosedur.","3.2 Pelanggan yang potensial dihubungi sesuai prosedur."]}] }
+      {
+        code: "M.741000.010.01",
+        title: "Melakukan rekrutmen tenaga kerja.",
+        elemen: [
+          {
+            title: "Menyiapkan rekrutmen tenaga kerja",
+            kuk: [
+              "1.1 Persyaratan atau kualifikasi calon tenaga kerja ditentukan sesuai kebutuhan.",
+              "1.2 Prosedur rekrutmen tenaga kerja dijelaskan.",
+            ],
+          },
+          {
+            title: "Memeriksa berkas lamaran kerja",
+            kuk: [
+              "2.1 Berkas lamaran diperiksa.",
+              "2.2 Calon pelamar yang tidak memenuhi persyaratan atau kualifikasi berkasnya dipisahkan.",
+              "2.3 Berkas lamaran dari pelamar yang memenuhi syarat diproses sesuai prosedur.",
+            ],
+          },
+          {
+            title: "Melakukan proses rekrutmen tenaga kerja",
+            kuk: [
+              "3.1 Tahapan penyaringan bagi pelamar yang memenuhi persyaratan dilakukan sesuai prosedur.",
+              "3.2 Hasil penyaringan diperiksa sesuai prosedur.",
+              "3.3 Hasil pemeriksaan dianalisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.011.01",
+        title: "Menyusun struktur organisasi sesuai kebutuhan.",
+        elemen: [
+          {
+            title: "Menyiapkan penyusunan struktur organisasi",
+            kuk: [
+              "1.1 Informasi tentang struktur organisasi perusahaan diinventarisasi.",
+              "1.2 Fungsi-fungsi yang ada dalam perusahaan diinventarisasi.",
+              "1.3 Struktur jabatan yang ada dalam perusahaan diinventarisasi.",
+            ],
+          },
+          {
+            title: "Menyusun struktur organisasi",
+            kuk: [
+              "2.1 Setiap jabatan ditentukan posisinya dalam organisasi.",
+              "2.2 Bagan struktur organisasi dibuat.",
+              "2.3 Penjelasan struktur organisasi dibuat.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.012.01",
+        title: "Membuat uraian pekerjaan untuk setiap personil.",
+        elemen: [
+          {
+            title: "Menyiapkan pembuatan uraian pekerjaan",
+            kuk: [
+              "1.1 Fungsi-fungsi dalam organisasi diinventarisasi.",
+              "1.2 Tugas-tugas yang harus dilaksanakan setiap personil dalam perusahaan diinventarisasi.",
+              "1.3 Relasi antar personil dalam melaksanakan tugas diinventarisasi.",
+              "1.4 Lingkup wewenang dan tanggungjawab setiap personil diinventarisasi.",
+            ],
+          },
+          {
+            title: "Membuat uraian pekerjaan",
+            kuk: [
+              "2.1 Uraian pekerjaan untuk masing-masing personil dibuat berdasarkan tugas dan tanggung jawabnya.",
+              "2.2 Uraian pekerjaan diverifikasi di lapangan.",
+            ],
+          },
+          {
+            title: "Mensosialisasikan uraian pekerjaan",
+            kuk: [
+              "3.1 Uraian pekerjaan untuk setiap personil disiapkan dalam bentuk tertulis (print-out) sesuai prosedur.",
+              "3.2 Uraian pekerjaan dijelaskan kepada setiap personil.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.013.01",
+        title: "Membuat prosedur kerja untuk setiap tugas.",
+        elemen: [
+          {
+            title: "Menyiapkan pembuatan prosedur kerja",
+            kuk: [
+              "1.1 Tahapan proses kerja diinventarisasi.",
+              "1.2 Persyaratan pada setiap tahapan diinventarisasi.",
+              "1.3 Setiap tugas dalam tahapan proses kerja diinventarisasi.",
+              "1.4 Tugas-tugas yang harus dilaksanakan setiap personil dalam perusahaan diinventarisasi.",
+            ],
+          },
+          {
+            title: "Membuat prosedur kerja",
+            kuk: [
+              "2.1 Prosedur kerja untuk setiap tugas dibuat.",
+              "2.2 Prosedur kerja diverifikasi di lapangan.",
+            ],
+          },
+          {
+            title: "Mensosialisasikan prosedur kerja",
+            kuk: [
+              "3.1 Prosedur kerja untuk setiap personil disiapkan dalam bentuk tertulis (print-out) sesuai prosedur.",
+              "3.2 Prosedur kerja dijelaskan kepada setiap personil.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.015.01",
+        title: "Melakukan pengawasan atas kinerja tenaga kerja.",
+      },
+      {
+        code: "M.741000.016.01",
+        title: "Menyusun rencana produksi.",
+        elemen: [
+          {
+            title: "Menyiapkan penyusunan rencana produksi",
+            kuk: [
+              "1.1 Pengetahuan tentang manajemen produksi dijelaskan.",
+              "1.2 Pengetahuan tentang perencanaan produksi dijelaskan.",
+              "1.3 Data spesifikasi produk dan kapasitas terpasang dari mesin dan peralatan disiapkan sesuai prosedur.",
+              "1.4 Data personil bagian produksi disiapkan sesuai prosedur.",
+              "1.5 Data ketersediaan bahan baku dan bahan pembantu diperiksa sesuai prosedur.",
+            ],
+          },
+          {
+            title: "Menyusun rencana produksi untuk satu periode",
+            kuk: [
+              "2.1 Target produksi ditentukan berdasarkan pesanan atau permintaan pasar.",
+              "2.2 Volume kebutuhan bahan baku dan bahan pembantu ditentukan berdasarkan target produksi.",
+              "2.3 Mesin dan peralatan yang akan digunakan ditentukan sesuai prosedur.",
+              "2.4 Jumlah tenaga kerja yang dibutuhkan dalam proses produksi ditentukan.",
+              "2.5 Target waktu produksi ditentukan sesuai pesanan atau permintaan pasar.",
+              "2.6 Rencana produksi disusun untuk satu periode waktu tertentu.",
+            ],
+          },
+          {
+            title: "Melaporkan hasil perencanaan produksi",
+            kuk: [
+              "3.1 Hasil perencanaan produksi dilaporkan sesuai prosedur.",
+              "3.2 Hasil perencanaan produksi didokumentasikan.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.017.01",
+        title: "Menyusun rencana kerja di ruang produksi.",
+        elemen: [
+          {
+            title: "Menyiapkan penyusunan rencana kerja",
+            kuk: [
+              "1.1 Pengetahuan tentang manajemen produksi dijelaskan.",
+              "1.2 Pengetahuan tentang perencanaan produksi dijelaskan.",
+              "1.3 Pengetahuan tentang manajemen supervisi dijelaskan.",
+              "1.4 Data personil bagian produksi diidentifikasi.",
+              "1.5 Rencana produksi diidentifikasi.",
+            ],
+          },
+          {
+            title: "Menyusun rencana kerja di ruang produksi",
+            kuk: [
+              "2.1 Proses produksi ditentukan sesuai prosedur",
+              "2.2 Penempatan personil produksi ditentukan sesuai prosedur.",
+              "2.3 Rencana kerja di ruang produksi disusun sesuai kebutuhan lapangan.",
+            ],
+          },
+          {
+            title: "Melaporkan hasil rencana kerja",
+            kuk: [
+              "3.1 Hasil rencana kerja di ruang produksi dilaporkan sesuai prosedur",
+              "3.2 Hasil rencana kerja di ruang produksi didokumentasikan.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.022.01",
+        title: "Melaksanakan pengawasan jalannya proses produksi",
+        elemen: [
+          {
+            title: "Menyiapkan pelaksanaan pengawasan jalannya proses produksi",
+            kuk: [
+              "1.1 Pengetahuan tentang manajemen supervisi dan manajemen produksi dijelaskan.",
+              "1.2 Rencana produksi dan rencana kerja di ruang produksi diperiksa.",
+              "1.3 Prosedur pengawasan proses produksi disiapkan.",
+            ],
+          },
+          {
+            title: "Melakukan pengawasan jalannya proses produksi",
+            kuk: [
+              "2.1 Pengawasan proses produksi dilakukan sesuai prosedur.",
+              "2.2 Perbaikan terhadap unit proses yang tidak lancar dilakukan sesuai prosedur.",
+              "2.3 Penggunaan unit proses diatur kembali sesuai prosedur.",
+            ],
+          },
+          {
+            title: "Melaporkan pelaksanaan pengawasan jalannya proses produksi",
+            kuk: [
+              "3.1 Semua kegiatan pengawasan proses produksi yang dilakukan dicatat.",
+              "3.2 Kegiatan pengawasan proses produksi dilaporkan sesuai prosedur.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.741000.026.01",
+        title: "Menjalin hubungan dengan pelanggan.",
+        elemen: [
+          {
+            title: "Menyiapkan jalinan hubungan dengan pelanggan",
+            kuk: [
+              "1.1 Pengetahuan tentang komunikasi dijelaskan.",
+              "1.2 Spesifikasi dan manfaat produk dijelaskan.",
+              "1.3 Kebiasaan dan minat setiap kelompok pelanggan diidentifikasi.",
+              "1.4 Layanan informasi dan aduan pelanggan disediakan.",
+              "1.5 Acara-acara untuk setiap kelompok atau beberapa kelompok pelanggan disiapkan.",
+              "1.6 Biaya penyelenggaraan acara dihitung.",
+            ],
+          },
+          {
+            title: "Menjalin hubungan dengan pelanggan",
+            kuk: [
+              "2.1 Informasi yang jelas diberikan kepada pelanggan.",
+              "2.2 Komunikasi langsung dengan pelanggan dilakukan sesuai prosedur.",
+              "2.3 Acara-acara untuk setiap kelompok atau beberapa kelompok pelanggan diadakan sesuai rencana.",
+            ],
+          },
+          {
+            title: "Menjaga hubungan dengan pelanggan",
+            kuk: [
+              "3.1 Aduan dan saran pelanggan diproses sesuai prosedur.",
+              "3.2 Pelanggan yang potensial dihubungi sesuai prosedur.",
+            ],
+          },
+        ],
+      },
     ],
     persyaratanDasar: [
-      { name: 'Transkrip Nilai Semester 5 (Lulus Kewirausahaan dan Manajemen)', description: 'Minimal semester 6 mahasiswa UIN Sunan Gunung Djati Bandung yang telah menyelesaikan matakuliah Kewirausahaan dan manajemen.' },
-      { name: 'Bukti Magang / Praktik Kerja', description: 'Telah mengikuti magang/praktik kerja industri bidang kewirausahaan industri.' }
+      {
+        name: "Transkrip Nilai Semester 5 (Lulus Kewirausahaan dan Manajemen)",
+        description:
+          "Minimal semester 6 mahasiswa UIN Sunan Gunung Djati Bandung yang telah menyelesaikan matakuliah Kewirausahaan dan manajemen.",
+      },
+      {
+        name: "Bukti Magang / Praktik Kerja",
+        description:
+          "Telah mengikuti magang/praktik kerja industri bidang kewirausahaan industri.",
+      },
     ],
     buktiAdministratif: [
-      'Salinan KTP dan KTM',
-      'Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar'
+      "Salinan KTP dan KTM",
+      "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
     ],
-    
   },
   {
-    name: 'Melaksanakan Komunikasi Dengan Pemangku Kepentingan',
-    code: '09/LSPUINBdg/XI/2023',
+    name: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+    code: "09/LSPUINBdg/XI/2023",
     units: [
-      { code: 'M.70HMS00.031.3', title: 'Melaksankan Media Relations', elemen: [{"title":"Menyiapkan program media relations","kuk":["1.1 Direktori media konvensional dan digital ditetapkan sesuai dengan kebutuhan organisasi/institusi.","1.2 Biodata personil media konvensional dan digital dikumpulkan berdasarkan jenis media.","1.3 Informasi dan kontak personal dikelola sesuai kebutuhan organisasi/institusi.","1.4 Prosedur hubungan dengan media konvensional dan digital dibuat sesuai kebutuhan organisasi/ institusi."]},{"title":"Menerapkan program media relations","kuk":["2.1 Data serta informasi tentang organisasi/institusi dan operasionalnya dijelaskan kepada media konvensional dan digital sesuai tujuan media relations.","2.2 Media kit didistribusikan kepada media konvensional dan digital sesuai tujuan media relations.","2.3 Kunjungan ke kantor redaksi media (media visit) dilaksanakan sesuai tujuan media relations.","2.4 Personil media diundang dalam kegiatan media tour sesuai tujuan media relations."]},{"title":"Mendokumentasikan program media relations","kuk":["3.1 Kegiatan media relations didokumentasikan dalam bentuk hard copy maupun soft copy (digital) sesuai kebutuhan organisasi/institusi.","3.2 Dokumentasi disimpan secara sistematis baik dalam konvensional filling maupun e-filing sesuai kebutuhan organisasi."]}] },
-      { code: 'M.70HMS00.032.2', title: 'Melaksanakan community relations', elemen: [{"title":"Menyiapkan pelaksanaan program community relations","kuk":["1.1 Karakteristik komunitas diidentifikasi sesuai struktur sosial komunitas.","1.2 Tujuan kegiatan community relations ditetapkan sesuai design program.","1.3 Program community relations disiapkan berdasarkan design program.","1.4 Tim, waktu, timeline, dan anggaran pelaksanaan community relations disusun berdasarkan kebutuhan program community relations.","1.5 Strategi dan teknik komunikasi program community relations ditetapkan sesuai tujuan program.","1.6 Faktor pendukung pelaksanaan program community relations disiapkan sesuai kebutuhan."]},{"title":"Menerapkan program community relations","kuk":["2.1 Program community relations diterapkan sesuai kebutuhan komunitas.","2.2 Strategi dan teknik komunikasi program community relations diterapkan sesuai tujuan program.","2.3 Kedekatan dengan komunitas ditingkatkan berdasarkan kebutuhan komunikasi kedua belah pihak."]},{"title":"Mendokumentasikan kegiatan community relations","kuk":["3.1 Berkas kegiatan community relations dikumpulkan sesuai kebutuhan dokumentasi program.","3.2 Berkas kegiatan community relations disusun sesuai sistematika dokumentasi program.","3.3 Berkas kegiatan community relations didokumentasikan sesuai kebutuhan program secara hardcopy dan softcopy.","3.4 Dokumentasi disimpan secara sistematis baik dalam konvensional filling maupun e-filing sesuai kebutuhan organisasi."]}] },
-      { code: 'M.70HMS00.033.3', title: 'Melaksanakan Corporate Social Responsibility (CSR)', elemen: [{"title":"Melaksanakan pemetaan khalayak","kuk":["1.1 Kelompok khalayak ditetapkan berdasarkan kebutuhan program CSR.","1.2 Pengumpulan data lapangan dilaksanakan sesuai tujuan program CSR."]},{"title":"Menyusun program CSR","kuk":["2.1 Program CSR dalam jangka panjang disusun sesuai kebutuhan.","2.2 Program CSR direncanakan berdasarkan tujuan program.","2.3 Anggaran untuk kebutuhan CSR disusun sesuai pagu pembiayaan program."]},{"title":"Melaksanakan program CSR","kuk":["3.1 Pelaksanaan program CSR diorganisir sesuai indikator komprehensif, tepat waktu, tepat guna, dan tepat sasaran.","3.2 Koordinasi antarlembaga lainnya dilakukan sesuai kebutuhan program di lokasi yang sama.","3.3 Program tindak lanjut pemberdayaan disiapkan sesuai indikator kebutuhan kemandirian masyarakat.","3.4 Inovasi secara proaktif untuk pengembangan program hubungan dengan masyarakat secara bertahap dilaksanakan berdasarkan mekanisme pengelolaan program pemberdayaan."]},{"title":"Mendokumentasikan program","kuk":["4.1 Dokumen program CSR dikumpulkan sesuai kebutuhan.","4.2 Dokumen program CSR disusun berdasarkan sistematika program.","4.3 Dokumen program CSR didokumentasikan sesuai kebutuhan backup digital dan hardcopy."]}] },
-      { code: 'M.70HMS00.034.1', title: 'Melaksanakan industrial relations', elemen: [{"title":"Menyiapkan program industrial relations","kuk":["1.1 Masalah industrial relations dipetakan sesuai dengan kebutuhan organisasi.","1.2 Tujuan industrial relations ditetapkan berdasarkan target pencapaian organisasi.","1.3 Data yang diperlukan untuk industrial relations dikumpulkan sesuai kebutuhan organisasi.","1.4 Program industrial relations direncanakan sesuai kebutuhan organisasi.","1.5 Sumber daya kegiatan industrial relations ditetapkan sesuai kebutuhan program kehumasan."]},{"title":"Melaksanakan program industrial relations","kuk":["2.1 Program industrial relations dilaksanakan berdasarkan tahapan program kehumasan.","2.2 Ukuran pencapaian industrial relations ditetapkan sesuai relevansi program kehumasan."]},{"title":"Mendokumentasikan program industrial relations","kuk":["3.1 Berkas program industrial relations dari perencanaan sampai evaluasi dikumpulkan sesuai kebutuhan dokumentasi organisasi.","3.2 Berkas program industrial relations disimpan dalam bentuk elektronik dan hardcopy sesuai kebutuhan dokumentasi organisasi."]}] },
-      { code: 'M.70HMS00.035.3', title: 'Melaksanakan government relations', elemen: [{"title":"Menganalisis kebijakan pemerintah yang terkait dengan kelangsungan organisasi","kuk":["1.1 Kebijakan pemerintah yang terkait dan dapat mempengaruhi institusi/ organisasi diidentifikasi sesuai dengan tujuan analisis.","1.2 Kebijakan pemerintah yang terkait dan dapat mempengaruhi organisasi dianalisis berdasarkan visi, misi, dan tujuan institusi/organisasi.","1.3 Database government relations disusun sesuai dengan nomenklatur pimpinan dan staf lembaga pemerintah terkait."]},{"title":"Merencanakan hubungan dengan lembaga pemerintah","kuk":["2.1 Lembaga pemerintah terkait yang menjadi stakeholders perusahaan ditetapkan sesuai pola hubungan dengan organisasi.","2.2 Koordinasi dan tim lintas fungsi government relations ditetapkan sesuai kebutuhan organisasi.","2.3 Lembaga pemerintah ditetapkan berdasarkan karakteristik dan kewenangannya.","2.4 Hubungan dengan unit lembaga pemerintah yang terkait dirancang berdasarkan program good corporate government.","2.5 Program government relations disusun sesuai hasil analisa kebutuhan organisasi."]},{"title":"Melaksanakan kegiatan government relations","kuk":["3.1 Analisa kebijakan pemerintah dilakukan berdasarkan indikator keberhasilan.","3.2 Efektifitas kegiatan government relations dilakukan berdasarkan indikator keberhasilan program.","3.3 Koordinasi dengan unit lembaga pemerintah terkait dilaksanakan sesuai tujuan program government relations."]},{"title":"Mendokumentasikan kegiatan government relations","kuk":["4.1 Berkas program dari perencanaan hingga evaluasi disusun sesuai sistematika pelaporan kegiatan.","4.2 Berkas dari perencanaan hingga evaluasi disimpan dalam bentuk e-filing dan hardcopy dengan back up sesuai kebutuhan organisasi."]}] },
-      { code: 'M.70HMS00.036.1', title: 'Melaksanakan institutional relations', elemen: [{"title":"Menyiapkan kegiatan institutional relations","kuk":["1.1 Jenis kegiatan institutional relations ditentukan sesuai kebutuhan hubungan eksternal organisasi.","1.2 Kegiatan institutional relations dirancang sesuai dengan tujuan organisasi."]},{"title":"Melaksanakan kegiatan institutional relations","kuk":["2.1 Kegiatan institutional relations disimulasi sesuai prosedur pengelolaan program organisasi.","2.2 Kegiatan institutional relations dilaksanakan sesuai prosedur pengelolaan program organisasi."]},{"title":"Mendokumentasikan kegiatan institutional relations","kuk":["3.1 Laporan kegiatan institutional relations disusun sesuai mekanisme dokumentasi data kegiatan.","3.2 Laporan kegiatan institutional relations didokumentasikan sesuai kebutuhan organisasi dalam bentuk hardcopy dan softcopy."]}] },
-      { code: 'M.70HMS00.037.3', title: 'Melaksanakan internal relations', elemen: [{"title":"Mengumpulkan data/informasi tentang pegawai/karyawan beserta posisi/jabatan","kuk":["1.1 Data/informasi tentang pegawai /karyawan secara menyeluruh diidentifikasi sesuai dengan jabatan dan tusi (tugas dan fungsi) dalam organisasi.","1.2 Rencana program internal relations dibuat sesuai kebutuhan organisasi.","1.3 Koordinasi antarsatuan kerja di dalam organisasi dilakukan sesuai dengan kebutuhan rencana program.","1.4 Rencana program secara menyeluruh yang telah dikoordinasikan dilaporkan kepada pimpinan untuk mendapatkan persetujuan."]},{"title":"Menyusun program internal relations","kuk":["2.1 Program internal relations disusun berdasarkan kebutuhan manajemen dan karyawan/pegawai.","2.2 Metode pelaksanaan internal relations yang efektif dan efisien disusun berdasarkan pertimbangan kebutuhan manajemen dan karyawan/pegawai.","2.3 Bentuk media dan jenis aktivitas disiapkan sesuai dengan sumber daya yang tersedia."]},{"title":"Melaksanakan program internal relations","kuk":["3.1 Program internal relations hasil koordinasi baik secara vertikal, horizontal, dan diagonal yang terkait dengan materi, media, dan jenis aktivitas dibuat berdasarkan media internal yang tersedia.","3.2 Informasi terkait visi, misi, kebijakan, tujuan, operasional, dan hasil-hasil yang dicapai organisasi serta informasi lain yang dikemas melalui media internal didistribusikan sesuai kebutuhan manajemen dan karyawan/pegawai.","3.3 Jenis aktivitas internal relations baik di dalam maupun di luar lingkungan kantor dilaksanakan sesuai jadwal/ waktu yang telah disepakati."]},{"title":"Mendokumentasikan kegiatan internal relations","kuk":["4.1 Berkas internal relations dari perencanaan sampai evaluasi dikumpulkan sesuai kebutuhan dokumentasi organisasi.","4.2 Berkas internal relations disimpan dalam bentuk elektronik dan hardcopy sesuai kebutuhan dokumentasi organisasi."]}] },
-      { code: 'M.70HMS00.038.3', title: 'Melaksanakan marketing public relations', elemen: [{"title":"Menyiapkan program marketing public relations","kuk":["1.1 Tim pelaksana marketing public relations ditetapkan berdasarkan kebutuhan unit terkait.","1.2 Tujuan marketing public relations ditetapkan sesuai dengan stakeholders yang relevan.","1.3 Media marketing public relations ditetapkan sesuai dengan tujuan program.","1.4 Pesan persuasif dirancang sesuai hasil koordinasi dengan unit marketing dan sesuai kebutuhan reputasi organisasi, reputasi produk, dan opini publik dalam jangka panjang."]},{"title":"Melaksanakan program marketing public relations","kuk":["2.1 Materi dan desain konten marketing public relations dibuat sesuai media yang ditentukan.","2.2 Konten marketing public relations didesiminasikan sesuai hasil materi dan desain.","2.3 Updating konten/materi marketing public relations dilakukan secara berkala sesuai perkembangan dan kebutuhan publik.","2.4 Monitoring terhadap masukan kegiatan marketing public relations dilakukan sesuai prosedur media konvensional dan media sosial."]},{"title":"Mendokumentasikan program marketing public relations","kuk":["4.2 Semua berkas dari perencanaan hingga evaluasi marketing public relations didokumentasikan sesuai pelaksanaan kegiatan.","4.3 Semua berkas disusun secara berurutan mulai dari tahap perencanaan, pelaksanaan, sampai dengan evaluasi.","4.4 Semua berkas disimpan secara sistematis sesuai aturan pendokumentasian."]}] },
-      { code: 'M.70HMS00.039.1', title: 'Melaksanakan customer relations', elemen: [{"title":"Menyiapkan program customer relations","kuk":["1.1 Program customer relations dipetakan sesuai tujuan program.","1.2 Kegiatan customer relations dirancang sesuai tujuan yang ditetapkan."]},{"title":"Melaksanakan program customer relations","kuk":["2.1 Kegiatan customer relations disimulasi sesuai prosedur pengelolaan program organisasi.","2.2 Kegiatan customer relations dilaksanakan sesuai rancangan program."]},{"title":"Mendokumentasikan program customer relations","kuk":["3.1 Dokumentasi kegiatan customer relations dibuat sesuai kebutuhan.","3.2 Dokumentasi kegiatan customer relations disimpan secara sistematis sesuai aturan pendokumentasian."]}] },
-      { code: 'M.70HMS00.040.3', title: 'Melaksanakan investor relations', elemen: [{"title":"Menyiapkan program investor relations","kuk":["1.1 Tujuan program investor relations ditetapkan berdasarkan target pencapaian organisasi.","1.2 program investor relations direncanakan sesuai kebutuhan organisasi.","1.3 Sumber daya program investor relations ditetapkan sesuai kebutuhan program kehumasan."]},{"title":"Melaksanakan program investor relations","kuk":["2.1 Program investor relations dilaksanakan berdasarkan rancangan program kehumasan.","2.2 Ukuran pencapaian investor relations ditetapkan sesuai relevansi program kehumasan."]},{"title":"Mendokumentasikan program investor relations","kuk":["3.1 Laporan program investor relations disusun sesuai mekanisme dokumentasi data program.","3.2 Laporan program investor relations didokumentasikan sesuai kebutuhan organisasi dalam bentuk hardcopy dan softcopy."]}] }
+      {
+        code: "M.70HMS00.031.3",
+        title: "Melaksankan Media Relations",
+        elemen: [
+          {
+            title: "Menyiapkan program media relations",
+            kuk: [
+              "1.1 Direktori media konvensional dan digital ditetapkan sesuai dengan kebutuhan organisasi/institusi.",
+              "1.2 Biodata personil media konvensional dan digital dikumpulkan berdasarkan jenis media.",
+              "1.3 Informasi dan kontak personal dikelola sesuai kebutuhan organisasi/institusi.",
+              "1.4 Prosedur hubungan dengan media konvensional dan digital dibuat sesuai kebutuhan organisasi/ institusi.",
+            ],
+          },
+          {
+            title: "Menerapkan program media relations",
+            kuk: [
+              "2.1 Data serta informasi tentang organisasi/institusi dan operasionalnya dijelaskan kepada media konvensional dan digital sesuai tujuan media relations.",
+              "2.2 Media kit didistribusikan kepada media konvensional dan digital sesuai tujuan media relations.",
+              "2.3 Kunjungan ke kantor redaksi media (media visit) dilaksanakan sesuai tujuan media relations.",
+              "2.4 Personil media diundang dalam kegiatan media tour sesuai tujuan media relations.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan program media relations",
+            kuk: [
+              "3.1 Kegiatan media relations didokumentasikan dalam bentuk hard copy maupun soft copy (digital) sesuai kebutuhan organisasi/institusi.",
+              "3.2 Dokumentasi disimpan secara sistematis baik dalam konvensional filling maupun e-filing sesuai kebutuhan organisasi.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.032.2",
+        title: "Melaksanakan community relations",
+        elemen: [
+          {
+            title: "Menyiapkan pelaksanaan program community relations",
+            kuk: [
+              "1.1 Karakteristik komunitas diidentifikasi sesuai struktur sosial komunitas.",
+              "1.2 Tujuan kegiatan community relations ditetapkan sesuai design program.",
+              "1.3 Program community relations disiapkan berdasarkan design program.",
+              "1.4 Tim, waktu, timeline, dan anggaran pelaksanaan community relations disusun berdasarkan kebutuhan program community relations.",
+              "1.5 Strategi dan teknik komunikasi program community relations ditetapkan sesuai tujuan program.",
+              "1.6 Faktor pendukung pelaksanaan program community relations disiapkan sesuai kebutuhan.",
+            ],
+          },
+          {
+            title: "Menerapkan program community relations",
+            kuk: [
+              "2.1 Program community relations diterapkan sesuai kebutuhan komunitas.",
+              "2.2 Strategi dan teknik komunikasi program community relations diterapkan sesuai tujuan program.",
+              "2.3 Kedekatan dengan komunitas ditingkatkan berdasarkan kebutuhan komunikasi kedua belah pihak.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan kegiatan community relations",
+            kuk: [
+              "3.1 Berkas kegiatan community relations dikumpulkan sesuai kebutuhan dokumentasi program.",
+              "3.2 Berkas kegiatan community relations disusun sesuai sistematika dokumentasi program.",
+              "3.3 Berkas kegiatan community relations didokumentasikan sesuai kebutuhan program secara hardcopy dan softcopy.",
+              "3.4 Dokumentasi disimpan secara sistematis baik dalam konvensional filling maupun e-filing sesuai kebutuhan organisasi.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.033.3",
+        title: "Melaksanakan Corporate Social Responsibility (CSR)",
+        elemen: [
+          {
+            title: "Melaksanakan pemetaan khalayak",
+            kuk: [
+              "1.1 Kelompok khalayak ditetapkan berdasarkan kebutuhan program CSR.",
+              "1.2 Pengumpulan data lapangan dilaksanakan sesuai tujuan program CSR.",
+            ],
+          },
+          {
+            title: "Menyusun program CSR",
+            kuk: [
+              "2.1 Program CSR dalam jangka panjang disusun sesuai kebutuhan.",
+              "2.2 Program CSR direncanakan berdasarkan tujuan program.",
+              "2.3 Anggaran untuk kebutuhan CSR disusun sesuai pagu pembiayaan program.",
+            ],
+          },
+          {
+            title: "Melaksanakan program CSR",
+            kuk: [
+              "3.1 Pelaksanaan program CSR diorganisir sesuai indikator komprehensif, tepat waktu, tepat guna, dan tepat sasaran.",
+              "3.2 Koordinasi antarlembaga lainnya dilakukan sesuai kebutuhan program di lokasi yang sama.",
+              "3.3 Program tindak lanjut pemberdayaan disiapkan sesuai indikator kebutuhan kemandirian masyarakat.",
+              "3.4 Inovasi secara proaktif untuk pengembangan program hubungan dengan masyarakat secara bertahap dilaksanakan berdasarkan mekanisme pengelolaan program pemberdayaan.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan program",
+            kuk: [
+              "4.1 Dokumen program CSR dikumpulkan sesuai kebutuhan.",
+              "4.2 Dokumen program CSR disusun berdasarkan sistematika program.",
+              "4.3 Dokumen program CSR didokumentasikan sesuai kebutuhan backup digital dan hardcopy.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.034.1",
+        title: "Melaksanakan industrial relations",
+        elemen: [
+          {
+            title: "Menyiapkan program industrial relations",
+            kuk: [
+              "1.1 Masalah industrial relations dipetakan sesuai dengan kebutuhan organisasi.",
+              "1.2 Tujuan industrial relations ditetapkan berdasarkan target pencapaian organisasi.",
+              "1.3 Data yang diperlukan untuk industrial relations dikumpulkan sesuai kebutuhan organisasi.",
+              "1.4 Program industrial relations direncanakan sesuai kebutuhan organisasi.",
+              "1.5 Sumber daya kegiatan industrial relations ditetapkan sesuai kebutuhan program kehumasan.",
+            ],
+          },
+          {
+            title: "Melaksanakan program industrial relations",
+            kuk: [
+              "2.1 Program industrial relations dilaksanakan berdasarkan tahapan program kehumasan.",
+              "2.2 Ukuran pencapaian industrial relations ditetapkan sesuai relevansi program kehumasan.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan program industrial relations",
+            kuk: [
+              "3.1 Berkas program industrial relations dari perencanaan sampai evaluasi dikumpulkan sesuai kebutuhan dokumentasi organisasi.",
+              "3.2 Berkas program industrial relations disimpan dalam bentuk elektronik dan hardcopy sesuai kebutuhan dokumentasi organisasi.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.035.3",
+        title: "Melaksanakan government relations",
+        elemen: [
+          {
+            title:
+              "Menganalisis kebijakan pemerintah yang terkait dengan kelangsungan organisasi",
+            kuk: [
+              "1.1 Kebijakan pemerintah yang terkait dan dapat mempengaruhi institusi/ organisasi diidentifikasi sesuai dengan tujuan analisis.",
+              "1.2 Kebijakan pemerintah yang terkait dan dapat mempengaruhi organisasi dianalisis berdasarkan visi, misi, dan tujuan institusi/organisasi.",
+              "1.3 Database government relations disusun sesuai dengan nomenklatur pimpinan dan staf lembaga pemerintah terkait.",
+            ],
+          },
+          {
+            title: "Merencanakan hubungan dengan lembaga pemerintah",
+            kuk: [
+              "2.1 Lembaga pemerintah terkait yang menjadi stakeholders perusahaan ditetapkan sesuai pola hubungan dengan organisasi.",
+              "2.2 Koordinasi dan tim lintas fungsi government relations ditetapkan sesuai kebutuhan organisasi.",
+              "2.3 Lembaga pemerintah ditetapkan berdasarkan karakteristik dan kewenangannya.",
+              "2.4 Hubungan dengan unit lembaga pemerintah yang terkait dirancang berdasarkan program good corporate government.",
+              "2.5 Program government relations disusun sesuai hasil analisa kebutuhan organisasi.",
+            ],
+          },
+          {
+            title: "Melaksanakan kegiatan government relations",
+            kuk: [
+              "3.1 Analisa kebijakan pemerintah dilakukan berdasarkan indikator keberhasilan.",
+              "3.2 Efektifitas kegiatan government relations dilakukan berdasarkan indikator keberhasilan program.",
+              "3.3 Koordinasi dengan unit lembaga pemerintah terkait dilaksanakan sesuai tujuan program government relations.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan kegiatan government relations",
+            kuk: [
+              "4.1 Berkas program dari perencanaan hingga evaluasi disusun sesuai sistematika pelaporan kegiatan.",
+              "4.2 Berkas dari perencanaan hingga evaluasi disimpan dalam bentuk e-filing dan hardcopy dengan back up sesuai kebutuhan organisasi.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.036.1",
+        title: "Melaksanakan institutional relations",
+        elemen: [
+          {
+            title: "Menyiapkan kegiatan institutional relations",
+            kuk: [
+              "1.1 Jenis kegiatan institutional relations ditentukan sesuai kebutuhan hubungan eksternal organisasi.",
+              "1.2 Kegiatan institutional relations dirancang sesuai dengan tujuan organisasi.",
+            ],
+          },
+          {
+            title: "Melaksanakan kegiatan institutional relations",
+            kuk: [
+              "2.1 Kegiatan institutional relations disimulasi sesuai prosedur pengelolaan program organisasi.",
+              "2.2 Kegiatan institutional relations dilaksanakan sesuai prosedur pengelolaan program organisasi.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan kegiatan institutional relations",
+            kuk: [
+              "3.1 Laporan kegiatan institutional relations disusun sesuai mekanisme dokumentasi data kegiatan.",
+              "3.2 Laporan kegiatan institutional relations didokumentasikan sesuai kebutuhan organisasi dalam bentuk hardcopy dan softcopy.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.037.3",
+        title: "Melaksanakan internal relations",
+        elemen: [
+          {
+            title:
+              "Mengumpulkan data/informasi tentang pegawai/karyawan beserta posisi/jabatan",
+            kuk: [
+              "1.1 Data/informasi tentang pegawai /karyawan secara menyeluruh diidentifikasi sesuai dengan jabatan dan tusi (tugas dan fungsi) dalam organisasi.",
+              "1.2 Rencana program internal relations dibuat sesuai kebutuhan organisasi.",
+              "1.3 Koordinasi antarsatuan kerja di dalam organisasi dilakukan sesuai dengan kebutuhan rencana program.",
+              "1.4 Rencana program secara menyeluruh yang telah dikoordinasikan dilaporkan kepada pimpinan untuk mendapatkan persetujuan.",
+            ],
+          },
+          {
+            title: "Menyusun program internal relations",
+            kuk: [
+              "2.1 Program internal relations disusun berdasarkan kebutuhan manajemen dan karyawan/pegawai.",
+              "2.2 Metode pelaksanaan internal relations yang efektif dan efisien disusun berdasarkan pertimbangan kebutuhan manajemen dan karyawan/pegawai.",
+              "2.3 Bentuk media dan jenis aktivitas disiapkan sesuai dengan sumber daya yang tersedia.",
+            ],
+          },
+          {
+            title: "Melaksanakan program internal relations",
+            kuk: [
+              "3.1 Program internal relations hasil koordinasi baik secara vertikal, horizontal, dan diagonal yang terkait dengan materi, media, dan jenis aktivitas dibuat berdasarkan media internal yang tersedia.",
+              "3.2 Informasi terkait visi, misi, kebijakan, tujuan, operasional, dan hasil-hasil yang dicapai organisasi serta informasi lain yang dikemas melalui media internal didistribusikan sesuai kebutuhan manajemen dan karyawan/pegawai.",
+              "3.3 Jenis aktivitas internal relations baik di dalam maupun di luar lingkungan kantor dilaksanakan sesuai jadwal/ waktu yang telah disepakati.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan kegiatan internal relations",
+            kuk: [
+              "4.1 Berkas internal relations dari perencanaan sampai evaluasi dikumpulkan sesuai kebutuhan dokumentasi organisasi.",
+              "4.2 Berkas internal relations disimpan dalam bentuk elektronik dan hardcopy sesuai kebutuhan dokumentasi organisasi.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.038.3",
+        title: "Melaksanakan marketing public relations",
+        elemen: [
+          {
+            title: "Menyiapkan program marketing public relations",
+            kuk: [
+              "1.1 Tim pelaksana marketing public relations ditetapkan berdasarkan kebutuhan unit terkait.",
+              "1.2 Tujuan marketing public relations ditetapkan sesuai dengan stakeholders yang relevan.",
+              "1.3 Media marketing public relations ditetapkan sesuai dengan tujuan program.",
+              "1.4 Pesan persuasif dirancang sesuai hasil koordinasi dengan unit marketing dan sesuai kebutuhan reputasi organisasi, reputasi produk, dan opini publik dalam jangka panjang.",
+            ],
+          },
+          {
+            title: "Melaksanakan program marketing public relations",
+            kuk: [
+              "2.1 Materi dan desain konten marketing public relations dibuat sesuai media yang ditentukan.",
+              "2.2 Konten marketing public relations didesiminasikan sesuai hasil materi dan desain.",
+              "2.3 Updating konten/materi marketing public relations dilakukan secara berkala sesuai perkembangan dan kebutuhan publik.",
+              "2.4 Monitoring terhadap masukan kegiatan marketing public relations dilakukan sesuai prosedur media konvensional dan media sosial.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan program marketing public relations",
+            kuk: [
+              "4.2 Semua berkas dari perencanaan hingga evaluasi marketing public relations didokumentasikan sesuai pelaksanaan kegiatan.",
+              "4.3 Semua berkas disusun secara berurutan mulai dari tahap perencanaan, pelaksanaan, sampai dengan evaluasi.",
+              "4.4 Semua berkas disimpan secara sistematis sesuai aturan pendokumentasian.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.039.1",
+        title: "Melaksanakan customer relations",
+        elemen: [
+          {
+            title: "Menyiapkan program customer relations",
+            kuk: [
+              "1.1 Program customer relations dipetakan sesuai tujuan program.",
+              "1.2 Kegiatan customer relations dirancang sesuai tujuan yang ditetapkan.",
+            ],
+          },
+          {
+            title: "Melaksanakan program customer relations",
+            kuk: [
+              "2.1 Kegiatan customer relations disimulasi sesuai prosedur pengelolaan program organisasi.",
+              "2.2 Kegiatan customer relations dilaksanakan sesuai rancangan program.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan program customer relations",
+            kuk: [
+              "3.1 Dokumentasi kegiatan customer relations dibuat sesuai kebutuhan.",
+              "3.2 Dokumentasi kegiatan customer relations disimpan secara sistematis sesuai aturan pendokumentasian.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.70HMS00.040.3",
+        title: "Melaksanakan investor relations",
+        elemen: [
+          {
+            title: "Menyiapkan program investor relations",
+            kuk: [
+              "1.1 Tujuan program investor relations ditetapkan berdasarkan target pencapaian organisasi.",
+              "1.2 program investor relations direncanakan sesuai kebutuhan organisasi.",
+              "1.3 Sumber daya program investor relations ditetapkan sesuai kebutuhan program kehumasan.",
+            ],
+          },
+          {
+            title: "Melaksanakan program investor relations",
+            kuk: [
+              "2.1 Program investor relations dilaksanakan berdasarkan rancangan program kehumasan.",
+              "2.2 Ukuran pencapaian investor relations ditetapkan sesuai relevansi program kehumasan.",
+            ],
+          },
+          {
+            title: "Mendokumentasikan program investor relations",
+            kuk: [
+              "3.1 Laporan program investor relations disusun sesuai mekanisme dokumentasi data program.",
+              "3.2 Laporan program investor relations didokumentasikan sesuai kebutuhan organisasi dalam bentuk hardcopy dan softcopy.",
+            ],
+          },
+        ],
+      },
     ],
     persyaratanDasar: [
-      { name: 'Transkrip Nilai Semester 6', description: 'Minimal semester 7 Mahasiswa UIN Sunan Gunung Djati Bandung Jurusan Ilmu Komunikasi yang telah lulus Ilmu Komunikasi, Internal Relations, External Relations, Marketing Public Relations, Corporate Social Responsibility (CSR), Online Public Relations/Cyber Public Relations.' },
-      { name: 'Bukti Magang / Praktik Kerja Bidang Kehumasan', description: 'Telah menyelesaikan kerja praktik/magang pada bidang kehumasan.' }
+      {
+        name: "Transkrip Nilai Semester 6",
+        description:
+          "Minimal semester 7 Mahasiswa UIN Sunan Gunung Djati Bandung Jurusan Ilmu Komunikasi yang telah lulus Ilmu Komunikasi, Internal Relations, External Relations, Marketing Public Relations, Corporate Social Responsibility (CSR), Online Public Relations/Cyber Public Relations.",
+      },
+      {
+        name: "Bukti Magang / Praktik Kerja Bidang Kehumasan",
+        description:
+          "Telah menyelesaikan kerja praktik/magang pada bidang kehumasan.",
+      },
     ],
     buktiAdministratif: [
-      'Salinan KTP dan KTM',
-      'Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar'
+      "Salinan KTP dan KTM",
+      "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
     ],
-    
   },
   {
-    name: 'Penerjemah Teks Umum',
-    code: '05/LSPUINBdg/XI/2023',
+    name: "Penerjemah Teks Umum",
+    code: "05/LSPUINBdg/XI/2023",
     units: [
-      { code: 'M.74PEN01.001.1', title: 'Mengidentifikasi Genre Teks Asal', elemen: [{"title":"Mengidentifikasi tujuan teks asal","kuk":["1.1 Jenis teks asal (deskripsi, eksposisi, argumentasi, persuasi, instruksi, narasi, atau campuran) diidentifikasi sesuai dengan ciri-ciri genre.","1.2 Penulis teks asal diidentifikasi sesuai dengan ciri-ciri genre.","1.3 Pembaca sasaran teks asal diidentifikasi sesuai dengan genrenya.","1.4 Hubungan penulis-pembaca diidentifikasi sesuai dengan ciri-ciri genre.","1.5 Tema teks asal diidentifikasi sesuai dengan kata kunci."]},{"title":"Mengidentifikasi struktur teks asal","kuk":["2.1 Format atau pola teks asal diidentifikasi sesuai dengan ciri-ciri genre.","2.2 Komponen-komponen teks asal diidentifikasi sesuai dengan jenis teks.","2.3 Komponen-komponen teks asal diidentifikasi sesuai dengan fungsinya.","2.4 Pola pengorganisasian komponen-komponen teks asal diidentifikasi sesuai dengan fungsinya.","2.5 Pola penyajian komponen nonlinguistik (data, referensi, gambar, dan sebagainya) diidentifikasi sesuai dengan komponen dalam teks asal."]},{"title":"Mengidentifikasi fitur linguistik teks asal","kuk":["3.1 Diksi yang digunakan dalam setiap komponen teks asal diidentifikasi sesuai dengan jenis teks.","3.2 Pola kalimat dalam setiap komponen teks asal diidentifikasi sesuai dengan jenis teks.","3.3 Majas atau gaya bahasa dalam teks asal diidentifikasi sesuai dengan jenis teks.","3.4 Pola kala (tense) dalam teks asal diidentifikasi sesuai dengan jenis teks.","3.5 Pola modalitas dan modulasi dalam teks asal diidentifikasi sesuai dengan jenis teks.","3.6 Ragam bahasa (formal atau informal) teks asal diidentifikasi sesuai dengan jenis teks."]}] },
-      { code: 'M.74PEN01.002.1', title: 'Mencari Makna Kata dan Ungkapan dalam Teks Bahasa Asal Menggunakan Alat Bantu Penerjemahan Konvensional dan Nonkonvensional', elemen: [{"title":"Menemukan makna kata di dalam teks bahasa asal","kuk":["1.1 Makna kata di dalam teks bahasa asal ditemukan dengan bantuan alat bantu konvensional.","1.2 Makna kata di dalam teks bahasa asal ditemukan dengan bantuan alat bantu nonkonvensional."]},{"title":"Menemukan makna ungkapan di dalam teks bahasa asal","kuk":["2.1 Makna ungkapan di dalam teks bahasa asal ditemukan dengan bantuan alat bantu konvensional.","2.2 Makna ungkapan di dalam teks bahasa asal ditemukan dengan bantuan alat bantu nonkonvensional."]}] },
-      { code: 'M.74PEN01.003.1', title: 'Menemukan Pesan Utama dalam Teks Asal', elemen: [{"title":"Meninjau teks asal dengan cepat","kuk":["1.1 Gagasan utama teks asal diidentifikasi berdasarkan hasil analisis.","1.2 Gambaran umum pesan teks asal diidentifikasi berdasarkan hasil analisis.","1.3 Topik teks asal ditentukan berdasarkan hasil analisis."]},{"title":"Memanfaatkan pengetahuan yang sudah diketahui sebelumnya","kuk":["2.1 Kata kunci dalam teks asal dapat diidentifikasi berdasarkan hasil analisis.","2.2 Kata kunci yang ada dalam teks dapat dijelaskan berdasarkan hasil analisis."]},{"title":"Mengidentifikasi materi yang sedang dibaca","kuk":["3.1 Pesan utama dalam teks asal diidentifikasi berdasarkan hasil analisis.","3.2 Ringkasan teks dibuat berdasarkan hasil analisis."]}] },
-      { code: 'M.74PEN01.004.1', title: 'Menemukan Informasi Terperinci dalam Teks Asal', elemen: [{"title":"Mengidentifikasi fakta dan peristiwa dalam teks asal (what)","kuk":["1.1 Semua fakta dalam teks asal diidentifikasi sesuai dengan hasil analisis.","1.2 Informasi yang terjadi dalam teks asal dideskripsikan sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi partisipan dalam teks asal (who)","kuk":["2.1 Partisipan kunci dalam teks asal diidentifikasi sesuai dengan hasil analisis.","2.2 Partisipan pendukung konteks dalam teks asal diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi informasi akurat tentang waktu peristiwa dalam teks asal (when)","kuk":["3.1 Informasi waktu peristiwa dalam teks asal diidentifikasi sesuai dengan hasil analisis.","3.2 Kronologi terjadinya peristiwa yang dicantumkan teks dideskripsikan sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi lokasi peristiwa dalam teks asal (where)","kuk":["4.1 Tempat kejadian peristiwa yang dicantumkan dalam teks asal diidentifikasi sesuai dengan hasil analisis.","4.2 Keterangan mengenai tempat peristiwa yang dicantumkan dalam teks dalam teks dijabarkan sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi penyebab dan alasan terjadinya peristiwa yang tercantum dalam teks asal (why)","kuk":["5.1 Penyebab sebuah peristiwa yang dicantumkan dalam teks asal dijelaskan sesuai dengan hasil analisis.","5.2 Alasan sebuah peristiwa yang tercantum dalam teks asal dijelaskan sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi cara terjadinya peristiwa yang tercantum dalam teks asal (how)","kuk":["6.1 Kronologi peristiwa diidentifikasi sesuai dengan hasil analisis.","6.2 Kronologi peristiwa dideskripsikan sesuai dengan hasil analisis."]}] },
-      { code: 'M.74PEN01.005.1', title: 'Menangkap Pesan Kalimat Bahasa Asal', elemen: [{"title":"Mengidentifikasi bagian kalimat bahasa asal","kuk":["1.1 Subjek, predikat, objek, dan keterangan diidentifikasi sesuai dengan ciri-ciri masing-masing.","1.2 Fungsi tanda baca (ejaan) diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi struktur kalimat bahasa asal","kuk":["2.1 Kalimat tunggal diidentifikasi sesuai dengan hasil analisis.","2.2 Kalimat majemuk (setara dan bertingkat) diidentifikasi sesuai dengan hasil analisis.","2.3 Bentuk kalimat (deklaratif, interogatif, imperatif, dan eksklamatif) diidentifikasi sesuai dengan hasil analisis.","2.4 Hubungan makna antarklausa (seperti sebab-akibat dan syarat) diidentifikasi sesuai dengan hasil analisis.","2.5 Pelesapan dalam kalimat diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi pesan kalimat bahasa asal","kuk":["3.1 Pesan eksplisit kalimat diidentifikasi sesuai dengan hasil analisis.","3.2 Pesan implisit kalimat diidentifikasi sesuai dengan hasil analisis."]}] },
-      { code: 'M.74PEN01.006.1', title: 'Menangkap Pesan Kalimat melalui Berbagai Macam Kelas Kata Bahasa Asal', elemen: [{"title":"Mengidentifikasi kata kerja dan maknanya","kuk":["1.1 Bentuk dasar kata kerja diidentifikasi sesuai dengan hasil analisis.","1.2 Imbuhan pada kata kerja diidentifikasi sesuai dengan hasil analisis.","1.3 Kata kerja turunan diidentifikasi sesuai dengan hasil analisis.","1.4 Makna denotatif atau konotatif kata kerja, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.","1.5 Frasa verbal dan bagiannya diidentifikasi sesuai dengan hasil analisis.","1.6 Makna denotatif atau konotatif frasa verbal diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi kata benda dan maknanya","kuk":["2.1 Bentuk dasar kata benda diidentifikasi sesuai dengan hasil analisis.","2.2 Imbuhan pada kata benda diidentifikasi sesuai dengan hasil analisis.","2.3 Kata benda turunan diidentifikasi sesuai dengan hasil analisis.","2.4 Makna denotatif atau konotatif kata benda, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.","2.5 Frasa nominal dan bagiannya diidentifikasi sesuai dengan hasil analisis.","2.6 Makna denotatif atau konotatif frasa nominal diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi kata sifat dan maknanya","kuk":["3.1 Bentuk dasar kata sifat diidentifikasi sesuai dengan hasil analisis.","3.2 Imbuhan pada kata sifat diidentifikasi sesuai dengan hasil analisis.","3.3 Kata sifat turunan diidentifikasi sesuai dengan hasil analisis.","3.4 Makna denotatif atau konotatif kata sifat, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.","3.5 Frasa adjektival dan bagiannya diidentifikasi sesuai dengan hasil analisis.","3.6 Makna denotatif atau konotatif frasa adjektival diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi kata keterangan dan maknanya","kuk":["4.1 Bentuk dasar kata keterangan diidentifikasi sesuai dengan hasil analisis.","4.2 Imbuhan pada kata keterangan diidentifikasi sesuai dengan hasil analisis.","4.3 Kata keterangan turunan diidentifikasi sesuai dengan hasil analisis.","4.4 Makna denotatif atau konotatif kata keterangan, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.","4.5 Frasa adverbial dan bagiannya diidentifikasi sesuai dengan hasil analisis.","4.6 Makna denotatif atau konotatif frasa adverbial diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi kata tugas dan maknanya","kuk":["5.1 Bentuk dasar kata tugas diidentifikasi sesuai dengan hasil analisis.","5.2 Imbuhan pada kata tugas diidentifikasi sesuai dengan hasil analisis.","5.3 Kata tugas turunan diidentifikasi sesuai dengan hasil analisis.","5.4 Jenis kata tugas diidentifikasi sesuai dengan hasil analisis.","5.5 Makna kata tugas, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.","5.6 Frasa kata tugas dan bagiannya diidentifikasi sesuai dengan hasil analisis.","5.7 Makna frasa preposisional diidentifikasi sesuai dengan hasil analisis."]}] },
-      { code: 'M.74PEN01.007.1', title: 'Mengidentifikasi Unsur Khas Budaya Bahasa Asal', elemen: [{"title":"Mengidentifikasi unsur ekologis khas bahasa asal","kuk":["1.1 Unsur ekologis yang umum diidentifikasi.","1.2 Unsur ekologis khas (seperti flora, fauna, lanskap, dan iklim) diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi unsur material khas bahasa asal","kuk":["2.1 Unsur material yang umum diidentifikasi.","2.2 Unsur material khas (seperti makanan, minuman, pakaian, rumah, dan alat transportasi) diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi unsur sosial khas bahasa asal","kuk":["3.1 Unsur sosial yang umum diidentifikasi.","3.2 Unsur sosial khas (seperti pekerjaan dan hiburan) diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi unsur organisasi, adat istiadat, aktivitas, prosedur, konsep yang khas dalam bahasa asal","kuk":["4.1 Unsur organisasi, seni, dan ritual yang umum diidentifikasi.","4.2 Unsur organisasi, adat istiadat, aktivitas, prosedur, konsep yang khas (seperti unsur politis, administratif, religius, dan artistik) diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi unsur gestur dan kebiasaan khas dalam bahasa asal","kuk":["5.1 Unsur gestur dan kebiasaan yang umum diidentifikasi.","5.2 Unsur gestur dan kebiasaan khas diidentifikasi sesuai dengan hasil analisis."]},{"title":"Mengidentifikasi unsur peristilahan khas dalam bahasa asal","kuk":["6.1 Unsur peristilahan umum diidentifikasi.","6.2 Unsur peristilahan khas diidentifikasi sesuai dengan hasil analisis."]}] },
-      { code: 'M.74PEN01.008.1', title: 'Memilih Metode yang Tepat Sesuai dengan Teks atau Bagian Teks yang Sedang Diterjemahkan', elemen: [{"title":"Mengidentifikasi karakteristik pembaca sasaran dan melakukan analisis kebutuhan","kuk":["1.1 Karakteristik pembaca sasaran diidentifikasi sesuai dengan instruksi penerjemahan.","1.2 Tujuan penerjemahan diidentifikasi sesuai dengan instruksi penerjemahan."]},{"title":"Mengidentifikasi metode penerjemahan yang tepat sesuai dengan teks atau bagian teks yang sedang diterjemahkan","kuk":["2.1 Metode penerjemahan diidentifikasi.","2.2 Metode penerjemahan ditentukan sesuai dengan jenis teks dan instruksi penerjemahan."]}] },
-      { code: 'M.74PEN01.009.1', title: 'Memilih Teknik Penerjemahan Untuk Kata, Frasa, Klausa, dan Kalimat dalam Teks Asal', elemen: [{"title":"Mengidentifikasi masalah penerjemhan yang ditemukan ketika melakukan analisis teks","kuk":["1.1 Unit terjemah (seperti kata, frasa, klausa, dan kalimat) yang berpotensi menimbulkan masalah penerjemahan diidentifikasi sesuai dengan hasil analisis.","1.2 Masalah penerjemahan diidentifikasi sesuai dengan hasil analisis."]},{"title":"Memilih teknik penerjemahan","kuk":["2.1 Teknik penerjemahan yang umum diidentifikasi.","2.2 Teknik penerjemahan dipilih sesuai dengan hasil analisis."]}] },
-      { code: 'M.74PEN01.010.1', title: 'Menulis Pesan dengan Kata, Frasa, Klausa, dan Kalimat Sesuai dengan Koteks dan Konteks', elemen: [{"title":"Mengidentifikasi koteks untuk memahami konteks yang melatarbelakangi teks","kuk":["1.1 Koteks yang mendahului kata, frasa, klausa, dan kalimat diidentifikasi sesuai dengan hasil analisis.","1.2 Koteks yang mengikuti kata, frasa, klausa, dan kalimat diidentifikasi sesuai dengan hasil analisis."]},{"title":"Menganalisis konteks","kuk":["2.1 Pesan diidentifikasi sesuai dengan hasil analisis.","2.2 Format pesan diidentifikasi sesuai dengan hasil analisis.","2.3 Latar diidentifikasi sesuai dengan hasil analisis.","2.4 Partisipan di dalam teks diidentifikasi sesuai dengan hasil analisis.","2.5 Tujuan komunikasi diidentifikasi sesuai dengan hasil analisis.","2.6 Nada diidentifikasi sesuai dengan hasil analisis.","2.7 Norma sosial dan budaya yang terkandung di dalam teks asal diidentifikasi sesuai dengan hasil analisis."]},{"title":"Menulis pesan yang diwujudkan melalui kata, frasa, klausa, dan kalimat sesuai dengan koteks dan konteks","kuk":["3.1 Pesan ditulis dengan benar menggunakan kata, frasa, klausa, dan kalimat sesuai dengan koteks.","3.2 Pesan ditulis dengan benar menggunakan kata, frasa, klausa, dan kalimat sesuai dengan konteks."]}] },
-      { code: 'M.74PEN01.011.1', title: 'Menulis Pesan yang Diwujudkan melalui Pilihan Kata dan Gaya Bahasa sesuai dengan Bahasa Tujuan untuk Genre Teks yang Sedang Diterjemahkan', elemen: [{"title":"Menentukan pilihan kata dan gaya bahasa untuk menuliskan pesan sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan","kuk":["1.1 Pilihan kata ditentukan sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan.","1.2 Gaya bahasa ditentukan sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan."]},{"title":"Menulis pesan yang diwujudkan melalui pilihan kata dan gaya bahasa yang sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan","kuk":["2.1 Pesan ditulis berdasarkan pilihan kata sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan.","2.2 Pesan ditulis berdasarkan gaya bahasa sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan."]}] },
-      { code: 'M.74PEN01.012.1', title: 'Menghasilkan Teks Tujuan yang Berkualitas', elemen: [{"title":"Mengombinasikan bentuk dan makna terjemahan (kohesi dan koherensi) untuk menghasilkan keterpaduan teks","kuk":["1.1 Bentuk dan makna terjemahan dikombinasikan sesuai dengan aturan kohesi dan koherensi yang relevan.","1.2 Kohesi dibangun dengan logis.","1.3 Koherensi dibangun dengan logis."]},{"title":"Menghasilkan teks tujuan yang berkualitas","kuk":["2.1 Muatan informasi di dalam teks asal dipertahankan secara utuh.","2.2 Konvensi bahasa tujuan dipatuhi.","2.3 Teks tujuan dihasilkan dengan keterbacaan tinggi."]}] }
+      {
+        code: "M.74PEN01.001.1",
+        title: "Mengidentifikasi Genre Teks Asal",
+        elemen: [
+          {
+            title: "Mengidentifikasi tujuan teks asal",
+            kuk: [
+              "1.1 Jenis teks asal (deskripsi, eksposisi, argumentasi, persuasi, instruksi, narasi, atau campuran) diidentifikasi sesuai dengan ciri-ciri genre.",
+              "1.2 Penulis teks asal diidentifikasi sesuai dengan ciri-ciri genre.",
+              "1.3 Pembaca sasaran teks asal diidentifikasi sesuai dengan genrenya.",
+              "1.4 Hubungan penulis-pembaca diidentifikasi sesuai dengan ciri-ciri genre.",
+              "1.5 Tema teks asal diidentifikasi sesuai dengan kata kunci.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi struktur teks asal",
+            kuk: [
+              "2.1 Format atau pola teks asal diidentifikasi sesuai dengan ciri-ciri genre.",
+              "2.2 Komponen-komponen teks asal diidentifikasi sesuai dengan jenis teks.",
+              "2.3 Komponen-komponen teks asal diidentifikasi sesuai dengan fungsinya.",
+              "2.4 Pola pengorganisasian komponen-komponen teks asal diidentifikasi sesuai dengan fungsinya.",
+              "2.5 Pola penyajian komponen nonlinguistik (data, referensi, gambar, dan sebagainya) diidentifikasi sesuai dengan komponen dalam teks asal.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi fitur linguistik teks asal",
+            kuk: [
+              "3.1 Diksi yang digunakan dalam setiap komponen teks asal diidentifikasi sesuai dengan jenis teks.",
+              "3.2 Pola kalimat dalam setiap komponen teks asal diidentifikasi sesuai dengan jenis teks.",
+              "3.3 Majas atau gaya bahasa dalam teks asal diidentifikasi sesuai dengan jenis teks.",
+              "3.4 Pola kala (tense) dalam teks asal diidentifikasi sesuai dengan jenis teks.",
+              "3.5 Pola modalitas dan modulasi dalam teks asal diidentifikasi sesuai dengan jenis teks.",
+              "3.6 Ragam bahasa (formal atau informal) teks asal diidentifikasi sesuai dengan jenis teks.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.002.1",
+        title:
+          "Mencari Makna Kata dan Ungkapan dalam Teks Bahasa Asal Menggunakan Alat Bantu Penerjemahan Konvensional dan Nonkonvensional",
+        elemen: [
+          {
+            title: "Menemukan makna kata di dalam teks bahasa asal",
+            kuk: [
+              "1.1 Makna kata di dalam teks bahasa asal ditemukan dengan bantuan alat bantu konvensional.",
+              "1.2 Makna kata di dalam teks bahasa asal ditemukan dengan bantuan alat bantu nonkonvensional.",
+            ],
+          },
+          {
+            title: "Menemukan makna ungkapan di dalam teks bahasa asal",
+            kuk: [
+              "2.1 Makna ungkapan di dalam teks bahasa asal ditemukan dengan bantuan alat bantu konvensional.",
+              "2.2 Makna ungkapan di dalam teks bahasa asal ditemukan dengan bantuan alat bantu nonkonvensional.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.003.1",
+        title: "Menemukan Pesan Utama dalam Teks Asal",
+        elemen: [
+          {
+            title: "Meninjau teks asal dengan cepat",
+            kuk: [
+              "1.1 Gagasan utama teks asal diidentifikasi berdasarkan hasil analisis.",
+              "1.2 Gambaran umum pesan teks asal diidentifikasi berdasarkan hasil analisis.",
+              "1.3 Topik teks asal ditentukan berdasarkan hasil analisis.",
+            ],
+          },
+          {
+            title: "Memanfaatkan pengetahuan yang sudah diketahui sebelumnya",
+            kuk: [
+              "2.1 Kata kunci dalam teks asal dapat diidentifikasi berdasarkan hasil analisis.",
+              "2.2 Kata kunci yang ada dalam teks dapat dijelaskan berdasarkan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi materi yang sedang dibaca",
+            kuk: [
+              "3.1 Pesan utama dalam teks asal diidentifikasi berdasarkan hasil analisis.",
+              "3.2 Ringkasan teks dibuat berdasarkan hasil analisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.004.1",
+        title: "Menemukan Informasi Terperinci dalam Teks Asal",
+        elemen: [
+          {
+            title:
+              "Mengidentifikasi fakta dan peristiwa dalam teks asal (what)",
+            kuk: [
+              "1.1 Semua fakta dalam teks asal diidentifikasi sesuai dengan hasil analisis.",
+              "1.2 Informasi yang terjadi dalam teks asal dideskripsikan sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi partisipan dalam teks asal (who)",
+            kuk: [
+              "2.1 Partisipan kunci dalam teks asal diidentifikasi sesuai dengan hasil analisis.",
+              "2.2 Partisipan pendukung konteks dalam teks asal diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title:
+              "Mengidentifikasi informasi akurat tentang waktu peristiwa dalam teks asal (when)",
+            kuk: [
+              "3.1 Informasi waktu peristiwa dalam teks asal diidentifikasi sesuai dengan hasil analisis.",
+              "3.2 Kronologi terjadinya peristiwa yang dicantumkan teks dideskripsikan sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi lokasi peristiwa dalam teks asal (where)",
+            kuk: [
+              "4.1 Tempat kejadian peristiwa yang dicantumkan dalam teks asal diidentifikasi sesuai dengan hasil analisis.",
+              "4.2 Keterangan mengenai tempat peristiwa yang dicantumkan dalam teks dalam teks dijabarkan sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title:
+              "Mengidentifikasi penyebab dan alasan terjadinya peristiwa yang tercantum dalam teks asal (why)",
+            kuk: [
+              "5.1 Penyebab sebuah peristiwa yang dicantumkan dalam teks asal dijelaskan sesuai dengan hasil analisis.",
+              "5.2 Alasan sebuah peristiwa yang tercantum dalam teks asal dijelaskan sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title:
+              "Mengidentifikasi cara terjadinya peristiwa yang tercantum dalam teks asal (how)",
+            kuk: [
+              "6.1 Kronologi peristiwa diidentifikasi sesuai dengan hasil analisis.",
+              "6.2 Kronologi peristiwa dideskripsikan sesuai dengan hasil analisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.005.1",
+        title: "Menangkap Pesan Kalimat Bahasa Asal",
+        elemen: [
+          {
+            title: "Mengidentifikasi bagian kalimat bahasa asal",
+            kuk: [
+              "1.1 Subjek, predikat, objek, dan keterangan diidentifikasi sesuai dengan ciri-ciri masing-masing.",
+              "1.2 Fungsi tanda baca (ejaan) diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi struktur kalimat bahasa asal",
+            kuk: [
+              "2.1 Kalimat tunggal diidentifikasi sesuai dengan hasil analisis.",
+              "2.2 Kalimat majemuk (setara dan bertingkat) diidentifikasi sesuai dengan hasil analisis.",
+              "2.3 Bentuk kalimat (deklaratif, interogatif, imperatif, dan eksklamatif) diidentifikasi sesuai dengan hasil analisis.",
+              "2.4 Hubungan makna antarklausa (seperti sebab-akibat dan syarat) diidentifikasi sesuai dengan hasil analisis.",
+              "2.5 Pelesapan dalam kalimat diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi pesan kalimat bahasa asal",
+            kuk: [
+              "3.1 Pesan eksplisit kalimat diidentifikasi sesuai dengan hasil analisis.",
+              "3.2 Pesan implisit kalimat diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.006.1",
+        title:
+          "Menangkap Pesan Kalimat melalui Berbagai Macam Kelas Kata Bahasa Asal",
+        elemen: [
+          {
+            title: "Mengidentifikasi kata kerja dan maknanya",
+            kuk: [
+              "1.1 Bentuk dasar kata kerja diidentifikasi sesuai dengan hasil analisis.",
+              "1.2 Imbuhan pada kata kerja diidentifikasi sesuai dengan hasil analisis.",
+              "1.3 Kata kerja turunan diidentifikasi sesuai dengan hasil analisis.",
+              "1.4 Makna denotatif atau konotatif kata kerja, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.",
+              "1.5 Frasa verbal dan bagiannya diidentifikasi sesuai dengan hasil analisis.",
+              "1.6 Makna denotatif atau konotatif frasa verbal diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi kata benda dan maknanya",
+            kuk: [
+              "2.1 Bentuk dasar kata benda diidentifikasi sesuai dengan hasil analisis.",
+              "2.2 Imbuhan pada kata benda diidentifikasi sesuai dengan hasil analisis.",
+              "2.3 Kata benda turunan diidentifikasi sesuai dengan hasil analisis.",
+              "2.4 Makna denotatif atau konotatif kata benda, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.",
+              "2.5 Frasa nominal dan bagiannya diidentifikasi sesuai dengan hasil analisis.",
+              "2.6 Makna denotatif atau konotatif frasa nominal diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi kata sifat dan maknanya",
+            kuk: [
+              "3.1 Bentuk dasar kata sifat diidentifikasi sesuai dengan hasil analisis.",
+              "3.2 Imbuhan pada kata sifat diidentifikasi sesuai dengan hasil analisis.",
+              "3.3 Kata sifat turunan diidentifikasi sesuai dengan hasil analisis.",
+              "3.4 Makna denotatif atau konotatif kata sifat, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.",
+              "3.5 Frasa adjektival dan bagiannya diidentifikasi sesuai dengan hasil analisis.",
+              "3.6 Makna denotatif atau konotatif frasa adjektival diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi kata keterangan dan maknanya",
+            kuk: [
+              "4.1 Bentuk dasar kata keterangan diidentifikasi sesuai dengan hasil analisis.",
+              "4.2 Imbuhan pada kata keterangan diidentifikasi sesuai dengan hasil analisis.",
+              "4.3 Kata keterangan turunan diidentifikasi sesuai dengan hasil analisis.",
+              "4.4 Makna denotatif atau konotatif kata keterangan, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.",
+              "4.5 Frasa adverbial dan bagiannya diidentifikasi sesuai dengan hasil analisis.",
+              "4.6 Makna denotatif atau konotatif frasa adverbial diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi kata tugas dan maknanya",
+            kuk: [
+              "5.1 Bentuk dasar kata tugas diidentifikasi sesuai dengan hasil analisis.",
+              "5.2 Imbuhan pada kata tugas diidentifikasi sesuai dengan hasil analisis.",
+              "5.3 Kata tugas turunan diidentifikasi sesuai dengan hasil analisis.",
+              "5.4 Jenis kata tugas diidentifikasi sesuai dengan hasil analisis.",
+              "5.5 Makna kata tugas, baik bentuk dasar maupun turunan, diidentifikasi sesuai dengan hasil analisis.",
+              "5.6 Frasa kata tugas dan bagiannya diidentifikasi sesuai dengan hasil analisis.",
+              "5.7 Makna frasa preposisional diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.007.1",
+        title: "Mengidentifikasi Unsur Khas Budaya Bahasa Asal",
+        elemen: [
+          {
+            title: "Mengidentifikasi unsur ekologis khas bahasa asal",
+            kuk: [
+              "1.1 Unsur ekologis yang umum diidentifikasi.",
+              "1.2 Unsur ekologis khas (seperti flora, fauna, lanskap, dan iklim) diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi unsur material khas bahasa asal",
+            kuk: [
+              "2.1 Unsur material yang umum diidentifikasi.",
+              "2.2 Unsur material khas (seperti makanan, minuman, pakaian, rumah, dan alat transportasi) diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi unsur sosial khas bahasa asal",
+            kuk: [
+              "3.1 Unsur sosial yang umum diidentifikasi.",
+              "3.2 Unsur sosial khas (seperti pekerjaan dan hiburan) diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title:
+              "Mengidentifikasi unsur organisasi, adat istiadat, aktivitas, prosedur, konsep yang khas dalam bahasa asal",
+            kuk: [
+              "4.1 Unsur organisasi, seni, dan ritual yang umum diidentifikasi.",
+              "4.2 Unsur organisasi, adat istiadat, aktivitas, prosedur, konsep yang khas (seperti unsur politis, administratif, religius, dan artistik) diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title:
+              "Mengidentifikasi unsur gestur dan kebiasaan khas dalam bahasa asal",
+            kuk: [
+              "5.1 Unsur gestur dan kebiasaan yang umum diidentifikasi.",
+              "5.2 Unsur gestur dan kebiasaan khas diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Mengidentifikasi unsur peristilahan khas dalam bahasa asal",
+            kuk: [
+              "6.1 Unsur peristilahan umum diidentifikasi.",
+              "6.2 Unsur peristilahan khas diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.008.1",
+        title:
+          "Memilih Metode yang Tepat Sesuai dengan Teks atau Bagian Teks yang Sedang Diterjemahkan",
+        elemen: [
+          {
+            title:
+              "Mengidentifikasi karakteristik pembaca sasaran dan melakukan analisis kebutuhan",
+            kuk: [
+              "1.1 Karakteristik pembaca sasaran diidentifikasi sesuai dengan instruksi penerjemahan.",
+              "1.2 Tujuan penerjemahan diidentifikasi sesuai dengan instruksi penerjemahan.",
+            ],
+          },
+          {
+            title:
+              "Mengidentifikasi metode penerjemahan yang tepat sesuai dengan teks atau bagian teks yang sedang diterjemahkan",
+            kuk: [
+              "2.1 Metode penerjemahan diidentifikasi.",
+              "2.2 Metode penerjemahan ditentukan sesuai dengan jenis teks dan instruksi penerjemahan.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.009.1",
+        title:
+          "Memilih Teknik Penerjemahan Untuk Kata, Frasa, Klausa, dan Kalimat dalam Teks Asal",
+        elemen: [
+          {
+            title:
+              "Mengidentifikasi masalah penerjemhan yang ditemukan ketika melakukan analisis teks",
+            kuk: [
+              "1.1 Unit terjemah (seperti kata, frasa, klausa, dan kalimat) yang berpotensi menimbulkan masalah penerjemahan diidentifikasi sesuai dengan hasil analisis.",
+              "1.2 Masalah penerjemahan diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Memilih teknik penerjemahan",
+            kuk: [
+              "2.1 Teknik penerjemahan yang umum diidentifikasi.",
+              "2.2 Teknik penerjemahan dipilih sesuai dengan hasil analisis.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.010.1",
+        title:
+          "Menulis Pesan dengan Kata, Frasa, Klausa, dan Kalimat Sesuai dengan Koteks dan Konteks",
+        elemen: [
+          {
+            title:
+              "Mengidentifikasi koteks untuk memahami konteks yang melatarbelakangi teks",
+            kuk: [
+              "1.1 Koteks yang mendahului kata, frasa, klausa, dan kalimat diidentifikasi sesuai dengan hasil analisis.",
+              "1.2 Koteks yang mengikuti kata, frasa, klausa, dan kalimat diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title: "Menganalisis konteks",
+            kuk: [
+              "2.1 Pesan diidentifikasi sesuai dengan hasil analisis.",
+              "2.2 Format pesan diidentifikasi sesuai dengan hasil analisis.",
+              "2.3 Latar diidentifikasi sesuai dengan hasil analisis.",
+              "2.4 Partisipan di dalam teks diidentifikasi sesuai dengan hasil analisis.",
+              "2.5 Tujuan komunikasi diidentifikasi sesuai dengan hasil analisis.",
+              "2.6 Nada diidentifikasi sesuai dengan hasil analisis.",
+              "2.7 Norma sosial dan budaya yang terkandung di dalam teks asal diidentifikasi sesuai dengan hasil analisis.",
+            ],
+          },
+          {
+            title:
+              "Menulis pesan yang diwujudkan melalui kata, frasa, klausa, dan kalimat sesuai dengan koteks dan konteks",
+            kuk: [
+              "3.1 Pesan ditulis dengan benar menggunakan kata, frasa, klausa, dan kalimat sesuai dengan koteks.",
+              "3.2 Pesan ditulis dengan benar menggunakan kata, frasa, klausa, dan kalimat sesuai dengan konteks.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.011.1",
+        title:
+          "Menulis Pesan yang Diwujudkan melalui Pilihan Kata dan Gaya Bahasa sesuai dengan Bahasa Tujuan untuk Genre Teks yang Sedang Diterjemahkan",
+        elemen: [
+          {
+            title:
+              "Menentukan pilihan kata dan gaya bahasa untuk menuliskan pesan sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan",
+            kuk: [
+              "1.1 Pilihan kata ditentukan sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan.",
+              "1.2 Gaya bahasa ditentukan sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan.",
+            ],
+          },
+          {
+            title:
+              "Menulis pesan yang diwujudkan melalui pilihan kata dan gaya bahasa yang sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan",
+            kuk: [
+              "2.1 Pesan ditulis berdasarkan pilihan kata sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan.",
+              "2.2 Pesan ditulis berdasarkan gaya bahasa sesuai dengan konvensi bahasa tujuan untuk genre teks yang sedang diterjemahkan.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PEN01.012.1",
+        title: "Menghasilkan Teks Tujuan yang Berkualitas",
+        elemen: [
+          {
+            title:
+              "Mengombinasikan bentuk dan makna terjemahan (kohesi dan koherensi) untuk menghasilkan keterpaduan teks",
+            kuk: [
+              "1.1 Bentuk dan makna terjemahan dikombinasikan sesuai dengan aturan kohesi dan koherensi yang relevan.",
+              "1.2 Kohesi dibangun dengan logis.",
+              "1.3 Koherensi dibangun dengan logis.",
+            ],
+          },
+          {
+            title: "Menghasilkan teks tujuan yang berkualitas",
+            kuk: [
+              "2.1 Muatan informasi di dalam teks asal dipertahankan secara utuh.",
+              "2.2 Konvensi bahasa tujuan dipatuhi.",
+              "2.3 Teks tujuan dihasilkan dengan keterbacaan tinggi.",
+            ],
+          },
+        ],
+      },
     ],
     persyaratanDasar: [
-      { name: 'Transkrip Nilai Semester 5', description: 'Minimal semester 6 mahasiswa UIN Sunan Gunung Djati Bandung Jurusan Sastra Inggris/ Bahasa Sastra Arab/ Pendidikan Bahasa Inggris/ Pendidikan Bahasa Arab/ Tadris atau Pendidikan Bahasa Indonesia/ Ilmu Al-Quran/ Tafsir/Ilmu Hadis;' },
-      { name: 'Bukti Magang / Praktik Kerja Bidang Penerjemahan', description: 'Telah mengikuti magang/praktik kerja industri bidang penerjemahan bahasa.' }
+      {
+        name: "Transkrip Nilai Semester 5",
+        description:
+          "Minimal semester 6 mahasiswa UIN Sunan Gunung Djati Bandung Jurusan Sastra Inggris/ Bahasa Sastra Arab/ Pendidikan Bahasa Inggris/ Pendidikan Bahasa Arab/ Tadris atau Pendidikan Bahasa Indonesia/ Ilmu Al-Quran/ Tafsir/Ilmu Hadis;",
+      },
+      {
+        name: "Bukti Magang / Praktik Kerja Bidang Penerjemahan",
+        description:
+          "Telah mengikuti magang/praktik kerja industri bidang penerjemahan bahasa.",
+      },
     ],
     buktiAdministratif: [
-      'Salinan KTP dan KTM',
-      'Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar'
+      "Salinan KTP dan KTM",
+      "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
     ],
-    
   },
   {
-    name: 'Auditor Halal',
-    code: '03/LSPUINBdg/XI/2023',
+    name: "Auditor Halal",
+    code: "03/LSPUINBdg/XI/2023",
     units: [
-      { code: 'M.74AHI00.001.1', title: 'Melakukan Persiapan Pemeriksaan Bahan dan Proses Produk Halal', elemen: [{"title":"Menyusun rencana pemeriksaan bahan dan PPH","kuk":["1.1 Ruang lingkup pemeriksaan bahan dan PPH ditentukan sesuai dengan persyaratan sertifikasi halal.","1.2 Tujuan pemeriksaan bahan dan PPH disusun sesuai dengan persyaratan sertifikasi halal.","1.3 Metode pemeriksaan bahan dan PPH disusun sesuai dengan ruang lingkup pemeriksaan bahan dan PPH.","1.4 Agenda pemeriksaan bahan dan PPH disusun sesuai dengan ruang lingkup pemeriksaan bahan dan PPH."]},{"title":"Menyiapkan sumberdaya pemeriksaan bahan dan PPH","kuk":["2.1 Perangkat dan perlengkapan kerja pemeriksaan bahan dan PPH disiapkan sesuai ketentuan.","2.2 Rencana, peralatan, dan perlengkapan pengambilan sampel disiapkan sesuai ketentuan."]}] },
-      { code: 'M.74AHI00.002.1', title: 'Melakukan Prapemeriksaan Bahan dan Proses Produk Halal', elemen: [{"title":"Memeriksa data Pelaku Usaha","kuk":["1.1 Nama Pelaku Usaha diperiksa sesuai dengan nama yang tercantum di dalam dokumen legalitas usaha.","1.2 Alamat Pelaku Usaha diperiksa sesuai dengan alamat yang tercantum di dalam dokumen legalitas usaha.","1.3 Nama tempat produksi diperiksa sesuai dengan nama yang diinformasikan oleh Pelaku Usaha.","1.4 Alamat tempat produksi diperiksa sesuai dengan alamat yang diinformasikan oleh Pelaku Usaha.","1.5 Status pengajuan sertifikasi halal diperiksa sesuai persyaratan sertifikasi halal."]},{"title":"Memeriksa kecukupan dokumen SJH dan SJPH","kuk":["2.1 Manual SJH dan SJPH diperiksa sesuai persyaratan sertifikasi halal.","2.2 Dokumen pendukung bahan diperiksa sesuai persyaratan sertifikasi halal.","2.3 Nama produk diperiksa sesuai persyaratan sertifikasi halal.","2.4 Dokumen diagram alir proses produksi diperiksa sesuai persyaratan sertifikasi halal.","2.5 Matriks bahan dan produk diperiksa sesuai persyaratan sertifikasi halal."]},{"title":"Memeriksa kecukupan bukti implementasi SJH dan SJPH","kuk":["3.1 Bukti sosialisasi kebijakan halal diperiksa sesuai persyaratan sertifikasi halal.","3.2 Bukti pelaksanaan pembinaan sumber daya manusia diperiksa sesuai persyaratan sertifikasi halal.","3.3 Bukti pelaksanaan audit internal diperiksa sesuai persyaratan sertifikasi halal.","3.4 Bukti pelaksanaan kaji ulang manajemen diperiksa sesuai persyaratan sertifikasi halal."]}] },
-      { code: 'M.74AHI00.003.1', title: 'Melakukan Pemeriksaan Bahan dan Proses Produk Halal', elemen: [{"title":"Melakukan pertemuan pembukaan","kuk":["1.1 Tujuan pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.","1.2 Ruang lingkup pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.","1.3 Agenda pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.","1.4 Metode pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.","1.5 Dokumen yang diperlukan beserta bukti implementasi SJH dan SJPH dijelaskan sesuai dengan rencana yang telah ditetapkan."]},{"title":"Melakukan pemeriksaan terhadap pemenuhan implementasi SJH dan SJPH","kuk":["2.1 Kebijakan halal diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.2 Bukti sosialisasi kebijakan halal diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.3 Struktur organisasi tim manajemen halal diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.4 Uraian tugas, tanggung jawab, dan wewenang tim manajemen halal diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.5 Dokumen pembinaan sumber daya manusia diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.6 Bukti pelaksanaan pembinaan sumber daya manusia diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.7 Dokumen pendukung bahan diverifikasi sesuai dengan persyaratan sertifikasi halal dan ketentuan yang berlaku.","2.8 Validitas dokumen pendukung bahan diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.9 Semua fasilitas produksi yang terkait dengan produk yang diajukan diidentifikasi sesuai dengan persyaratan sertifikasi halal.","2.10 Nama, bentuk, profil aroma, dan kemasan produk diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.11 bahan yang tercantum dalam aplikasi sertifikasi diverifikasi sesuai dengan formula produk.","2.12 Prosedur PPH diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.13 Bukti implementasi prosedur PPH diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.14 Prosedur Pemantauan dan Evaluasi yang diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.15 Bukti implementasi prosedur pemantauan dan evaluasi yang diverifikasi sesuai dengan persyaratan sertifikasi halal.","2.16 Sampel diambil sesuai dengan ketentuan."]},{"title":"Melakukan pertemuan interim tim pemeriksaan","kuk":["3.1 Hasil pemeriksaan bahan dan PPH diidentifikasi sesuai dengan kriteria pemeriksaan bahan dan PPH.","3.2 Ringkasan hasil pemeriksaan bahan dan PPH disusun sesuai persyaratan sertifikasi halal."]},{"title":"Melakukan pertemuan penutupan","kuk":["4.1 Ringkasan hasil pemeriksaan bahan dan PPH disampaikan kepada Pelaku Usaha sesuai dengan prosedur pemeriksaan di Lembaga Pemeriksa Halal (LPH).","4.2 Klarifikasi ketidaksesuaian dari Pelaku Usaha ditanggapi sesuai prosedur pemeriksaan di LPH."]}] },
-      { code: 'M.74AHI00.004.1', title: 'Melaporkan Hasil Pemeriksaan Bahan dan Proses Produk Halal', elemen: [{"title":"Menyusun laporan hasil pemeriksaan bahan dan PPH","kuk":["1.1 Ringkasan hasil pemeriksaan bahan dan PPH disampaikan dalam rapat internal LPH dan laporan sesuai ketentuan.","1.2 Laporan hasil rapat internal LPH disusun sesuai ketentuan."]},{"title":"Melakukan verifikasi tindakan perbaikan hasil pemeriksaan","kuk":["2.1 Tindakan perbaikan dan pencegahan hasil pemeriksaan bahan dan PPH dimonitor dan diverifikasi sesuai ketentuan.","2.2 Tindakan perbaikan dan pencegahan hasil pemeriksaan bahan dan PPH dinilai pemenuhannya sesuai ketentuan dan persyaratan sertifikasi halal.","2.3 Laporan akhir pemeriksaan bahan dan PPH disusun sesuai ketentuan."]}] }
+      {
+        code: "M.74AHI00.001.1",
+        title: "Melakukan Persiapan Pemeriksaan Bahan dan Proses Produk Halal",
+        elemen: [
+          {
+            title: "Menyusun rencana pemeriksaan bahan dan PPH",
+            kuk: [
+              "1.1 Ruang lingkup pemeriksaan bahan dan PPH ditentukan sesuai dengan persyaratan sertifikasi halal.",
+              "1.2 Tujuan pemeriksaan bahan dan PPH disusun sesuai dengan persyaratan sertifikasi halal.",
+              "1.3 Metode pemeriksaan bahan dan PPH disusun sesuai dengan ruang lingkup pemeriksaan bahan dan PPH.",
+              "1.4 Agenda pemeriksaan bahan dan PPH disusun sesuai dengan ruang lingkup pemeriksaan bahan dan PPH.",
+            ],
+          },
+          {
+            title: "Menyiapkan sumberdaya pemeriksaan bahan dan PPH",
+            kuk: [
+              "2.1 Perangkat dan perlengkapan kerja pemeriksaan bahan dan PPH disiapkan sesuai ketentuan.",
+              "2.2 Rencana, peralatan, dan perlengkapan pengambilan sampel disiapkan sesuai ketentuan.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74AHI00.002.1",
+        title: "Melakukan Prapemeriksaan Bahan dan Proses Produk Halal",
+        elemen: [
+          {
+            title: "Memeriksa data Pelaku Usaha",
+            kuk: [
+              "1.1 Nama Pelaku Usaha diperiksa sesuai dengan nama yang tercantum di dalam dokumen legalitas usaha.",
+              "1.2 Alamat Pelaku Usaha diperiksa sesuai dengan alamat yang tercantum di dalam dokumen legalitas usaha.",
+              "1.3 Nama tempat produksi diperiksa sesuai dengan nama yang diinformasikan oleh Pelaku Usaha.",
+              "1.4 Alamat tempat produksi diperiksa sesuai dengan alamat yang diinformasikan oleh Pelaku Usaha.",
+              "1.5 Status pengajuan sertifikasi halal diperiksa sesuai persyaratan sertifikasi halal.",
+            ],
+          },
+          {
+            title: "Memeriksa kecukupan dokumen SJH dan SJPH",
+            kuk: [
+              "2.1 Manual SJH dan SJPH diperiksa sesuai persyaratan sertifikasi halal.",
+              "2.2 Dokumen pendukung bahan diperiksa sesuai persyaratan sertifikasi halal.",
+              "2.3 Nama produk diperiksa sesuai persyaratan sertifikasi halal.",
+              "2.4 Dokumen diagram alir proses produksi diperiksa sesuai persyaratan sertifikasi halal.",
+              "2.5 Matriks bahan dan produk diperiksa sesuai persyaratan sertifikasi halal.",
+            ],
+          },
+          {
+            title: "Memeriksa kecukupan bukti implementasi SJH dan SJPH",
+            kuk: [
+              "3.1 Bukti sosialisasi kebijakan halal diperiksa sesuai persyaratan sertifikasi halal.",
+              "3.2 Bukti pelaksanaan pembinaan sumber daya manusia diperiksa sesuai persyaratan sertifikasi halal.",
+              "3.3 Bukti pelaksanaan audit internal diperiksa sesuai persyaratan sertifikasi halal.",
+              "3.4 Bukti pelaksanaan kaji ulang manajemen diperiksa sesuai persyaratan sertifikasi halal.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74AHI00.003.1",
+        title: "Melakukan Pemeriksaan Bahan dan Proses Produk Halal",
+        elemen: [
+          {
+            title: "Melakukan pertemuan pembukaan",
+            kuk: [
+              "1.1 Tujuan pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.",
+              "1.2 Ruang lingkup pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.",
+              "1.3 Agenda pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.",
+              "1.4 Metode pemeriksaan bahan dan PPH dijelaskan sesuai dengan rencana pemeriksaan yang telah ditetapkan.",
+              "1.5 Dokumen yang diperlukan beserta bukti implementasi SJH dan SJPH dijelaskan sesuai dengan rencana yang telah ditetapkan.",
+            ],
+          },
+          {
+            title:
+              "Melakukan pemeriksaan terhadap pemenuhan implementasi SJH dan SJPH",
+            kuk: [
+              "2.1 Kebijakan halal diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.2 Bukti sosialisasi kebijakan halal diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.3 Struktur organisasi tim manajemen halal diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.4 Uraian tugas, tanggung jawab, dan wewenang tim manajemen halal diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.5 Dokumen pembinaan sumber daya manusia diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.6 Bukti pelaksanaan pembinaan sumber daya manusia diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.7 Dokumen pendukung bahan diverifikasi sesuai dengan persyaratan sertifikasi halal dan ketentuan yang berlaku.",
+              "2.8 Validitas dokumen pendukung bahan diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.9 Semua fasilitas produksi yang terkait dengan produk yang diajukan diidentifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.10 Nama, bentuk, profil aroma, dan kemasan produk diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.11 bahan yang tercantum dalam aplikasi sertifikasi diverifikasi sesuai dengan formula produk.",
+              "2.12 Prosedur PPH diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.13 Bukti implementasi prosedur PPH diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.14 Prosedur Pemantauan dan Evaluasi yang diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.15 Bukti implementasi prosedur pemantauan dan evaluasi yang diverifikasi sesuai dengan persyaratan sertifikasi halal.",
+              "2.16 Sampel diambil sesuai dengan ketentuan.",
+            ],
+          },
+          {
+            title: "Melakukan pertemuan interim tim pemeriksaan",
+            kuk: [
+              "3.1 Hasil pemeriksaan bahan dan PPH diidentifikasi sesuai dengan kriteria pemeriksaan bahan dan PPH.",
+              "3.2 Ringkasan hasil pemeriksaan bahan dan PPH disusun sesuai persyaratan sertifikasi halal.",
+            ],
+          },
+          {
+            title: "Melakukan pertemuan penutupan",
+            kuk: [
+              "4.1 Ringkasan hasil pemeriksaan bahan dan PPH disampaikan kepada Pelaku Usaha sesuai dengan prosedur pemeriksaan di Lembaga Pemeriksa Halal (LPH).",
+              "4.2 Klarifikasi ketidaksesuaian dari Pelaku Usaha ditanggapi sesuai prosedur pemeriksaan di LPH.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74AHI00.004.1",
+        title: "Melaporkan Hasil Pemeriksaan Bahan dan Proses Produk Halal",
+        elemen: [
+          {
+            title: "Menyusun laporan hasil pemeriksaan bahan dan PPH",
+            kuk: [
+              "1.1 Ringkasan hasil pemeriksaan bahan dan PPH disampaikan dalam rapat internal LPH dan laporan sesuai ketentuan.",
+              "1.2 Laporan hasil rapat internal LPH disusun sesuai ketentuan.",
+            ],
+          },
+          {
+            title: "Melakukan verifikasi tindakan perbaikan hasil pemeriksaan",
+            kuk: [
+              "2.1 Tindakan perbaikan dan pencegahan hasil pemeriksaan bahan dan PPH dimonitor dan diverifikasi sesuai ketentuan.",
+              "2.2 Tindakan perbaikan dan pencegahan hasil pemeriksaan bahan dan PPH dinilai pemenuhannya sesuai ketentuan dan persyaratan sertifikasi halal.",
+              "2.3 Laporan akhir pemeriksaan bahan dan PPH disusun sesuai ketentuan.",
+            ],
+          },
+        ],
+      },
     ],
     persyaratanDasar: [
-      { name: 'KTP (Beragama Islam)', description: 'Beragama Islam;' },
-      { name: 'Ijazah S1 Dilegalisir', description: 'Memiliki ijazah strata 1 (satu) di bidang pangan, teknologi pangan, teknologi pertanian, perikanan, peternakan, kehutanan, kimia, bio kimia, teknik industri, biologi, farmasi, kedokteran, kedokteran hewan, tataboga, atau pertanian yang dilegalisir' },
-      { name: 'Transkrip Nilai Semester 2 (S2)', description: 'Minimal semester 3 (tiga) mahasiswa S-2 UIN Sunan Gunung Djati Bandung yang telah lulus mata kuliah Islam dan Inovasi Produk Halal, Teknik Pengukuran dan Kalibrasi Pengujian Halal, Pendidikan Literasi Halal.' },
-      { name: 'Bukti Magang Bidang Penjaminan Produk Halal', description: 'Telah menyelesaikan magang pada bidang penjaminan produk halal.' }
+      { name: "KTP (Beragama Islam)", description: "Beragama Islam;" },
+      {
+        name: "Ijazah S1 Dilegalisir",
+        description:
+          "Memiliki ijazah strata 1 (satu) di bidang pangan, teknologi pangan, teknologi pertanian, perikanan, peternakan, kehutanan, kimia, bio kimia, teknik industri, biologi, farmasi, kedokteran, kedokteran hewan, tataboga, atau pertanian yang dilegalisir",
+      },
+      {
+        name: "Transkrip Nilai Semester 2 (S2)",
+        description:
+          "Minimal semester 3 (tiga) mahasiswa S-2 UIN Sunan Gunung Djati Bandung yang telah lulus mata kuliah Islam dan Inovasi Produk Halal, Teknik Pengukuran dan Kalibrasi Pengujian Halal, Pendidikan Literasi Halal.",
+      },
+      {
+        name: "Bukti Magang Bidang Penjaminan Produk Halal",
+        description:
+          "Telah menyelesaikan magang pada bidang penjaminan produk halal.",
+      },
     ],
     buktiAdministratif: [
-      'Salinan KTP beragama Islam;',
-      'Fotocopy KTM',
-      'Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar'
+      "Salinan KTP beragama Islam;",
+      "Fotocopy KTM",
+      "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
     ],
-    
   },
   {
-    name: 'Penyelia Halal',
-    code: '02/LSPUINBdg/XI/2023',
+    name: "Penyelia Halal",
+    code: "02/LSPUINBdg/XI/2023",
     units: [
-      { code: 'M.74PHI00.001.2', title: 'Menyusun Dokumen Penerapan Sistem Jaminan Produk Halal (SJPH) dan Kelengkapannya', elemen: [{"title":"Menentukan ruang lingkup atau proses bisnis pelaku usaha","kuk":["1.1 Proses bisnis dan dokumen pelaku usaha diidentifikasi.","1.2 Proses bisnis dan dokumen pelaku usaha dibandingkan dengan persyaratan standar."]},{"title":"Melakukan analisis risiko titik kritis kehalalan sesuai dengan lingkup usaha","kuk":["2.1 Potensi terjadinya titik kritis ketidakhalalan diidentifikasi sesuai dengan persyaratan standar.","2.2 Tingkat risiko diperiksa berdasarkan hasil identifikasi potensi terjadinya ketidakhalalan sesuai dengan persyaratan standar."]},{"title":"Menyusun manual halal, prosedur, instruksi kerja penerapan SJPH, dan kelengkapannya","kuk":["3.1 Dokumen manual halal, prosedur dan/atau instruksi kerja disusun sesuai persyaratan standar.","3.2 Dokumen manual halal, prosedur dan/atau instruksi kerja diverifikasi dan diperbaiki sesuai SJPH.","3.3 Pelaksanaan sosialisasi manual halal dipastikan terlaksana sesuai dengan prosedur."]}] },
-      { code: 'M.74PHI00.002.2', title: 'Menyiapkan Dokumen Daftar Bahan dan Dokumen Pendukungnya', elemen: [{"title":"Menyusun daftar bahan dan pendukungnya","kuk":["1.1 Daftar bahan dan dokumen pendukungnya disiapkan sesuai persyaratan standar.","1.2 Dokumen pendukung bahan dipastikan validitasnya sesuai persyaratan standar."]},{"title":"Melaporkan hasil penyiapan daftar bahan dan dokumen pendukungnya","kuk":["2.1 Daftar bahan halal didistribusikan kepada pihak terkait sesuai prosedur.","2.2 Dokumentasi kegiatan penyiapan daftar bahan halal dan dokumen pendukungnya dipelihara sesuai prosedur."]}] },
-      { code: 'M.74PHI00.003.2', title: 'Mengawasi Bahan, Proses, dan Produk Halal', elemen: [{"title":"Mengawasi pengadaan bahan","kuk":["1.1 Pengadaan bahan dipastikan sesuai dengan daftar bahan halal.","1.2 Seleksi bahan baru dipastikan sesuai dengan prosedur.","1.3 Bukti pengadaan bahan diperiksa sesuai dengan prosedur.","1.4 Hasil pemeriksaan pengadaan bahan dilaporkan dan didokumentasikan sesuai dengan prosedur."]},{"title":"Mengawasi penanganan bahan halal","kuk":["2.1 Pemeriksaan bahan datang diverifikasi sesuai dengan prosedur.","2.2 Bahan datang yang tidak sesuai persyaratan ditindaklanjuti sesuai persyaratan standar.","2.3 Penyimpanan bahan halal diverifikasi sesuai standar penyimpanan bahan halal.","2.4 Tata letak penyimpanan bahan dilaksanakan sesuai dengan persyaratan standar.","2.5 Alur bahan diverifikasi sesuai persyaratan standar."]},{"title":"Mengawasi Proses Produk Halal (PPH)","kuk":["3.1 Tempat, alat, dan prosedur PPH dipastikan sesuai persyaratan standar.","3.2 Kebersihan dan higienitas tempat, alat, dan personel PPH diverifikasi sesuai persyaratan standar agar tidak ada kontaminasi silang sesuai dengan persyaratan standar.","3.3 Proses pensucian diverifikasi sesuai syariat Islam.","3.4 Personel PPH dipastikan memenuhi persyaratan standar."]},{"title":"Mengawasi penanganan produk halal","kuk":["4.1 Kriteria produk dipastikan sesuai dengan persyaratan standar.","4.2 Kemampuan telusur produk halal dipastikan memenuhi prosedur.","4.3 Tempat dan alat penyimpanan produk halal diverifikasi sesuai persyaratan standar.","4.4 Penyimpanan produk halal diverifikasi sesuai dengan persyaratan penyimpanan produk halal.","4.5 Penyajian produk halal diverifikasi sesuai persyaratan standar."]},{"title":"Mengawasi pengembangan produk halal","kuk":["5.1 Reformulasi produk diidentifikasi sesuai dengan persyaratan standar.","5.2 Pengembangan produk baru diverifikasi sesuai dengan persyaratan standar."]}] },
-      { code: 'M.74PHI00.004.2', title: 'Melakukan Penanganan Produk Yang Tidak Memenuhi Kriteria Halal', elemen: [{"title":"Mengidentifikasi produk yang tidak memenuhi kriteria halal","kuk":["1.1 Produk yang tidak memenuhi kriteria halal diidentifikasi sesuai prosedur.","1.2 Penyebab dan jenis ketidaksesuaian ditelusuri sesuai prosedur."]},{"title":"Menangani produk yang tidak memenuhi kriteria halal","kuk":["2.1 Produk yang tidak memenuhi kriteria halal ditangani sesuai dengan persyaratan standar.","2.2 Penanganan produk yang tidak memenuhi kriteria halal dievaluasi sesuai prosedur."]},{"title":"Melaporkan dan mendokumentasikan penanganan produk yang tidak memenuhi kriteria halal","kuk":["3.1 Penanganan produk yang tidak memenuhi kriteria halal dilaporkan sesuai prosedur.","3.2 Dokumentasi penanganan produk yang tidak memenuhi kriteria halal dipelihara sesuai prosedur."]}] },
-      { code: 'M.74PHI00.005.2', title: 'Melakukan Audit Internal Penerapan Sistem Jaminan Produk Halal (SJPH)', elemen: [{"title":"Merencanakan audit internal","kuk":["1.1 Rencana audit disusun sesuai dengan prosedur.","1.2 Daftar pertanyaan audit internal dipersiapkan sesuai dengan kebutuhan.","1.3 Metode audit ditentukan sesuai dengan kebutuhan."]},{"title":"Melaksanakan audit internal","kuk":["2.1 Bukti penerapan SJPH diperiksa sesuai dengan persyaratan standar.","2.2 Ketidaksesuaian penerapan SJPH diidentifikasi sesuai dengan persyaratan standar."]},{"title":"Menyusun laporan audit internal","kuk":["3.1 Laporan audit internal disusun sesuai dengan hasil audit internal.","3.2 Pihak yang berkepentingan diidentifikasi sesuai kebutuhan.","3.3 Laporan hasil audit internal disampaikan ke pihak yang berkepentingan sesuai dengan prosedur.","3.4 Hasil audit internal didokumentasikan sesuai dengan prosedur."]}] },
-      { code: 'M.74PHI00.006.2', title: 'Melakukan Evaluasi Tindak Lanjut Hasil Audit Internal', elemen: [{"title":"Melakukan evaluasi tindak lanjut perbaikan hasil audit internal","kuk":["1.1 Rencana tindakan perbaikan dan pencegahan ditetapkan sesuai persyaratan standar.","1.2 Verifikasi tindakan perbaikan dan pencegahan dilakukan sesuai persyaratan standar.","1.3 Validasi hasil tindakan perbaikan dan pencegahan dilakukan sesuai persyaratan standar."]},{"title":"Mendokumentasikan hasil audit internal, tindak lanjut perbaikan dan pencegahan","kuk":["2.1 Tindak lanjut hasil audit internal SJPH didokumentasikan sesuai dengan prosedur.","2.2 Dokumentasi tindak lanjut hasil audit internal SJPH dipelihara sesuai dengan prosedur."]}] }
+      {
+        code: "M.74PHI00.001.2",
+        title:
+          "Menyusun Dokumen Penerapan Sistem Jaminan Produk Halal (SJPH) dan Kelengkapannya",
+        elemen: [
+          {
+            title: "Menentukan ruang lingkup atau proses bisnis pelaku usaha",
+            kuk: [
+              "1.1 Proses bisnis dan dokumen pelaku usaha diidentifikasi.",
+              "1.2 Proses bisnis dan dokumen pelaku usaha dibandingkan dengan persyaratan standar.",
+            ],
+          },
+          {
+            title:
+              "Melakukan analisis risiko titik kritis kehalalan sesuai dengan lingkup usaha",
+            kuk: [
+              "2.1 Potensi terjadinya titik kritis ketidakhalalan diidentifikasi sesuai dengan persyaratan standar.",
+              "2.2 Tingkat risiko diperiksa berdasarkan hasil identifikasi potensi terjadinya ketidakhalalan sesuai dengan persyaratan standar.",
+            ],
+          },
+          {
+            title:
+              "Menyusun manual halal, prosedur, instruksi kerja penerapan SJPH, dan kelengkapannya",
+            kuk: [
+              "3.1 Dokumen manual halal, prosedur dan/atau instruksi kerja disusun sesuai persyaratan standar.",
+              "3.2 Dokumen manual halal, prosedur dan/atau instruksi kerja diverifikasi dan diperbaiki sesuai SJPH.",
+              "3.3 Pelaksanaan sosialisasi manual halal dipastikan terlaksana sesuai dengan prosedur.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PHI00.002.2",
+        title: "Menyiapkan Dokumen Daftar Bahan dan Dokumen Pendukungnya",
+        elemen: [
+          {
+            title: "Menyusun daftar bahan dan pendukungnya",
+            kuk: [
+              "1.1 Daftar bahan dan dokumen pendukungnya disiapkan sesuai persyaratan standar.",
+              "1.2 Dokumen pendukung bahan dipastikan validitasnya sesuai persyaratan standar.",
+            ],
+          },
+          {
+            title:
+              "Melaporkan hasil penyiapan daftar bahan dan dokumen pendukungnya",
+            kuk: [
+              "2.1 Daftar bahan halal didistribusikan kepada pihak terkait sesuai prosedur.",
+              "2.2 Dokumentasi kegiatan penyiapan daftar bahan halal dan dokumen pendukungnya dipelihara sesuai prosedur.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PHI00.003.2",
+        title: "Mengawasi Bahan, Proses, dan Produk Halal",
+        elemen: [
+          {
+            title: "Mengawasi pengadaan bahan",
+            kuk: [
+              "1.1 Pengadaan bahan dipastikan sesuai dengan daftar bahan halal.",
+              "1.2 Seleksi bahan baru dipastikan sesuai dengan prosedur.",
+              "1.3 Bukti pengadaan bahan diperiksa sesuai dengan prosedur.",
+              "1.4 Hasil pemeriksaan pengadaan bahan dilaporkan dan didokumentasikan sesuai dengan prosedur.",
+            ],
+          },
+          {
+            title: "Mengawasi penanganan bahan halal",
+            kuk: [
+              "2.1 Pemeriksaan bahan datang diverifikasi sesuai dengan prosedur.",
+              "2.2 Bahan datang yang tidak sesuai persyaratan ditindaklanjuti sesuai persyaratan standar.",
+              "2.3 Penyimpanan bahan halal diverifikasi sesuai standar penyimpanan bahan halal.",
+              "2.4 Tata letak penyimpanan bahan dilaksanakan sesuai dengan persyaratan standar.",
+              "2.5 Alur bahan diverifikasi sesuai persyaratan standar.",
+            ],
+          },
+          {
+            title: "Mengawasi Proses Produk Halal (PPH)",
+            kuk: [
+              "3.1 Tempat, alat, dan prosedur PPH dipastikan sesuai persyaratan standar.",
+              "3.2 Kebersihan dan higienitas tempat, alat, dan personel PPH diverifikasi sesuai persyaratan standar agar tidak ada kontaminasi silang sesuai dengan persyaratan standar.",
+              "3.3 Proses pensucian diverifikasi sesuai syariat Islam.",
+              "3.4 Personel PPH dipastikan memenuhi persyaratan standar.",
+            ],
+          },
+          {
+            title: "Mengawasi penanganan produk halal",
+            kuk: [
+              "4.1 Kriteria produk dipastikan sesuai dengan persyaratan standar.",
+              "4.2 Kemampuan telusur produk halal dipastikan memenuhi prosedur.",
+              "4.3 Tempat dan alat penyimpanan produk halal diverifikasi sesuai persyaratan standar.",
+              "4.4 Penyimpanan produk halal diverifikasi sesuai dengan persyaratan penyimpanan produk halal.",
+              "4.5 Penyajian produk halal diverifikasi sesuai persyaratan standar.",
+            ],
+          },
+          {
+            title: "Mengawasi pengembangan produk halal",
+            kuk: [
+              "5.1 Reformulasi produk diidentifikasi sesuai dengan persyaratan standar.",
+              "5.2 Pengembangan produk baru diverifikasi sesuai dengan persyaratan standar.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PHI00.004.2",
+        title: "Melakukan Penanganan Produk Yang Tidak Memenuhi Kriteria Halal",
+        elemen: [
+          {
+            title: "Mengidentifikasi produk yang tidak memenuhi kriteria halal",
+            kuk: [
+              "1.1 Produk yang tidak memenuhi kriteria halal diidentifikasi sesuai prosedur.",
+              "1.2 Penyebab dan jenis ketidaksesuaian ditelusuri sesuai prosedur.",
+            ],
+          },
+          {
+            title: "Menangani produk yang tidak memenuhi kriteria halal",
+            kuk: [
+              "2.1 Produk yang tidak memenuhi kriteria halal ditangani sesuai dengan persyaratan standar.",
+              "2.2 Penanganan produk yang tidak memenuhi kriteria halal dievaluasi sesuai prosedur.",
+            ],
+          },
+          {
+            title:
+              "Melaporkan dan mendokumentasikan penanganan produk yang tidak memenuhi kriteria halal",
+            kuk: [
+              "3.1 Penanganan produk yang tidak memenuhi kriteria halal dilaporkan sesuai prosedur.",
+              "3.2 Dokumentasi penanganan produk yang tidak memenuhi kriteria halal dipelihara sesuai prosedur.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PHI00.005.2",
+        title:
+          "Melakukan Audit Internal Penerapan Sistem Jaminan Produk Halal (SJPH)",
+        elemen: [
+          {
+            title: "Merencanakan audit internal",
+            kuk: [
+              "1.1 Rencana audit disusun sesuai dengan prosedur.",
+              "1.2 Daftar pertanyaan audit internal dipersiapkan sesuai dengan kebutuhan.",
+              "1.3 Metode audit ditentukan sesuai dengan kebutuhan.",
+            ],
+          },
+          {
+            title: "Melaksanakan audit internal",
+            kuk: [
+              "2.1 Bukti penerapan SJPH diperiksa sesuai dengan persyaratan standar.",
+              "2.2 Ketidaksesuaian penerapan SJPH diidentifikasi sesuai dengan persyaratan standar.",
+            ],
+          },
+          {
+            title: "Menyusun laporan audit internal",
+            kuk: [
+              "3.1 Laporan audit internal disusun sesuai dengan hasil audit internal.",
+              "3.2 Pihak yang berkepentingan diidentifikasi sesuai kebutuhan.",
+              "3.3 Laporan hasil audit internal disampaikan ke pihak yang berkepentingan sesuai dengan prosedur.",
+              "3.4 Hasil audit internal didokumentasikan sesuai dengan prosedur.",
+            ],
+          },
+        ],
+      },
+      {
+        code: "M.74PHI00.006.2",
+        title: "Melakukan Evaluasi Tindak Lanjut Hasil Audit Internal",
+        elemen: [
+          {
+            title:
+              "Melakukan evaluasi tindak lanjut perbaikan hasil audit internal",
+            kuk: [
+              "1.1 Rencana tindakan perbaikan dan pencegahan ditetapkan sesuai persyaratan standar.",
+              "1.2 Verifikasi tindakan perbaikan dan pencegahan dilakukan sesuai persyaratan standar.",
+              "1.3 Validasi hasil tindakan perbaikan dan pencegahan dilakukan sesuai persyaratan standar.",
+            ],
+          },
+          {
+            title:
+              "Mendokumentasikan hasil audit internal, tindak lanjut perbaikan dan pencegahan",
+            kuk: [
+              "2.1 Tindak lanjut hasil audit internal SJPH didokumentasikan sesuai dengan prosedur.",
+              "2.2 Dokumentasi tindak lanjut hasil audit internal SJPH dipelihara sesuai dengan prosedur.",
+            ],
+          },
+        ],
+      },
     ],
     persyaratanDasar: [
-      { name: 'KTP (Beragama Islam)', description: 'Beragama Islam;' },
-      { name: 'Transkrip Nilai Semester 5 (Lulus Fiqh Halal)', description: 'Minimal semester 6 mahasiswa UIN Sunan Gunung Djati Bandung dan telah lulus mata kuliah Fiqh Halal;' },
-      { name: 'Bukti Magang Bidang Penjaminan Produk Halal', description: 'Telah menyelesaikan magang pada bidang penjaminan produk halal.' }
+      { name: "KTP (Beragama Islam)", description: "Beragama Islam;" },
+      {
+        name: "Transkrip Nilai Semester 5 (Lulus Fiqh Halal)",
+        description:
+          "Minimal semester 6 mahasiswa UIN Sunan Gunung Djati Bandung dan telah lulus mata kuliah Fiqh Halal;",
+      },
+      {
+        name: "Bukti Magang Bidang Penjaminan Produk Halal",
+        description:
+          "Telah menyelesaikan magang pada bidang penjaminan produk halal.",
+      },
     ],
     buktiAdministratif: [
-      'Salinan KTP beragama Islam;',
-      'Salinan KTM',
-      'Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar'
+      "Salinan KTP beragama Islam;",
+      "Salinan KTM",
+      "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
     ],
-    
-  }
+  },
 ];

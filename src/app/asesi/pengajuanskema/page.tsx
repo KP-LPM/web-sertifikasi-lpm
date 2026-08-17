@@ -1,17 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode } from "react";
 import {
-  Trash2, FileText, Plus, Search, Calendar, ArrowLeft, ArrowRight,
-  Upload, BadgeCheck, CheckCircle, AlertTriangle, Download, X
-} from 'lucide-react';
+  Trash2,
+  FileText,
+  Plus,
+  Search,
+  Calendar,
+  ArrowLeft,
+  ArrowRight,
+  Upload,
+  BadgeCheck,
+  CheckCircle,
+  AlertTriangle,
+  Download,
+  X,
+} from "lucide-react";
 
-import { FormDocumentTable } from '@/components/forms/asesi/FormDocumentTable';
-import { FormKompetensiTable } from '@/components/forms/asesi/FormKompetensiTable';
-import { EFormApl01 } from '@/components/forms/asesi/FormFRAPL01';
-import { EFormApl02 } from '@/components/forms/asesi/FormFRAPL02';
-import { AVAILABLE_SCHEMES } from '@/data/schemes';
-import { useAppContext } from '@/context/context';
+import { FormDocumentTable } from "@/components/forms/asesi/FormDocumentTable";
+import { FormKompetensiTable } from "@/components/forms/asesi/FormKompetensiTable";
+import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
+import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
+import { AVAILABLE_SCHEMES } from "@/data/schemes";
+import { useAppContext } from "@/context/context";
 
 interface SchemeRequirement {
   name: string;
@@ -37,25 +48,42 @@ interface Scheme {
   persyaratanDasar?: SchemeRequirementItem[];
   buktiAdministratif?: SchemeDocumentRequirement;
   buktiKompetensi?: SchemeDocumentRequirement;
-  [key: string]: string | string[] | SchemeRequirementItem[] | SchemeDocumentRequirement | SchemeUnit[] | undefined;
+  [key: string]:
+    | string
+    | string[]
+    | SchemeRequirementItem[]
+    | SchemeDocumentRequirement
+    | SchemeUnit[]
+    | undefined;
 }
 
 const getPendidikanOptions = (scheme: Scheme | null): string[] => {
-  const allOptions = ['SMA', 'D3', 'S1', 'S2', 'S3'];
+  const allOptions = ["SMA", "D3", "S1", "S2", "S3"];
   if (!scheme) return allOptions;
 
   let minLevelIndex = 0; // SMA
   const reqString = JSON.stringify(scheme.persyaratanDasar || []).toLowerCase();
 
-  if (reqString.includes('s-2') || reqString.includes('s2') || reqString.includes('strata 2')) {
-    if (reqString.includes('ijazah strata 2') || reqString.includes('ijazah s2')) {
+  if (
+    reqString.includes("s-2") ||
+    reqString.includes("s2") ||
+    reqString.includes("strata 2")
+  ) {
+    if (
+      reqString.includes("ijazah strata 2") ||
+      reqString.includes("ijazah s2")
+    ) {
       minLevelIndex = 3; // S2
     } else {
       minLevelIndex = 2; // S1
     }
-  } else if (reqString.includes('s1') || reqString.includes('s-1') || reqString.includes('strata 1')) {
+  } else if (
+    reqString.includes("s1") ||
+    reqString.includes("s-1") ||
+    reqString.includes("strata 1")
+  ) {
     minLevelIndex = 2; // S1
-  } else if (reqString.includes('d3') || reqString.includes('diploma 3')) {
+  } else if (reqString.includes("d3") || reqString.includes("diploma 3")) {
     minLevelIndex = 1; // D3
   }
 
@@ -103,28 +131,36 @@ interface Breadcrumb {
 export default function PengajuanSkemaPage() {
   const { user, setExtraCrumbs } = useAppContext();
 
-  const [subView, setSubView] = useState<'list' | 'choose-scheme' | 'apply-form'>('list');
+  const [subView, setSubView] = useState<
+    "list" | "choose-scheme" | "apply-form"
+  >("list");
   const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
 
   const [showExitWarning, setShowExitWarning] = useState(false);
-  const [exitDestination, setExitDestination] = useState<'list' | 'choose-scheme' | null>(null);
+  const [exitDestination, setExitDestination] = useState<
+    "list" | "choose-scheme" | null
+  >(null);
 
-  const handleExitRequest = React.useCallback((destination: 'list' | 'choose-scheme') => {
-    if (subView === 'apply-form') {
-      setExitDestination(destination);
-      setShowExitWarning(true);
-    } else {
-      setSubView(destination);
-    }
-  }, [subView]);
+  const handleExitRequest = React.useCallback(
+    (destination: "list" | "choose-scheme") => {
+      if (subView === "apply-form") {
+        setExitDestination(destination);
+        setShowExitWarning(true);
+      } else {
+        setSubView(destination);
+      }
+    },
+    [subView],
+  );
 
-  const [selectedDetailSubmission, setSelectedDetailSubmission] = useState<Submission | null>(null);
+  const [selectedDetailSubmission, setSelectedDetailSubmission] =
+    useState<Submission | null>(null);
 
   React.useEffect(() => {
-    const handleReset = () => setSubView('list');
-    window.addEventListener('reset-eform', handleReset);
+    const handleReset = () => setSubView("list");
+    window.addEventListener("reset-eform", handleReset);
     return () => {
-      window.removeEventListener('reset-eform', handleReset);
+      window.removeEventListener("reset-eform", handleReset);
       setExtraCrumbs([]);
     };
   }, [setExtraCrumbs]);
@@ -132,23 +168,24 @@ export default function PengajuanSkemaPage() {
   React.useEffect(() => {
     if (selectedDetailSubmission) {
       setExtraCrumbs([
-        { label: 'Pengajuan Skema', onClick: () => handleExitRequest('list') },
-        { label: 'Detail Pengajuan' }
+        { label: "Pengajuan Skema", onClick: () => handleExitRequest("list") },
+        { label: "Detail Pengajuan" },
       ] as Breadcrumb[]);
-    } else if (subView === 'list') {
+    } else if (subView === "list") {
+      setExtraCrumbs([{ label: "Pengajuan Skema" }] as Breadcrumb[]);
+    } else if (subView === "choose-scheme") {
       setExtraCrumbs([
-        { label: 'Pengajuan Skema' }
+        { label: "Pengajuan Skema", onClick: () => handleExitRequest("list") },
+        { label: "Daftar Skema" },
       ] as Breadcrumb[]);
-    } else if (subView === 'choose-scheme') {
+    } else if (subView === "apply-form") {
       setExtraCrumbs([
-        { label: 'Pengajuan Skema', onClick: () => handleExitRequest('list') },
-        { label: 'Daftar Skema' }
-      ] as Breadcrumb[]);
-    } else if (subView === 'apply-form') {
-      setExtraCrumbs([
-        { label: 'Pengajuan Skema', onClick: () => handleExitRequest('list') },
-        { label: 'Daftar Skema', onClick: () => handleExitRequest('choose-scheme') },
-        { label: 'Ajukan Skema' }
+        { label: "Pengajuan Skema", onClick: () => handleExitRequest("list") },
+        {
+          label: "Daftar Skema",
+          onClick: () => handleExitRequest("choose-scheme"),
+        },
+        { label: "Ajukan Skema" },
       ] as Breadcrumb[]);
     }
   }, [subView, selectedDetailSubmission]);
@@ -164,20 +201,31 @@ export default function PengajuanSkemaPage() {
     [key: string]: unknown;
   }
 
-  const [activeModalDoc, setActiveModalDoc] = useState<ActiveModalDoc | null>(null);
+  const [activeModalDoc, setActiveModalDoc] = useState<ActiveModalDoc | null>(
+    null,
+  );
   const [tempFiles, setTempFiles] = useState<File[]>([]);
   const [eFormData, setEFormData] = useState<Record<string, unknown>>({});
-  const [tempEFormData, setTempEFormData] = useState<Record<string, unknown>>({});
-  const [alertMsg, setAlertMsg] = useState('');
+  const [tempEFormData, setTempEFormData] = useState<Record<string, unknown>>(
+    {},
+  );
+  const [alertMsg, setAlertMsg] = useState("");
 
   const showAlert = (msg: string) => {
     setAlertMsg(msg);
-    setTimeout(() => setAlertMsg(''), 3000);
+    setTimeout(() => setAlertMsg(""), 3000);
   };
 
   React.useEffect(() => {
-    if (activeModalDoc && !activeModalDoc.isEForm && !activeModalDoc.isPreview) {
-      const key = typeof activeModalDoc.name === 'string' ? activeModalDoc.name : undefined;
+    if (
+      activeModalDoc &&
+      !activeModalDoc.isEForm &&
+      !activeModalDoc.isPreview
+    ) {
+      const key =
+        typeof activeModalDoc.name === "string"
+          ? activeModalDoc.name
+          : undefined;
       setTempFiles((key ? (eFormData[key] as File[]) : []) || []);
     }
   }, [activeModalDoc, eFormData]);
@@ -185,13 +233,15 @@ export default function PengajuanSkemaPage() {
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
   const [submissions, setSubmissions] = useState<Submission[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('lsp_submissions');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("lsp_submissions");
       if (saved) {
         const parsed = JSON.parse(saved) as Submission[];
-        const filtered = parsed.filter((p: Submission) => p.name !== 'Pelayanan Pelanggan');
+        const filtered = parsed.filter(
+          (p: Submission) => p.name !== "Pelayanan Pelanggan",
+        );
         if (filtered.length !== parsed.length) {
-          localStorage.setItem('lsp_submissions', JSON.stringify(filtered));
+          localStorage.setItem("lsp_submissions", JSON.stringify(filtered));
           return filtered;
         }
         return parsed;
@@ -200,37 +250,41 @@ export default function PengajuanSkemaPage() {
     return [];
   });
 
-  const [searchSub, setSearchSub] = useState('');
-  const [statusSubFilter, setStatusSubFilter] = useState('Semua');
-  const [dateSubFilter, setDateSubFilter] = useState('');
+  const [searchSub, setSearchSub] = useState("");
+  const [statusSubFilter, setStatusSubFilter] = useState("Semua");
+  const [dateSubFilter, setDateSubFilter] = useState("");
   const [subPage, setSubPage] = useState(1);
 
-  const [searchScheme, setSearchScheme] = useState('');
+  const [searchScheme, setSearchScheme] = useState("");
   const [schemePage, setSchemePage] = useState(1);
 
-  const [namaLengkap, setNamaLengkap] = useState(user?.name || 'Ahmad Fauzi');
-  const [tempatLahir, setTempatLahir] = useState('');
-  const [tanggalLahir, setTanggalLahir] = useState('2000-01-01');
-  const [jenisKelamin, setJenisKelamin] = useState('Perempuan');
-  const [alamat, setAlamat] = useState('');
-  const [provinsi, setProvinsi] = useState('');
-  const [kota, setKota] = useState('');
-  const alamatWilayah = [kota, provinsi].filter(Boolean).join(', ');
-  const [nik, setNik] = useState('');
-  const [kebangsaan, setKebangsaan] = useState('WNI');
-  const [kodePos, setKodePos] = useState('');
-  const [noTelp, setNoTelp] = useState('081234567890');
+  const [namaLengkap, setNamaLengkap] = useState(user?.name || "Ahmad Fauzi");
+  const [tempatLahir, setTempatLahir] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState("2000-01-01");
+  const [jenisKelamin, setJenisKelamin] = useState("Perempuan");
+  const [alamat, setAlamat] = useState("");
+  const [provinsi, setProvinsi] = useState("");
+  const [kota, setKota] = useState("");
+  const alamatWilayah = [kota, provinsi].filter(Boolean).join(", ");
+  const [nik, setNik] = useState("");
+  const [kebangsaan, setKebangsaan] = useState("WNI");
+  const [kodePos, setKodePos] = useState("");
+  const [noTelp, setNoTelp] = useState("081234567890");
 
-  const [pendidikanTerakhir, setPendidikanTerakhir] = useState('SMA');
-  const [pekerjaan, setPekerjaan] = useState('Pelajar/Mahasiswa');
-  const [institusiPerusahaan, setInstitusiPerusahaan] = useState('PNS');
-  const [jabatan, setJabatan] = useState('PNS');
-  const [emailInstitusi, setEmailInstitusi] = useState('karimaulya13@gmail.com');
-  const [kodePosInstitusi, setKodePosInstitusi] = useState('');
-  const [alamatInstitusi, setAlamatInstitusi] = useState('Komp. Taman Cileunyi Blok W No 9 RT 03/22, Cileunyi Kulon, Kec. Cileunyi, Kab. Bandung');
-  const [telpInstitusi, setTelpInstitusi] = useState('087736454535');
-  const [faxInstitusi, setFaxInstitusi] = useState('');
-  const [tuk, setTuk] = useState('');
+  const [pendidikanTerakhir, setPendidikanTerakhir] = useState("SMA");
+  const [pekerjaan, setPekerjaan] = useState("Pelajar/Mahasiswa");
+  const [institusiPerusahaan, setInstitusiPerusahaan] = useState("PNS");
+  const [jabatan, setJabatan] = useState("PNS");
+  const [emailInstitusi, setEmailInstitusi] = useState(
+    "karimaulya13@gmail.com",
+  );
+  const [kodePosInstitusi, setKodePosInstitusi] = useState("");
+  const [alamatInstitusi, setAlamatInstitusi] = useState(
+    "Komp. Taman Cileunyi Blok W No 9 RT 03/22, Cileunyi Kulon, Kec. Cileunyi, Kab. Bandung",
+  );
+  const [telpInstitusi, setTelpInstitusi] = useState("087736454535");
+  const [faxInstitusi, setFaxInstitusi] = useState("");
+  const [tuk, setTuk] = useState("");
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
@@ -245,36 +299,50 @@ export default function PengajuanSkemaPage() {
   }
 
   const scrollToTopMobile = () => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const [errors, setErrors] = useState<Step1Errors>({
-    tempatLahir: false, provinsi: false, kota: false, alamat: false, nik: false, kodePos: false, tuk: false,
+    tempatLahir: false,
+    provinsi: false,
+    kota: false,
+    alamat: false,
+    nik: false,
+    kodePos: false,
+    tuk: false,
   });
 
   const handleNext = () => {
     if (step === 1) {
       const newErrors: Step1Errors = {
-        tempatLahir: tempatLahir.trim() === '',
-        provinsi: provinsi === '',
-        kota: kota === '',
-        alamat: alamat.trim() === '',
-        nik: nik.trim() === '',
-        kodePos: kodePos.trim() === '',
-        tuk: tuk === '',
+        tempatLahir: tempatLahir.trim() === "",
+        provinsi: provinsi === "",
+        kota: kota === "",
+        alamat: alamat.trim() === "",
+        nik: nik.trim() === "",
+        kodePos: kodePos.trim() === "",
+        tuk: tuk === "",
       };
       setErrors(newErrors);
 
-      if (!newErrors.tempatLahir && !newErrors.provinsi && !newErrors.kota && !newErrors.alamat && !newErrors.nik && !newErrors.kodePos && !newErrors.tuk) {
+      if (
+        !newErrors.tempatLahir &&
+        !newErrors.provinsi &&
+        !newErrors.kota &&
+        !newErrors.alamat &&
+        !newErrors.nik &&
+        !newErrors.kodePos &&
+        !newErrors.tuk
+      ) {
         setStep(2);
         scrollToTopMobile();
       }
     } else if (step === 2) {
       const reqs = selectedScheme?.persyaratanDasar || [];
       const valid = reqs.every((req: SchemeRequirementItem) => {
-        const key = typeof req === 'string' ? req : req.name;
+        const key = typeof req === "string" ? req : req.name;
         return Boolean(eFormData[key]);
       });
       if (!valid) {
@@ -287,7 +355,7 @@ export default function PengajuanSkemaPage() {
     } else if (step === 3) {
       const reqs = selectedScheme?.buktiAdministratif || [];
       const valid = reqs.every((req: SchemeRequirementItem) => {
-        const key = typeof req === 'string' ? req : req.name;
+        const key = typeof req === "string" ? req : req.name;
         return Boolean(eFormData[key]);
       });
       if (!valid) {
@@ -308,10 +376,10 @@ export default function PengajuanSkemaPage() {
   const handleSubmitForm = () => {
     const newSubmission: Submission = {
       id: String(submissions.length + 1),
-      name: selectedScheme?.name || 'Uji Kompetensi Mandiri',
-      code: selectedScheme?.code || '001/SKM/LSP-KJN/II/2023',
-      date: new Date().toLocaleDateString('en-GB'),
-      status: 'Menunggu Persetujuan',
+      name: selectedScheme?.name || "Uji Kompetensi Mandiri",
+      code: selectedScheme?.code || "001/SKM/LSP-KJN/II/2023",
+      date: new Date().toLocaleDateString("en-GB"),
+      status: "Menunggu Persetujuan",
       namaLengkap,
       tempatLahir,
       tanggalLahir,
@@ -331,77 +399,112 @@ export default function PengajuanSkemaPage() {
       alamatInstitusi,
       telpInstitusi,
       faxInstitusi,
-      tuk: tuk || 'Mandiri',
+      tuk: tuk || "Mandiri",
       penyesuaianWajar,
-      berpengalaman
+      berpengalaman,
     };
 
     const updated = [newSubmission, ...submissions];
     setSubmissions(updated);
-    localStorage.setItem('lsp_submissions', JSON.stringify(updated));
+    localStorage.setItem("lsp_submissions", JSON.stringify(updated));
 
-    setTempatLahir('');
-    setAlamat('');
-    setNik('');
-    setKodePos('');
-    setTuk('');
+    setTempatLahir("");
+    setAlamat("");
+    setNik("");
+    setKodePos("");
+    setTuk("");
     setBerpengalaman(false);
     setStep(1);
     showAlert(`Pengajuan Skema ${newSubmission.name} Berhasil Diajukan!`);
-    setSubView('list');
+    setSubView("list");
   };
 
   const filteredSubmissions = submissions.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchSub.toLowerCase()) ||
       item.code.toLowerCase().includes(searchSub.toLowerCase());
-    const matchesStatus = statusSubFilter === 'Semua' || item.status === statusSubFilter;
-    const matchesDate = !dateSubFilter || (() => {
-      const [year, month, day] = dateSubFilter.split('-');
-      const formattedFilter = `${day}/${month}/${year}`;
-      return item.date === formattedFilter || item.date === `${day}-${month}-${year}`;
-    })();
+    const matchesStatus =
+      statusSubFilter === "Semua" || item.status === statusSubFilter;
+    const matchesDate =
+      !dateSubFilter ||
+      (() => {
+        const [year, month, day] = dateSubFilter.split("-");
+        const formattedFilter = `${day}/${month}/${year}`;
+        return (
+          item.date === formattedFilter ||
+          item.date === `${day}-${month}-${year}`
+        );
+      })();
     return matchesSearch && matchesStatus && matchesDate;
   });
 
   const formatTanggal = (tanggal: string) => {
-    if (!tanggal) return '-';
+    if (!tanggal) return "-";
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(tanggal)) return tanggal;
-    const parts = tanggal.split(' ');
+    const parts = tanggal.split(" ");
     if (parts.length === 3) {
       const months: Record<string, string> = {
-        'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'mei': '05', 'may': '05', 'jun': '06',
-        'jul': '07', 'agt': '08', 'aug': '08', 'sep': '09', 'okt': '10', 'oct': '10', 'nov': '11', 'des': '12', 'dec': '12'
+        jan: "01",
+        feb: "02",
+        mar: "03",
+        apr: "04",
+        mei: "05",
+        may: "05",
+        jun: "06",
+        jul: "07",
+        agt: "08",
+        aug: "08",
+        sep: "09",
+        okt: "10",
+        oct: "10",
+        nov: "11",
+        des: "12",
+        dec: "12",
       };
-      const d = parts[0].padStart(2, '0');
-      const m = months[parts[1].toLowerCase()] || '01';
+      const d = parts[0].padStart(2, "0");
+      const m = months[parts[1].toLowerCase()] || "01";
       const y = parts[2];
       return `${d}/${m}/${y}`;
     }
     const dateObj = new Date(tanggal);
-    if (!isNaN(dateObj.getTime())) return dateObj.toLocaleDateString('en-GB');
+    if (!isNaN(dateObj.getTime())) return dateObj.toLocaleDateString("en-GB");
     return tanggal;
   };
 
   const filteredSchemes = (AVAILABLE_SCHEMES as Scheme[]).filter((item) => {
-    const name = item.name?.toLowerCase() ?? '';
-    const code = item.code?.toLowerCase() ?? '';
-    return name.includes(searchScheme.toLowerCase()) || code.includes(searchScheme.toLowerCase());
+    const name = item.name?.toLowerCase() ?? "";
+    const code = item.code?.toLowerCase() ?? "";
+    return (
+      name.includes(searchScheme.toLowerCase()) ||
+      code.includes(searchScheme.toLowerCase())
+    );
   });
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const paginatedSubmissions = filteredSubmissions.slice((subPage - 1) * itemsPerPage, subPage * itemsPerPage);
-  const paginatedSchemes = filteredSchemes.slice((schemePage - 1) * itemsPerPage, schemePage * itemsPerPage);
+  const paginatedSubmissions = filteredSubmissions.slice(
+    (subPage - 1) * itemsPerPage,
+    subPage * itemsPerPage,
+  );
+  const paginatedSchemes = filteredSchemes.slice(
+    (schemePage - 1) * itemsPerPage,
+    schemePage * itemsPerPage,
+  );
 
-  const totalSubPages = Math.ceil(filteredSubmissions.length / itemsPerPage) || 1;
-  const totalSchemePages = Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
+  const totalSubPages =
+    Math.ceil(filteredSubmissions.length / itemsPerPage) || 1;
+  const totalSchemePages =
+    Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
 
   return (
     <>
-      {alertMsg && <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-[9999] font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">{alertMsg}</div>}
+      {alertMsg && (
+        <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">
+          {alertMsg}
+        </div>
+      )}
 
       {/* VIEW 1: LIST SUBMISSIONS */}
-      {subView === 'list' && (
+      {subView === "list" && (
         <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
           {!selectedDetailSubmission && (
             <div className="space-y-6 animate-in fade-in duration-200">
@@ -421,13 +524,13 @@ export default function PengajuanSkemaPage() {
                 </div>
                 <button
                   onClick={() => {
-                    setSubView('choose-scheme');
+                    setSubView("choose-scheme");
                     setSchemePage(1);
-                    setSearchScheme('');
+                    setSearchScheme("");
                   }}
                   className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer"
                 >
-                  <Plus size={16} className="stroke-[3]" />
+                  <Plus size={16} className="stroke-3" />
                   <span>Ajukan Skema</span>
                 </button>
               </div>
@@ -435,7 +538,9 @@ export default function PengajuanSkemaPage() {
               <section className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                   <div className="min-w-0">
-                    <h3 className="text-base font-black text-slate-900">Daftar Permohonan Sertifikasi</h3>
+                    <h3 className="text-base font-black text-slate-900">
+                      Daftar Permohonan Sertifikasi
+                    </h3>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
@@ -447,7 +552,8 @@ export default function PengajuanSkemaPage() {
                         value={searchSub}
                         onChange={(e) => {
                           setSearchSub(e.target.value);
-                          setSubPage(1); setSchemePage(1);
+                          setSubPage(1);
+                          setSchemePage(1);
                         }}
                         className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
                       />
@@ -457,12 +563,15 @@ export default function PengajuanSkemaPage() {
                       value={statusSubFilter}
                       onChange={(e) => {
                         setStatusSubFilter(e.target.value);
-                        setSubPage(1); setSchemePage(1);
+                        setSubPage(1);
+                        setSchemePage(1);
                       }}
                       className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10 outline-none text-gray-700 cursor-pointer font-bold"
                     >
                       <option value="Semua">Semua Status</option>
-                      <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
+                      <option value="Menunggu Persetujuan">
+                        Menunggu Persetujuan
+                      </option>
                       <option value="Disetujui">Disetujui</option>
                       <option value="Ditolak">Ditolak</option>
                     </select>
@@ -473,7 +582,8 @@ export default function PengajuanSkemaPage() {
                         value={dateSubFilter}
                         onChange={(e) => {
                           setDateSubFilter(e.target.value);
-                          setSubPage(1); setSchemePage(1);
+                          setSubPage(1);
+                          setSchemePage(1);
                         }}
                         className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 font-semibold"
                       />
@@ -485,30 +595,52 @@ export default function PengajuanSkemaPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">Tanggal Pengajuan</th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Status</th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 top-0">Aksi</th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">
+                          No
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
+                          Skema Sertifikasi
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                          Tanggal Pengajuan
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 top-0">
+                          Aksi
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100/60 font-medium">
                       {paginatedSubmissions.length > 0 ? (
                         paginatedSubmissions.map((item, idx) => (
-                          <tr key={item.id} className="group/row hover:bg-[#F9FAFC] transition-colors">
+                          <tr
+                            key={item.id}
+                            className="group/row hover:bg-[#F9FAFC] transition-colors"
+                          >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0 ? 'bg-[#008BE3]/10 text-[#008BE3]' :
-                                idx % 3 === 1 ? 'bg-[#84CC16]/10 text-[#73B412]' :
-                                  'bg-slate-100 text-slate-600'
-                                }`}>
+                              <div
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                    : idx % 3 === 1
+                                      ? "bg-[#84CC16]/10 text-[#73B412]"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
+                              >
                                 {idx + 1}
                               </div>
                             </td>
-                            <td className="px-6 py-4 min-w-[350px] max-w-[500px]">
+                            <td className="px-6 py-4 min-w-87.5 max-w-125">
                               <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-gray-900">
                                 <div className="min-w-0">
-                                  <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">{item.name}</div>
-                                  <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">{item.code}</div>
+                                  <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                                    {item.name}
+                                  </div>
+                                  <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                                    {item.code}
+                                  </div>
                                 </div>
                               </div>
                             </td>
@@ -519,12 +651,12 @@ export default function PengajuanSkemaPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                              {item.status === 'Disetujui' ? (
+                              {item.status === "Disetujui" ? (
                                 <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                   Disetujui
                                 </span>
-                              ) : item.status === 'Ditolak' ? (
+                              ) : item.status === "Ditolak" ? (
                                 <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                   Ditolak
@@ -538,7 +670,10 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
                               <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedDetailSubmission(item); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedDetailSubmission(item);
+                                }}
                                 className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
                               >
                                 Detail
@@ -548,7 +683,10 @@ export default function PengajuanSkemaPage() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={5} className="px-6 py-8 text-center text-gray-500 font-medium">
+                          <td
+                            colSpan={5}
+                            className="px-6 py-8 text-center text-gray-500 font-medium"
+                          >
                             Belum ada permohonan sertifikasi.
                           </td>
                         </tr>
@@ -559,25 +697,34 @@ export default function PengajuanSkemaPage() {
 
                 <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50">
                   <div className="min-w-0">
-                    Menampilkan {submissions.length > 0 ? (subPage - 1) * itemsPerPage + 1 : 0} - {Math.min(subPage * itemsPerPage, submissions.length)} dari {submissions.length} permohonan
+                    Menampilkan{" "}
+                    {submissions.length > 0
+                      ? (subPage - 1) * itemsPerPage + 1
+                      : 0}{" "}
+                    - {Math.min(subPage * itemsPerPage, submissions.length)}{" "}
+                    dari {submissions.length} permohonan
                   </div>
                   <div className="flex gap-2">
                     <button
                       disabled={subPage === 1}
-                      onClick={() => setSubPage(p => Math.max(1, p - 1))}
+                      onClick={() => setSubPage((p) => Math.max(1, p - 1))}
                       className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors cursor-pointer"
                     >
                       Sebelumnya
                     </button>
                     <div className="hidden items-center gap-1 sm:flex">
-                      {Array.from({ length: totalSubPages }, (_, i) => i + 1).map(page => (
+                      {Array.from(
+                        { length: totalSubPages },
+                        (_, i) => i + 1,
+                      ).map((page) => (
                         <button
                           key={page}
                           onClick={() => setSubPage(page)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${subPage === page
-                            ? 'bg-[#008BE3] text-white border border-[#008BE3]'
-                            : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
-                            }`}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                            subPage === page
+                              ? "bg-[#008BE3] text-white border border-[#008BE3]"
+                              : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
+                          }`}
                         >
                           {page}
                         </button>
@@ -585,7 +732,9 @@ export default function PengajuanSkemaPage() {
                     </div>
                     <button
                       disabled={subPage === totalSubPages}
-                      onClick={() => setSubPage(p => Math.min(totalSubPages, p + 1))}
+                      onClick={() =>
+                        setSubPage((p) => Math.min(totalSubPages, p + 1))
+                      }
                       className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors cursor-pointer"
                     >
                       Selanjutnya
@@ -598,7 +747,7 @@ export default function PengajuanSkemaPage() {
 
           {selectedDetailSubmission && (
             <div className="w-full pt-2 animate-in fade-in zoom-in-95 duration-200">
-              <div className="max-w-[900px] mx-auto">
+              <div className="max-w-225 mx-auto">
                 <div className="mb-4">
                   <button
                     onClick={() => setSelectedDetailSubmission(null)}
@@ -613,23 +762,33 @@ export default function PengajuanSkemaPage() {
                   <div className="p-8 md:p-10 border-b border-slate-200 flex flex-col gap-4 bg-slate-50/50">
                     <div className="flex justify-between items-start">
                       <div className="min-w-0">
-                        <h1 className="font-serif text-xl font-bold text-slate-900">DETAIL PENGAJUAN</h1>
-                        <h2 className="font-serif text-lg font-bold text-slate-800 uppercase">{selectedDetailSubmission.name}</h2>
+                        <h1 className="font-serif text-xl font-bold text-slate-900">
+                          DETAIL PENGAJUAN
+                        </h1>
+                        <h2 className="font-serif text-lg font-bold text-slate-800 uppercase">
+                          {selectedDetailSubmission.name}
+                        </h2>
                       </div>
                       <div className="text-right">
-                        <div className="font-serif text-2xl font-bold tracking-tighter text-slate-900">LSP</div>
-                        <div className="text-xs text-slate-500 font-sans">Lembaga Sertifikasi Profesi</div>
+                        <div className="font-serif text-2xl font-bold tracking-tighter text-slate-900">
+                          LSP
+                        </div>
+                        <div className="text-xs text-slate-500 font-sans">
+                          Lembaga Sertifikasi Profesi
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 mt-2">
-                      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Status:</span>
-                      {selectedDetailSubmission.status === 'Disetujui' ? (
+                      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                        Status:
+                      </span>
+                      {selectedDetailSubmission.status === "Disetujui" ? (
                         <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                           <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                           {selectedDetailSubmission.status}
                         </span>
-                      ) : selectedDetailSubmission.status === 'Ditolak' ? (
+                      ) : selectedDetailSubmission.status === "Ditolak" ? (
                         <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
                           <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                           {selectedDetailSubmission.status}
@@ -645,35 +804,68 @@ export default function PengajuanSkemaPage() {
 
                   <div className="p-8 md:p-10 space-y-8 flex-1 bg-white">
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Data Pribadi & Kontak</h4>
+                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">
+                        Data Pribadi & Kontak
+                      </h4>
                       <table className="w-full border-collapse border border-slate-200 text-sm rounded-lg overflow-hidden">
                         <tbody className="divide-y divide-slate-200">
                           <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">Nama Lengkap</td>
-                            <td className="p-3 font-bold">{selectedDetailSubmission.namaLengkap || '-'}</td>
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">
+                              Nama Lengkap
+                            </td>
+                            <td className="p-3 font-bold">
+                              {selectedDetailSubmission.namaLengkap || "-"}
+                            </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">NIK</td>
-                            <td className="p-3">{selectedDetailSubmission.nik || '-'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Tempat, Tanggal Lahir</td>
-                            <td className="p-3">{selectedDetailSubmission.tempatLahir ? `${selectedDetailSubmission.tempatLahir}, ${selectedDetailSubmission.tanggalLahir ? formatTanggal(selectedDetailSubmission.tanggalLahir) : '-'}` : '-'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Jenis Kelamin</td>
-                            <td className="p-3">{selectedDetailSubmission.jenisKelamin || '-'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Alamat Wilayah</td>
-                            <td className="p-3">{selectedDetailSubmission.alamatWilayah || '-'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Kontak</td>
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              NIK
+                            </td>
                             <td className="p-3">
-                              {selectedDetailSubmission.noHp ? `HP: ${selectedDetailSubmission.noHp}` : ''}
-                              {selectedDetailSubmission.telepon ? ` | Telp: ${selectedDetailSubmission.telepon}` : ''}
-                              {!selectedDetailSubmission.noHp && !selectedDetailSubmission.telepon ? '-' : ''}
+                              {selectedDetailSubmission.nik || "-"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Tempat, Tanggal Lahir
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.tempatLahir
+                                ? `${selectedDetailSubmission.tempatLahir}, ${selectedDetailSubmission.tanggalLahir ? formatTanggal(selectedDetailSubmission.tanggalLahir) : "-"}`
+                                : "-"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Jenis Kelamin
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.jenisKelamin || "-"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Alamat Wilayah
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.alamatWilayah || "-"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Kontak
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.noHp
+                                ? `HP: ${selectedDetailSubmission.noHp}`
+                                : ""}
+                              {selectedDetailSubmission.telepon
+                                ? ` | Telp: ${selectedDetailSubmission.telepon}`
+                                : ""}
+                              {!selectedDetailSubmission.noHp &&
+                              !selectedDetailSubmission.telepon
+                                ? "-"
+                                : ""}
                             </td>
                           </tr>
                         </tbody>
@@ -681,27 +873,51 @@ export default function PengajuanSkemaPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Data Pekerjaan</h4>
+                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">
+                        Data Pekerjaan
+                      </h4>
                       <table className="w-full border-collapse border border-slate-200 text-sm rounded-lg overflow-hidden">
                         <tbody className="divide-y divide-slate-200">
                           <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">Institusi / Perusahaan</td>
-                            <td className="p-3 font-bold">{selectedDetailSubmission.institusiPerusahaan || '-'}</td>
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">
+                              Institusi / Perusahaan
+                            </td>
+                            <td className="p-3 font-bold">
+                              {selectedDetailSubmission.institusiPerusahaan ||
+                                "-"}
+                            </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Jabatan</td>
-                            <td className="p-3">{selectedDetailSubmission.jabatan || '-'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Alamat Institusi</td>
-                            <td className="p-3">{selectedDetailSubmission.alamatInstitusi || '-'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Kontak Institusi</td>
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Jabatan
+                            </td>
                             <td className="p-3">
-                              {selectedDetailSubmission.kodePosInstitusi ? `Pos: ${selectedDetailSubmission.kodePosInstitusi}` : ''}
-                              {selectedDetailSubmission.faxInstitusi ? ` | Fax: ${selectedDetailSubmission.faxInstitusi}` : ''}
-                              {!selectedDetailSubmission.kodePosInstitusi && !selectedDetailSubmission.faxInstitusi ? '-' : ''}
+                              {selectedDetailSubmission.jabatan || "-"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Alamat Institusi
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.alamatInstitusi || "-"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Kontak Institusi
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.kodePosInstitusi
+                                ? `Pos: ${selectedDetailSubmission.kodePosInstitusi}`
+                                : ""}
+                              {selectedDetailSubmission.faxInstitusi
+                                ? ` | Fax: ${selectedDetailSubmission.faxInstitusi}`
+                                : ""}
+                              {!selectedDetailSubmission.kodePosInstitusi &&
+                              !selectedDetailSubmission.faxInstitusi
+                                ? "-"
+                                : ""}
                             </td>
                           </tr>
                         </tbody>
@@ -709,29 +925,54 @@ export default function PengajuanSkemaPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Detail Pelaksanaan Ujian</h4>
+                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">
+                        Detail Pelaksanaan Ujian
+                      </h4>
                       <table className="w-full border-collapse border border-slate-200 text-sm rounded-lg overflow-hidden">
                         <tbody className="divide-y divide-slate-200">
                           <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">Kode Skema</td>
-                            <td className="p-3 font-mono break-all font-semibold text-slate-600">{selectedDetailSubmission.code}</td>
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold w-1/3">
+                              Kode Skema
+                            </td>
+                            <td className="p-3 font-mono break-all font-semibold text-slate-600">
+                              {selectedDetailSubmission.code}
+                            </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Tanggal Pengajuan</td>
-                            <td className="p-3">{formatTanggal(selectedDetailSubmission.date)}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">TUK</td>
-                            <td className="p-3">{selectedDetailSubmission.tuk || 'Mandiri (Online)'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Penyesuaian Wajar</td>
-                            <td className="p-3">{selectedDetailSubmission.penyesuaianWajar ? 'Ya' : 'Tidak'}</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">Berpengalaman</td>
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Tanggal Pengajuan
+                            </td>
                             <td className="p-3">
-                              {selectedDetailSubmission.berpengalaman ? 'Ya' : 'Belum'}
+                              {formatTanggal(selectedDetailSubmission.date)}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              TUK
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.tuk ||
+                                "Mandiri (Online)"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Penyesuaian Wajar
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.penyesuaianWajar
+                                ? "Ya"
+                                : "Tidak"}
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
+                              Berpengalaman
+                            </td>
+                            <td className="p-3">
+                              {selectedDetailSubmission.berpengalaman
+                                ? "Ya"
+                                : "Belum"}
                             </td>
                           </tr>
                         </tbody>
@@ -739,27 +980,43 @@ export default function PengajuanSkemaPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">Lampiran Dokumen & Persyaratan</h4>
+                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">
+                        Lampiran Dokumen & Persyaratan
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <a href="#" className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm">
+                        <a
+                          href="#"
+                          className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
+                        >
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
                               <BadgeCheck size={20} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors">FR.APL.01 Permohonan Sertifikasi</p>
-                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Lengkap</span>
+                              <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors">
+                                FR.APL.01 Permohonan Sertifikasi
+                              </p>
+                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                                Lengkap
+                              </span>
                             </div>
                           </div>
                         </a>
-                        <a href="#" className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm">
+                        <a
+                          href="#"
+                          className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
+                        >
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
                               <BadgeCheck size={20} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors">FR.APL.02 Asesmen Mandiri</p>
-                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Lengkap</span>
+                              <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors">
+                                FR.APL.02 Asesmen Mandiri
+                              </p>
+                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                                Lengkap
+                              </span>
                             </div>
                           </div>
                         </a>
@@ -769,7 +1026,9 @@ export default function PengajuanSkemaPage() {
 
                   <div className="p-6 md:p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 mt-auto">
                     <button
-                      onClick={() => showAlert(`Simulasi Cetak Bukti Pendaftaran`)}
+                      onClick={() =>
+                        showAlert(`Simulasi Cetak Bukti Pendaftaran`)
+                      }
                       className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm cursor-pointer"
                     >
                       Cetak Bukti
@@ -789,12 +1048,12 @@ export default function PengajuanSkemaPage() {
       )}
 
       {/* VIEW 2: CHOOSE SCHEME */}
-      {subView === 'choose-scheme' && (
+      {subView === "choose-scheme" && (
         <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => setSubView('list')}
+                onClick={() => setSubView("list")}
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
                 title="Kembali"
               >
@@ -833,10 +1092,18 @@ export default function PengajuanSkemaPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">Kode Skema</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-36 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 top-0">Ajukan</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">
+                      No
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">
+                      Skema Sertifikasi
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                      Kode Skema
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-36 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 top-0">
+                      Ajukan
+                    </th>
                   </tr>
                 </thead>
 
@@ -852,18 +1119,19 @@ export default function PengajuanSkemaPage() {
                               setExpandedSchemes((prev) =>
                                 prev.includes(schemeKey)
                                   ? prev.filter((c) => c !== schemeKey)
-                                  : [...prev, schemeKey]
+                                  : [...prev, schemeKey],
                               );
                             }}
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                  ? 'bg-[#008BE3]/10 text-[#008BE3]'
-                                  : idx % 3 === 1
-                                    ? 'bg-[#84CC16]/10 text-[#73B412]'
-                                    : 'bg-slate-100 text-slate-600'
-                                  }`}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                    : idx % 3 === 1
+                                      ? "bg-[#84CC16]/10 text-[#73B412]"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
                               >
                                 {idx + 1}
                               </div>
@@ -879,7 +1147,7 @@ export default function PengajuanSkemaPage() {
                                   strokeWidth="2.5"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  className={`transition-transform duration-200 ${expandedSchemes.includes(schemeKey) ? 'rotate-90' : ''}`}
+                                  className={`transition-transform duration-200 ${expandedSchemes.includes(schemeKey) ? "rotate-90" : ""}`}
                                 >
                                   <path d="M9 18l6-6-6-6" />
                                 </svg>
@@ -888,13 +1156,15 @@ export default function PengajuanSkemaPage() {
                                 {scheme.name}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-gray-400 font-mono text-xs">{scheme.code}</td>
+                            <td className="px-6 py-4 text-gray-400 font-mono text-xs">
+                              {scheme.code}
+                            </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedScheme(scheme);
-                                  setSubView('apply-form');
+                                  setSubView("apply-form");
                                   setStep(1);
                                 }}
                                 className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer"
@@ -909,15 +1179,29 @@ export default function PengajuanSkemaPage() {
                                 <div className="pl-10">
                                   <table className="w-full border-collapse text-xs text-slate-600 font-medium">
                                     <tbody>
-                                      {(scheme.units ?? []).map((unit, unitIdx) => (
-                                        <tr key={`${unit.code}-${unitIdx}`} className="border-b border-slate-100 last:border-0">
-                                          <td className="py-2 font-mono text-slate-500 w-32">{unit.code}</td>
-                                          <td className="py-2">{unit.title}</td>
-                                        </tr>
-                                      ))}
+                                      {(scheme.units ?? []).map(
+                                        (unit, unitIdx) => (
+                                          <tr
+                                            key={`${unit.code}-${unitIdx}`}
+                                            className="border-b border-slate-100 last:border-0"
+                                          >
+                                            <td className="py-2 font-mono text-slate-500 w-32">
+                                              {unit.code}
+                                            </td>
+                                            <td className="py-2">
+                                              {unit.title}
+                                            </td>
+                                          </tr>
+                                        ),
+                                      )}
                                       {!scheme.units?.length && (
                                         <tr>
-                                          <td colSpan={2} className="py-2 italic text-slate-400">Tidak ada unit.</td>
+                                          <td
+                                            colSpan={2}
+                                            className="py-2 italic text-slate-400"
+                                          >
+                                            Tidak ada unit.
+                                          </td>
                                         </tr>
                                       )}
                                     </tbody>
@@ -931,7 +1215,10 @@ export default function PengajuanSkemaPage() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-400 font-medium">
+                      <td
+                        colSpan={4}
+                        className="px-6 py-8 text-center text-gray-400 font-medium"
+                      >
                         Tidak ada skema sertifikasi yang ditemukan.
                       </td>
                     </tr>
@@ -953,10 +1240,11 @@ export default function PengajuanSkemaPage() {
                   <button
                     key={idx}
                     onClick={() => setSchemePage(idx + 1)}
-                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${schemePage === idx + 1
-                      ? 'bg-[#008BE3] text-white'
-                      : 'border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
-                      }`}
+                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${
+                      schemePage === idx + 1
+                        ? "bg-[#008BE3] text-white"
+                        : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
+                    }`}
                   >
                     {idx + 1}
                   </button>
@@ -989,13 +1277,13 @@ export default function PengajuanSkemaPage() {
       )}
 
       {/* VIEW 3: MULTI-STEP FORM (APPLY FORM) */}
-      {subView === 'apply-form' && !activeModalDoc && (
+      {subView === "apply-form" && !activeModalDoc && (
         <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-start sm:items-center gap-3">
                 <button
-                  onClick={() => handleExitRequest('choose-scheme')}
+                  onClick={() => handleExitRequest("choose-scheme")}
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-1 sm:mt-0"
                   title="Kembali ke Daftar Skema"
                 >
@@ -1018,7 +1306,13 @@ export default function PengajuanSkemaPage() {
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 md:p-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-200 mb-6 pb-2 lg:pb-0 gap-4">
               <div className="flex items-center gap-1 overflow-x-auto pb-px scrollbar-thin">
-                {['Data Pribadi', 'Persyaratan Dasar', 'Bukti Administratif', 'Bukti Kompetensi', 'Persyaratan Pendaftaran'].map((tabLabel, idx) => {
+                {[
+                  "Data Pribadi",
+                  "Persyaratan Dasar",
+                  "Bukti Administratif",
+                  "Bukti Kompetensi",
+                  "Persyaratan Pendaftaran",
+                ].map((tabLabel, idx) => {
                   const tabStep = idx + 1;
                   const isActive = step === tabStep;
                   return (
@@ -1027,37 +1321,66 @@ export default function PengajuanSkemaPage() {
                       onClick={() => {
                         if (step === 1 && tabStep > 1) {
                           const newErrors: Step1Errors = {
-                            tempatLahir: tempatLahir.trim() === '',
-                            provinsi: provinsi === '',
-                            kota: kota === '',
-                            alamat: alamat.trim() === '',
-                            nik: nik.trim() === '',
-                            kodePos: kodePos.trim() === '',
-                            tuk: tuk === '',
+                            tempatLahir: tempatLahir.trim() === "",
+                            provinsi: provinsi === "",
+                            kota: kota === "",
+                            alamat: alamat.trim() === "",
+                            nik: nik.trim() === "",
+                            kodePos: kodePos.trim() === "",
+                            tuk: tuk === "",
                           };
                           setErrors(newErrors);
-                          if (!newErrors.tempatLahir && !newErrors.provinsi && !newErrors.kota && !newErrors.alamat && !newErrors.nik && !newErrors.kodePos && !newErrors.tuk) {
+                          if (
+                            !newErrors.tempatLahir &&
+                            !newErrors.provinsi &&
+                            !newErrors.kota &&
+                            !newErrors.alamat &&
+                            !newErrors.nik &&
+                            !newErrors.kodePos &&
+                            !newErrors.tuk
+                          ) {
                             setStep(tabStep);
-                            if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: 'smooth' });
+                            if (window.innerWidth < 1024)
+                              window.scrollTo({ top: 0, behavior: "smooth" });
                           }
                         } else if (step === 2 && tabStep > 2) {
-                          const reqs = (selectedScheme as Scheme)?.persyaratanDasar || [];
-                          const valid = reqs.every((req: SchemeRequirementItem) => eFormData[typeof req === 'string' ? req : req.name]);
+                          const reqs =
+                            (selectedScheme as Scheme)?.persyaratanDasar || [];
+                          const valid = reqs.every(
+                            (req: SchemeRequirementItem) =>
+                              eFormData[
+                                typeof req === "string" ? req : req.name
+                              ],
+                          );
                           if (!valid) setShowStep2Errors(true);
-                          else { setShowStep2Errors(false); setStep(tabStep); }
+                          else {
+                            setShowStep2Errors(false);
+                            setStep(tabStep);
+                          }
                         } else if (step === 3 && tabStep > 3) {
-                          const reqs = (selectedScheme as Scheme)?.buktiAdministratif || [];
-                          const valid = reqs.every((req: SchemeRequirementItem) => eFormData[typeof req === 'string' ? req : req.name]);
+                          const reqs =
+                            (selectedScheme as Scheme)?.buktiAdministratif ||
+                            [];
+                          const valid = reqs.every(
+                            (req: SchemeRequirementItem) =>
+                              eFormData[
+                                typeof req === "string" ? req : req.name
+                              ],
+                          );
                           if (!valid) setShowStep3Errors(true);
-                          else { setShowStep3Errors(false); setStep(tabStep); }
+                          else {
+                            setShowStep3Errors(false);
+                            setStep(tabStep);
+                          }
                         } else {
                           setStep(tabStep);
                         }
                       }}
-                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${isActive
-                        ? 'border-[#008BE3] text-[#008BE3] bg-sky-50/40'
-                        : 'border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50'
-                        }`}
+                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
+                        isActive
+                          ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
+                          : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
+                      }`}
                     >
                       {tabLabel}
                     </button>
@@ -1069,33 +1392,100 @@ export default function PengajuanSkemaPage() {
             {step === 1 && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div className="border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Data Pribadi</h3>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                    Data Pribadi
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Nama Lengkap</label>
-                    <input type="text" value={namaLengkap} onChange={(e) => setNamaLengkap(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-[#008BE3] font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Nama Lengkap
+                    </label>
+                    <input
+                      type="text"
+                      value={namaLengkap}
+                      onChange={(e) => setNamaLengkap(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-[#008BE3] font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Tempat Lahir</label>
-                    <input type="text" value={tempatLahir} onChange={(e) => { setTempatLahir(e.target.value); if (errors.tempatLahir) setErrors({ ...errors, tempatLahir: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.tempatLahir ? 'border-red-400 bg-red-50/10 focus:border-red-500' : 'border-slate-300 focus:border-[#008BE3]'}`} />
-                    {errors.tempatLahir ? <p className="text-[10px] text-red-500 mt-1 font-bold">Masukkan tempat lahir</p> : <p className="text-[10px] text-slate-400 mt-1 font-medium">Masukkan tempat lahir</p>}
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Tempat Lahir
+                    </label>
+                    <input
+                      type="text"
+                      value={tempatLahir}
+                      onChange={(e) => {
+                        setTempatLahir(e.target.value);
+                        if (errors.tempatLahir)
+                          setErrors({ ...errors, tempatLahir: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.tempatLahir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                    />
+                    {errors.tempatLahir ? (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Masukkan tempat lahir
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                        Masukkan tempat lahir
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Tanggal Lahir</label>
-                    <input type="date" value={tanggalLahir} onChange={(e) => setTanggalLahir(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Tanggal Lahir
+                    </label>
+                    <input
+                      type="date"
+                      value={tanggalLahir}
+                      onChange={(e) => setTanggalLahir(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Jenis Kelamin</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Jenis Kelamin
+                    </label>
                     <div className="flex items-center gap-6 py-2">
-                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700"><input type="radio" name="jenisKelamin" value="Laki-laki" checked={jenisKelamin === 'Laki-laki'} onChange={() => setJenisKelamin('Laki-laki')} className="text-[#008BE3] w-4 h-4 cursor-pointer" /> Laki-laki</label>
-                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700"><input type="radio" name="jenisKelamin" value="Perempuan" checked={jenisKelamin === 'Perempuan'} onChange={() => setJenisKelamin('Perempuan')} className="text-[#008BE3] w-4 h-4 cursor-pointer" /> Perempuan</label>
+                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
+                        <input
+                          type="radio"
+                          name="jenisKelamin"
+                          value="Laki-laki"
+                          checked={jenisKelamin === "Laki-laki"}
+                          onChange={() => setJenisKelamin("Laki-laki")}
+                          className="text-[#008BE3] w-4 h-4 cursor-pointer"
+                        />{" "}
+                        Laki-laki
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
+                        <input
+                          type="radio"
+                          name="jenisKelamin"
+                          value="Perempuan"
+                          checked={jenisKelamin === "Perempuan"}
+                          onChange={() => setJenisKelamin("Perempuan")}
+                          className="text-[#008BE3] w-4 h-4 cursor-pointer"
+                        />{" "}
+                        Perempuan
+                      </label>
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Provinsi</label>
-                    <select value={provinsi} onChange={(e) => { setProvinsi(e.target.value); if (errors.provinsi) setErrors({ ...errors, provinsi: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi ? 'border-red-400 bg-red-50/10 focus:border-red-500' : 'border-slate-300 focus:border-[#008BE3] bg-white'} cursor-pointer`}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Provinsi
+                    </label>
+                    <select
+                      value={provinsi}
+                      onChange={(e) => {
+                        setProvinsi(e.target.value);
+                        if (errors.provinsi)
+                          setErrors({ ...errors, provinsi: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"} cursor-pointer`}
+                    >
                       <option value="">Pilih Provinsi</option>
                       <option value="DKI Jakarta">DKI Jakarta</option>
                       <option value="Jawa Barat">Jawa Barat</option>
@@ -1103,143 +1493,347 @@ export default function PengajuanSkemaPage() {
                       <option value="Jawa Timur">Jawa Timur</option>
                       <option value="Banten">Banten</option>
                     </select>
-                    {errors.provinsi && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih provinsi</p>}
+                    {errors.provinsi && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih provinsi
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Kota / Kabupaten</label>
-                    <select value={kota} onChange={(e) => { setKota(e.target.value); if (errors.kota) setErrors({ ...errors, kota: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kota ? 'border-red-400 bg-red-50/10 focus:border-red-500' : 'border-slate-300 focus:border-[#008BE3] bg-white'} cursor-pointer`}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Kota / Kabupaten
+                    </label>
+                    <select
+                      value={kota}
+                      onChange={(e) => {
+                        setKota(e.target.value);
+                        if (errors.kota) setErrors({ ...errors, kota: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kota ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"} cursor-pointer`}
+                    >
                       <option value="">Pilih Kota/Kabupaten</option>
                       <option value="Kota Bandung">Kota Bandung</option>
-                      <option value="Kabupaten Bandung">Kabupaten Bandung</option>
+                      <option value="Kabupaten Bandung">
+                        Kabupaten Bandung
+                      </option>
                       <option value="Kota Cimahi">Kota Cimahi</option>
-                      <option value="Kota Jakarta Selatan">Kota Jakarta Selatan</option>
+                      <option value="Kota Jakarta Selatan">
+                        Kota Jakarta Selatan
+                      </option>
                     </select>
-                    {errors.kota && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih kota/kabupaten</p>}
+                    {errors.kota && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih kota/kabupaten
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="min-w-0 mt-6">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Alamat Lengkap Rumah (Jalan, RT/RW, Kel/Desa, Kec)</label>
-                  <textarea value={alamat} onChange={(e) => { setAlamat(e.target.value); if (errors.alamat) setErrors({ ...errors, alamat: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-20 resize-none ${errors.alamat ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}></textarea>
-                  {errors.alamat && <p className="text-[10px] text-red-500 mt-1 font-bold">Alamat Tidak Boleh Kosong</p>}
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Alamat Lengkap Rumah
+                    (Jalan, RT/RW, Kel/Desa, Kec)
+                  </label>
+                  <textarea
+                    value={alamat}
+                    onChange={(e) => {
+                      setAlamat(e.target.value);
+                      if (errors.alamat)
+                        setErrors({ ...errors, alamat: false });
+                    }}
+                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-20 resize-none ${errors.alamat ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                  ></textarea>
+                  {errors.alamat && (
+                    <p className="text-[10px] text-red-500 mt-1 font-bold">
+                      Alamat Tidak Boleh Kosong
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> NIK</label>
-                    <input type="text" value={nik} onChange={(e) => { setNik(e.target.value.replace(/[^0-9]/g, '')); if (errors.nik) setErrors({ ...errors, nik: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.nik ? 'border-red-400 bg-red-50/10 focus:border-red-500' : 'border-slate-300 focus:border-[#008BE3]'}`} />
-                    {errors.nik ? <p className="text-[10px] text-red-500 mt-1 font-bold">Nik tidak boleh kosong</p> : <p className="text-[10px] text-slate-400 mt-1 font-medium">Masukkan NIK</p>}
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> NIK
+                    </label>
+                    <input
+                      type="text"
+                      value={nik}
+                      onChange={(e) => {
+                        setNik(e.target.value.replace(/[^0-9]/g, ""));
+                        if (errors.nik) setErrors({ ...errors, nik: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.nik ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                    />
+                    {errors.nik ? (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Nik tidak boleh kosong
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                        Masukkan NIK
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Kebangsaan</label>
-                    <select value={kebangsaan} onChange={(e) => setKebangsaan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Kebangsaan
+                    </label>
+                    <select
+                      value={kebangsaan}
+                      onChange={(e) => setKebangsaan(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
+                    >
                       <option value="WNI">WNI</option>
                       <option value="WNA">WNA</option>
                     </select>
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Kode POS</label>
-                    <input type="text" value={kodePos} onChange={(e) => { setKodePos(e.target.value.replace(/[^0-9]/g, '')); if (errors.kodePos) setErrors({ ...errors, kodePos: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kodePos ? 'border-red-400 bg-red-50/10 focus:border-red-500' : 'border-slate-300 focus:border-[#008BE3]'}`} />
-                    {errors.kodePos ? <p className="text-[10px] text-red-500 mt-1 font-bold">Masukkan kode pos</p> : <p className="text-[10px] text-slate-400 mt-1 font-medium">Masukkan kode pos</p>}
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Kode POS
+                    </label>
+                    <input
+                      type="text"
+                      value={kodePos}
+                      onChange={(e) => {
+                        setKodePos(e.target.value.replace(/[^0-9]/g, ""));
+                        if (errors.kodePos)
+                          setErrors({ ...errors, kodePos: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kodePos ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                    />
+                    {errors.kodePos ? (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Masukkan kode pos
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                        Masukkan kode pos
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> No HP / Telepon</label>
-                    <input type="text" value={noTelp} onChange={(e) => setNoTelp(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> No HP / Telepon
+                    </label>
+                    <input
+                      type="text"
+                      value={noTelp}
+                      onChange={(e) =>
+                        setNoTelp(e.target.value.replace(/[^0-9]/g, ""))
+                      }
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                 </div>
 
                 <div className="relative flex py-2 items-center">
                   <div className="grow border-t border-slate-200"></div>
-                  <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Detail Pendidikan</span>
+                  <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">
+                    Detail Pendidikan
+                  </span>
                   <div className="grow border-t border-slate-200"></div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Pendidikan Terakhir</label>
-                    <select value={pendidikanTerakhir} onChange={(e) => setPendidikanTerakhir(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer">
-                      {getPendidikanOptions(selectedScheme).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Pendidikan
+                      Terakhir
+                    </label>
+                    <select
+                      value={pendidikanTerakhir}
+                      onChange={(e) => setPendidikanTerakhir(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
+                    >
+                      {getPendidikanOptions(selectedScheme).map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
                 <div className="relative flex py-2 items-center">
                   <div className="grow border-t border-slate-200"></div>
-                  <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Detail Pekerjaan</span>
+                  <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">
+                    Detail Pekerjaan
+                  </span>
                   <div className="grow border-t border-slate-200"></div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Pekerjaan</label>
-                    <select value={pekerjaan} onChange={(e) => setPekerjaan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer">
-                      <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Pekerjaan
+                    </label>
+                    <select
+                      value={pekerjaan}
+                      onChange={(e) => setPekerjaan(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
+                    >
+                      <option value="Pelajar/Mahasiswa">
+                        Pelajar/Mahasiswa
+                      </option>
                       <option value="PNS">PNS</option>
                       <option value="Swasta">Swasta</option>
                       <option value="Lainnya">Lainnya</option>
                     </select>
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Institusi/Perusahaan</label>
-                    <input type="text" value={institusiPerusahaan} onChange={(e) => setInstitusiPerusahaan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span>{" "}
+                      Institusi/Perusahaan
+                    </label>
+                    <input
+                      type="text"
+                      value={institusiPerusahaan}
+                      onChange={(e) => setInstitusiPerusahaan(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Jabatan</label>
-                    <input type="text" value={jabatan} onChange={(e) => setJabatan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Jabatan
+                    </label>
+                    <input
+                      type="text"
+                      value={jabatan}
+                      onChange={(e) => setJabatan(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Email Institusi/Perusahaan</label>
-                    <input type="email" value={emailInstitusi} onChange={(e) => setEmailInstitusi(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Email
+                      Institusi/Perusahaan
+                    </label>
+                    <input
+                      type="email"
+                      value={emailInstitusi}
+                      onChange={(e) => setEmailInstitusi(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Kode Pos Institusi/Perusahaan</label>
-                    <input type="text" value={kodePosInstitusi} onChange={(e) => setKodePosInstitusi(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Kode Pos Institusi/Perusahaan
+                    </label>
+                    <input
+                      type="text"
+                      value={kodePosInstitusi}
+                      onChange={(e) =>
+                        setKodePosInstitusi(
+                          e.target.value.replace(/[^0-9]/g, ""),
+                        )
+                      }
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> No Telepon Institusi</label>
-                    <input type="text" value={telpInstitusi} onChange={(e) => setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> No Telepon
+                      Institusi
+                    </label>
+                    <input
+                      type="text"
+                      value={telpInstitusi}
+                      onChange={(e) =>
+                        setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ""))
+                      }
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Alamat Institusi/Perusahaan</label>
-                    <textarea value={alamatInstitusi} onChange={(e) => setAlamatInstitusi(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 h-9.5 resize-none" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Alamat
+                      Institusi/Perusahaan
+                    </label>
+                    <textarea
+                      value={alamatInstitusi}
+                      onChange={(e) => setAlamatInstitusi(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 h-9.5 resize-none"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Fax Institusi/Perusahaan</label>
-                    <input type="text" value={faxInstitusi} onChange={(e) => setFaxInstitusi(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Fax Institusi/Perusahaan
+                    </label>
+                    <input
+                      type="text"
+                      value={faxInstitusi}
+                      onChange={(e) =>
+                        setFaxInstitusi(e.target.value.replace(/[^0-9]/g, ""))
+                      }
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                    />
                   </div>
                 </div>
 
                 <div className="relative flex py-2 items-center">
                   <div className="grow border-t border-slate-200"></div>
-                  <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">Lainnya</span>
+                  <span className="shrink mx-4 text-xs font-black text-slate-800 uppercase tracking-wider">
+                    Lainnya
+                  </span>
                   <div className="grow border-t border-slate-200"></div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> TUK</label>
-                    <select value={tuk} onChange={(e) => { setTuk(e.target.value); if (errors.tuk) setErrors({ ...errors, tuk: false }); }} className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk ? 'border-red-400 bg-red-50/10 focus:border-red-500' : 'border-slate-300 focus:border-[#008BE3] bg-white'}`}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> TUK
+                    </label>
+                    <select
+                      value={tuk}
+                      onChange={(e) => {
+                        setTuk(e.target.value);
+                        if (errors.tuk) setErrors({ ...errors, tuk: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                    >
                       <option value="">Pilih TUK</option>
                       <option value="Mandiri (Online)">Mandiri (Online)</option>
                       <option value="Sewaktu">Sewaktu</option>
                     </select>
-                    {errors.tuk && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih TUK</p>}
+                    {errors.tuk && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih TUK
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-full">
                     <label className="flex items-start gap-3 cursor-pointer p-4 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
-                      <input type="checkbox" checked={penyesuaianWajar} onChange={(e) => setPenyesuaianWajar(e.target.checked)} className="mt-0.5 w-4 h-4 text-[#008BE3] rounded border-slate-300 cursor-pointer" />
+                      <input
+                        type="checkbox"
+                        checked={penyesuaianWajar}
+                        onChange={(e) => setPenyesuaianWajar(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 text-[#008BE3] rounded border-slate-300 cursor-pointer"
+                      />
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-800">Memerlukan Penyesuaian Wajar (FR.AK.07)</p>
-                        <p className="text-[11px] text-slate-500 mt-1">Centang jika Anda memiliki kondisi tertentu yang memerlukan penyesuaian saat asesmen.</p>
+                        <p className="text-xs font-bold text-slate-800">
+                          Memerlukan Penyesuaian Wajar (FR.AK.07)
+                        </p>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Centang jika Anda memiliki kondisi tertentu yang
+                          memerlukan penyesuaian saat asesmen.
+                        </p>
                       </div>
                     </label>
                   </div>
 
                   <div className="col-span-full flex flex-col gap-2">
-                    <label className="block text-xs font-bold text-slate-700">Berpengalaman pada Skema yang Diajukan</label>
-                    <button type="button" onClick={() => setBerpengalaman(!berpengalaman)} className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${berpengalaman ? 'bg-[#005C46]' : 'bg-slate-200'}`}>
-                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${berpengalaman ? 'translate-x-5' : 'translate-x-0'}`} />
+                    <label className="block text-xs font-bold text-slate-700">
+                      Berpengalaman pada Skema yang Diajukan
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setBerpengalaman(!berpengalaman)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${berpengalaman ? "bg-[#005C46]" : "bg-slate-200"}`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${berpengalaman ? "translate-x-5" : "translate-x-0"}`}
+                      />
                     </button>
                   </div>
                 </div>
@@ -1248,14 +1842,29 @@ export default function PengajuanSkemaPage() {
 
             {step === 2 && (
               <FormDocumentTable
-                onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) ?? ({} as Record<string, unknown>)); }}
+                onAction={(doc: ActiveModalDoc) => {
+                  setActiveModalDoc(doc);
+                  if (doc.isEForm && doc.name)
+                    setTempEFormData(
+                      (eFormData[doc.name] as
+                        | Record<string, unknown>
+                        | undefined) ?? ({} as Record<string, unknown>),
+                    );
+                }}
                 title="Persyaratan Dasar"
                 infoText="File Persyaratan Dasar akan ditampilkan pada Form APL - 01"
-                documents={((selectedScheme as Scheme)?.persyaratanDasar || []).map((req: SchemeRequirementItem) => ({
+                documents={(
+                  (selectedScheme as Scheme)?.persyaratanDasar || []
+                ).map((req: SchemeRequirementItem) => ({
                   required: true,
-                  name: typeof req === 'string' ? req : req.name,
-                  description: typeof req === 'string' ? '' : ('description' in req ? req.description : ''),
-                  type: 'File Upload'
+                  name: typeof req === "string" ? req : req.name,
+                  description:
+                    typeof req === "string"
+                      ? ""
+                      : "description" in req
+                        ? req.description
+                        : "",
+                  type: "File Upload",
                 }))}
                 eFormData={eFormData}
                 showErrors={showStep2Errors}
@@ -1264,13 +1873,23 @@ export default function PengajuanSkemaPage() {
 
             {step === 3 && (
               <FormDocumentTable
-                onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) || ({} as Record<string, unknown>)); }}
+                onAction={(doc: ActiveModalDoc) => {
+                  setActiveModalDoc(doc);
+                  if (doc.isEForm && doc.name)
+                    setTempEFormData(
+                      (eFormData[doc.name] as
+                        | Record<string, unknown>
+                        | undefined) || ({} as Record<string, unknown>),
+                    );
+                }}
                 title="Bukti Administratif"
                 infoText="File Bukti Administratif akan ditampilkan pada Form APL - 01"
-                documents={((selectedScheme as Scheme)?.buktiAdministratif || []).map((req: SchemeRequirementItem) => ({
+                documents={(
+                  (selectedScheme as Scheme)?.buktiAdministratif || []
+                ).map((req: SchemeRequirementItem) => ({
                   required: true,
-                  name: typeof req === 'string' ? req : req.name,
-                  type: 'File Upload'
+                  name: typeof req === "string" ? req : req.name,
+                  type: "File Upload",
                 }))}
                 eFormData={eFormData}
                 showErrors={showStep3Errors}
@@ -1279,19 +1898,31 @@ export default function PengajuanSkemaPage() {
 
             {step === 4 && (
               <FormKompetensiTable
-                onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) || ({} as Record<string, unknown>)); }}
+                onAction={(doc: ActiveModalDoc) => {
+                  setActiveModalDoc(doc);
+                  if (doc.isEForm && doc.name)
+                    setTempEFormData(
+                      (eFormData[doc.name] as
+                        | Record<string, unknown>
+                        | undefined) || ({} as Record<string, unknown>),
+                    );
+                }}
                 eFormData={eFormData}
                 title="Bukti Kompetensi"
                 infoText="File Bukti Kompetensi akan ditampilkan pada Form APL - 02"
-                kompetensiList={((selectedScheme as Scheme)?.units || []).flatMap((unit: SchemeUnit, uIdx: number) =>
-                  (unit.elemen || []).map((el: { title: string; kuk: string[] }, eIdx: number) => ({
-                    id: `u${uIdx}e${eIdx}`,
-                    unitTitle: unit.title,
-                    unitCode: unit.code,
-                    elemen: el.title,
-                    kuk: el.kuk || [],
-                    idx: eIdx + 1
-                  }))
+                kompetensiList={(
+                  (selectedScheme as Scheme)?.units || []
+                ).flatMap((unit: SchemeUnit, uIdx: number) =>
+                  (unit.elemen || []).map(
+                    (el: { title: string; kuk: string[] }, eIdx: number) => ({
+                      id: `u${uIdx}e${eIdx}`,
+                      unitTitle: unit.title,
+                      unitCode: unit.code,
+                      elemen: el.title,
+                      kuk: el.kuk || [],
+                      idx: eIdx + 1,
+                    }),
+                  ),
                 )}
               />
             )}
@@ -1299,22 +1930,49 @@ export default function PengajuanSkemaPage() {
             {step === 5 && (
               <div className="space-y-4">
                 <FormDocumentTable
-                  onAction={(doc: ActiveModalDoc) => { setActiveModalDoc(doc); if (doc.isEForm && doc.name) setTempEFormData((eFormData[doc.name] as Record<string, unknown> | undefined) || ({} as Record<string, unknown>)); }}
+                  onAction={(doc: ActiveModalDoc) => {
+                    setActiveModalDoc(doc);
+                    if (doc.isEForm && doc.name)
+                      setTempEFormData(
+                        (eFormData[doc.name] as
+                          | Record<string, unknown>
+                          | undefined) || ({} as Record<string, unknown>),
+                      );
+                  }}
                   title="Persyaratan Pendaftaran"
                   infoText="Lengkapi formulir permohonan sertifikasi mandiri di bawah ini"
                   documents={[
-                    { required: true, name: '01. FR.APL.01 Permohonan Sertifikasi', type: 'E-Form', isEForm: true },
-                    { required: true, name: '02. FR.APL.02 Asesmen Mandiri', type: 'E-Form', isEForm: true },
+                    {
+                      required: true,
+                      name: "01. FR.APL.01 Permohonan Sertifikasi",
+                      type: "E-Form",
+                      isEForm: true,
+                    },
+                    {
+                      required: true,
+                      name: "02. FR.APL.02 Asesmen Mandiri",
+                      type: "E-Form",
+                      isEForm: true,
+                    },
                   ]}
                   eFormData={eFormData}
                 />
 
-                {(!eFormData['01. FR.APL.01 Permohonan Sertifikasi'] || !eFormData['02. FR.APL.02 Asesmen Mandiri']) && (
+                {(!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
+                  !eFormData["02. FR.APL.02 Asesmen Mandiri"]) && (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
-                    <AlertTriangle size={16} className="shrink-0 text-amber-500 mt-0.5" />
+                    <AlertTriangle
+                      size={16}
+                      className="shrink-0 text-amber-500 mt-0.5"
+                    />
                     <div className="min-w-0">
                       <span className="font-bold block mb-1">Perhatian</span>
-                      Anda harus mengisi dan menyimpan (<span className="font-semibold text-amber-900">Simpan Data</span>) kedua E-Form di atas sebelum dapat men-submit pengajuan skema ini.
+                      Anda harus mengisi dan menyimpan (
+                      <span className="font-semibold text-amber-900">
+                        Simpan Data
+                      </span>
+                      ) kedua E-Form di atas sebelum dapat men-submit pengajuan
+                      skema ini.
                     </div>
                   </div>
                 )}
@@ -1324,13 +1982,20 @@ export default function PengajuanSkemaPage() {
             <div className="mt-6 flex justify-end border-t border-slate-200 pt-4">
               <button
                 onClick={handleNext}
-                disabled={step === 5 && (!eFormData['01. FR.APL.01 Permohonan Sertifikasi'] || !eFormData['02. FR.APL.02 Asesmen Mandiri'])}
-                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${step === 5 && (!eFormData['01. FR.APL.01 Permohonan Sertifikasi'] || !eFormData['02. FR.APL.02 Asesmen Mandiri'])
-                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                  : 'bg-[#008BE3] hover:bg-[#0076C2] text-white'
-                  }`}
+                disabled={
+                  step === 5 &&
+                  (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
+                    !eFormData["02. FR.APL.02 Asesmen Mandiri"])
+                }
+                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${
+                  step === 5 &&
+                  (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
+                    !eFormData["02. FR.APL.02 Asesmen Mandiri"])
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
+                }`}
               >
-                {step === 5 ? 'Ajukan' : 'Selanjutnya'}
+                {step === 5 ? "Ajukan" : "Selanjutnya"}
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -1353,30 +2018,38 @@ export default function PengajuanSkemaPage() {
             </div>
 
             <div className="max-w-[1000px] mx-auto bg-white shadow-xl p-8 md:p-12 min-h-[800px] space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
-              {activeModalDoc?.name?.includes('APL.01') ? (
+              {activeModalDoc?.name?.includes("APL.01") ? (
                 <EFormApl01
                   formData={{
-                    namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, alamat: alamatWilayah, nik,
-                    pendidikanTerakhir, institusiPerusahaan, jabatan,
-                    skema: selectedScheme?.name || '',
-                    nomorSkema: selectedScheme?.code || '',
+                    namaLengkap,
+                    tempatLahir,
+                    tanggalLahir,
+                    jenisKelamin,
+                    alamat: alamatWilayah,
+                    nik,
+                    pendidikanTerakhir,
+                    institusiPerusahaan,
+                    jabatan,
+                    skema: selectedScheme?.name || "",
+                    nomorSkema: selectedScheme?.code || "",
                     schemeDetail: selectedScheme || undefined,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
-                    ...(tempEFormData || {})
+                    ...(tempEFormData || {}),
                   }}
                   onChange={(val) => setTempEFormData(val)}
                 />
-              ) : activeModalDoc?.name?.includes('APL.02') ? (
-                <EFormApl02 allData={eFormData as Record<string, File | string>}
+              ) : activeModalDoc?.name?.includes("APL.02") ? (
+                <EFormApl02
+                  allData={eFormData as Record<string, File | string>}
                   formData={{
                     namaLengkap,
-                    skema: selectedScheme?.name || '',
-                    nomorSkema: selectedScheme?.code || '',
+                    skema: selectedScheme?.name || "",
+                    nomorSkema: selectedScheme?.code || "",
                     schemeDetail: selectedScheme || undefined,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
-                    ...(tempEFormData || {})
+                    ...(tempEFormData || {}),
                   }}
                   onChange={(val) => setTempEFormData(val)}
                 />
@@ -1391,8 +2064,15 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <textarea
                       className="w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:border-[#008BE3] min-h-[100px]"
-                      value={(eFormData[activeModalDoc?.name ?? ''] as string) || ''}
-                      onChange={(e) => setEFormData({ ...eFormData, [activeModalDoc?.name ?? '']: e.target.value })}
+                      value={
+                        (eFormData[activeModalDoc?.name ?? ""] as string) || ""
+                      }
+                      onChange={(e) =>
+                        setEFormData({
+                          ...eFormData,
+                          [activeModalDoc?.name ?? ""]: e.target.value,
+                        })
+                      }
                     ></textarea>
                   </div>
                 </>
@@ -1407,40 +2087,68 @@ export default function PengajuanSkemaPage() {
                 }}
                 className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                {activeModalDoc?.isPreview ? 'Tutup' : 'Batal'}
+                {activeModalDoc?.isPreview ? "Tutup" : "Batal"}
               </button>
               {!activeModalDoc?.isPreview && (
                 <button
                   onClick={() => {
-                    if (activeModalDoc?.name?.includes('APL.01')) {
+                    if (activeModalDoc?.name?.includes("APL.01")) {
                       if (!tempEFormData.tujuan) {
-                        showAlert('Harap isi Tujuan Asesmen');
-                        window.dispatchEvent(new CustomEvent('scroll-to-apl01-error'));
+                        showAlert("Harap isi Tujuan Asesmen");
+                        window.dispatchEvent(
+                          new CustomEvent("scroll-to-apl01-error"),
+                        );
                         return;
                       }
-                    } else if (activeModalDoc?.name?.includes('APL.02')) {
+                    } else if (activeModalDoc?.name?.includes("APL.02")) {
                       let firstUnfilled: string | null = null;
-                      const elements: string[] = selectedScheme?.units?.flatMap((u: SchemeUnit, uIdx: number) =>
-                        (u.elemen || []).map((e: { title: string; kuk: string[] }, eIdx: number) => {
-                          const key = `u${uIdx}e${eIdx}`;
-                          if (!(tempEFormData.kompetensi as Record<string, unknown>)?.[key] && !firstUnfilled) {
-                            firstUnfilled = key;
-                          }
-                          return key;
-                        })
-                      ) || [];
-                      const isAllChecked: boolean = elements.every((k: string) => (tempEFormData.kompetensi as Record<string, unknown>)?.[k]);
+                      const elements: string[] =
+                        selectedScheme?.units?.flatMap(
+                          (u: SchemeUnit, uIdx: number) =>
+                            (u.elemen || []).map(
+                              (
+                                e: { title: string; kuk: string[] },
+                                eIdx: number,
+                              ) => {
+                                const key = `u${uIdx}e${eIdx}`;
+                                if (
+                                  !(
+                                    tempEFormData.kompetensi as Record<
+                                      string,
+                                      unknown
+                                    >
+                                  )?.[key] &&
+                                  !firstUnfilled
+                                ) {
+                                  firstUnfilled = key;
+                                }
+                                return key;
+                              },
+                            ),
+                        ) || [];
+                      const isAllChecked: boolean = elements.every(
+                        (k: string) =>
+                          (
+                            tempEFormData.kompetensi as Record<string, unknown>
+                          )?.[k],
+                      );
                       if (!isAllChecked) {
-                        showAlert('Harap beri tanda K atau BK pada seluruh kriteria!');
+                        showAlert(
+                          "Harap beri tanda K atau BK pada seluruh kriteria!",
+                        );
                         if (firstUnfilled) {
-                          window.dispatchEvent(new CustomEvent('scroll-to-unfilled', { detail: firstUnfilled }));
+                          window.dispatchEvent(
+                            new CustomEvent("scroll-to-unfilled", {
+                              detail: firstUnfilled,
+                            }),
+                          );
                         }
                         return;
                       }
                     }
-                    const key = String(activeModalDoc?.name ?? '');
+                    const key = String(activeModalDoc?.name ?? "");
                     setEFormData({ ...eFormData, [key]: tempEFormData });
-                    showAlert('Data berhasil disimpan!');
+                    showAlert("Data berhasil disimpan!");
                     setActiveModalDoc(null);
                     setTempFiles([]);
                   }}
@@ -1460,8 +2168,11 @@ export default function PengajuanSkemaPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">
-                {activeModalDoc?.isPreview ? 'Pratinjau Dokumen: ' : 'Lampirkan File: '}
-                {(activeModalDoc?.name as ReactNode) || (activeModalDoc?.unit as ReactNode)}
+                {activeModalDoc?.isPreview
+                  ? "Pratinjau Dokumen: "
+                  : "Lampirkan File: "}
+                {(activeModalDoc?.name as ReactNode) ||
+                  (activeModalDoc?.unit as ReactNode)}
               </h3>
               <button
                 onClick={() => {
@@ -1479,24 +2190,37 @@ export default function PengajuanSkemaPage() {
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative aspect-4/3 flex items-center justify-center">
                     <div className="text-center p-6 opacity-60">
-                      <FileText size={48} className="mx-auto text-slate-400 mb-3" />
-                      <p className="font-bold text-slate-500">Pratinjau Dokumen</p>
-                      <p className="text-xs text-slate-400 mt-1">{activeModalDoc?.name}</p>
+                      <FileText
+                        size={48}
+                        className="mx-auto text-slate-400 mb-3"
+                      />
+                      <p className="font-bold text-slate-500">
+                        Pratinjau Dokumen
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {activeModalDoc?.name}
+                      </p>
                     </div>
                   </div>
                   <div className="flex gap-2 justify-center mt-2 w-full">
-                    <button onClick={() => showAlert('Mengunduh dokumen...')} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer">
+                    <button
+                      onClick={() => showAlert("Mengunduh dokumen...")}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                    >
                       <Download size={16} /> Unduh
                     </button>
-                    <button onClick={() => {
-                      const newEFormData = { ...eFormData };
-                      if (typeof activeModalDoc?.name === 'string') {
-                        delete newEFormData[activeModalDoc?.name];
-                      }
-                      setEFormData(newEFormData);
-                      setActiveModalDoc(null);
-                      setTempFiles([]);
-                    }} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-500 font-bold rounded-lg text-sm hover:bg-red-50 transition-colors shadow-xs cursor-pointer">
+                    <button
+                      onClick={() => {
+                        const newEFormData = { ...eFormData };
+                        if (typeof activeModalDoc?.name === "string") {
+                          delete newEFormData[activeModalDoc?.name];
+                        }
+                        setEFormData(newEFormData);
+                        setActiveModalDoc(null);
+                        setTempFiles([]);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-500 font-bold rounded-lg text-sm hover:bg-red-50 transition-colors shadow-xs cursor-pointer"
+                    >
                       <Trash2 size={16} /> Hapus File
                     </button>
                   </div>
@@ -1505,37 +2229,62 @@ export default function PengajuanSkemaPage() {
                 <>
                   {activeModalDoc?.isBuktiKompetensi && (
                     <div className="mb-4">
-                      <p className="text-sm font-bold text-slate-800 mb-2">Pilih dari Dokumen Persyaratan Dasar:</p>
+                      <p className="text-sm font-bold text-slate-800 mb-2">
+                        Pilih dari Dokumen Persyaratan Dasar:
+                      </p>
                       <select
                         className="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white text-slate-700 cursor-pointer"
                         onChange={(e) => {
                           if (e.target.value) {
                             const docName = e.target.value;
                             const files = (eFormData[docName] as File[]) || [];
-                            setTempFiles([...tempFiles, ...(Array.isArray(files) ? files : [])]);
+                            setTempFiles([
+                              ...tempFiles,
+                              ...(Array.isArray(files) ? files : []),
+                            ]);
                             e.target.value = "";
                           }
                         }}
                       >
                         <option value="">-- Pilih Dokumen --</option>
                         {[
-                          ...(selectedScheme?.persyaratanDasar || []).map((req: SchemeRequirementItem) => typeof req === 'string' ? req : req.name),
-                          ...(selectedScheme?.buktiAdministratif || []).map((req: SchemeRequirementItem) => typeof req === 'string' ? req : req.name)
-                        ].filter((docName: string) => (eFormData[docName] as File[]) && (eFormData[docName] as File[]).length > 0).map((docName: string, idx: number) => (
-                          <option key={idx} value={docName}>{docName}</option>
-                        ))}
+                          ...(selectedScheme?.persyaratanDasar || []).map(
+                            (req: SchemeRequirementItem) =>
+                              typeof req === "string" ? req : req.name,
+                          ),
+                          ...(selectedScheme?.buktiAdministratif || []).map(
+                            (req: SchemeRequirementItem) =>
+                              typeof req === "string" ? req : req.name,
+                          ),
+                        ]
+                          .filter(
+                            (docName: string) =>
+                              (eFormData[docName] as File[]) &&
+                              (eFormData[docName] as File[]).length > 0,
+                          )
+                          .map((docName: string, idx: number) => (
+                            <option key={idx} value={docName}>
+                              {docName}
+                            </option>
+                          ))}
                       </select>
                       <div className="flex items-center gap-3 my-4">
                         <div className="h-px bg-slate-200 flex-1"></div>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Atau</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                          Atau
+                        </span>
                         <div className="h-px bg-slate-200 flex-1"></div>
                       </div>
                     </div>
                   )}
                   <label className="relative bg-slate-50 border border-slate-200 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-100 transition-colors">
                     <Upload size={32} className="text-[#008BE3] mb-3" />
-                    <p className="text-sm font-bold text-slate-800 mb-1">Klik atau seret file ke sini</p>
-                    <p className="text-xs text-slate-500 font-medium">Mendukung file PDF, JPG, PNG (Maks 5MB)</p>
+                    <p className="text-sm font-bold text-slate-800 mb-1">
+                      Klik atau seret file ke sini
+                    </p>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Mendukung file PDF, JPG, PNG (Maks 5MB)
+                    </p>
                     <input
                       type="file"
                       multiple
@@ -1551,14 +2300,24 @@ export default function PengajuanSkemaPage() {
                   {tempFiles.length > 0 && (
                     <div className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2">
                       {tempFiles.map((file, idx) => (
-                        <div key={idx} className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                        <div
+                          key={idx}
+                          className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between"
+                        >
                           <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold">
-                            <CheckCircle size={16} className="text-emerald-600 shrink-0" />
-                            <span className="truncate max-w-[200px] sm:max-w-xs">{file.name || 'Telah diunggah'}</span>
+                            <CheckCircle
+                              size={16}
+                              className="text-emerald-600 shrink-0"
+                            />
+                            <span className="truncate max-w-[200px] sm:max-w-xs">
+                              {file.name || "Telah diunggah"}
+                            </span>
                           </div>
                           <button
                             onClick={() => {
-                              const newFiles = tempFiles.filter((_, i) => i !== idx);
+                              const newFiles = tempFiles.filter(
+                                (_, i) => i !== idx,
+                              );
                               setTempFiles(newFiles);
                             }}
                             className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors cursor-pointer"
@@ -1580,18 +2339,21 @@ export default function PengajuanSkemaPage() {
                 }}
                 className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                {activeModalDoc?.isPreview ? 'Tutup' : 'Batal'}
+                {activeModalDoc?.isPreview ? "Tutup" : "Batal"}
               </button>
               {!activeModalDoc?.isPreview && (
                 <button
                   onClick={() => {
                     if (tempFiles.length === 0) {
-                      showAlert('Harap pilih file terlebih dahulu.');
+                      showAlert("Harap pilih file terlebih dahulu.");
                       return;
                     }
-                    if (typeof activeModalDoc?.name === 'string') {
-                      setEFormData({ ...eFormData, [activeModalDoc.name]: tempFiles });
-                      showAlert('Data berhasil disimpan!');
+                    if (typeof activeModalDoc?.name === "string") {
+                      setEFormData({
+                        ...eFormData,
+                        [activeModalDoc.name]: tempFiles,
+                      });
+                      showAlert("Data berhasil disimpan!");
                       setActiveModalDoc(null);
                       setTempFiles([]);
                     }
@@ -1622,7 +2384,8 @@ export default function PengajuanSkemaPage() {
             <div className="p-5 flex flex-col items-center justify-center text-center bg-white">
               <AlertTriangle size={48} className="text-orange-500 mb-4" />
               <p className="text-slate-600 font-medium">
-                Apakah Anda yakin ingin kembali? Draf pengajuan skema Anda akan hilang dan tidak dapat dikembalikan.
+                Apakah Anda yakin ingin kembali? Draf pengajuan skema Anda akan
+                hilang dan tidak dapat dikembalikan.
               </p>
             </div>
             <div className="p-5 border-t border-slate-100 flex justify-end gap-3 bg-gray-50">
