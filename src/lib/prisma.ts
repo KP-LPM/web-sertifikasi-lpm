@@ -1,26 +1,20 @@
+import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
 
-const prismaClientSingleton = () => {
-  const connectionString = process.env.DATABASE_URL;
-  
-  // Membuat pool koneksi PostgreSQL
-  const pool = new Pool({ connectionString });
-  
-  // Menyambungkan pool ke Prisma Adapter
-  const adapter = new PrismaPg(pool);
-  
-  // Memasukkan adapter saat memanggil PrismaClient
-  return new PrismaClient({ adapter });
+// 1. Ambil URL Database dari file .env
+const connectionString = `${process.env.DATABASE_URL}`;
+
+// 2. Buat jembatan koneksi (Pool) pakai driver PG
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+// 3. Konfigurasi Singleton Prisma
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
 };
 
-declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
-}
+// 4. Masukkan adapter ke dalam PrismaClient!
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
-
-export default prisma;
-
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

@@ -5,6 +5,14 @@ import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
 
+type SessionUser = {
+  name?: string | null;
+  email?: string | null;
+  username?: string;
+  role?: string;
+  avatar?: string;
+};
+
 export default function Profile() {
   const { user, registeredProfile, updateUser } = useAppContext();
   const profileImageRef = useRef<HTMLInputElement>(null);
@@ -26,18 +34,15 @@ export default function Profile() {
   const signatureRef = useRef<SignatureCanvas>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     peran:
-      user?.role === "asesor"
+      (user as SessionUser)?.role === "asesor"
         ? "Asesor"
-        : user?.role === "admin"
+        : (user as SessionUser)?.role === "admin"
           ? "Admin"
           : "Asesi",
-    username: registeredProfile?.nama
-      ? (registeredProfile.nama as string).toLowerCase().replace(/\s+/g, "")
-      : "",
-    email:
-      (registeredProfile?.email as string) || user?.email || "",
+    username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : ""),
+    email: user?.email || "",
     namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
     tempatLahir: (registeredProfile?.tempatLahir as string) || "",
     tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
@@ -52,6 +57,17 @@ export default function Profile() {
     pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
     tandaTangan: (registeredProfile?.tandaTangan as string) || "",
   });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "radio" ? value : value,
+    }));
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -87,20 +103,93 @@ export default function Profile() {
     }
   }, [isSignatureModalOpen, formData.tandaTangan]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  React.useEffect(() => {
+    if (registeredProfile) {
+      const data = registeredProfile as unknown as Record<string, string | undefined>; 
+      
+      // Ambil nama dari database atau user session
+      const namaAsli = data.nama_lengkap || data.nama || user?.name || "";
 
-  const handleSave = () => {
-    updateUser({
-      name: formData.namaLengkap,
+      setFormData(prev => ({
+        ...prev,
+        username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : "") || prev.username,
+        email: data.email || user?.email || prev.email,
+        namaLengkap: namaAsli,
+        tempatLahir: data.tempat_lahir || data.tempatLahir || "",
+        tanggalLahir: data.tanggal_lahir || data.tanggalLahir || "",
+        jenisKelamin: data.jenis_kelamin || data.jenisKelamin || "",
+        alamat: data.alamat || data.alamat_rumah || prev.alamat,
+        alamatWilayah: data.alamat_wilayah || data.alamatWilayah || "",
+        kodePos: data.kode_pos || data.kodePos || "",
+        nik: data.nik || "",
+        noRegistrasi: data.no_registrasi || data.noRegistrasi || "",
+        noTelp: data.no_telp || data.noTelp || "",
+        pekerjaan: data.pekerjaan || "",
+        pendidikanTerakhir: data.pendidikan_terakhir || data.pendidikanTerakhir || "",
+        tandaTangan: data.tanda_tangan || data.tandaTangan || "",
+      }));
+    }
+  }, [registeredProfile, user]);
+
+  React.useEffect(() => {
+    const fetchProfil = async () => {
+      try {
+        const response = await fetch('/api/profil');
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => {
+            return {
+              ...prev,
+              namaLengkap: data.namaLengkap || prev.namaLengkap,
+              username: (user as SessionUser)?.username || prev.username,
+              email: (user as SessionUser)?.email || prev.email,
+              tempatLahir: data.tempatLahir || prev.tempatLahir,
+              tanggalLahir: data.tanggalLahir 
+                ? new Date(data.tanggalLahir).toISOString().split('T')[0] 
+                : prev.tanggalLahir,
+              jenisKelamin: data.jenisKelamin || prev.jenisKelamin,
+              alamat: data.alamat || prev.alamat,
+              kodePos: data.kodePos || prev.kodePos,
+              nik: data.nik || prev.nik,
+              noTelp: data.noHp || prev.noTelp,
+              pekerjaan: data.pekerjaan || prev.pekerjaan,
+              pendidikanTerakhir: data.pendidikanTerakhir || prev.pendidikanTerakhir,
+              tandaTangan: data.tandaTangan || prev.tandaTangan,
+              noRegistrasi: data.nomorRegistrasiMet || prev.noRegistrasi,
+            };
+          });
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data profil langsung:", error);
+      }
+    };
+
+    fetchProfil();
+  }, []);
+  
+const handleSave = () => {
+    // 1. Simpan semua data ke dalam satu variabel payload
+    const payload = {
+      name: formData.namaLengkap, 
       email: formData.email,
-      tandaTangan: formData.tandaTangan,
-    });
+      nama_lengkap: formData.namaLengkap, 
+      tempat_lahir: formData.tempatLahir,
+      tanggal_lahir: formData.tanggalLahir,
+      jenis_kelamin: formData.jenisKelamin,
+      alamat_rumah: formData.alamat,
+      alamat_wilayah: formData.alamatWilayah,
+      kode_pos: formData.kodePos,
+      nik: formData.nik,
+      no_registrasi: formData.noRegistrasi,
+      no_telp: formData.noTelp,
+      pekerjaan: formData.pekerjaan,
+      pendidikan_terakhir: formData.pendidikanTerakhir,
+      tanda_tangan: formData.tandaTangan,
+    };
+
+    // 2. Gunakan "as unknown" untuk melewati validasi ketat TypeScript
+    updateUser(payload as unknown as Record<string, string | undefined>);
+    
     alert("Profil berhasil disimpan!");
   };
 

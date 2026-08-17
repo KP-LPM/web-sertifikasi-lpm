@@ -91,6 +91,43 @@ export default function AsesiOverviewPage() {
   const { user } = useAppContext();
   const router = useRouter(); // Inisialisasi router Next.js
   
+  // 1. Siapkan state untuk menampung nama dan ID
+  const [namaLengkap, setNamaLengkap] = useState<string>("Asesi");
+  const [asesiId, setAsesiId] = useState<string>("ASESI-0000");
+
+  // 2. Pasang Radar buat narik data dari database
+  React.useEffect(() => {
+    const fetchProfil = async () => {
+      try {
+        const response = await fetch('/api/profil');
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Set Nama: Prioritas dari database (namaLengkap) -> Session (name/email) -> "Asesi"
+          if (data.namaLengkap) {
+            setNamaLengkap(data.namaLengkap);
+          } else if (user?.name) {
+            setNamaLengkap(user.name);
+          } else if (user?.email) {
+            setNamaLengkap(user.email);
+          }
+
+          // Set ID: Ambil dari database. 
+          if (data.id) {
+            setAsesiId(`ASESI-${String(data.userId).padStart(4, '0')}`);
+          } else if (user?.id) {
+            const numericId = String(user.id).replace(/[^0-9]/g, ''); 
+            setAsesiId(`ASESI-${numericId.padStart(4, '0')}`);
+          }
+        }
+      } catch (error) {
+        console.error("Gagal mengambil profil untuk dashboard:", error);
+      }
+    };
+
+    fetchProfil();
+  }, [user]);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
   const [dateFilter, setDateFilter] = useState('');
@@ -187,15 +224,16 @@ export default function AsesiOverviewPage() {
       {/* Greeting Banner */}
       <div className="bg-[#E6F4FF] rounded-lg border border-sky-200 p-4 md:p-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 overflow-hidden relative shadow-2xs">
         <div className="space-y-2 z-10 max-w-xl">
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none">
-            Selamat Datang, {user?.name || 'Asesi'}
+          {/* Tambahkan capitalize biar awalan namanya otomatis huruf besar */}
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none capitalize">
+            Selamat Datang, {namaLengkap}
           </h2>
           <p className="text-slate-700 text-xs md:text-sm font-medium leading-relaxed">
             Sudah siap untuk melangkah lebih dekat menuju kompetensi bersertifikasi? Pantau status ujian mandiri Anda di bawah ini.
           </p>
           <div className="pt-0.5">
             <span className="inline-flex items-center gap-1.5 bg-[#008BE3] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-xs">
-              ID Asesi: ASESI-90218
+              ID Asesi: {asesiId}
             </span>
           </div>
         </div>
