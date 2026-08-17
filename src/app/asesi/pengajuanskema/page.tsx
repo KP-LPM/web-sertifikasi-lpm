@@ -258,10 +258,11 @@ export default function PengajuanSkemaPage() {
   const [searchScheme, setSearchScheme] = useState("");
   const [schemePage, setSchemePage] = useState(1);
 
-  const [namaLengkap, setNamaLengkap] = useState(user?.name || 'Ahmad Fauzi');
+  // MENGOSONGKAN DATA DUMMY
+  const [namaLengkap, setNamaLengkap] = useState(user?.name || '');
   const [tempatLahir, setTempatLahir] = useState('');
-  const [tanggalLahir, setTanggalLahir] = useState('2000-01-01');
-  const [jenisKelamin, setJenisKelamin] = useState('Perempuan');
+  const [tanggalLahir, setTanggalLahir] = useState('');
+  const [jenisKelamin, setJenisKelamin] = useState('');
   const [alamat, setAlamat] = useState('');
   const [provinsi, setProvinsi] = useState('');
   const [kota, setKota] = useState('');
@@ -269,26 +270,22 @@ export default function PengajuanSkemaPage() {
   const [nik, setNik] = useState('');
   const [kewarganegaraan, setKewarganegaraan] = useState('WNI');
   const [kodePos, setKodePos] = useState('');
-  const [noTelp, setNoTelp] = useState('081234567890');
+  const [noTelp, setNoTelp] = useState('');
 
-  const [pendidikanTerakhir, setPendidikanTerakhir] = useState("SMA");
-  const [pekerjaan, setPekerjaan] = useState("Pelajar/Mahasiswa");
-  const [institusiPerusahaan, setInstitusiPerusahaan] = useState("PNS");
-  const [jabatan, setJabatan] = useState("PNS");
-  const [emailInstitusi, setEmailInstitusi] = useState(
-    "karimaulya13@gmail.com",
-  );
+  const [pendidikanTerakhir, setPendidikanTerakhir] = useState("");
+  const [pekerjaan, setPekerjaan] = useState("");
+  const [institusiPerusahaan, setInstitusiPerusahaan] = useState("");
+  const [jabatan, setJabatan] = useState("");
+  const [emailInstitusi, setEmailInstitusi] = useState("");
   const [kodePosInstitusi, setKodePosInstitusi] = useState("");
-  const [alamatInstitusi, setAlamatInstitusi] = useState(
-    "Komp. Taman Cileunyi Blok W No 9 RT 03/22, Cileunyi Kulon, Kec. Cileunyi, Kab. Bandung",
-  );
-  const [telpInstitusi, setTelpInstitusi] = useState("087736454535");
+  const [alamatInstitusi, setAlamatInstitusi] = useState("");
+  const [telpInstitusi, setTelpInstitusi] = useState("");
   const [faxInstitusi, setFaxInstitusi] = useState("");
   const [tuk, setTuk] = useState("");
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
-// Fitur Auto-Fill Data Profil
+  // Fitur Auto-Fill Data Profil
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
@@ -334,13 +331,26 @@ export default function PengajuanSkemaPage() {
 
     fetchProfil();
   }, []); 
+
+  // MENAMBAH TANGGAL LAHIR & JENIS KELAMIN KE INTERFACE ERROR
   interface Step1Errors {
+    namaLengkap: boolean;
     tempatLahir: boolean;
+    tanggalLahir: boolean;
+    jenisKelamin: boolean;
     provinsi: boolean;
     kota: boolean;
     alamat: boolean;
     nik: boolean;
     kodePos: boolean;
+    noTelp: boolean;
+    pendidikanTerakhir: boolean;
+    pekerjaan: boolean;
+    institusiPerusahaan: boolean;
+    jabatan: boolean;
+    emailInstitusi: boolean;
+    telpInstitusi: boolean;
+    alamatInstitusi: boolean;
     tuk: boolean;
   }
 
@@ -351,37 +361,54 @@ export default function PengajuanSkemaPage() {
   };
 
   const [errors, setErrors] = useState<Step1Errors>({
+    namaLengkap: false,
     tempatLahir: false,
+    tanggalLahir: false,
+    jenisKelamin: false,
     provinsi: false,
     kota: false,
     alamat: false,
     nik: false,
     kodePos: false,
+    noTelp: false,
+    pendidikanTerakhir: false,
+    pekerjaan: false,
+    institusiPerusahaan: false,
+    jabatan: false,
+    emailInstitusi: false,
+    telpInstitusi: false,
+    alamatInstitusi: false,
     tuk: false,
   });
 
   const handleNext = () => {
     if (step === 1) {
       const newErrors: Step1Errors = {
+        namaLengkap: namaLengkap.trim() === "",
         tempatLahir: tempatLahir.trim() === "",
+        tanggalLahir: tanggalLahir === "",
+        jenisKelamin: jenisKelamin === "",
         provinsi: provinsi === "",
         kota: kota === "",
         alamat: alamat.trim() === "",
         nik: nik.trim() === "",
         kodePos: kodePos.trim() === "",
+        noTelp: noTelp.trim() === "",
+        pendidikanTerakhir: pendidikanTerakhir === "",
+        pekerjaan: pekerjaan === "",
+        institusiPerusahaan: institusiPerusahaan.trim() === "",
+        jabatan: jabatan.trim() === "",
+        emailInstitusi: emailInstitusi.trim() === "",
+        telpInstitusi: telpInstitusi.trim() === "",
+        alamatInstitusi: alamatInstitusi.trim() === "",
         tuk: tuk === "",
       };
       setErrors(newErrors);
 
-      if (
-        !newErrors.tempatLahir &&
-        !newErrors.provinsi &&
-        !newErrors.kota &&
-        !newErrors.alamat &&
-        !newErrors.nik &&
-        !newErrors.kodePos &&
-        !newErrors.tuk
-      ) {
+      // --- JURUS SAPU JAGAT: Ngecek semua error sekaligus ---
+      const hasErrors = Object.values(newErrors).some((isError) => isError);
+
+      if (!hasErrors) {
         setStep(2);
         scrollToTopMobile();
       }
@@ -1141,7 +1168,7 @@ export default function PengajuanSkemaPage() {
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap w-16 sticky top-0 z-20 bg-[#0F172A]">
                       No
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] max-w-[500px] sticky top-0 z-20 bg-[#0F172A]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
                       Skema Sertifikasi
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
@@ -1182,7 +1209,7 @@ export default function PengajuanSkemaPage() {
                                 {idx + 1}
                               </div>
                             </td>
-                            <td className="px-6 py-4 flex items-center gap-3 min-w-[350px] max-w-[500px]">
+                            <td className="px-6 py-4 flex items-center gap-3 min-w-87.5 max-w-125">
                               <button className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-[#008BE3] transition-colors shrink-0">
                                 <svg
                                   width="16"
@@ -1367,22 +1394,44 @@ export default function PengajuanSkemaPage() {
                       onClick={() => {
                         if (step === 1 && tabStep > 1) {
                           const newErrors: Step1Errors = {
+                            namaLengkap: namaLengkap.trim() === "",
                             tempatLahir: tempatLahir.trim() === "",
+                            tanggalLahir: tanggalLahir === "",
+                            jenisKelamin: jenisKelamin === "",
                             provinsi: provinsi === "",
                             kota: kota === "",
                             alamat: alamat.trim() === "",
                             nik: nik.trim() === "",
                             kodePos: kodePos.trim() === "",
+                            noTelp: noTelp.trim() === "",
+                            pendidikanTerakhir: pendidikanTerakhir === "",
+                            pekerjaan: pekerjaan === "",
+                            institusiPerusahaan: institusiPerusahaan.trim() === "",
+                            jabatan: jabatan.trim() === "",
+                            emailInstitusi: emailInstitusi.trim() === "",
+                            telpInstitusi: telpInstitusi.trim() === "",
+                            alamatInstitusi: alamatInstitusi.trim() === "",
                             tuk: tuk === "",
                           };
                           setErrors(newErrors);
                           if (
+                            !newErrors.namaLengkap &&
                             !newErrors.tempatLahir &&
+                            !newErrors.tanggalLahir &&
+                            !newErrors.jenisKelamin &&
                             !newErrors.provinsi &&
                             !newErrors.kota &&
                             !newErrors.alamat &&
                             !newErrors.nik &&
                             !newErrors.kodePos &&
+                            !newErrors.noTelp &&
+                            !newErrors.pendidikanTerakhir &&
+                            !newErrors.pekerjaan &&
+                            !newErrors.institusiPerusahaan &&
+                            !newErrors.jabatan &&
+                            !newErrors.emailInstitusi &&
+                            !newErrors.telpInstitusi &&
+                            !newErrors.alamatInstitusi &&
                             !newErrors.tuk
                           ) {
                             setStep(tabStep);
@@ -1486,22 +1535,33 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="date"
                       value={tanggalLahir}
-                      onChange={(e) => setTanggalLahir(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                      onChange={(e) => {
+                        setTanggalLahir(e.target.value);
+                        if (errors.tanggalLahir) setErrors({ ...errors, tanggalLahir: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${errors.tanggalLahir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
                     />
+                    {errors.tanggalLahir && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Masukkan tanggal lahir
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> Jenis Kelamin
                     </label>
-                    <div className="flex items-center gap-6 py-2">
+                    <div className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${errors.jenisKelamin ? "border-red-400 bg-red-50/10" : "border-transparent"}`}>
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
                         <input
                           type="radio"
                           name="jenisKelamin"
                           value="Laki-laki"
                           checked={jenisKelamin === "Laki-laki"}
-                          onChange={() => setJenisKelamin("Laki-laki")}
+                          onChange={() => {
+                            setJenisKelamin("Laki-laki");
+                            if (errors.jenisKelamin) setErrors({ ...errors, jenisKelamin: false });
+                          }}
                           className="text-[#008BE3] w-4 h-4 cursor-pointer"
                         />{" "}
                         Laki-laki
@@ -1512,12 +1572,20 @@ export default function PengajuanSkemaPage() {
                           name="jenisKelamin"
                           value="Perempuan"
                           checked={jenisKelamin === "Perempuan"}
-                          onChange={() => setJenisKelamin("Perempuan")}
+                          onChange={() => {
+                            setJenisKelamin("Perempuan");
+                            if (errors.jenisKelamin) setErrors({ ...errors, jenisKelamin: false });
+                          }}
                           className="text-[#008BE3] w-4 h-4 cursor-pointer"
                         />{" "}
                         Perempuan
                       </label>
                     </div>
+                    {errors.jenisKelamin && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih jenis kelamin
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -1651,6 +1719,7 @@ export default function PengajuanSkemaPage() {
                       </p>
                     )}
                   </div>
+                  {/* --- UBAH DARI BAGIAN NO HP / TELEPON SAMPAI BAWAH --- */}
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> No HP / Telepon
@@ -1658,11 +1727,13 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={noTelp}
-                      onChange={(e) =>
-                        setNoTelp(e.target.value.replace(/[^0-9]/g, ""))
-                      }
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                      onChange={(e) => {
+                        setNoTelp(e.target.value.replace(/[^0-9]/g, ""));
+                        if (errors.noTelp) setErrors({ ...errors, noTelp: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.noTelp ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
+                    {errors.noTelp && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
                 </div>
 
@@ -1677,20 +1748,22 @@ export default function PengajuanSkemaPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Pendidikan
-                      Terakhir
+                      <span className="text-red-500">*</span> Pendidikan Terakhir
                     </label>
                     <select
                       value={pendidikanTerakhir}
-                      onChange={(e) => setPendidikanTerakhir(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
+                      onChange={(e) => {
+                        setPendidikanTerakhir(e.target.value);
+                        if (errors.pendidikanTerakhir) setErrors({ ...errors, pendidikanTerakhir: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pendidikanTerakhir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
+                      <option value="" disabled>Pilih Pendidikan</option>
                       {getPendidikanOptions(selectedScheme).map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
+                        <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
+                    {errors.pendidikanTerakhir && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih pendidikan</p>}
                   </div>
                 </div>
 
@@ -1709,28 +1782,34 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={pekerjaan}
-                      onChange={(e) => setPekerjaan(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
+                      onChange={(e) => {
+                        setPekerjaan(e.target.value);
+                        if (errors.pekerjaan) setErrors({ ...errors, pekerjaan: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pekerjaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="Pelajar/Mahasiswa">
-                        Pelajar/Mahasiswa
-                      </option>
+                      <option value="" disabled>Pilih Pekerjaan</option>
+                      <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
                       <option value="PNS">PNS</option>
                       <option value="Swasta">Swasta</option>
                       <option value="Lainnya">Lainnya</option>
                     </select>
+                    {errors.pekerjaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih pekerjaan</p>}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span>{" "}
-                      Institusi/Perusahaan
+                      <span className="text-red-500">*</span> Institusi/Perusahaan
                     </label>
                     <input
                       type="text"
                       value={institusiPerusahaan}
-                      onChange={(e) => setInstitusiPerusahaan(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                      onChange={(e) => {
+                        setInstitusiPerusahaan(e.target.value);
+                        if (errors.institusiPerusahaan) setErrors({ ...errors, institusiPerusahaan: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.institusiPerusahaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
+                    {errors.institusiPerusahaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -1739,62 +1818,70 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={jabatan}
-                      onChange={(e) => setJabatan(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                      onChange={(e) => {
+                        setJabatan(e.target.value);
+                        if (errors.jabatan) setErrors({ ...errors, jabatan: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.jabatan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
+                    {errors.jabatan && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Email
-                      Institusi/Perusahaan
+                      <span className="text-red-500">*</span> Email Institusi/Perusahaan
                     </label>
                     <input
                       type="email"
                       value={emailInstitusi}
-                      onChange={(e) => setEmailInstitusi(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                      onChange={(e) => {
+                        setEmailInstitusi(e.target.value);
+                        if (errors.emailInstitusi) setErrors({ ...errors, emailInstitusi: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.emailInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
+                    {errors.emailInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Kode Pos Institusi/Perusahaan
+                      Kode Pos Institusi
                     </label>
                     <input
                       type="text"
                       value={kodePosInstitusi}
-                      onChange={(e) =>
-                        setKodePosInstitusi(
-                          e.target.value.replace(/[^0-9]/g, ""),
-                        )
-                      }
+                      onChange={(e) => setKodePosInstitusi(e.target.value.replace(/[^0-9]/g, ""))}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
                     />
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> No Telepon
-                      Institusi
+                      <span className="text-red-500">*</span> No Telepon Institusi
                     </label>
                     <input
                       type="text"
                       value={telpInstitusi}
-                      onChange={(e) =>
-                        setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ""))
-                      }
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
+                      onChange={(e) => {
+                        setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ""));
+                        if (errors.telpInstitusi) setErrors({ ...errors, telpInstitusi: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.telpInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
+                    {errors.telpInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Alamat
-                      Institusi/Perusahaan
+                      <span className="text-red-500">*</span> Alamat Institusi/Perusahaan
                     </label>
                     <textarea
                       value={alamatInstitusi}
-                      onChange={(e) => setAlamatInstitusi(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 h-9.5 resize-none"
+                      onChange={(e) => {
+                        setAlamatInstitusi(e.target.value);
+                        if (errors.alamatInstitusi) setErrors({ ...errors, alamatInstitusi: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${errors.alamatInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
+                    {errors.alamatInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
+                  {/* --- BATAS AKHIR --- */}
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       Fax Institusi/Perusahaan
@@ -2046,7 +2133,7 @@ export default function PengajuanSkemaPage() {
       {/* VIEW 4: E-FORM MODAL */}
       {activeModalDoc?.isEForm && (
         <div className="min-h-screen bg-slate-100 p-4 md:p-8 pb-24 w-full z-50">
-          <div className="max-w-[1000px] mx-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="max-w-250 mx-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button
                 onClick={() => setActiveModalDoc(null)}
@@ -2057,7 +2144,7 @@ export default function PengajuanSkemaPage() {
               </button>
             </div>
 
-            <div className="max-w-[1000px] mx-auto bg-white shadow-xl p-8 md:p-12 min-h-[800px] space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
+            <div className="max-w-250 mx-auto bg-white shadow-xl p-8 md:p-12 min-h-200 space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
               {activeModalDoc?.name?.includes("APL.01") ? (
                 <EFormApl01
                   formData={{
@@ -2103,7 +2190,7 @@ export default function PengajuanSkemaPage() {
                       Keterangan <span className="text-red-500">*</span>
                     </label>
                     <textarea
-                      className="w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:border-[#008BE3] min-h-[100px]"
+                      className="w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:border-[#008BE3] min-h-25"
                       value={
                         (eFormData[activeModalDoc?.name ?? ""] as string) || ""
                       }
@@ -2119,7 +2206,7 @@ export default function PengajuanSkemaPage() {
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shadow-xl max-w-[1000px] mx-auto rounded-b-lg mb-8">
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shadow-xl max-w-250 mx-auto rounded-b-lg mb-8">
               <button
                 onClick={() => {
                   setActiveModalDoc(null);
@@ -2204,7 +2291,7 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 5: DOCUMENT / UPLOAD MODAL */}
       {activeModalDoc && !activeModalDoc?.isEForm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">
@@ -2349,7 +2436,7 @@ export default function PengajuanSkemaPage() {
                               size={16}
                               className="text-emerald-600 shrink-0"
                             />
-                            <span className="truncate max-w-[200px] sm:max-w-xs">
+                            <span className="truncate max-w-50 sm:max-w-xs">
                               {file.name || "Telah diunggah"}
                             </span>
                           </div>
@@ -2410,7 +2497,7 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 6: EXIT WARNING MODAL */}
       {showExitWarning && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-200 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <h3 className="font-black text-slate-800 text-lg">Peringatan</h3>

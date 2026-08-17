@@ -5,6 +5,14 @@ import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
 
+type SessionUser = {
+  name?: string | null;
+  email?: string | null;
+  username?: string;
+  role?: string;
+  avatar?: string;
+};
+
 export default function Profile() {
   const { user, registeredProfile, updateUser } = useAppContext();
   const profileImageRef = useRef<HTMLInputElement>(null);
@@ -26,18 +34,15 @@ export default function Profile() {
   const signatureRef = useRef<SignatureCanvas>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     peran:
-      user?.role === "asesor"
+      (user as SessionUser)?.role === "asesor"
         ? "Asesor"
-        : user?.role === "admin"
+        : (user as SessionUser)?.role === "admin"
           ? "Admin"
           : "Asesi",
-    username: registeredProfile?.nama
-      ? (registeredProfile.nama as string).toLowerCase().replace(/\s+/g, "")
-      : "",
-    email:
-      (registeredProfile?.email as string) || user?.email || "",
+    username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : ""),
+    email: user?.email || "",
     namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
     tempatLahir: (registeredProfile?.tempatLahir as string) || "",
     tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
@@ -107,7 +112,7 @@ export default function Profile() {
 
       setFormData(prev => ({
         ...prev,
-        username: namaAsli ? namaAsli.toLowerCase().replace(/\s+/g, "") : prev.username,
+        username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : "") || prev.username,
         email: data.email || user?.email || prev.email,
         namaLengkap: namaAsli,
         tempatLahir: data.tempat_lahir || data.tempatLahir || "",
@@ -126,6 +131,42 @@ export default function Profile() {
     }
   }, [registeredProfile, user]);
 
+  React.useEffect(() => {
+    const fetchProfil = async () => {
+      try {
+        const response = await fetch('/api/profil');
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => {
+            return {
+              ...prev,
+              namaLengkap: data.namaLengkap || prev.namaLengkap,
+              username: (user as SessionUser)?.username || prev.username,
+              email: (user as SessionUser)?.email || prev.email,
+              tempatLahir: data.tempatLahir || prev.tempatLahir,
+              tanggalLahir: data.tanggalLahir 
+                ? new Date(data.tanggalLahir).toISOString().split('T')[0] 
+                : prev.tanggalLahir,
+              jenisKelamin: data.jenisKelamin || prev.jenisKelamin,
+              alamat: data.alamat || prev.alamat,
+              kodePos: data.kodePos || prev.kodePos,
+              nik: data.nik || prev.nik,
+              noTelp: data.noHp || prev.noTelp,
+              pekerjaan: data.pekerjaan || prev.pekerjaan,
+              pendidikanTerakhir: data.pendidikanTerakhir || prev.pendidikanTerakhir,
+              tandaTangan: data.tandaTangan || prev.tandaTangan,
+              noRegistrasi: data.nomorRegistrasiMet || prev.noRegistrasi,
+            };
+          });
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data profil langsung:", error);
+      }
+    };
+
+    fetchProfil();
+  }, []);
+  
 const handleSave = () => {
     // 1. Simpan semua data ke dalam satu variabel payload
     const payload = {
