@@ -5,6 +5,7 @@ import ClientLayout from "@/components/ClientLayouts";
 
 export const metadata = {
   title: "Web Sertifikasi LPM",
+  icons: "/logo-lsp.png",
   description: "Sistem Sertifikasi Kompetensi UIN Bandung",
 };
 

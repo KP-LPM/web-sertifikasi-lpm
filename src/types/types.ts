@@ -274,7 +274,7 @@ export interface KonfigurasiPertanyaanItem {
    ASSESSMENT & BATCH INTERFACES
    ========================================================================== */
 
-export type JenisTUK = "Offline" | "Online";
+export type JenisMetode = "Offline" | "Online";
 
 export interface Assessment {
   id: number;
@@ -289,8 +289,7 @@ export interface Assessment {
   batchCode?: string;
   batchName?: string;
   alamat?: string;
-  metode: string; // Properti wajib
-  metode_pelaksanaan?: string;
+  metode: string;
   tglPra?: string;
   tglAsesmen?: string;
   waktu?: string;
@@ -305,10 +304,11 @@ export interface BatchGroup {
   batchCode: string;
   batchName: string;
   skema: string;
-  tuk: JenisTUK;
+  tuk: string;
+  metode: JenisMetode;
+  alamat: string;
   tglAsesmen: string;
   waktu: string;
-  alamat: string;
   linkVideo: string;
   candidates: Assessment[];
 }

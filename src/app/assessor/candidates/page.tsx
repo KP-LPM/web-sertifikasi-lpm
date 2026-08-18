@@ -22,7 +22,7 @@ import {
   Globe,
   Mail,
 } from "lucide-react";
-import { Assessment, BatchGroup, JenisTUK } from "@/types/types";
+import { Assessment, BatchGroup, JenisMetode } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
 export default function AsesiList() {
@@ -58,7 +58,8 @@ export default function AsesiList() {
         batchCode: code,
         batchName: name,
         skema: skemaNama,
-        tuk: (item.tuk || "-") as JenisTUK,
+        tuk: item.tuk || "-",
+        metode: (item.metode || "") as JenisMetode,
         tglAsesmen: item.tglAsesmen || "05 Okt 2026",
         waktu: item.waktu || "09:00 WIB",
         alamat: (item.alamat || "-") as string,
@@ -79,9 +80,9 @@ export default function AsesiList() {
   // 2. Filter batches according to active tab and search query
   const filteredBatches = allBatches.filter((batch) => {
     // Tab filter
-    if (activeTab === "Offline" && batch.tuk.toLowerCase() !== "offline")
+    if (activeTab === "Offline" && batch.metode.toLowerCase() !== "offline")
       return false;
-    if (activeTab === "Online" && batch.tuk.toLowerCase() !== "online")
+    if (activeTab === "Online" && batch.metode.toLowerCase() !== "online")
       return false;
 
     // Search query matches Batch Code, Batch Name, Scheme Name, or Candidate Name
@@ -147,7 +148,7 @@ export default function AsesiList() {
             </span>
             <span className="text-xs sm:text-sm font-black text-emerald-800">
               {
-                allBatches.filter((b) => b.tuk.toLowerCase() === "offline")
+                allBatches.filter((b) => b.metode.toLowerCase() === "offline")
                   .length
               }
             </span>
@@ -158,7 +159,7 @@ export default function AsesiList() {
             </span>
             <span className="text-xs sm:text-sm font-black text-purple-800">
               {
-                allBatches.filter((b) => b.tuk.toLowerCase() === "online")
+                allBatches.filter((b) => b.metode.toLowerCase() === "online")
                   .length
               }
             </span>
@@ -190,8 +191,9 @@ export default function AsesiList() {
                 <option value="Offline">
                   Offline Batch (
                   {
-                    allBatches.filter((b) => b.tuk.toLowerCase() === "offline")
-                      .length
+                    allBatches.filter(
+                      (b) => b.metode.toLowerCase() === "offline",
+                    ).length
                   }
                   )
                 </option>
@@ -199,8 +201,9 @@ export default function AsesiList() {
                   {" "}
                   Online Batch (
                   {
-                    allBatches.filter((b) => b.tuk.toLowerCase() === "online")
-                      .length
+                    allBatches.filter(
+                      (b) => b.metode.toLowerCase() === "online",
+                    ).length
                   }
                   )
                 </option>
@@ -228,7 +231,7 @@ export default function AsesiList() {
           {filteredBatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBatches.map((batch) => {
-                const isOnline = batch.tuk.toLowerCase() === "online";
+                const isOnline = batch.metode.toLowerCase() === "online";
                 const completedCount = batch.candidates.filter(
                   (c) => c.status === "Selesai",
                 ).length;
@@ -330,20 +333,6 @@ export default function AsesiList() {
                               <Users size={14} className="text-slate-400" />
                               <span>{totalCount} Asesi</span>
                             </div>
-
-                            {/* Link Surat Penugasan (GDrive) */}
-                            <a
-                              href="https://drive.google.com"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#008BE3] hover:text-[#0070B8] bg-sky-50 hover:bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200 transition-colors"
-                              title="Buka Surat Penugasan (Google Drive)"
-                            >
-                              <Mail size={12} className="shrink-0" />
-                              <span>Surat Penugasan</span>
-                              <ExternalLink size={10} className="shrink-0" />
-                            </a>
                           </div>
 
                           <span className="text-[11px] font-bold text-slate-500 shrink-0">
@@ -368,29 +357,11 @@ export default function AsesiList() {
 
                     {/* Card Footer Action */}
                     <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
-                      {isOnline && batch.linkVideo !== "-" ? (
-                        <a
-                          href={batch.linkVideo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 hover:text-purple-900 hover:underline"
-                        >
-                          <Video size={13} />
-                          Join Meeting
-                          <ExternalLink size={12} />
-                        </a>
-                      ) : (
-                        <span className="text-[11px] text-slate-400 font-medium">
-                          Batch Siap Dinilai
-                        </span>
-                      )}
-
                       <button
                         onClick={() => setSelectedBatchCode(batch.batchCode)}
                         className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 ml-auto cursor-pointer"
                       >
-                        Lihat Detail Asesi
+                        Lihat Detail
                         <ArrowRight size={14} />
                       </button>
                     </div>
@@ -441,7 +412,8 @@ export default function AsesiList() {
                       <h3 className="text-lg md:text-xl font-black text-slate-900">
                         {currentSelectedBatch.batchName}
                       </h3>
-                      {currentSelectedBatch.tuk.toLowerCase() === "online" ? (
+                      {currentSelectedBatch.metode.toLowerCase() ===
+                      "online" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                           <Video size={13} /> Online
                         </span>
@@ -458,7 +430,7 @@ export default function AsesiList() {
                 </div>
 
                 {/* Direct "Buka Link Meeting" Quick Button for Online Batches */}
-                {currentSelectedBatch.tuk.toLowerCase() === "online" && (
+                {currentSelectedBatch.metode.toLowerCase() === "online" && (
                   <div className="shrink-0">
                     {currentSelectedBatch.linkVideo !== "-" ? (
                       <a
@@ -499,10 +471,10 @@ export default function AsesiList() {
                   <MapPin size={16} className="text-[#008BE3] shrink-0" />
                   <div className="min-w-0 flex-1">
                     <span className="block text-[10px] text-slate-400 uppercase font-bold">
-                      Lokasi
+                      Alamat & TUK
                     </span>
-                    <span className="font-bold text-slate-900 break-words leading-snug block">
-                      {currentSelectedBatch.alamat}
+                    <span className="font-bold text-slate-900 wrap-break-word leading-snug block">
+                      {currentSelectedBatch.alamat} ({currentSelectedBatch.tuk})
                     </span>
                   </div>
                 </div>

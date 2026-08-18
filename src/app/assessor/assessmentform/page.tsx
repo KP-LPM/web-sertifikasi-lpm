@@ -46,7 +46,8 @@ export default function AssessmentForm() {
     nama: String(selectedAsesmen?.nama || "Kandidat Default"),
     skema: String(selectedAsesmen?.skema || "Teknisi Muda Jaringan Komputer"),
     noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-    tuk: String(selectedAsesmen?.tuk || "TUK Sewaktu LSP"),
+    tuk: String(selectedAsesmen?.tuk || ""),
+    metodeAsesmen: String(selectedAsesmen?.metode),
     tanggal: "11 Oktober 2024",
     asesor: "Ichsan Taufik",
   } as unknown as Assessment;

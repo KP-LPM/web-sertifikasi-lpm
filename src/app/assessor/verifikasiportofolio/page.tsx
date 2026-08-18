@@ -480,7 +480,7 @@ export default function VerifikasiPortofolio() {
       {/* Main Table */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[650px] sm:min-w-[1000px]">
+          <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -498,7 +498,7 @@ export default function VerifikasiPortofolio() {
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Status Verifikasi
                 </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 whitespace-nowrap">
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 whitespace-nowrap">
                   Aksi
                 </th>
               </tr>
@@ -553,7 +553,7 @@ export default function VerifikasiPortofolio() {
 
                           {item.alamatLsp && (
                             <span
-                              className="text-[11px] text-slate-500 font-medium truncate max-w-[180px]"
+                              className="text-[11px] text-slate-500 font-medium truncate max-w-45"
                               title={item.alamatLsp}
                             >
                               • {item.alamatLsp}
@@ -592,7 +592,7 @@ export default function VerifikasiPortofolio() {
                             title="File Peminjaman Asesor"
                           >
                             <Eye size={12} />
-                            <span className="truncate max-w-[130px]">
+                            <span className="truncate max-w-32.5">
                               Peminjaman:{" "}
                               {item.filePeminjamanName || item.fileName}
                             </span>
@@ -611,7 +611,7 @@ export default function VerifikasiPortofolio() {
                             title="File Jawaban LSP Luar"
                           >
                             <Eye size={12} />
-                            <span className="truncate max-w-[130px]">
+                            <span className="truncate max-w-32.5">
                               Jawaban LSP:{" "}
                               {item.fileJawabanName ||
                                 "Konfirmasi_Peminjaman.pdf"}
@@ -629,7 +629,7 @@ export default function VerifikasiPortofolio() {
                           className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                         >
                           <Eye size={14} />
-                          <span className="truncate max-w-[140px]">
+                          <span className="truncate max-w-35">
                             {item.fileName}
                           </span>
                         </button>

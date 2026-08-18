@@ -11,6 +11,8 @@ import {
   FileText,
   Eye,
   X,
+  Video,
+  Building2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import {
@@ -60,11 +62,22 @@ export default function DetailRiwayatAsesmen() {
               >
                 <ArrowLeft size={18} />
               </button>
-              <div className="flex flex-col min-w-0">
-                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
-                  {selectedAsesmen.nama}
-                </h1>
-                <p className="text-xs md:text-sm text-gray-500 font-medium">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h3 className="text-lg md:text-xl font-black text-slate-900">
+                    {selectedAsesmen.nama}
+                  </h3>
+                  {selectedAsesmen.metode.toLowerCase() === "online" ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                      <Video size={13} /> Online
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <Building2 size={13} /> Offline
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs md:text-sm text-slate-600 font-semibold">
                   Skema: {selectedAsesmen.skema}
                 </p>
               </div>
@@ -87,19 +100,19 @@ export default function DetailRiwayatAsesmen() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-3 border-t border-gray-100">
             <div className="min-w-0">
               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                TUK
+                Alamat
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
-                <MapPin size={14} className="text-slate-400 shrink-0" />
-                {selectedAsesmen.tuk}
+                <MapPin size={14} className="text-[#008BE3] shrink-0" />
+                {selectedAsesmen.alamat}
               </div>
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                Pelaksanaan
+                TUK
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
-                <Building size={14} className="text-slate-400 shrink-0" />
+                <Building size={14} className="text-[#008BE3] shrink-0" />
                 {selectedAsesmen.tuk}
               </div>
             </div>
@@ -108,7 +121,7 @@ export default function DetailRiwayatAsesmen() {
                 Tanggal
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
-                <Calendar size={14} className="text-slate-400 shrink-0" />
+                <Calendar size={14} className="text-[#008BE3] shrink-0" />
                 {selectedAsesmen.tglAsesmen}
               </div>
             </div>
@@ -117,7 +130,7 @@ export default function DetailRiwayatAsesmen() {
                 Waktu
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
-                <Clock size={14} className="text-slate-400 shrink-0" />
+                <Clock size={14} className="text-[#008BE3] shrink-0" />
                 {selectedAsesmen.waktu}
               </div>
             </div>

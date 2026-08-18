@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppContext } from "@/context/context";
+import logoLsp from "../../public/logo-lsp.png";
 import {
   LayoutList,
   LayoutDashboard,
@@ -21,6 +22,7 @@ import {
   ClipboardList,
   FolderCheck,
 } from "lucide-react";
+import Image from "next/image";
 
 export function Sidebar() {
   const { user, logout, sidebarCollapsed, setSidebarCollapsed } =
@@ -51,7 +53,13 @@ export function Sidebar() {
             <>
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] shrink-0 border border-[#008BE3]/20 shadow-xs">
-                  <GraduationCap size={20} className="stroke-[2.5]" />
+                  <Image
+                    src={logoLsp}
+                    alt="Logo LSP"
+                    width={33}
+                    height={33}
+                    className="object-contain"
+                  />
                 </div>
                 <div className="transition-all duration-300 overflow-hidden whitespace-nowrap">
                   <h2 className="text-base font-black text-white tracking-tight leading-none mb-1">

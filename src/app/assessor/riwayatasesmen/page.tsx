@@ -106,7 +106,7 @@ export default function RiwayatAsesmen() {
                     Skema Sertifikasi
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                    Jenis Asesmen
+                    Metode
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                     Waktu
@@ -152,9 +152,15 @@ export default function RiwayatAsesmen() {
                         {item.skema}
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-medium border bg-slate-50 text-slate-700 border-slate-200 shadow-3xs">
-                          {item.tuk}
-                        </div>
+                        <span
+                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
+                            item.metode === "Offline"
+                              ? "bg-emerald-50  border-emerald-200 text-emerald-600"
+                              : "bg-purple-50  border-purple-200  text-purple-600 "
+                          }`}
+                        >
+                          {item.metode}
+                        </span>
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-gray-500 whitespace-nowrap">
                         {item.waktu}
