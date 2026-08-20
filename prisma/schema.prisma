@@ -4,6 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -44,6 +46,7 @@ model ProfilPengguna {
   
   kodePos            String?       @map("kode_pos") @db.VarChar(10)
   tandaTangan        String?       @map("tanda_tangan") 
+  avatar             String?       @db.Text
   
   // Khusus Asesor
   nomorRegistrasiMet String?       @map("nomor_registrasi_met") @db.VarChar(100)
