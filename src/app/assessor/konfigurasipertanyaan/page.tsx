@@ -106,9 +106,6 @@ export default function KonfigurasiPertanyaan() {
                     Status
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                    Tipe Form
-                  </th>
-                  <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                     Penyusun
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -143,9 +140,7 @@ export default function KonfigurasiPertanyaan() {
                           </span>
                         )}
                       </td>
-                      <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
-                        {item.tipeForm}
-                      </td>
+
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
                         {item.penyusun
                           ?.map((p) =>

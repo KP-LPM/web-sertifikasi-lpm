@@ -5,11 +5,11 @@ import {
   PlenoSession,
   Role,
   User,
-  Option,
-  Question,
   Assessment,
-  SubPertanyaanItem,
-  PersonItem,
+  JenisMetode,
+  JenisTUK,
+  HasilAsesmen,
+  StatusAsesmen,
   PertanyaanAsesmenItem,
   KonfigurasiPertanyaanItem,
   CrumbItem,
@@ -58,7 +58,8 @@ interface AppContextType {
   setSelectedAsesmen: (val: Assessment | null) => void;
   assessments: Assessment[];
   updateAssessment: (id: number, data: Partial<Assessment>) => void;
-
+  completedBatchCodes: string[];
+  deleteBatchAssessments: (batchCode: string) => void;
   // Fitur Konfirmasi Navigasi Form
   isFormDirty: boolean;
   setIsFormDirty: (dirty: boolean) => void;
@@ -195,80 +196,79 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const [assessments, setAssessments] = useState<Assessment[]>(() => {
+    // 1. UBAH BatchGroup[] menjadi Assessment[]
     return Array.from({ length: 25 }).map((_, idx) => {
       const batchConfigs = [
         {
-          code: "BATCH-IT-2026-001",
-          name: "Batch 1 - Teknisi Jaringan",
+          batchCode: "BATCH-IT-2026-001",
+          batchName: "Batch 1 - Teknisi Jaringan",
           skema: "Teknisi Muda Jaringan Komputer",
           tuk: "Sewaktu",
           metode: "Offline",
           alamat: "Gedung L PTIPD Lab 1",
-          tgl: "05 Okt 2023",
+          tglAsesmen: "05 Okt 2023",
           waktu: "09:00 WIB",
-          link: "-",
+          linkVideo: "-",
         },
         {
-          code: "BATCH-NET-2026-002",
-          name: "Batch 2 - Network Admin Online",
+          batchCode: "BATCH-NET-2026-002",
+          batchName: "Batch 2 - Network Admin Online",
           skema: "Network Administrator",
           tuk: "Mandiri",
           metode: "Online",
           alamat: "Zoom Meeting",
-          tgl: "06 Okt 2023",
+          tglAsesmen: "06 Okt 2023",
           waktu: "13:00 WIB",
-          link: "https://meet.google.com/abc-defg-hij",
+          linkVideo: "https://meet.google.com/abc-defg-hij",
         },
         {
-          code: "BATCH-PRG-2026-003",
-          name: "Batch 3 - Pemangku Kepentingan",
+          batchCode: "BATCH-PRG-2026-003",
+          batchName: "Batch 3 - Pemangku Kepentingan",
           skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
           tuk: "Sewaktu",
           metode: "Offline",
           alamat: "Ruang Rapat Utama",
-          tgl: "08 Okt 2023",
+          tglAsesmen: "08 Okt 2023",
           waktu: "09:00 WIB",
-          link: "-",
+          linkVideo: "-",
         },
         {
-          code: "BATCH-SEC-2026-004",
-          name: "Batch 4 - Cyber Security Online",
+          batchCode: "BATCH-SEC-2026-004",
+          batchName: "Batch 4 - Cyber Security Online",
           skema: "Network Administrator",
           tuk: "Mandiri",
           metode: "Online",
           alamat: "Google Meet",
-          tgl: "10 Okt 2023",
+          tglAsesmen: "10 Okt 2023",
           waktu: "09:00 WIB",
-          link: "https://meet.google.com/xyz-uvwx-rst",
+          linkVideo: "https://meet.google.com/xyz-uvwx-rst",
         },
         {
-          code: "BATCH-DES-2026-005",
-          name: "Batch 5 - Teknisi Jaringan Gel. 2",
+          batchCode: "BATCH-DES-2026-005",
+          batchName: "Batch 5 - Teknisi Jaringan Gel. 2",
           skema: "Teknisi Muda Jaringan Komputer",
           tuk: "Sewaktu",
           metode: "Offline",
           alamat: "Gedung H Lab Terpadu",
-          tgl: "12 Okt 2023",
+          tglAsesmen: "12 Okt 2023",
           waktu: "13:00 WIB",
-          link: "-",
+          linkVideo: "-",
         },
       ];
 
       const batch = batchConfigs[idx % batchConfigs.length];
-      let metode = batch.metode;
-      let status = "Belum Selesai";
+
+      // 2. Tambahkan as Type untuk keamanan TypeScript
+      let metode = batch.metode as JenisMetode;
+      let status = "Belum Selesai" as StatusAsesmen;
+
       if (metode === "Offline") {
         status = idx % 3 === 0 ? "Selesai" : "Belum Selesai";
       } else {
-        if (idx % 4 === 1) status = "Menunggu Asesi";
+        if (idx % 3 === 0) status = "Selesai";
         else status = "Belum Selesai";
-        if (idx % 7 === 0) status = "Selesai";
       }
 
-      if (idx === 1) {
-        metode = "Online";
-        status = "Menunggu Asesi";
-      }
       if (idx === 3) {
         metode = "Online";
         status = "Belum Selesai";
@@ -282,17 +282,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         status = "Belum Selesai";
       }
 
-      if (idx === 1) status = "Menunggu Asesi";
       if (idx === 3) status = "Belum Selesai";
       if (idx === 5) status = "Belum Selesai";
       if (idx === 0) status = "Belum Selesai";
 
-      let waktu = batch.waktu;
-      const linkVideo = batch.link;
-
-      if (metode === "Online" && status === "Menunggu Asesi" && idx === 1) {
-        waktu = "-";
-      }
+      const linkVideo = batch.linkVideo;
 
       return {
         id: idx + 1,
@@ -300,12 +294,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         nik: `32730128${(1000 + idx).toString()}0001`,
         aplStatus:
           idx % 4 === 3 ? "APL-01 Valid" : "APL-01 & APL-02 Terverifikasi",
-        batchCode: batch.code,
-        batchName: batch.name,
+
+        // 3. Perbaiki nama properti batch yang dipanggil
+        batchCode: batch.batchCode,
+        batchName: batch.batchName,
+
         asesmen: `Asesmen Reguler - ${idx + 1}`,
-        tuk: batch.tuk,
-        metode: batch.metode,
-        hasil: idx % 2 === 0 ? "Kompeten" : "Belum Kompeten",
+        tuk: batch.tuk as JenisTUK,
+        metode: metode,
+        hasil: (idx % 2 === 0 ? "Kompeten" : "Belum Kompeten") as HasilAsesmen,
         isBanding: idx % 2 !== 0 && idx % 3 === 0,
         alasanBanding:
           idx % 2 !== 0 && idx % 3 === 0
@@ -314,8 +311,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         skema: batch.skema,
         alamat: batch.alamat,
         tglPra: `${(idx % 28) + 1} Okt 2023`,
-        tglAsesmen: batch.tgl,
-        waktu: waktu,
+
+        // 4. Perbaiki nama properti tanggal yang dipanggil
+        tglAsesmen: batch.tglAsesmen,
+
+        waktu: batch.waktu,
         linkVideo: linkVideo,
         status: status,
         riwayat: idx % 3 === 0 ? "Belum ada" : "Tinjauan Awal",
@@ -323,10 +323,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   });
 
+  const [completedBatchCodes, setCompletedBatchCodes] = useState<string[]>([]);
+
   const updateAssessment = (id: number, data: Partial<Assessment>) => {
     setAssessments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, ...data } : a)),
     );
+  };
+
+  const deleteBatchAssessments = (batchCode: string) => {
+    setCompletedBatchCodes((prev) => [...prev, batchCode]);
   };
 
   const [konfigurasiPertanyaan, setKonfigurasiPertanyaan] = useState<
@@ -560,6 +566,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setSelectedAsesmen,
         assessments,
         updateAssessment,
+        deleteBatchAssessments,
+        completedBatchCodes,
         isFormDirty,
         setIsFormDirty,
         pendingNavigation,

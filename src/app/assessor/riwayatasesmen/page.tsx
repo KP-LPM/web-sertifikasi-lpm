@@ -1,13 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Search,
-  History,
-  CheckCircle,
-  FileText,
-  Inbox,
-  Calendar,
-} from "lucide-react";
+import { Search, History, CheckCircle, FileText, Inbox, X } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { useRouter } from "next/navigation";
 
@@ -16,17 +9,72 @@ export default function RiwayatAsesmen() {
   const { setSelectedAsesmen, assessments } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [hasilFilter, setHasilFilter] = useState("");
+  const [tanggalFilter, setTanggalFilter] = useState("");
 
   // Dummy data - we filter only 'Selesai'
+  const parseDateToISO = (dateStr: string): string => {
+    if (!dateStr) return "";
+    const trimmed = dateStr.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+    const months: Record<string, string> = {
+      Jan: "01",
+      Feb: "02",
+      Mar: "03",
+      Apr: "04",
+      Mei: "05",
+      Jun: "06",
+      Jul: "07",
+      Agt: "08",
+      Sep: "09",
+      Okt: "10",
+      Nov: "11",
+      Des: "12",
+      Januari: "01",
+      Februari: "02",
+      Maret: "03",
+      April: "04",
+      Juni: "06",
+      Juli: "07",
+      Agustus: "08",
+      September: "09",
+      Oktober: "10",
+      November: "11",
+      Desember: "12",
+    };
+
+    const parts = trimmed.split(" ");
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, "0");
+      const month = months[parts[1]] || "01";
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+
+    try {
+      const d = new Date(trimmed);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().split("T")[0];
+      }
+    } catch {
+      // ignore
+    }
+    return "";
+  };
 
   const filteredAssessments = assessments.filter((item) => {
     if (item.status !== "Selesai") return false;
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (
       searchTerm &&
-      !item.skema?.toLowerCase().includes(searchTerm.toLowerCase())
+      !item.skema?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !item.nama?.toLowerCase().includes(searchTerm.toLowerCase())
     )
       return false;
+    if (tanggalFilter) {
+      const itemIso = parseDateToISO(String(item.tglAsesmen));
+      if (itemIso && itemIso !== tanggalFilter) return false;
+    }
     return true;
   });
 
@@ -59,7 +107,7 @@ export default function RiwayatAsesmen() {
 
             <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto xl:justify-end">
               {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-64 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-64 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                 <Search className="text-gray-400 shrink-0" size={16} />
                 <input
                   type="text"
@@ -81,14 +129,23 @@ export default function RiwayatAsesmen() {
                 <option value="Belum Kompeten">Belum Kompeten</option>
               </select>
 
-              {/* Date Input/Filter */}
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
-                <Calendar className="text-gray-400 shrink-0" size={16} />
+              {/* Date Input/Filter with Date Picker */}
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                 <input
-                  type="text"
-                  placeholder="Pilih Tanggal ..."
-                  className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+                  type="date"
+                  value={tanggalFilter}
+                  onChange={(e) => setTanggalFilter(e.target.value)}
+                  className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 cursor-pointer font-semibold"
                 />
+                {tanggalFilter && (
+                  <button
+                    onClick={() => setTanggalFilter("")}
+                    className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full shrink-0"
+                    title="Reset Tanggal"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
             </div>
           </div>

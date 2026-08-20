@@ -1,6 +1,14 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
-import { ArrowLeft, Check, ChevronRight, Save, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Save,
+  X,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
@@ -12,12 +20,22 @@ import {
   FormFRIA07,
 } from "@/components/forms";
 import { Assessment } from "@/types/types";
+import { AVAILABLE_SCHEMES } from "@/data/schemes";
 
 type SignatureCanvasRef = {
   clear: () => void;
   fromDataURL: (dataURL: string) => void;
   toDataURL: () => string;
   isEmpty: () => boolean;
+};
+
+type SchemeWithUnits = {
+  units?: Array<{
+    kodeUnit?: string;
+    judulUnit?: string;
+    elemen?: Array<unknown>;
+    [key: string]: unknown;
+  }>;
 };
 
 type SignatureCanvasProps = {
@@ -36,6 +54,7 @@ export default function AssessmentForm() {
   const { selectedAsesmen, updateAssessment } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [asesiSignatureApl02, setAsesiSignatureApl02] = useState<string>("");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -346,6 +365,9 @@ export default function AssessmentForm() {
   }, [isAsesorStep3SigOpen, asesorSignatureStep3]);
 
   // State Step 1
+  const [potensiAsesi, setPotensiAsesi] = useState<string[]>([
+    "Hasil pelatihan dan / atau pendidikan, dimana Kurikulum dan fasilitas praktek mampu telusur terhadap standar kompetensi",
+  ]);
   const [noAdjustment, setNoAdjustment] = useState(false);
   const adjustmentOptions = [
     {
@@ -454,22 +476,6 @@ export default function AssessmentForm() {
         [field]: value,
       },
     }));
-  };
-
-  const handleOptionToggle = (id: string, option: string) => {
-    setAdjustments((prev) => {
-      const currentOpts = prev[id]?.selectedOptions || [];
-      const newOpts = currentOpts.includes(option)
-        ? currentOpts.filter((o) => o !== option)
-        : [...currentOpts, option];
-      return {
-        ...prev,
-        [id]: {
-          ...prev[id],
-          selectedOptions: newOpts,
-        },
-      };
-    });
   };
 
   // State Step 3 (IA.04B)
@@ -825,7 +831,7 @@ export default function AssessmentForm() {
       });
     }
 
-    router.push("/assessor/riwayatasesmen");
+    router.push("/assessor/candidates");
   };
 
   const renderHeader = (title: string, formCode: string) => (
@@ -897,51 +903,145 @@ export default function AssessmentForm() {
     }
   }, [isAsesiSigOpen, asesiSignature]);
 
-  const renderStep1 = () => (
-    <div className="space-y-6">
-      <FormFRAPL02
-        asesmenData={
-          {
-            nama: asesmenData.nama,
-            skema: asesmenData.skema,
-            noSkema:
-              selectedAsesmen?.noSkema ||
-              selectedAsesmen?.nomorSkema ||
-              "04/SKM/LSP P1 UIN SGD/V/2022",
-            tuk: asesmenData.tuk,
-            tanggal: asesmenData.tanggal,
-            asesor: asesmenData.asesor,
-            asesorReg: "MET.000.001234 2021",
-          } as unknown as Assessment
-        }
-        answers={answersApl02}
-        onAnswerChange={(key, val) =>
-          setAnswersApl02((prev) => ({ ...prev, [key]: val }))
-        }
-        rekomendasi={rekomendasiApl02}
-        onRekomendasiChange={setRekomendasiApl02}
-        asesiName={asesmenData.nama}
-        asesiSignature=""
-        asesiDate={String(asesmenData.tanggal || "")}
-        asesorName={String(asesmenData.asesor || "")}
-        asesorReg="MET.000.001234 2021"
-        asesorSignature={asesorSignatureApl02}
-        onAsesorSignatureChange={setAsesorSignatureApl02}
-      />
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={() => setCurrentStep(2)}
-          className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-colors"
-        >
-          Lanjut ke Step 2 (AK.07) <ChevronRight size={16} />
-        </button>
-      </div>
-    </div>
+  const [asesiDateApl02, setAsesiDateApl02] = useState<string>(
+    String(asesmenData.tanggal || ""),
   );
 
+  const renderStep1 = () => {
+    // 1. Simpan target nama skema ke variabel dengan fallback string kosong
+    const targetSkemaName = (
+      selectedAsesmen?.skema ||
+      asesmenData?.skema ||
+      ""
+    ).toLowerCase();
+    const targetSkemaCode = selectedAsesmen?.noSkema || "";
+
+    // 2. Pencarian skema yang aman dari error undefined
+    const matchedSchemeApl02 =
+      AVAILABLE_SCHEMES.find((s) => {
+        const sName = (s.name || "").toLowerCase();
+        const sCode = s.code || "";
+
+        return (
+          sName === targetSkemaName ||
+          (targetSkemaCode && sCode === targetSkemaCode) ||
+          (targetSkemaName && sName.includes(targetSkemaName)) ||
+          (targetSkemaName && targetSkemaName.includes(sName))
+        );
+      }) || AVAILABLE_SCHEMES[0];
+
+    // 3. Fallback unit list yang aman tanpa error 'Cannot find name'
+    const unitsApl02: Array<{
+      kodeUnit?: string;
+      judulUnit?: string;
+      elemen?: Array<unknown>;
+      [key: string]: unknown;
+    }> =
+      (selectedAsesmen as { schemeDetail?: SchemeWithUnits } | undefined)
+        ?.schemeDetail?.units ||
+      (matchedSchemeApl02 as SchemeWithUnits | undefined)?.units ||
+      [];
+    // 4. Perulangan dengan tipe parameter yang jelas
+    const allElementKeysApl02: string[] = [];
+    unitsApl02.forEach((unit, idx: number) => {
+      const elemenList = Array.isArray(unit.elemen) ? unit.elemen : [];
+      elemenList.forEach((_, eIdx: number) => {
+        allElementKeysApl02.push(`u${idx}e${eIdx}`);
+      });
+    });
+
+    const totalElementsApl02 = allElementKeysApl02.length;
+    const filledElementsCountApl02 = allElementKeysApl02.filter(
+      (k) => answersApl02[k] === "K" || answersApl02[k] === "BK",
+    ).length;
+    const isAllKBKFilledApl02 =
+      totalElementsApl02 > 0 && filledElementsCountApl02 === totalElementsApl02;
+
+    return (
+      <div className="space-y-6">
+        <FormFRAPL02
+          asesmenData={
+            {
+              nama: asesmenData.nama,
+              skema: asesmenData.skema,
+              noSkema:
+                selectedAsesmen?.noSkema ||
+                selectedAsesmen?.nomorSkema ||
+                "04/SKM/LSP P1 UIN SGD/V/2022",
+              tuk: asesmenData.tuk,
+              tanggal: asesmenData.tanggal,
+              asesor: asesmenData.asesor,
+              asesorReg: "MET.000.001234 2021",
+            } as unknown as Assessment
+          }
+          answers={answersApl02}
+          onAnswerChange={(key, val) =>
+            setAnswersApl02((prev) => ({ ...prev, [key]: val }))
+          }
+          rekomendasi={rekomendasiApl02}
+          onRekomendasiChange={setRekomendasiApl02}
+          onFinishDirectly={() => {
+            setFinalDecision("Belum Kompeten");
+            setCurrentStep(6);
+          }}
+          asesiName={asesmenData.nama}
+          asesiSignature={asesiSignatureApl02}
+          onAsesiSignatureChange={setAsesiSignatureApl02}
+          asesiDate={asesiDateApl02} // Hubungkan ke state
+          onAsesiDateChange={setAsesiDateApl02} // Tambahkan fungsi handler
+          asesorName={String(asesmenData.asesor || "")}
+          asesorReg="MET.000.001234 2021"
+          asesorSignature={asesorSignatureApl02}
+          onAsesorSignatureChange={setAsesorSignatureApl02}
+        />
+
+        {rekomendasiApl02 !== "Tidak dapat dilanjutkan" && (
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+            <div>
+              {!isAllKBKFilledApl02 ? (
+                <div className="flex items-center gap-2 text-amber-700 bg-amber-50 px-3.5 py-2 rounded-xl border border-amber-200 text-xs sm:text-sm font-bold">
+                  <AlertCircle size={18} className="shrink-0 text-amber-600" />
+                  <span>
+                    Status: {totalElementsApl02 - filledElementsCountApl02} dari{" "}
+                    {totalElementsApl02} elemen K/BK belum dinilai.
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 text-xs sm:text-sm font-bold">
+                  <CheckCircle
+                    size={18}
+                    className="shrink-0 text-emerald-600"
+                  />
+                  <span>
+                    Seluruh elemen K/BK telah dinilai (
+                    {filledElementsCountApl02}/{totalElementsApl02}). Silakan
+                    lanjut ke Step 2.
+                  </span>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setCurrentStep(2)}
+              disabled={!isAllKBKFilledApl02}
+              title={
+                !isAllKBKFilledApl02
+                  ? "Semua status K/BK harus terisi terlebih dahulu"
+                  : ""
+              }
+              className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            >
+              Lanjut ke Step 2 (AK.07) <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
   const renderStep2 = () => (
     <FormFRAK07
       asesmenData={asesmenData}
+      potensiAsesi={potensiAsesi}
+      onPotensiAsesiChange={setPotensiAsesi}
       noAdjustment={noAdjustment}
       onNoAdjustmentChange={setNoAdjustment}
       adjustments={adjustments}
@@ -1018,10 +1118,15 @@ export default function AssessmentForm() {
       asesorDateStep3={asesorDateStep3}
       onAsesorDateStep3Change={setAsesorDateStep3}
       penyusunStep3={
-        penyusun as Array<{ nama: string; noMet: string; ttdTanggal: string }>
+        penyusunStep3 as Array<{
+          nama: string;
+          noMet: string;
+          ttdTanggal: string;
+        }>
       }
       onPenyusunStep3Change={setPenyusunStep3}
       validatorStep3={validatorStep3}
+      onValidatorStep3Change={setValidatorStep3}
       onPrev={() => setCurrentStep(3)}
       onNext={() => setCurrentStep(5)}
       isNextDisabled={!isStep3Valid}
@@ -1051,10 +1156,15 @@ export default function AssessmentForm() {
       asesorDateStep4={asesorDateStep4}
       onAsesorDateStep4Change={setAsesorDateStep4}
       penyusunStep4={
-        penyusun as Array<{ nama: string; noMet: string; ttdTanggal: string }>
+        penyusunStep4 as Array<{
+          nama: string;
+          noMet: string;
+          ttdTanggal: string;
+        }>
       }
       onPenyusunStep4Change={setPenyusunStep4}
       validatorStep4={validatorStep4}
+      onValidatorStep4Change={setValidatorStep4}
       onPrev={() => setCurrentStep(4)}
       onNext={() => setCurrentStep(6)}
       isNextDisabled={!isStep4Valid}
@@ -1184,14 +1294,7 @@ export default function AssessmentForm() {
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-between items-center">
-        <button
-          onClick={() => setCurrentStep(5)}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
-          title="Kembali"
-        >
-          <ArrowLeft size={18} />
-        </button>
+      <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-end items-center">
         <button
           onClick={handleSubmit}
           disabled={!finalDecision || isSubmitting}

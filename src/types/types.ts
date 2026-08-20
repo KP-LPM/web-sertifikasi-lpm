@@ -95,6 +95,7 @@ export interface StatCardProps {
   icon: React.ElementType;
   theme?: "amber" | "emerald" | "sky" | string;
   subtext?: string;
+  onClick?: () => void;
 }
 
 export interface QueueItemProps {
@@ -118,7 +119,7 @@ export interface ConfigurationMetadata {
 export interface ChecklistOption {
   id: string;
   text: string;
-  isValid: boolean; // Checkbox pilihan opsi valid
+  isValid: boolean;
 }
 
 export interface Step1Question {
@@ -134,16 +135,16 @@ export interface Step1Data {
 
 // STEP 2: Penjelasan Singkat Proyek - FR.IA.04A (INSTRUCTION_SCENARIO)
 export interface Step2BlokA {
-  skenarioStudiKasus: string; // Textarea Latar belakang kasus perusahaan
-  informasiYangDiberikan: string[]; // Dynamic List Array String
-  lingkupBahasanStudiKasus: string[]; // Dynamic List Array String
-  perlengkapanDanBahan: string; // Textarea
+  skenarioStudiKasus: string;
+  informasiYangDiberikan: string[];
+  lingkupBahasanStudiKasus: string[];
+  perlengkapanDanBahan: string;
 }
 
 export interface Step2BlokB {
-  fokusPresentasi: string[]; // Dynamic List Array String
-  ketentuanAlokasiWaktu: string; // Textarea
-  kriteriaEvaluasiAsesor: string[]; // Dynamic List Array String
+  fokusPresentasi: string[];
+  ketentuanAlokasiWaktu: string;
+  kriteriaEvaluasiAsesor: string[];
 }
 
 export interface Step2Data {
@@ -155,15 +156,15 @@ export interface Step2Data {
 // STEP 3: Penilaian Proyek Singkat - FR.IA.04B (NESTED_ESSAY_PROYEK)
 export interface Step3SubPertanyaan {
   id: string;
-  skenarioPertanyaan: string; // Textarea Skenario & Teks Pertanyaan
-  kodeKUK: string[]; // Input/Select Standar Kompetensi / KUK Terkait
-  ekspektasiTanggapan: string; // Textarea
+  skenarioPertanyaan: string;
+  kodeKUK: string[];
+  ekspektasiTanggapan: string;
 }
 
 export interface Step3LingkupPenyajian {
   id: string;
-  namaLingkup: string; // Input Nama Lingkup Penyajian
-  subPertanyaans: Step3SubPertanyaan[]; // Nested Array Sub-Pertanyaan
+  namaLingkup: string;
+  subPertanyaans: Step3SubPertanyaan[];
 }
 
 export interface Step3Data {
@@ -171,12 +172,11 @@ export interface Step3Data {
   lingkups: Step3LingkupPenyajian[];
 }
 
-// STEP 4: Pertanyaan Lisan - FR.IA.07 (ESSAY_WITH_KEY_ANSWER)
 export interface Step4Question {
   id: string;
   kodeKUKRef: string;
   pertanyaanLisan: string;
-  kunciJawaban: string; // Wajib diisi oleh Asesor
+  kunciJawaban: string;
 }
 
 export interface Step4Data {
@@ -184,7 +184,6 @@ export interface Step4Data {
   questions: Step4Question[];
 }
 
-// Central Wizard Form State Schema
 export interface WizardFormState {
   metadata: ConfigurationMetadata;
   step1: Step1Data;
@@ -241,7 +240,7 @@ export interface SubPertanyaanItem {
   tipePertanyaan?: string;
   penyusun?: PersonItem[] | string[];
   questions?: Question[];
-  [key: string]: unknown; // Menampung blokA, blokB, lingkups, dll.
+  [key: string]: unknown;
 }
 
 export interface PertanyaanAsesmenItem {
@@ -271,40 +270,54 @@ export interface KonfigurasiPertanyaanItem {
 }
 
 /* ==========================================================================
-   ASSESSMENT & BATCH INTERFACES
+   ASSESSMENT & BATCH INTERFACES (REVISED)
    ========================================================================== */
 
 export type JenisMetode = "Offline" | "Online";
+export type JenisTUK = "Sewaktu" | "Mandiri" | "Tempat Kerja";
+export type StatusAsesmen = "Belum Selesai" | "Selesai";
+export type HasilAsesmen = "Kompeten" | "Belum Kompeten";
+
+export interface PenilaianDokumenItem {
+  kode: string;
+  judul: string;
+  fileName: string;
+  fileUrl?: string;
+  subtext?: string;
+}
 
 export interface Assessment {
   id: number;
   nama?: string;
   nik?: string;
   asesmen?: string;
-  tuk?: string;
-  hasil?: string;
+  tuk?: JenisTUK | string;
+  metode: JenisMetode;
+  hasil?: HasilAsesmen;
   isBanding?: boolean;
+  statusBanding?: "Disetujui" | "Ditolak" | string;
   alasanBanding?: string;
   skema?: string;
   batchCode?: string;
   batchName?: string;
   alamat?: string;
-  metode: string;
   tglPra?: string;
   tglAsesmen?: string;
   waktu?: string;
   linkVideo?: string;
-  status: string;
+  status: StatusAsesmen;
   riwayat?: string;
   statusApl02?: string;
-  [key: string]: unknown; // Opsi tambahan agar fleksibel
+  catatanObservasi?: string;
+  dokumenPenilaian?: PenilaianDokumenItem[];
+  [key: string]: unknown;
 }
 
 export interface BatchGroup {
   batchCode: string;
   batchName: string;
   skema: string;
-  tuk: string;
+  tuk: JenisTUK | string;
   metode: JenisMetode;
   alamat: string;
   tglAsesmen: string;
@@ -321,11 +334,17 @@ export interface PortfolioItem {
   alamatLsp?: string;
   deskripsi?: string;
   tanggal: string;
-  fileName: string;
-  filePeminjamanName?: string;
-  fileJawabanName?: string;
-  fileSize?: string;
+
+  // Ubah menjadi opsional (?) agar tidak error jika tidak diisi
+  filePortofolio?: string;
+  fileName?: string;
   fileType?: string;
+  filePeminjaman?: string;
+  filePeminjamanName?: string;
+  fileJawabanLsp?: string;
+  fileJawabanName?: string;
+
+  fileSize?: string;
   status: "Menunggu Verifikasi" | "Terverifikasi" | "Ditolak";
   catatanAdmin?: string;
 }

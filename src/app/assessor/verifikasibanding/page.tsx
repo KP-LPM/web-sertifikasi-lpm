@@ -20,7 +20,7 @@ import {
   Building2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
-import { Assessment } from "@/types/types";
+import { Assessment, HasilAsesmen } from "@/types/types";
 
 export default function VerifikasiBanding() {
   const [mode, setMode] = useState<"list" | "detail">("list");
@@ -233,14 +233,15 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
       const updatedData =
         modalAction === "approve"
           ? {
-              hasil: "Kompeten",
+              hasil: "Kompeten" as HasilAsesmen,
               isBanding: false,
-              statusBanding: "Disetujui",
+              statusBanding: "Disetujui" as string,
               catatanAsesor: catatanBaru.trim(),
             }
           : {
+              hasil: "Belum Kompeten" as HasilAsesmen,
               isBanding: false,
-              statusBanding: "Ditolak",
+              statusBanding: "Ditolak" as string,
               catatanAsesor: catatanBaru.trim(),
             };
 

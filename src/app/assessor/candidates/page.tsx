@@ -19,15 +19,23 @@ import {
   ExternalLink,
   Layers,
   UserCheck,
+  ShieldCheck,
   Globe,
   Mail,
+  X,
 } from "lucide-react";
 import { Assessment, BatchGroup, JenisMetode } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
 export default function AsesiList() {
   const router = useRouter();
-  const { setSelectedAsesmen, selectedAsesmen, assessments } = useAppContext();
+  const {
+    setSelectedAsesmen,
+    selectedAsesmen,
+    assessments,
+    deleteBatchAssessments,
+    completedBatchCodes,
+  } = useAppContext();
 
   // State
   const [activeTab, setActiveTab] = useState<"Semua" | "Offline" | "Online">(
@@ -40,6 +48,10 @@ export default function AsesiList() {
     },
   );
   const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [successNotification, setSuccessNotification] = useState<string | null>(
+    null,
+  );
 
   // 1. Group assessments into Batches
   const batchMap = new Map<string, BatchGroup>();
@@ -75,7 +87,9 @@ export default function AsesiList() {
     });
   });
 
-  const allBatches = Array.from(batchMap.values());
+  const allBatches = Array.from(batchMap.values()).filter(
+    (b) => !completedBatchCodes.includes(b.batchCode),
+  );
 
   // 2. Filter batches according to active tab and search query
   const filteredBatches = allBatches.filter((batch) => {
@@ -103,6 +117,11 @@ export default function AsesiList() {
   const currentSelectedBatch = allBatches.find(
     (b) => b.batchCode === selectedBatchCode,
   );
+
+  const isAllCandidatesFinished = currentSelectedBatch
+    ? currentSelectedBatch.candidates.length > 0 &&
+      currentSelectedBatch.candidates.every((c) => c.status === "Selesai")
+    : false;
 
   // Filter candidates inside Level 2 view
   const filteredCandidates = currentSelectedBatch
@@ -165,6 +184,24 @@ export default function AsesiList() {
             </span>
           </div>
         </div>
+
+        {/* Success Notification Banner */}
+        {successNotification && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-xl flex items-center justify-between gap-3 shadow-2xs ">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle size={20} className="text-emerald-600 shrink-0" />
+              <span className="text-xs sm:text-sm font-bold">
+                {successNotification}
+              </span>
+            </div>
+            <button
+              onClick={() => setSuccessNotification(null)}
+              className="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* VIEW SWITCHER: LEVEL 1 (Batch List) vs LEVEL 2 (Candidates inside selected Batch) */}
@@ -512,6 +549,73 @@ export default function AsesiList() {
             </div>
           )}
 
+          {/* ========================================================================= */}
+          {/* KODE BARU: BANNER & TOMBOL AKSI SELESAIKAN ASESMEN BATCH                  */}
+          {/* Lokasi: src/pages/assessor/Candidates.tsx                                 */}
+          {/* ========================================================================= */}
+          {currentSelectedBatch && (
+            <div
+              className={`rounded-2xl border p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs ${
+                isAllCandidatesFinished
+                  ? "bg-linear-to-r from-emerald-50 via-white to-emerald-50/60 border-emerald-300"
+                  : "bg-white border-slate-200"
+              }`}
+            >
+              <div className="flex items-start md:items-center gap-4">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-colors ${
+                    isAllCandidatesFinished
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-100 text-slate-400 border border-slate-200"
+                  }`}
+                >
+                  <ShieldCheck size={26} className="stroke-[2.2]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-base font-black text-slate-900">
+                      Aksi Penyelesaian Batch Asesmen
+                    </h4>
+                    {isAllCandidatesFinished ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wide">
+                        Siap Diseleksikan
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 uppercase tracking-wide">
+                        Dalam Proses (
+                        {
+                          currentSelectedBatch.candidates.filter(
+                            (c) => c.status === "Selesai",
+                          ).length
+                        }
+                        /{currentSelectedBatch.candidates.length} Selesai)
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 font-medium mt-1 leading-relaxed">
+                    {isAllCandidatesFinished
+                      ? `Seluruh ${currentSelectedBatch.candidates.length} asesi pada batch ini sudah selesai dinilai. Klik tombol di kanan untuk menyelesaikan batch.`
+                      : `Selesaikan penilaian untuk semua asesi pada batch ini untuk mengaktifkan tombol penyelesaian batch.`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 w-full md:w-auto">
+                <button
+                  disabled={!isAllCandidatesFinished}
+                  onClick={() => setShowCompleteModal(true)}
+                  className={`w-full md:w-auto px-5 py-3 rounded-xl font-black text-xs md:text-sm flex items-center justify-center gap-2.5 transition-all shadow-xs ${
+                    isAllCandidatesFinished
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-emerald-600/20 hover:shadow-md"
+                      : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                  }`}
+                >
+                  <ShieldCheck size={18} />
+                  <span>Selesaikan Asesmen Batch</span>
+                </button>
+              </div>
+            </div>
+          )}
           {/* Candidate Table Section */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -571,21 +675,17 @@ export default function AsesiList() {
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                               candidate.status === "Selesai"
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : candidate.status === "Menunggu Asesi"
-                                  ? "bg-slate-100 text-slate-700 border-slate-300"
-                                  : "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-amber-50 text-amber-700 border-amber-200"
                             }`}
                           >
-                            {candidate.status === "Selesai" && (
+                            {candidate.status === "Selesai" ? (
                               <CheckCircle size={12} />
-                            )}
-                            {candidate.status === "Menunggu Asesi" && (
+                            ) : (
                               <Clock size={12} />
                             )}
-                            {candidate.status === "Belum Selesai" && (
-                              <Clock size={12} />
-                            )}
-                            {candidate.status}
+                            {candidate.status === "Selesai"
+                              ? "Selesai"
+                              : "Belum Selesai"}
                           </span>
                         </td>
 
@@ -634,6 +734,77 @@ export default function AsesiList() {
                   : 0}{" "}
                 Asesi
               </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCompleteModal && currentSelectedBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-emerald-50/60">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0">
+                  <ShieldCheck size={18} />
+                </div>
+                <h3 className="font-black text-slate-900 text-base">
+                  Konfirmasi Selesaikan Asesmen
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowCompleteModal(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6 flex flex-col items-center justify-center text-center bg-white space-y-3">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1">
+                <CheckCircle size={32} className="stroke-[2.5]" />
+              </div>
+              <h4 className="text-base font-bold text-slate-900">
+                Selesaikan & Hapus Batch Asesmen Ini?
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
+                Seluruh{" "}
+                <strong className="text-slate-800">
+                  {currentSelectedBatch.candidates.length} asesi
+                </strong>{" "}
+                pada batch{" "}
+                <span className="font-bold text-slate-900">
+                  {currentSelectedBatch.batchName}
+                </span>{" "}
+                telah selesai dinilai.
+                <br />
+                <br />
+                Setelah dikonfirmasi, batch ini akan diselesaikan secara resmi
+                dan <strong>dihapus dari daftar asesmen aktif</strong> Anda.
+              </p>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
+              <button
+                onClick={() => setShowCompleteModal(false)}
+                className="px-4 py-2 font-bold text-xs text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  const name = currentSelectedBatch.batchName;
+                  deleteBatchAssessments(currentSelectedBatch.batchCode);
+                  setSelectedBatchCode(null);
+                  setSelectedAsesmen(null);
+                  setShowCompleteModal(false);
+                  setSuccessNotification(
+                    `Batch "${name}" telah berhasil diselesaikan dan dihapus dari daftar asesmen Anda.`,
+                  );
+                }}
+                className="px-4 py-2.5 font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <ShieldCheck size={15} />
+                Ya, Selesaikan Asesmen
+              </button>
             </div>
           </div>
         </div>

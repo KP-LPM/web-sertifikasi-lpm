@@ -344,8 +344,8 @@ export default function VerifikasiPortofolio() {
       selectedFile: null,
       filePeminjaman: null,
       fileJawaban: null,
-      fileNamePlaceholder: item.fileName,
-      filePeminjamanPlaceholder: item.filePeminjamanName || item.fileName,
+      fileNamePlaceholder: item.fileName || "",
+      filePeminjamanPlaceholder: item.filePeminjamanName || item.fileName || "",
       fileJawabanPlaceholder: item.fileJawabanName || "",
     });
     setIsReuploadModalOpen(true);
@@ -584,7 +584,10 @@ export default function VerifikasiPortofolio() {
                           <button
                             onClick={() =>
                               setPreviewFile({
-                                name: item.filePeminjamanName || item.fileName,
+                                name:
+                                  item.filePeminjamanName ||
+                                  item.fileName ||
+                                  " ",
                                 type: item.fileType,
                               })
                             }
@@ -622,7 +625,7 @@ export default function VerifikasiPortofolio() {
                         <button
                           onClick={() =>
                             setPreviewFile({
-                              name: item.fileName,
+                              name: item.fileName || "",
                               type: item.fileType,
                             })
                           }
@@ -1178,7 +1181,8 @@ export default function VerifikasiPortofolio() {
                             setPreviewFile({
                               name:
                                 selectedPortfolio.filePeminjamanName ||
-                                selectedPortfolio.fileName,
+                                selectedPortfolio.fileName ||
+                                "",
                               type: selectedPortfolio.fileType,
                             })
                           }
@@ -1238,7 +1242,7 @@ export default function VerifikasiPortofolio() {
                       <button
                         onClick={() =>
                           setPreviewFile({
-                            name: selectedPortfolio.fileName,
+                            name: selectedPortfolio.fileName || "",
                             type: selectedPortfolio.fileType,
                           })
                         }

@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { Eye, CheckCircle } from "lucide-react";
+import { Eye, CheckCircle, AlertTriangle, FastForward } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { Assessment, EvidenceFileItem, PenyusunValidator } from "@/types/types";
- 
 
 export const DEFAULT_APL02_UNITS = [
   {
@@ -59,6 +58,7 @@ export interface FormFRAPL02Props {
   onRekomendasiChange?: (
     val: "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | "",
   ) => void;
+  onFinishDirectly?: () => void;
   asesiName?: string;
   onAsesiNameChange?: (val: string) => void;
   asesiSignature?: string;
@@ -123,8 +123,9 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
       ?.units ||
     matchedScheme?.units ||
     DEFAULT_APL02_UNITS;
-  const [localAnswers, setLocalAnswers] = useState<Record<string, "K" | "BK">>({
-  });
+  const [localAnswers, setLocalAnswers] = useState<Record<string, "K" | "BK">>(
+    {},
+  );
   const [localRekomendasi, setLocalRekomendasi] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
   >("Dapat dilanjutkan");
@@ -198,7 +199,21 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const penyusun = props.penyusun || localPenyusun;
   const validator = props.validator || localValidator;
 
+  const allElementKeys: string[] = [];
+  units.forEach((unit, idx) => {
+    (unit.elemen || []).forEach((_, eIdx) => {
+      allElementKeys.push(`u${idx}e${eIdx}`);
+    });
+  });
+  const totalElements = allElementKeys.length;
+  const filledElementsCount = allElementKeys.filter(
+    (k) => answers[k] === "K" || answers[k] === "BK",
+  ).length;
+  const isAllKBKFilled =
+    totalElements > 0 && filledElementsCount === totalElements;
+
   const handleAnswerChangeInternal = (key: string, val: "K" | "BK") => {
+    if (props.readOnly || props.isAsesi) return;
     if (props.onAnswerChange) {
       props.onAnswerChange(key, val);
     } else {
@@ -254,59 +269,28 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
         />
       )}
 
-      {/* Skema Info Box */}
-      <table className="w-full table-fixed border-collapse border border-slate-300 text-xs sm:text-sm mb-6 bg-white">
-        <tbody>
-          <tr>
-            <td className="border border-slate-300 p-2 sm:p-3 font-semibold w-25 sm:w-45 bg-slate-50 text-center align-middle">
-              Skema Sertifikasi
-            </td>
-            <td className="border border-slate-300 p-0">
-              <table className="w-full h-full table-fixed border-collapse">
-                <tbody>
-                  <tr>
-                    <td className="border-b border-r border-slate-300 p-2 sm:p-2.5 font-semibold w-17.5 sm:w-1/6 bg-slate-50/50 whitespace-nowrap">
-                      Judul :
-                    </td>
-                    <td className="border-b border-slate-300 p-2 sm:p-2.5 font-bold text-slate-900 wrap-break-word break-all sm:break-normal">
-                      {props.asesmenData?.skema ||
-                        "Pengelolaan Pinjaman / Pembiayaan"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border-r border-slate-300 p-2 sm:p-2.5 font-semibold w-17.5 sm:w-1/6 bg-slate-50/50 whitespace-nowrap">
-                      Nomor :
-                    </td>
-                    <td className="p-2 sm:p-2.5 font-medium text-slate-700 wrap-break-word break-all sm:break-normal">
-                      {String(
-                        props.asesmenData?.noSkema || "006/SKM/LSP-KJN/II/2023",
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
       {/* Guide Box */}
       <div className="border border-slate-300 mb-6 bg-white">
-        <div className="border-b border-slate-300 p-3 bg-slate-50 font-bold text-xs sm:text-sm uppercase text-slate-800">
-          Panduan Asesmen Mandiri
+        <div className="border-b border-slate-300 p-3 bg-slate-50 font-bold text-xs sm:text-sm uppercase text-slate-800 flex items-center justify-between flex-wrap gap-2">
+          <span>Panduan Asesmen Mandiri</span>
+          {props.isAsesi && (
+            <span className="text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-1 rounded border border-amber-200 normal-case">
+              Penilaian K / BK diisi oleh Asesor berdasarkan bukti yang Anda
+              lampirkan
+            </span>
+          )}
         </div>
         <div className="p-4 text-xs sm:text-sm space-y-2 text-slate-700">
           <p className="font-bold">Instruksi:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Baca setiap pertanyaan di kolom sebelah kiri.</li>
             <li>
-              Beri tanda centang pada kotak K (Kompeten) jika Anda yakin dapat
-              melakukan tugas yang dijelaskan, atau BK (Belum Kompeten) jika
-              tidak.
+              Status K (Kompeten) dan BK (Belum Kompeten) akan diverifikasi dan
+              ditentukan oleh Asesor.
             </li>
             <li>
-              Isi kolom di sebelah kanan dengan mendaftar bukti yang Anda
-              miliki.
+              Pastikan bukti pendukung yang relevan telah terunggah pada setiap
+              unit kompetensi.
             </li>
           </ul>
         </div>
@@ -402,25 +386,25 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                       <td className="border border-slate-300 p-2 text-center align-middle">
                         <input
                           type="radio"
-                          disabled={props.readOnly}
+                          disabled={props.readOnly || props.isAsesi}
                           name={fieldKey}
                           checked={answers[fieldKey] === "K"}
                           onChange={() =>
                             handleAnswerChangeInternal(fieldKey, "K")
                           }
-                          className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
+                          className={`w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] ${props.readOnly || props.isAsesi ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                         />
                       </td>
                       <td className="border border-slate-300 p-2 text-center align-middle">
                         <input
                           type="radio"
-                          disabled={props.readOnly}
+                          disabled={props.readOnly || props.isAsesi}
                           name={fieldKey}
                           checked={answers[fieldKey] === "BK"}
                           onChange={() =>
                             handleAnswerChangeInternal(fieldKey, "BK")
                           }
-                          className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
+                          className={`w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] ${props.readOnly || props.isAsesi ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                         />
                       </td>
                       <td className="border border-slate-300 p-3 align-middle text-center">
@@ -801,6 +785,30 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
         </div>
       </div>
 
+      {/* Bottom Action for Finish Directly when Belum Kompeten / Tidak dapat dilanjutkan */}
+      {rekomendasi === "Tidak dapat dilanjutkan" && props.onFinishDirectly && (
+        <div className="mt-6 mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 text-sm">
+                Asesmen Tidak Dapat Dilanjutkan
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={props.onFinishDirectly}
+            className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 font-bold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+          >
+            <FastForward size={16} />
+            Selesaikan Asesmen & Ke Finalisasi
+          </button>
+        </div>
+      )}
+
       {/* Footer Navigation Buttons */}
       {(props.onPrev || props.onNext) && (
         <div className="flex items-center justify-between pt-4 border-t border-slate-200">
@@ -818,7 +826,16 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           {props.onNext && (
             <button
               onClick={props.onNext}
-              disabled={props.isNextDisabled}
+              disabled={
+                props.isNextDisabled !== undefined
+                  ? props.isNextDisabled
+                  : !props.isAsesi && !props.readOnly && !isAllKBKFilled
+              }
+              title={
+                !props.isAsesi && !props.readOnly && !isAllKBKFilled
+                  ? "Lengkapi semua status K/BK terlebih dahulu"
+                  : ""
+              }
               className="px-6 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Selanjutnya

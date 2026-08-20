@@ -3,7 +3,14 @@ import { ChevronRight, ArrowLeft } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Assessment } from "@/types/types";
- 
+
+export const DEFAULT_POTENSI_ASESI = [
+  "Hasil pelatihan dan / atau pendidikan, dimana Kurikulum dan fasilitas praktek mampu telusur terhadap standar kompetensi",
+  "Hasil pelatihan dan / atau pendidikan, dimana kurikulum belum berbasiskompetensi.",
+  "Pekerja berpengalaman, dimana berasal dari industri/tempat kerja yang dalam operasionalnya mampu telusur dengan standar kompetensi",
+  "Pekerja berpengalaman, dimana berasal dari industri/tempat kerja yangdalam operasionalnya belum berbasis kompetensi.",
+  "Pelatihan / belajar mandiri atau otodidak.",
+];
 
 export const DEFAULT_ADJUSTMENT_OPTIONS = [
   {
@@ -92,6 +99,8 @@ export const DEFAULT_ADJUSTMENT_OPTIONS = [
 
 export interface FormFRAK07Props {
   asesmenData?: Assessment;
+  potensiAsesi?: string[];
+  onPotensiAsesiChange?: (val: string[]) => void;
   noAdjustment?: boolean;
   onNoAdjustmentChange?: (val: boolean) => void;
   adjustments?: Record<
@@ -130,7 +139,9 @@ export interface FormFRAK07Props {
 }
 
 export function FormFRAK07(props: FormFRAK07Props) {
-  // Controlled vs local fallbacks
+  const [localPotensi, setLocalPotensi] = useState<string[]>([
+    DEFAULT_POTENSI_ASESI[0],
+  ]);
   const [localNoAdjustment, setLocalNoAdjustment] = useState(false);
   const [localAdjustments, setLocalAdjustments] = useState<
     Record<
@@ -154,9 +165,23 @@ export function FormFRAK07(props: FormFRAK07Props) {
 
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
   const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
+  const potensiAsesi =
+    props.potensiAsesi !== undefined ? props.potensiAsesi : localPotensi;
 
   const noAdjustment =
     props.noAdjustment !== undefined ? props.noAdjustment : localNoAdjustment;
+
+  const handlePotensiToggle = (option: string) => {
+    const current = potensiAsesi || [];
+    const newOpts = current.includes(option)
+      ? current.filter((o) => o !== option)
+      : [...current, option];
+    if (props.onPotensiAsesiChange) {
+      props.onPotensiAsesiChange(newOpts);
+    } else {
+      setLocalPotensi(newOpts);
+    }
+  };
   const adjustments =
     props.adjustments !== undefined ? props.adjustments : localAdjustments;
   const acuanPembanding =
@@ -288,6 +313,51 @@ export function FormFRAK07(props: FormFRAK07Props) {
             </li>
           </ul>
         </div>
+      </div>
+
+      {/* Potensi Asesi Table */}
+      <div className="border border-slate-300 mb-6 bg-white overflow-x-auto">
+        <table className="w-full border-collapse text-xs md:text-sm">
+          <tbody>
+            <tr>
+              <td className="border-r border-slate-300 p-3 font-bold align-middle w-32 sm:w-40 bg-white text-slate-900">
+                Potensi Asesi
+              </td>
+              <td className="p-0">
+                <table className="w-full border-collapse">
+                  <tbody>
+                    {DEFAULT_POTENSI_ASESI.map((opt, idx) => {
+                      const isChecked = potensiAsesi.includes(opt);
+                      return (
+                        <tr
+                          key={idx}
+                          className={
+                            idx !== DEFAULT_POTENSI_ASESI.length - 1
+                              ? "border-b border-slate-300"
+                              : ""
+                          }
+                        >
+                          <td className="border-r border-slate-300 p-2.5 text-center w-10 sm:w-12 align-middle">
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 cursor-pointer"
+                              checked={isChecked}
+                              disabled={props.readOnly}
+                              onChange={() => handlePotensiToggle(opt)}
+                            />
+                          </td>
+                          <td className="p-2.5 text-slate-900 font-medium align-middle">
+                            {opt}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Checkbox No Adjustment */}
