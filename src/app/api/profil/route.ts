@@ -1,12 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getToken } from 'next-auth/jwt';
+
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // SEMENTARA: Kita hardcode userId = 1.
-    // Nanti setelah fitur login/auth kamu jadi, ini diganti dengan ID dari token/session
-    const userId = 2;
+    // Ambil data sesi (token) user yang lagi login
+    const token = await getToken({ req: request });
+    
+    if (!token) {
+      return NextResponse.json({ message: 'Akses ditolak, silakan login.' }, { status: 401 });
+    }
+
+    // Ambil ID dari token. 
+    const userId = Number(token.id || token.sub);
 
     const profil = await prisma.profilPengguna.findUnique({
       where: { userId: userId },
@@ -22,6 +30,55 @@ export async function GET() {
     console.error('Waduh, error ambil profil:', error);
     return NextResponse.json(
       { message: 'Gagal mengambil data profil', error: String(error) }, 
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Cek token lagi biar aman dari penyusup
+    const token = await getToken({ req: request });
+    if (!token) {
+      return NextResponse.json({ message: 'Akses ditolak, silakan login.' }, { status: 401 });
+    }
+
+    const userId = Number(token.id || token.sub);
+    const body = await request.json();
+    
+    // Mapping data dari form frontend ke schema Prisma database
+    const dataProfil = {
+        namaLengkap: body.nama_lengkap,
+        tempatLahir: body.tempat_lahir,
+        tanggalLahir: body.tanggal_lahir ? new Date(body.tanggal_lahir) : null,
+        jenisKelamin: body.jenis_kelamin,
+        alamat: body.alamat_rumah,
+        kodePos: body.kode_pos,
+        nik: body.nik,
+        nomorRegistrasiMet: body.no_registrasi,
+        noHp: body.no_telp,
+        pekerjaan: body.pekerjaan,
+        pendidikanTerakhir: body.pendidikan_terakhir,
+        tandaTangan: body.tanda_tangan,
+        avatar: body.avatar,
+    };
+
+    // Upsert pakai userId dinamis dari sesi login
+    const profil = await prisma.profilPengguna.upsert({
+      where: { userId: userId },
+      update: dataProfil,
+      create: {
+        userId: userId,
+        ...dataProfil
+      }
+    });
+
+    return NextResponse.json({ message: 'Profil sukses disimpan!', profil }, { status: 200 });
+
+  } catch (error) {
+    console.error('Waduh, error simpan profil:', error);
+    return NextResponse.json(
+      { message: 'Gagal menyimpan data profil', error: String(error) }, 
       { status: 500 }
     );
   }

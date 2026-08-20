@@ -120,6 +120,7 @@ interface Submission {
   telpInstitusi?: string;
   faxInstitusi?: string;
   tuk?: string;
+  metode?: string;
   berpengalaman?: boolean;
 }
 
@@ -282,6 +283,7 @@ export default function PengajuanSkemaPage() {
   const [telpInstitusi, setTelpInstitusi] = useState("");
   const [faxInstitusi, setFaxInstitusi] = useState("");
   const [tuk, setTuk] = useState("");
+  const [metode, setMetode] = useState("");
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
@@ -352,6 +354,7 @@ export default function PengajuanSkemaPage() {
     telpInstitusi: boolean;
     alamatInstitusi: boolean;
     tuk: boolean;
+    metode: boolean;
   }
 
   const scrollToTopMobile = () => {
@@ -379,6 +382,7 @@ export default function PengajuanSkemaPage() {
     telpInstitusi: false,
     alamatInstitusi: false,
     tuk: false,
+    metode: false,
   });
 
   const handleNext = () => {
@@ -402,6 +406,7 @@ export default function PengajuanSkemaPage() {
         telpInstitusi: telpInstitusi.trim() === "",
         alamatInstitusi: alamatInstitusi.trim() === "",
         tuk: tuk === "",
+        metode: metode === "",
       };
       setErrors(newErrors);
 
@@ -472,7 +477,8 @@ export default function PengajuanSkemaPage() {
       alamatInstitusi,
       telpInstitusi,
       faxInstitusi,
-      tuk: tuk || "Mandiri",
+      tuk: tuk, 
+      metode: metode,
       penyesuaianWajar,
       berpengalaman,
     };
@@ -486,6 +492,7 @@ export default function PengajuanSkemaPage() {
     setNik("");
     setKodePos("");
     setTuk("");
+    setMetode("");
     setBerpengalaman(false);
     setStep(1);
     showAlert(`Pengajuan Skema ${newSubmission.name} Berhasil Diajukan!`);
@@ -1412,6 +1419,7 @@ export default function PengajuanSkemaPage() {
                             telpInstitusi: telpInstitusi.trim() === "",
                             alamatInstitusi: alamatInstitusi.trim() === "",
                             tuk: tuk === "",
+                            metode: metode === "",
                           };
                           setErrors(newErrors);
                           if (
@@ -1643,24 +1651,24 @@ export default function PengajuanSkemaPage() {
                   </div>
                 </div>
 
-                <div className="min-w-0 mt-6">
+                <div className="min-w-0">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="text-red-500">*</span> Alamat Lengkap Rumah
-                    (Jalan, RT/RW, Kel/Desa, Kec)
+                    <span className="text-red-500">*</span> Alamat Lengkap Rumah (Jalan, RT/RW, Kel/Desa, Kec)
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     value={alamat}
                     onChange={(e) => {
                       setAlamat(e.target.value);
-                      if (errors.alamat)
-                        setErrors({ ...errors, alamat: false });
+                      if (errors.alamat) setErrors({ ...errors, alamat: false });
                     }}
-                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-20 resize-none ${errors.alamat ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
-                  ></textarea>
+                    placeholder="Masukkan alamat lengkap"
+                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                      errors.alamat ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"
+                    }`}
+                  />
                   {errors.alamat && (
-                    <p className="text-[10px] text-red-500 mt-1 font-bold">
-                      Alamat Tidak Boleh Kosong
-                    </p>
+                    <p className="text-[10px] text-red-500 mt-1 font-bold">Masukkan alamat lengkap rumah</p>
                   )}
                 </div>
 
@@ -1906,9 +1914,10 @@ export default function PengajuanSkemaPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Dropdown TUK */}
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> TUK
+                      <span className="text-red-500">*</span> Klasifikasi TUK
                     </label>
                     <select
                       value={tuk}
@@ -1918,14 +1927,35 @@ export default function PengajuanSkemaPage() {
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="">Pilih TUK</option>
-                      <option value="Mandiri (Online)">Mandiri (Online)</option>
+                      <option value="" disabled>Pilih TUK</option>
                       <option value="Sewaktu">Sewaktu</option>
+                      <option value="Mandiri">Mandiri</option>
+                      <option value="Tempat Kerja">Tempat Kerja</option>
                     </select>
                     {errors.tuk && (
-                      <p className="text-[10px] text-red-500 mt-1 font-bold">
-                        Pilih TUK
-                      </p>
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih klasifikasi TUK</p>
+                    )}
+                  </div>
+
+                  {/* Dropdown METODE */}
+                  <div className="min-w-0">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Metode Ujian
+                    </label>
+                    <select
+                      value={metode}
+                      onChange={(e) => {
+                        setMetode(e.target.value);
+                        if (errors.metode) setErrors({ ...errors, metode: false });
+                      }}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.metode ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                    >
+                      <option value="" disabled>Pilih Metode</option>
+                      <option value="Offline">Offline (Tatap Muka)</option>
+                      <option value="Online">Online (Daring)</option>
+                    </select>
+                    {errors.metode && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih metode ujian</p>
                     )}
                   </div>
 

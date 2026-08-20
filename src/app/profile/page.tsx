@@ -4,8 +4,10 @@ import React, { useState, useRef } from "react";
 import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
+import { supabase } from '@/lib/supabase';
 
 type SessionUser = {
+  id?: string | number;
   name?: string | null;
   email?: string | null;
   username?: string;
@@ -15,58 +17,83 @@ type SessionUser = {
 
 export default function Profile() {
   const { user, registeredProfile, updateUser } = useAppContext();
-  const profileImageRef = useRef<HTMLInputElement>(null);
-
-  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          updateUser({ avatar: event.target.result as string });
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+  
+  // State untuk modal tanda tangan
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const signatureRef = useRef<SignatureCanvas>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-const [formData, setFormData] = useState({
-    peran:
-      (user as SessionUser)?.role === "asesor"
-        ? "Asesor"
-        : (user as SessionUser)?.role === "admin"
-          ? "Admin"
-          : "Asesi",
-    username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : ""),
-    email: user?.email || "",
-    namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
-    tempatLahir: (registeredProfile?.tempatLahir as string) || "",
-    tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
-    jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
-    alamat: (registeredProfile?.alamatRumah as string) || "",
-    alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
-    kodePos: (registeredProfile?.kodePos as string) || "",
-    nik: (registeredProfile?.nik as string) || "",
-    noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
-    noTelp: (registeredProfile?.noTelp as string) || "",
-    pekerjaan: (registeredProfile?.pekerjaan as string) || "",
-    pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
-    tandaTangan: (registeredProfile?.tandaTangan as string) || "",
-  });
+  // State untuk upload foto profil ke Supabase
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const fileAvatarRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData] = useState({
+      peran:
+        (user as SessionUser)?.role === "asesor"
+          ? "Asesor"
+          : (user as SessionUser)?.role === "admin"
+            ? "Admin"
+            : "Asesi",
+      username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : ""),
+      email: user?.email || "",
+      namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
+      tempatLahir: (registeredProfile?.tempatLahir as string) || "",
+      tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
+      jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
+      alamat: (registeredProfile?.alamatRumah as string) || "",
+      alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
+      kodePos: (registeredProfile?.kodePos as string) || "",
+      nik: (registeredProfile?.nik as string) || "",
+      noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
+      noTelp: (registeredProfile?.noTelp as string) || "",
+      pekerjaan: (registeredProfile?.pekerjaan as string) || "",
+      pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
+      tandaTangan: (registeredProfile?.tandaTangan as string) || "",
+    });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: type === "radio" ? value : value,
     }));
+  };
+
+  // 1. Fungsi Kompresi Foto (Biar dibawah 500kb)
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 500;
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (blob) resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          }, 'image/jpeg', 0.8);
+        };
+      };
+    });
+  };
+
+  // 2. Fungsi Saat User Memilih Foto Profil
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file)); // Tampilkan preview lokal
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +123,6 @@ const [formData, setFormData] = useState({
 
   React.useEffect(() => {
     if (isSignatureModalOpen && formData.tandaTangan && signatureRef.current) {
-      // Small timeout to ensure canvas is fully mounted and sized
       setTimeout(() => {
         signatureRef.current?.fromDataURL(formData.tandaTangan as string);
       }, 50);
@@ -106,8 +132,6 @@ const [formData, setFormData] = useState({
   React.useEffect(() => {
     if (registeredProfile) {
       const data = registeredProfile as unknown as Record<string, string | undefined>; 
-      
-      // Ambil nama dari database atau user session
       const namaAsli = data.nama_lengkap || data.nama || user?.name || "";
 
       setFormData(prev => ({
@@ -137,6 +161,9 @@ const [formData, setFormData] = useState({
         const response = await fetch('/api/profil');
         if (response.ok) {
           const data = await response.json();
+        if (data.avatar) {
+            setAvatarPreview(data.avatar);
+          }
           setFormData(prev => {
             return {
               ...prev,
@@ -163,39 +190,75 @@ const [formData, setFormData] = useState({
         console.error("Gagal mengambil data profil langsung:", error);
       }
     };
-
     fetchProfil();
-  }, []);
+  }, [user]);
   
-const handleSave = () => {
-    // 1. Simpan semua data ke dalam satu variabel payload
-    const payload = {
-      name: formData.namaLengkap, 
-      email: formData.email,
-      nama_lengkap: formData.namaLengkap, 
-      tempat_lahir: formData.tempatLahir,
-      tanggal_lahir: formData.tanggalLahir,
-      jenis_kelamin: formData.jenisKelamin,
-      alamat_rumah: formData.alamat,
-      alamat_wilayah: formData.alamatWilayah,
-      kode_pos: formData.kodePos,
-      nik: formData.nik,
-      no_registrasi: formData.noRegistrasi,
-      no_telp: formData.noTelp,
-      pekerjaan: formData.pekerjaan,
-      pendidikan_terakhir: formData.pendidikanTerakhir,
-      tanda_tangan: formData.tandaTangan,
-    };
+  // 3. Fungsi Utama Simpan Perubahan (Termasuk Upload Foto)
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      let finalAvatarUrl = (user as SessionUser)?.avatar || "";
 
-    // 2. Gunakan "as unknown" untuk melewati validasi ketat TypeScript
-    updateUser(payload as unknown as Record<string, string | undefined>);
-    
-    alert("Profil berhasil disimpan!");
+      // Upload ke Supabase Storage kalau ada file foto baru
+      if (avatarFile) {
+        const compressedFile = await compressImage(avatarFile);
+        const fileName = `avatar-${(user as SessionUser)?.id || Date.now()}-${Date.now()}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, compressedFile, { upsert: true });
+
+        if (uploadError) throw new Error("Gagal upload foto: " + uploadError.message);
+
+        const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+        finalAvatarUrl = publicUrlData.publicUrl;
+      }
+
+      const payload = {
+        name: formData.namaLengkap, 
+        email: formData.email,
+        nama_lengkap: formData.namaLengkap, 
+        tempat_lahir: formData.tempatLahir,
+        tanggal_lahir: formData.tanggalLahir,
+        jenis_kelamin: formData.jenisKelamin,
+        alamat_rumah: formData.alamat,
+        alamat_wilayah: formData.alamatWilayah,
+        kode_pos: formData.kodePos,
+        nik: formData.nik,
+        no_registrasi: formData.noRegistrasi,
+        no_telp: formData.noTelp,
+        pekerjaan: formData.pekerjaan,
+        pendidikan_terakhir: formData.pendidikanTerakhir,
+        tanda_tangan: formData.tandaTangan,
+        avatar: finalAvatarUrl, 
+      };
+
+      // Kirim data lengkap ke API profil
+      const response = await fetch('/api/profil', {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Gagal menyimpan profil ke database");
+
+      updateUser(payload as unknown as Record<string, string | undefined>);
+      alert("Profil berhasil disimpan!");
+      
+    } catch (error) {
+      // Kita cek dulu apakah error-nya benar-benar sebuah "Error" bawaan sistem
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Terjadi kesalahan saat menyimpan profil.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] pb-20">
-      {/* Header section in page */}
       <div className="bg-white px-4 md:px-8 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
@@ -218,9 +281,9 @@ const handleSave = () => {
             {/* Avatar Section */}
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm shrink-0">
-                {user?.avatar ? (
+                {(avatarPreview || user?.avatar) ? (
                   <img
-                    src={user.avatar}
+                    src={avatarPreview || (user?.avatar as string)}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -229,16 +292,16 @@ const handleSave = () => {
                 )}
               </div>
               <button
-                onClick={() => profileImageRef.current?.click()}
+                onClick={() => fileAvatarRef.current?.click()}
                 className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-xs transition-colors"
               >
                 Ubah Gambar
               </button>
               <input
                 type="file"
-                ref={profileImageRef}
-                onChange={handleProfileImageUpload}
-                accept="image/*"
+                ref={fileAvatarRef}
+                onChange={handleAvatarSelect}
+                accept="image/jpeg, image/png, image/webp"
                 className="hidden"
               />
             </div>
@@ -380,8 +443,7 @@ const handleSave = () => {
 
                 <div className="md:col-span-2 lg:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="text-red-500">*</span> Alamat
-                    Wilayah/Kelurahan
+                    <span className="text-red-500">*</span> Alamat Wilayah/Kelurahan
                   </label>
                   <input
                     type="text"
@@ -419,8 +481,7 @@ const handleSave = () => {
                 {formData.peran === "Asesor" && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Nomor
-                      Registrasi/MET
+                      <span className="text-red-500">*</span> Nomor Registrasi/MET
                     </label>
                     <input
                       type="text"
@@ -454,9 +515,7 @@ const handleSave = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   >
-                    <option value="" disabled>
-                      Pilih Pekerjaan
-                    </option>
+                    <option value="" disabled>Pilih Pekerjaan</option>
                     <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
                     <option value="Karyawan Swasta">Karyawan Swasta</option>
                     <option value="PNS">PNS</option>
@@ -473,9 +532,7 @@ const handleSave = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   >
-                    <option value="" disabled>
-                      Pilih Pendidikan
-                    </option>
+                    <option value="" disabled>Pilih Pendidikan</option>
                     <option value="SMA">SMA/SMK</option>
                     <option value="D3">D3</option>
                     <option value="S1">S1/D4</option>
@@ -535,9 +592,11 @@ const handleSave = () => {
             <div className="pt-6 border-t border-gray-100 flex justify-end">
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-lg text-sm font-bold shadow-xs transition-colors w-full md:w-auto justify-center"
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-lg text-sm font-bold shadow-xs transition-colors w-full md:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save size={18} className="stroke-[2.5]" /> Simpan Perubahan
+                <Save size={18} className="stroke-[2.5]" /> 
+                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
           </div>

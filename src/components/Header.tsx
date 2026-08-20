@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
@@ -13,31 +12,46 @@ import {
   LogOut,
 } from "lucide-react";
 
-function getProfilePath(role: string | null | undefined) {
+function getProfilePath() {
   return "/profile";
 }
 
 export function Header() {
-  const { user, sidebarCollapsed, setSidebarCollapsed, logout, requestNavigation } =
-    useAppContext();
+  const { user, sidebarCollapsed, setSidebarCollapsed, logout, requestNavigation } = useAppContext();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  // State baru khusus untuk nyimpen data dari database
+  const [dbProfile, setDbProfile] = useState<{name?: string, avatar?: string} | null>(null);
+
+  // Fungsi untuk ngambil profil terbaru tiap kali Header muncul
+  useEffect(() => {
+    const fetchHeaderProfile = async () => {
+      try {
+        const res = await fetch('/api/profil');
+        if (res.ok) {
+          const data = await res.json();
+          setDbProfile({
+            name: data.namaLengkap,
+            avatar: data.avatar
+          });
+        }
+      } catch (error) {
+        console.error("Gagal ambil data header:", error);
+      }
+    };
+    fetchHeaderProfile();
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
-      if (
-        notifRef.current &&
-        !notifRef.current.contains(event.target as Node)
-      ) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setIsNotifOpen(false);
       }
     }
@@ -56,10 +70,12 @@ export function Header() {
       .toUpperCase();
   };
 
+  // Prioritaskan data dari database, kalau kosong baru pakai data session NextAuth
+  const displayName = dbProfile?.name || user.name || "Pengguna";
+  const displayAvatar = dbProfile?.avatar || user.avatar;
+
   return (
-    <header
-      className={`sticky top-0 z-40 h-20 bg-[#F8F9FC]/95 backdrop-blur-md border-b border-slate-200 px-6 flex justify-between items-center w-full transition-all duration-300 md:pl-24 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-76"}`}
-    >
+    <header className={`sticky top-0 z-40 h-20 bg-[#F8F9FC]/95 backdrop-blur-md border-b border-slate-200 px-6 flex justify-between items-center w-full transition-all duration-300 md:pl-24 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-76"}`}>
       {/* Left: Hamburger menu for mobile */}
       <div className="flex items-center gap-4">
         <button
@@ -99,15 +115,15 @@ export function Header() {
           )}
         </div>
 
-        {/* User Card matching AJ Avatar Block */}
+        {/* User Card */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-100 rounded-lg p-1 pr-2 transition-colors"
           >
-            {user.avatar ? (
+            {displayAvatar ? (
               <img
-                src={user.avatar}
+                src={displayAvatar}
                 alt="Avatar"
                 width={32}
                 height={32}
@@ -115,12 +131,12 @@ export function Header() {
               />
             ) : (
               <div className="w-8 h-8 rounded-lg bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center font-extrabold text-xs shadow-xs">
-                {getInitials(user.name || "Pengguna")}
+                {getInitials(displayName)}
               </div>
             )}
             <div className="hidden md:flex flex-col items-start">
               <span className="text-xs font-black text-slate-900 leading-none">
-                {user.name || "Pengguna"}
+                {displayName}
               </span>
               <span className="text-[9px] text-slate-500 font-bold tracking-wider uppercase mt-0.5">
                 {user.role}
@@ -137,7 +153,7 @@ export function Header() {
               <button
                 onClick={() => {
                   setIsDropdownOpen(false);
-                  requestNavigation(() => router.push(getProfilePath(user.role)));
+                  requestNavigation(() => router.push(getProfilePath()));
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors"
               >
