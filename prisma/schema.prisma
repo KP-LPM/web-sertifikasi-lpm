@@ -156,6 +156,7 @@ model PengajuanSkema {
 
   dataPribadi    PendaftaranDataPribadi?
   asesmenMandiri AsesmenMandiri[]
+  dokumen        DokumenPengajuan[]
 
   @@map("pengajuan_skema")
 }
@@ -215,4 +216,15 @@ model AsesmenMandiri {
   updatedAt       DateTime             @updatedAt @map("updated_at")
 
   @@map("asesmen_mandiri")
+}
+
+model DokumenPengajuan {
+  id             Int            @id @default(autoincrement())
+  pengajuanId    Int            @map("pengajuan_id")
+  pengajuan      PengajuanSkema @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+  namaDokumen    String         @map("nama_dokumen")
+  fileUrl        String         @map("file_url") @db.Text
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  @@map("dokumen_pengajuan")
 }
