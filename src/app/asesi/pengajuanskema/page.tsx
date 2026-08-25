@@ -24,6 +24,31 @@ import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { useAppContext } from "@/context/context";
 
+import { 
+  DATA_PROVINSI, 
+  DATA_KOTA, 
+  DATA_PEKERJAAN,
+  DATA_PENDIDIKAN,
+  DATA_INSTANSI,
+} from "@/data/rujukan";
+
+// --- INTERFACE UNTUK DATA RUJUKAN ---
+interface RujukanItem {
+  id: string;
+  label: string;
+}
+
+interface KotaItem extends RujukanItem {
+  provId: string;
+}
+
+const provinsis = DATA_PROVINSI as RujukanItem[];
+const kotas = DATA_KOTA as KotaItem[];
+const pekerjaans = DATA_PEKERJAAN as RujukanItem[];
+const pendidikans = DATA_PENDIDIKAN as RujukanItem[];
+const instansis = DATA_INSTANSI as RujukanItem[];
+// ------------------------------------
+
 interface SchemeRequirement {
   name: string;
 }
@@ -56,39 +81,6 @@ interface Scheme {
     | SchemeUnit[]
     | undefined;
 }
-
-const getPendidikanOptions = (scheme: Scheme | null): string[] => {
-  const allOptions = ["SMA", "D3", "S1", "S2", "S3"];
-  if (!scheme) return allOptions;
-
-  let minLevelIndex = 0; // SMA
-  const reqString = JSON.stringify(scheme.persyaratanDasar || []).toLowerCase();
-
-  if (
-    reqString.includes("s-2") ||
-    reqString.includes("s2") ||
-    reqString.includes("strata 2")
-  ) {
-    if (
-      reqString.includes("ijazah strata 2") ||
-      reqString.includes("ijazah s2")
-    ) {
-      minLevelIndex = 3; // S2
-    } else {
-      minLevelIndex = 2; // S1
-    }
-  } else if (
-    reqString.includes("s1") ||
-    reqString.includes("s-1") ||
-    reqString.includes("strata 1")
-  ) {
-    minLevelIndex = 2; // S1
-  } else if (reqString.includes("d3") || reqString.includes("diploma 3")) {
-    minLevelIndex = 1; // D3
-  }
-
-  return allOptions.slice(minLevelIndex);
-};
 
 interface Submission {
   noHp?: string;
@@ -191,7 +183,8 @@ export default function PengajuanSkemaPage() {
     }
   }, [subView, selectedDetailSubmission]);
 
-  const [step, setStep] = useState(1);
+  // SET EXPLICIT TYPE NUMBER AGAR TIDAK ERROR DI TYPE CHECKING
+  const [step, setStep] = useState<number>(1);
   const [showStep2Errors, setShowStep2Errors] = useState(false);
   const [showStep3Errors, setShowStep3Errors] = useState(false);
 
@@ -259,7 +252,6 @@ export default function PengajuanSkemaPage() {
   const [searchScheme, setSearchScheme] = useState("");
   const [schemePage, setSchemePage] = useState(1);
 
-  // MENGOSONGKAN DATA DUMMY
   const [namaLengkap, setNamaLengkap] = useState(user?.name || '');
   const [tempatLahir, setTempatLahir] = useState('');
   const [tanggalLahir, setTanggalLahir] = useState('');
@@ -267,7 +259,12 @@ export default function PengajuanSkemaPage() {
   const [alamat, setAlamat] = useState('');
   const [provinsi, setProvinsi] = useState('');
   const [kota, setKota] = useState('');
-  const alamatWilayah = [kota, provinsi].filter(Boolean).join(', ');
+  
+  // Mengubah ID Provinsi dan Kota menjadi nama lengkapnya untuk disimpan
+  const namaProvinsi = provinsis.find((p) => p.id === provinsi)?.label || "";
+  const namaKota = kotas.find((k) => k.id === kota)?.label || "";
+  const alamatWilayah = [namaKota, namaProvinsi].filter(Boolean).join(', ');
+  
   const [nik, setNik] = useState('');
   const [kewarganegaraan, setKewarganegaraan] = useState('WNI');
   const [kodePos, setKodePos] = useState('');
@@ -291,19 +288,15 @@ export default function PengajuanSkemaPage() {
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
-        console.log("Mencoba mengambil data profil...");
         const response = await fetch('/api/profil');
         
         if (response.ok) {
           const dataProfil = await response.json();
-          console.log("Sukses dapat data dari database:", dataProfil);
           
-          // Masukkan data dari database langsung ke state form!
           if (dataProfil.namaLengkap) setNamaLengkap(dataProfil.namaLengkap);
           if (dataProfil.nik) setNik(dataProfil.nik);
           if (dataProfil.tempatLahir) setTempatLahir(dataProfil.tempatLahir);
           
-          // Format tanggal ke YYYY-MM-DD biar cocok sama input type="date"
           if (dataProfil.tanggalLahir) {
             const dateObj = new Date(dataProfil.tanggalLahir);
             setTanggalLahir(dateObj.toISOString().split('T')[0]);
@@ -327,14 +320,13 @@ export default function PengajuanSkemaPage() {
           if (dataProfil.faxInstitusi) setFaxInstitusi(dataProfil.faxInstitusi);
         }
       } catch (error) {
-        console.error("Yah, gagal mengambil data profil:", error);
+        console.error("Gagal mengambil data profil:", error);
       }
     };
 
     fetchProfil();
   }, []); 
 
-  // MENAMBAH TANGGAL LAHIR & JENIS KELAMIN KE INTERFACE ERROR
   interface Step1Errors {
     namaLengkap: boolean;
     tempatLahir: boolean;
@@ -410,7 +402,6 @@ export default function PengajuanSkemaPage() {
       };
       setErrors(newErrors);
 
-      // --- JURUS SAPU JAGAT: Ngecek semua error sekaligus ---
       const hasErrors = Object.values(newErrors).some((isError) => isError);
 
       if (!hasErrors) {
@@ -1603,17 +1594,15 @@ export default function PengajuanSkemaPage() {
                       value={provinsi}
                       onChange={(e) => {
                         setProvinsi(e.target.value);
-                        if (errors.provinsi)
-                          setErrors({ ...errors, provinsi: false });
+                        setKota(""); 
+                        if (errors.provinsi) setErrors({ ...errors, provinsi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"} cursor-pointer`}
                     >
                       <option value="">Pilih Provinsi</option>
-                      <option value="DKI Jakarta">DKI Jakarta</option>
-                      <option value="Jawa Barat">Jawa Barat</option>
-                      <option value="Jawa Tengah">Jawa Tengah</option>
-                      <option value="Jawa Timur">Jawa Timur</option>
-                      <option value="Banten">Banten</option>
+                      {provinsis.map((prov) => (
+                        <option key={prov.id} value={prov.id}>{prov.label}</option>
+                      ))}
                     </select>
                     {errors.provinsi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -1631,17 +1620,13 @@ export default function PengajuanSkemaPage() {
                         setKota(e.target.value);
                         if (errors.kota) setErrors({ ...errors, kota: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kota ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"} cursor-pointer`}
+                      disabled={!provinsi} 
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${!provinsi ? "bg-slate-100 cursor-not-allowed" : "bg-white cursor-pointer"} ${errors.kota ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
                     >
                       <option value="">Pilih Kota/Kabupaten</option>
-                      <option value="Kota Bandung">Kota Bandung</option>
-                      <option value="Kabupaten Bandung">
-                        Kabupaten Bandung
-                      </option>
-                      <option value="Kota Cimahi">Kota Cimahi</option>
-                      <option value="Kota Jakarta Selatan">
-                        Kota Jakarta Selatan
-                      </option>
+                      {kotas.filter(k => k.provId === provinsi).map((k) => (
+                        <option key={k.id} value={k.id}>{k.label}</option>
+                      ))}
                     </select>
                     {errors.kota && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -1727,7 +1712,6 @@ export default function PengajuanSkemaPage() {
                       </p>
                     )}
                   </div>
-                  {/* --- UBAH DARI BAGIAN NO HP / TELEPON SAMPAI BAWAH --- */}
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> No HP / Telepon
@@ -1767,8 +1751,8 @@ export default function PengajuanSkemaPage() {
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pendidikanTerakhir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
                       <option value="" disabled>Pilih Pendidikan</option>
-                      {getPendidikanOptions(selectedScheme).map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
+                      {pendidikans.map((pend) => (
+                        <option key={pend.id} value={pend.label}>{pend.label}</option>
                       ))}
                     </select>
                     {errors.pendidikanTerakhir && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih pendidikan</p>}
@@ -1797,10 +1781,9 @@ export default function PengajuanSkemaPage() {
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pekerjaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
                       <option value="" disabled>Pilih Pekerjaan</option>
-                      <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
-                      <option value="PNS">PNS</option>
-                      <option value="Swasta">Swasta</option>
-                      <option value="Lainnya">Lainnya</option>
+                      {pekerjaans.map((pek) => (
+                        <option key={pek.id} value={pek.label}>{pek.label}</option>
+                      ))}
                     </select>
                     {errors.pekerjaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih pekerjaan</p>}
                   </div>
@@ -1808,18 +1791,21 @@ export default function PengajuanSkemaPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> Institusi/Perusahaan
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={institusiPerusahaan}
                       onChange={(e) => {
                         setInstitusiPerusahaan(e.target.value);
                         if (errors.institusiPerusahaan) setErrors({ ...errors, institusiPerusahaan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.institusiPerusahaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
-                    />
-                    {errors.institusiPerusahaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
-                  </div>
-                  <div className="min-w-0">
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.institusiPerusahaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                    >
+                      <option value="" disabled>Pilih Institusi/Perusahaan</option>
+                      {instansis.map((inst) => (
+                        <option key={inst.id} value={inst.label}>{inst.label}</option>
+                      ))}
+                    </select>
+                    {errors.institusiPerusahaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih institusi</p>}
+                  </div>                 <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> Jabatan
                     </label>
@@ -1889,7 +1875,6 @@ export default function PengajuanSkemaPage() {
                     />
                     {errors.alamatInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
                   </div>
-                  {/* --- BATAS AKHIR --- */}
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       Fax Institusi/Perusahaan

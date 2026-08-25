@@ -9,21 +9,26 @@ const handler = NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
+        username: { label: "Username atau Email", type: "text" }, 
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
-          throw new Error("Tolong isi username dan password!");
+          throw new Error("Tolong isi username/email dan password!");
         }
 
-        // Cari user di database Supabase
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username }
+        // Cari user di database menggunakan findFirst dan operator OR
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { username: credentials.username },
+              { email: credentials.username }
+            ]
+          }
         });
 
         if (!user) {
-          throw new Error("Username tidak ditemukan.");
+          throw new Error("Akun tidak ditemukan. Periksa kembali username atau email Anda.");
         }
 
         // Cek kecocokan password dengan bcrypt
