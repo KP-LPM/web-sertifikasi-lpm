@@ -19,7 +19,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { Assessment } from "@/types/types";
+import { AssessmentItem } from "@/types/types";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 
 type SignatureCanvasRef = {
@@ -69,7 +69,7 @@ export default function AssessmentForm() {
     metodeAsesmen: String(selectedAsesmen?.metode),
     tanggal: "11 Oktober 2024",
     asesor: "Ichsan Taufik",
-  } as unknown as Assessment;
+  } as unknown as AssessmentItem;
   // Step 1: Form FR.APL.02 State
   const [rekomendasiApl02, setRekomendasiApl02] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
@@ -151,7 +151,7 @@ export default function AssessmentForm() {
   const [supervisorSignatureStep2, setSupervisorSignatureStep2] = useState("");
 
   const [penyusun, setPenyusun] = useState([
-    { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tanggal },
+    { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
   const [validator, setValidator] = useState([
@@ -281,7 +281,7 @@ export default function AssessmentForm() {
   const [asesorDateStep3, setAsesorDateStep3] = useState("");
 
   const [penyusunStep3, setPenyusunStep3] = useState([
-    { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tanggal },
+    { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
   const [validatorStep3, setValidatorStep3] = useState([
@@ -751,7 +751,7 @@ export default function AssessmentForm() {
   };
 
   const [penyusunStep4, setPenyusunStep4] = useState([
-    { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tanggal },
+    { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
   const [validatorStep4, setValidatorStep4] = useState([
@@ -869,7 +869,7 @@ export default function AssessmentForm() {
               Nomor Skema
             </td>
             <td className="border border-slate-300 p-2">
-              {String(asesmenData.noSkema || "")}
+              {String(asesmenData.skema || "")}
             </td>
           </tr>
           <tr>
@@ -904,7 +904,7 @@ export default function AssessmentForm() {
   }, [isAsesiSigOpen, asesiSignature]);
 
   const [asesiDateApl02, setAsesiDateApl02] = useState<string>(
-    String(asesmenData.tanggal || ""),
+    String(asesmenData.tglAsesmen || ""),
   );
 
   const renderStep1 = () => {
@@ -969,10 +969,10 @@ export default function AssessmentForm() {
                 selectedAsesmen?.nomorSkema ||
                 "04/SKM/LSP P1 UIN SGD/V/2022",
               tuk: asesmenData.tuk,
-              tanggal: asesmenData.tanggal,
+              tanggal: asesmenData.tglAsesmen,
               asesor: asesmenData.asesor,
               asesorReg: "MET.000.001234 2021",
-            } as unknown as Assessment
+            } as unknown as AssessmentItem
           }
           answers={answersApl02}
           onAnswerChange={(key, val) =>

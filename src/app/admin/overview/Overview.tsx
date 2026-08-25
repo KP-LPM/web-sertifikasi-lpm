@@ -1,15 +1,96 @@
 import React from "react";
 import {
-  Users,
-  FileText,
+  CheckCircle,
   Clock,
   TrendingUp,
-  AlertCircle,
   LayoutDashboard,
+  FileCheck,
+  ChevronRight,
+  Eye,
 } from "lucide-react";
-import { Breadcrumb } from "@/components/Breadcrumb";
+import { useAppContext } from "@/context/context";
+import { MetricCardProps } from "@/types/types";
 
 export function AdminOverview() {
+  const { setCurrentView } = useAppContext();
+
+  const pendingVerificationList = [
+    {
+      id: "1",
+      asesiName: "Ahmad Hidayat",
+      email: "ahmad.h@student.uin.ac.id",
+      skema: "Software Quality Assurance",
+      berkas: [
+        "FR.APL.01 Permohonan",
+        "FR.APL.02 Asesmen Mandiri",
+        "Pasfoto 3x4",
+        "KTP / KTM",
+        "Transkrip Nilai",
+      ],
+      waktu: "5 menit yang lalu",
+      status: "Menunggu Verifikasi",
+      pembayaran: "Belum Bayar",
+    },
+    {
+      id: "2",
+      asesiName: "Budi Pratama",
+      email: "budi.p@student.uin.ac.id",
+      skema: "Data Science Professional",
+      berkas: [
+        "FR.APL.01 Permohonan",
+        "FR.APL.02 Asesmen Mandiri",
+        "Bukti Pembayaran APBN",
+        "Ijazah Terakhir",
+      ],
+      waktu: "25 menit yang lalu",
+      status: "Menunggu Verifikasi",
+      pembayaran: "Sudah Bayar",
+    },
+    {
+      id: "3",
+      asesiName: "Siti Nurhaliza",
+      email: "siti.n@student.uin.ac.id",
+      skema: "Network Administrator",
+      berkas: [
+        "FR.APL.01 Permohonan",
+        "Sertifikat Pelatihan Jaringan",
+        "KTP",
+        "Pasfoto",
+      ],
+      waktu: "1 jam yang lalu",
+      status: "Menunggu Verifikasi",
+      pembayaran: "Belum Bayar",
+    },
+    {
+      id: "4",
+      asesiName: "Rizky Ramadhan",
+      email: "rizky.r@student.uin.ac.id",
+      skema: "Web Developer Utama",
+      berkas: [
+        "FR.APL.01 Permohonan",
+        "FR.APL.02 Asesmen Mandiri",
+        "Portofolio Project Website",
+      ],
+      waktu: "3 jam yang lalu",
+      status: "Menunggu Verifikasi",
+      pembayaran: "Sudah Bayar",
+    },
+    {
+      id: "5",
+      asesiName: "Dian Kusuma",
+      email: "dian.k@student.uin.ac.id",
+      skema: "Cybersecurity Analyst",
+      berkas: [
+        "FR.APL.01 Permohonan",
+        "Bukti Pengalaman Kerja / Magang",
+        "KTP",
+      ],
+      waktu: "5 jam yang lalu",
+      status: "Menunggu Verifikasi",
+      pembayaran: "Belum Bayar",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
       {/* Page Title Section matching Appeals and History pages */}
@@ -26,6 +107,7 @@ export function AdminOverview() {
           </p>
         </div>
       </div>
+
       {/* Dynamic Greeting Banner matching Asesi/Asesor Overview */}
       <div className="bg-[#E6F4FF] rounded-lg border border-sky-200 p-4 md:py-4 md:px-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 overflow-hidden relative shadow-2xs">
         <div className="space-y-1 z-10 w-full max-w-none">
@@ -36,8 +118,8 @@ export function AdminOverview() {
             Selamat Datang, Administrator LSP
           </h2>
           <p className="text-gray-600 font-medium text-xs max-w-md">
-            Kelola pengguna, skema sertifikasi, jadwal uji kompetensi, dan
-            verifikasi banding dalam satu panel terpusat.
+            Kelola pengguna, skema sertifikasi, verifikasi berkas asesi, jadwal
+            uji kompetensi, dan sidang pleno dalam satu panel terpusat.
           </p>
 
           <div className="pt-0.5">
@@ -53,18 +135,18 @@ export function AdminOverview() {
       {/* 3 Solid, Compact Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
-          title="Total Berkas"
-          value="142"
-          icon={Users}
+          title="Berkas Perlu Diverifikasi"
+          value="5"
+          icon={FileCheck}
           theme="sky"
-          subtext="yang perlu diverifikasi"
+          subtext="menunggu tindakan admin"
         />
         <MetricCard
-          title="Total Berkas"
+          title="Total Berkas Disetujui"
           value="845"
-          icon={FileText}
+          icon={CheckCircle}
           theme="emerald"
-          subtext="yang telah diverifikasi"
+          subtext="telah diverifikasi sah"
         />
         <MetricCard
           title="Total Sidang Pleno"
@@ -75,64 +157,83 @@ export function AdminOverview() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-        <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-[#F9FAFC]">
-            <h3 className="text-xs md:text-sm font-black text-slate-900 flex items-center gap-2">
-              <FileText className="text-[#008BE3]" size={16} />
-              Aktivitas Terbaru
+      {/* Aktivitas Terbaru - Berkas Perlu Diverifikasi */}
+      <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden flex flex-col">
+        <div className="px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F9FAFC]">
+          <div>
+            <h3 className="text-sm md:text-base font-black text-slate-900 flex items-center gap-2">
+              <FileCheck className="text-[#008BE3]" size={18} />
+              Aktivitas Terbaru: Berkas Perlu Diverifikasi
             </h3>
-            <button
-              onClick={() => alert("Menampilkan semua aktivitas...")}
-              className="text-[11px] font-bold text-[#008BE3] hover:underline"
-            >
-              Lihat Semua
-            </button>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Daftar dokumen berkas pendaftaran APL.01 & APL.02 asesi terbaru
+              yang memerlukan tinjauan verifikasi admin.
+            </p>
           </div>
+          <button
+            onClick={() => setCurrentView("users")}
+            className="px-3.5 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 self-start sm:self-auto"
+          >
+            <span>Lihat Semua Berkas</span>
+            <ChevronRight size={14} />
+          </button>
+        </div>
 
-          <div className="divide-y divide-gray-100 flex-1 p-2 space-y-1">
-            <ActivityItem
-              icon={Users}
-              title={
-                <span>
-                  <strong>Ahmad Fauzi</strong> mendaftar untuk skema{" "}
-                  <strong>Software Quality Assurance</strong>.
+        <div className="divide-y divide-gray-100">
+          {pendingVerificationList.slice(0, 3).map((item) => (
+            <div
+              key={item.id}
+              className="p-3.5 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
+              <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Nama Asesi
+                  </p>
+                  <p className="font-bold text-slate-900 text-sm truncate">
+                    {item.asesiName}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Skema Sertifikasi
+                  </p>
+                  <p className="text-xs font-semibold text-[#008BE3] truncate">
+                    {item.skema}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
+                <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider shrink-0">
+                  <Clock size={10} />
+                  {item.status}
                 </span>
-              }
-              time="2 menit yang lalu"
-              badge="Baru"
-            />
-            <ActivityItem
-              icon={FileText}
-              title={
-                <span>
-                  Asesmen <strong>Siti Aminah</strong> untuk skema{" "}
-                  <strong>Data Science Professional</strong> telah diselesaikan
-                  oleh Asesor Budi.
-                </span>
-              }
-              time="45 menit yang lalu"
-              badge="Ulasan"
-            />
-            <ActivityItem
-              icon={AlertCircle}
-              title={
-                <span>
-                  <strong>Peringatan Sistem</strong>: 12 jadwal asesmen
-                  mendekati batas waktu akhir.
-                </span>
-              }
-              time="5 jam yang lalu"
-              badge="Mendesak"
-            />
-          </div>
+
+                <button
+                  onClick={() => setCurrentView("users")}
+                  className="px-2.5 py-1 bg-sky-50 hover:bg-[#008BE3] text-[#008BE3] hover:text-white border border-sky-200 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <Eye size={12} />
+                  <span>Tinjau</span>
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function MetricCard({ title, value, icon: Icon, theme, subtext }: any) {
+function MetricCard({
+  title,
+  value,
+  icon: Icon,
+  theme,
+  subtext,
+}: MetricCardProps) {
   let containerClass = "";
   let titleClass = "";
   let subtextClass = "";
@@ -188,39 +289,6 @@ function MetricCard({ title, value, icon: Icon, theme, subtext }: any) {
             </span>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function ActivityItem({ icon: Icon, title, time, badge }: any) {
-  return (
-    <div className="flex gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors items-start">
-      <div className="w-8 h-8 rounded-full bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center shrink-0 mt-0.5 border border-[#BCE0FD]">
-        <Icon size={14} className="stroke-[2.5]" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-700 font-medium leading-relaxed">
-          {title}
-        </p>
-        <div className="flex items-center gap-2 mt-1">
-          <p className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
-            <Clock size={10} /> {time}
-          </p>
-          {badge && (
-            <span
-              className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
-                badge === "Mendesak"
-                  ? "bg-red-50 text-red-600 border border-red-100"
-                  : badge === "Baru"
-                    ? "bg-green-50 text-green-600 border border-green-100"
-                    : "bg-sky-50 text-[#008BE3] border border-sky-100"
-              }`}
-            >
-              {badge}
-            </span>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -14,17 +14,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
-
-export interface ManagedUser {
-  id: string;
-  initial: string;
-  name: string;
-  email: string;
-  role: string;
-  status: "Aktif" | "Terverifikasi" | "Nonaktif" | "Menunggu Verifikasi";
-  nipNim?: string;
-  tempPassword?: string;
-}
+import { ManagedUser } from "@/types/types";
+export type { ManagedUser };
 
 export const ROLE_OPTIONS = [
   "Admin",
@@ -474,15 +465,15 @@ export function KelolaPengguna() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="min-h-screen bg-[#F8F9FC] p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Title */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
             <UserCog size={20} className="stroke-[2.5]" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Kelola Pengguna
             </h2>
             <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
@@ -495,17 +486,18 @@ export function KelolaPengguna() {
         {!readOnly && (
           <button
             onClick={handleOpenAddModal}
-            className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-xs transition-colors shrink-0 cursor-pointer"
+            className="flex items-center justify-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 sm:px-5 py-2.5 rounded-lg text-sm font-bold shadow-xs transition-colors shrink-0 cursor-pointer w-full sm:w-auto"
           >
-            <Plus size={18} className="stroke-[2.5]" /> Tambah Pengguna
+            <Plus size={18} className="stroke-[2.5]" />{" "}
+            <span>Tambah Pengguna</span>
           </button>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-5 rounded-lg shadow-xs border border-gray-100">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-          <div className="relative w-full md:max-w-md">
+      <div className="bg-white p-3.5 sm:p-5 rounded-lg shadow-xs border border-gray-100">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-stretch sm:items-center">
+          <div className="relative w-full sm:max-w-md">
             <Search
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
               size={18}
@@ -519,14 +511,14 @@ export function KelolaPengguna() {
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <span className="text-xs font-bold text-slate-500 whitespace-nowrap">
               Filter Peran:
             </span>
             <select
               value={selectedRoleFilter}
               onChange={(e) => setSelectedRoleFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-xs font-bold text-slate-800 outline-none focus:border-[#008BE3] bg-white cursor-pointer"
+              className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-lg text-xs font-bold text-slate-800 outline-none focus:border-[#008BE3] bg-white cursor-pointer"
             >
               <option value="Semua">Semua Peran ({users.length})</option>
               {ROLE_OPTIONS.map((r, idx) => (
@@ -545,23 +537,24 @@ export function KelolaPengguna() {
           <table className="w-full text-left border-collapse min-w-212.5">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
-                  Profil & Informasi User
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                  Nama Pengguna
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                  Email
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   NIP / NIM / NIK
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Peran (Role)
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Status
                 </th>
-                {!readOnly && (
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 w-28">
-                    Aksi
-                  </th>
-                )}
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 w-28 whitespace-nowrap">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -571,36 +564,36 @@ export function KelolaPengguna() {
                     key={u.id}
                     className="group/row hover:bg-[#F9FAFC] transition-colors"
                   >
-                    <td className="px-6 py-4 align-middle">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-xs border border-sky-100 shrink-0">
+                    <td className="px-6 py-4 align-middle whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-xs border border-sky-100 shrink-0">
                           {u.initial}
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900">
-                            {u.name}
-                          </p>
-                          <p className="text-xs text-gray-500 font-medium">
-                            {u.email}
-                          </p>
-                        </div>
+                        <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
+                          {u.name}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 align-middle">
-                      <p className="text-xs font-semibold text-slate-700">
+                    <td className="px-6 py-4 align-middle whitespace-nowrap">
+                      <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
+                        {u.email}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 align-middle whitespace-nowrap">
+                      <p className="text-xs font-semibold text-slate-700 whitespace-nowrap">
                         {u.nipNim || "-"}
                       </p>
                     </td>
-                    <td className="px-6 py-4 align-middle">
+                    <td className="px-6 py-4 align-middle whitespace-nowrap">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${getRoleBadgeStyle(u.role)}`}
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold border whitespace-nowrap ${getRoleBadgeStyle(u.role)}`}
                       >
                         {u.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 align-middle">
+                    <td className="px-6 py-4 align-middle whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 border ${
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${
                           u.status === "Aktif" || u.status === "Terverifikasi"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : "bg-amber-50 text-amber-700 border-amber-200"
@@ -608,15 +601,26 @@ export function KelolaPengguna() {
                       >
                         {u.status === "Aktif" ||
                         u.status === "Terverifikasi" ? (
-                          <CheckCircle size={12} className="stroke-[2.5]" />
+                          <CheckCircle
+                            size={12}
+                            className="stroke-[2.5] shrink-0"
+                          />
                         ) : (
-                          <Clock size={12} className="stroke-[2.5]" />
+                          <Clock size={12} className="stroke-[2.5] shrink-0" />
                         )}
                         {u.status}
                       </span>
                     </td>
-                    {!readOnly && (
-                      <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100">
+                    <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 whitespace-nowrap">
+                      {readOnly ? (
+                        <button
+                          onClick={() => handleOpenEditModal(u)}
+                          className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                          title="Lihat Detail User"
+                        >
+                          <Eye size={14} /> Detail
+                        </button>
+                      ) : (
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleOpenEditModal(u)}
@@ -636,14 +640,14 @@ export function KelolaPengguna() {
                             <Trash2 size={16} />
                           </button>
                         </div>
-                      </td>
-                    )}
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-12 text-center text-slate-400 font-medium"
                   >
                     Tidak ada pengguna yang cocok dengan pencarian atau filter.
@@ -669,12 +673,18 @@ export function KelolaPengguna() {
               <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50">
                 <div>
                   <h3 className="text-lg font-black text-slate-900">
-                    {isEditModalOpen ? "Edit Pengguna" : "Tambah Pengguna Baru"}
+                    {readOnly
+                      ? "Detail Pengguna"
+                      : isEditModalOpen
+                        ? "Edit Pengguna"
+                        : "Tambah Pengguna Baru"}
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {isEditModalOpen
-                      ? "Perbarui data dan peran pengguna."
-                      : "Isi formulir untuk menambahkan akun pengguna baru."}
+                    {readOnly
+                      ? "Informasi detail akun pengguna."
+                      : isEditModalOpen
+                        ? "Perbarui data dan peran pengguna."
+                        : "Isi formulir untuk menambahkan akun pengguna baru."}
                   </p>
                 </div>
                 <button
@@ -689,38 +699,57 @@ export function KelolaPengguna() {
               </div>
 
               <form
-                onSubmit={isEditModalOpen ? handleEditUser : handleAddUser}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (isEditModalOpen) {
+                    handleEditUser(e);
+                  } else {
+                    handleAddUser(e);
+                  }
+                }}
                 className="p-6 space-y-4"
               >
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Nama Lengkap <span className="text-rose-500">*</span>
+                    Nama Lengkap{" "}
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <input
                     type="text"
-                    required
+                    required={!readOnly}
+                    readOnly={readOnly}
                     placeholder="Contoh: Dr. Ahmad Fauzi, M.Kom"
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                    className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                    }`}
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Email Aktif <span className="text-rose-500">*</span>
+                    Email Aktif{" "}
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <input
                     type="email"
-                    required
+                    required={!readOnly}
+                    readOnly={readOnly}
                     placeholder="contoh@uin.ac.id"
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                    className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                    }`}
                   />
                 </div>
 
@@ -730,89 +759,96 @@ export function KelolaPengguna() {
                   </label>
                   <input
                     type="text"
+                    readOnly={readOnly}
                     placeholder="Contoh: 198001012005011001"
                     value={formData.nipNim}
                     onChange={(e) =>
                       setFormData({ ...formData, nipNim: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                    className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                    }`}
                   />
                 </div>
 
-                {/* Password Sementara Field */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Password Sementara <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      required={!isEditModalOpen}
-                      placeholder="Masukkan password sementara..."
-                      value={formData.tempPassword}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          tempPassword: e.target.value,
-                        })
-                      }
-                      className="w-full pl-3.5 pr-24 py-2.5 border border-gray-200 rounded-xl text-sm font-mono text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                        title={
-                          showPassword
-                            ? "Sembunyikan Password"
-                            : "Tampilkan Password"
+                {!readOnly && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Password Sementara{" "}
+                      <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required={!isEditModalOpen}
+                        placeholder="Masukkan password sementara..."
+                        value={formData.tempPassword}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            tempPassword: e.target.value,
+                          })
                         }
-                      >
-                        {showPassword ? (
-                          <EyeOff size={16} />
-                        ) : (
-                          <Eye size={16} />
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const randomPass =
-                            "LSP" +
-                            Math.floor(100000 + Math.random() * 900000) +
-                            "!";
-                          setFormData((prev) => ({
-                            ...prev,
-                            tempPassword: randomPass,
-                          }));
-                          setShowPassword(true);
-                        }}
-                        className="px-2 py-1 text-[11px] font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
-                        title="Acak Password"
-                      >
-                        <RefreshCw size={12} /> Acak
-                      </button>
+                        className="w-full pl-3.5 pr-24 py-2.5 border border-gray-200 rounded-xl text-sm font-mono text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                      />
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                          title={
+                            showPassword
+                              ? "Sembunyikan Password"
+                              : "Tampilkan Password"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const randomPass =
+                              "LSP" +
+                              Math.floor(100000 + Math.random() * 900000) +
+                              "!";
+                            setFormData((prev) => ({
+                              ...prev,
+                              tempPassword: randomPass,
+                            }));
+                            setShowPassword(true);
+                          }}
+                          className="px-2 py-1 text-[11px] font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                          title="Acak Password"
+                        >
+                          <RefreshCw size={12} /> Acak
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1 font-medium">
-                    Password ini digunakan oleh pengguna untuk login pertama
-                    kali ke dalam sistem.
-                  </p>
-                </div>
+                )}
 
-                {/* ROLE SELECT DROPDOWN INCLUDING ALL REQUESTED OPTIONS */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Peran (Role) Pengguna{" "}
-                    <span className="text-rose-500">*</span>
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <select
+                    disabled={readOnly}
                     value={formData.role}
                     onChange={(e) =>
                       setFormData({ ...formData, role: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white cursor-pointer"
+                    className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
+                    }`}
                   >
                     {ROLE_OPTIONS.map((roleOption, idx) => (
                       <option key={idx} value={roleOption}>
@@ -827,6 +863,7 @@ export function KelolaPengguna() {
                     Status Akun
                   </label>
                   <select
+                    disabled={readOnly}
                     value={formData.status}
                     onChange={(e) =>
                       setFormData({
@@ -834,7 +871,11 @@ export function KelolaPengguna() {
                         status: e.target.value as ManagedUser["status"],
                       })
                     }
-                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white cursor-pointer"
+                    className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
+                    }`}
                   >
                     <option value="Aktif">Aktif</option>
                     <option value="Terverifikasi">Terverifikasi</option>
@@ -846,22 +887,37 @@ export function KelolaPengguna() {
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setIsEditModalOpen(false);
-                    }}
-                    className="px-4 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-bold transition-colors cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-[#008BE3] text-white hover:bg-[#0076C2] rounded-xl text-sm font-bold transition-colors shadow-xs cursor-pointer"
-                  >
-                    Simpan User
-                  </button>
+                  {readOnly ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setIsEditModalOpen(false);
+                      }}
+                      className="px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-bold transition-colors cursor-pointer"
+                    >
+                      Tutup
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsModalOpen(false);
+                          setIsEditModalOpen(false);
+                        }}
+                        className="px-4 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-sm font-bold transition-colors cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2.5 bg-[#008BE3] text-white hover:bg-[#0076C2] rounded-xl text-sm font-bold transition-colors shadow-xs cursor-pointer"
+                      >
+                        Simpan User
+                      </button>
+                    </>
+                  )}
                 </div>
               </form>
             </motion.div>

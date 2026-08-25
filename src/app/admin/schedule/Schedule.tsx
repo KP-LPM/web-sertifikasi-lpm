@@ -1,131 +1,234 @@
-import React, { useState } from 'react';
-import { FileEdit, Trash2, Eye, Calendar, Users, MapPin, Search, Plus, Filter, CheckSquare, Square, Clock, ArrowRight, ArrowLeft, X, Upload, FileText, CheckCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useAppContext } from '../../context';
-import { PlenoSession } from '../../types';
-
+import React, { useState, useEffect } from "react";
+import {
+  FileEdit,
+  Trash2,
+  Eye,
+  Calendar,
+  MapPin,
+  Search,
+  Plus,
+  Filter,
+  CheckSquare,
+  Clock,
+  ArrowLeft,
+  X,
+  FileText,
+  Sparkles,
+  Printer,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { useAppContext } from "@/context/context";
+import {
+  PlenoSession,
+  ScheduleItem,
+  Candidate,
+  AsesiPlenoItem,
+  PlenoDetailData,
+} from "@/types/types";
 
 const TUK_LIST = [
-  { id: 'GD-001', nama: 'Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik', kapasitas: 50 },
-  { id: 'GD-002', nama: 'Gedung D: Gedung Abjan Soelaiman (Auditorium)', kapasitas: 200 }
+  { id: "GD-001", nama: "Gedung Al-Jamiah (Auditorium Utama)", kapasitas: 200 },
+  {
+    id: "GD-002",
+    nama: "Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik",
+    kapasitas: 50,
+  },
+  {
+    id: "GD-003",
+    nama: "Gedung D: Gedung Abjan Soelaiman (Auditorium)",
+    kapasitas: 150,
+  },
+  {
+    id: "GD-004",
+    nama: "Gedung Lab Komputer Fak. Sains & Teknologi",
+    kapasitas: 40,
+  },
+  { id: "GD-005", nama: "Gedung Pascasarjana Lantai 3", kapasitas: 60 },
 ];
+
+const getTukRuangSpec = (tukValue?: string) => {
+  if (!tukValue) return "Gedung Al-Jamiah (Auditorium Utama)";
+  const found = TUK_LIST.find((t) => t.id === tukValue || t.nama === tukValue);
+  if (found) return found.nama;
+  if (tukValue === "1") return "Gedung Al-Jamiah (Auditorium Utama)";
+  if (tukValue === "2") return "Gedung Lab Komputer Fak. Sains & Teknologi";
+  if (tukValue === "3") return "Gedung Pascasarjana Lantai 3";
+  return tukValue;
+};
 
 const getDocumentPreviewUrl = (name?: string, url?: string) => {
   if (url && url.trim().length > 0) return url;
-  const safeName = name ? encodeURIComponent(name) : 'Surat_Sidang_Pleno.pdf';
+  const safeName = name ? encodeURIComponent(name) : "Surat_Sidang_Pleno.pdf";
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" fill="none"><rect width="600" height="800" fill="white" rx="16"/><rect x="40" y="40" width="520" height="720" fill="%23F8FAFC" stroke="%23E2E8F0" stroke-width="2" rx="12"/><rect x="70" y="70" width="100" height="36" fill="%23008BE3" rx="6"/><text x="185" y="93" font-family="sans-serif" font-weight="bold" font-size="18" fill="%230F172A">SURAT KEPUTUSAN SIDANG PLENO</text><text x="185" y="115" font-family="sans-serif" font-size="13" fill="%2364748B">LSP SERTIFIKASI PROFESI INDONESIA</text><line x1="70" y1="135" x2="530" y2="135" stroke="%23008BE3" stroke-width="2"/><text x="70" y="180" font-family="sans-serif" font-weight="bold" font-size="15" fill="%231E293B">BERITA ACARA &amp; HASIL KEPUTUSAN SIDANG</text><text x="70" y="210" font-family="sans-serif" font-size="13" fill="%23008BE3">Lampiran Dokumen: ${safeName}</text><rect x="70" y="235" width="460" height="150" fill="%23F1F5F9" rx="8" stroke="%23CBD5E1"/><text x="90" y="270" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23334155">Detail Pengesahan Hasil Asesmen:</text><text x="90" y="300" font-family="sans-serif" font-size="12" fill="%23475569">1. Penetapan Keputusan Sertifikasi Asesi Terdaftar</text><text x="90" y="325" font-family="sans-serif" font-size="12" fill="%23475569">2. Verifikasi Berkas Rekam Jejak Asesmen Asesor</text><text x="90" y="350" font-family="sans-serif" font-size="12" fill="%23475569">3. Persetujuan Dewan Pengarah dan Komite Skema</text><rect x="70" y="415" width="460" height="1" fill="%23E2E8F0"/><text x="70" y="450" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23059669">STATUS DOKUMEN: RESMI, SAH &amp; TERVERIFIKASI</text><rect x="70" y="520" width="180" height="90" fill="%23F0F9FF" rx="8" stroke="%23008BE3"/><text x="85" y="555" font-family="sans-serif" font-weight="bold" font-size="12" fill="%23008BE3">LSP SERTIFIKASI PROFESI</text><text x="85" y="580" font-family="sans-serif" font-size="11" fill="%230284C7">[ CAP STAMPEL &amp; TTD ]</text><text x="340" y="555" font-family="sans-serif" font-size="11" fill="%2364748B">Ketua Komite Sidang Pleno</text><line x1="340" y1="590" x2="510" y2="590" stroke="%2394A3B8" stroke-dasharray="2 2"/></svg>`;
 };
 
 const ALL_PLENO_USERS = [
   // Asesor
-  { id: 'p-usr-1', nama: 'Ichsan Taufik', role: 'Asesor' },
-  { id: 'p-usr-2', nama: 'Aceng Abdul Kodir', role: 'Asesor' },
-  { id: 'p-usr-3', nama: 'Susanti Ainul Fitri', role: 'Asesor' },
-  { id: 'p-usr-4', nama: 'M Sandi Marta', role: 'Asesor' },
-  { id: 'p-usr-5', nama: 'Gina Sakinah', role: 'Asesor' },
-  { id: 'p-usr-6', nama: 'Elis Ratna Wulan', role: 'Asesor' },
-  { id: 'p-usr-7', nama: 'Asep Abdul Sahid', role: 'Asesor' },
-  { id: 'p-usr-8', nama: 'Siti Alia', role: 'Asesor' },
-  { id: 'p-usr-9', nama: 'Azmi Fasa', role: 'Asesor' },
-  { id: 'p-usr-10', nama: 'Cucu Susilawati', role: 'Asesor' },
-  { id: 'p-usr-11', nama: 'Fitri Pebriani Wahyu', role: 'Asesor' },
-  { id: 'p-usr-12', nama: 'Tina Dewi Rosahdi', role: 'Asesor' },
-  { id: 'p-usr-13', nama: 'Ucu Julita', role: 'Asesor' },
-  { id: 'p-usr-14', nama: 'Acep Muslim', role: 'Asesor' },
-  { id: 'p-usr-15', nama: 'Izzah Faizah Siti Rusydati Khaerani', role: 'Asesor' },
-  { id: 'p-usr-16', nama: 'Muhammad Alfan', role: 'Asesor' },
-  { id: 'p-usr-17', nama: 'Erlan Aditya Ardiansyah', role: 'Asesor' },
-  { id: 'p-usr-18', nama: 'Dian Rachmat Gumelar', role: 'Asesor' },
-  { id: 'p-usr-19', nama: 'Reza Fauzi Nazar', role: 'Asesor' },
-  { id: 'p-usr-20', nama: 'Rini Sulastri', role: 'Asesor' },
-  { id: 'p-usr-21', nama: 'Yadi Mardiansyah', role: 'Asesor' },
-  { id: 'p-usr-22', nama: 'Dayudin', role: 'Asesor' },
-  { id: 'p-usr-23', nama: 'Wisnu Uriawan', role: 'Asesor' },
-  { id: 'p-usr-24', nama: 'M. Ridha Taufiq Rahman', role: 'Asesor' },
+  { id: "p-usr-1", nama: "Ichsan Taufik", role: "Asesor" },
+  { id: "p-usr-2", nama: "Aceng Abdul Kodir", role: "Asesor" },
+  { id: "p-usr-3", nama: "Susanti Ainul Fitri", role: "Asesor" },
+  { id: "p-usr-4", nama: "M Sandi Marta", role: "Asesor" },
+  { id: "p-usr-5", nama: "Gina Sakinah", role: "Asesor" },
+  { id: "p-usr-6", nama: "Elis Ratna Wulan", role: "Asesor" },
+  { id: "p-usr-7", nama: "Asep Abdul Sahid", role: "Asesor" },
+  { id: "p-usr-8", nama: "Siti Alia", role: "Asesor" },
+  { id: "p-usr-9", nama: "Azmi Fasa", role: "Asesor" },
+  { id: "p-usr-10", nama: "Cucu Susilawati", role: "Asesor" },
+  { id: "p-usr-11", nama: "Fitri Pebriani Wahyu", role: "Asesor" },
+  { id: "p-usr-12", nama: "Tina Dewi Rosahdi", role: "Asesor" },
+  { id: "p-usr-13", nama: "Ucu Julita", role: "Asesor" },
+  { id: "p-usr-14", nama: "Acep Muslim", role: "Asesor" },
+  {
+    id: "p-usr-15",
+    nama: "Izzah Faizah Siti Rusydati Khaerani",
+    role: "Asesor",
+  },
+  { id: "p-usr-16", nama: "Muhammad Alfan", role: "Asesor" },
+  { id: "p-usr-17", nama: "Erlan Aditya Ardiansyah", role: "Asesor" },
+  { id: "p-usr-18", nama: "Dian Rachmat Gumelar", role: "Asesor" },
+  { id: "p-usr-19", nama: "Reza Fauzi Nazar", role: "Asesor" },
+  { id: "p-usr-20", nama: "Rini Sulastri", role: "Asesor" },
+  { id: "p-usr-21", nama: "Yadi Mardiansyah", role: "Asesor" },
+  { id: "p-usr-22", nama: "Dayudin", role: "Asesor" },
+  { id: "p-usr-23", nama: "Wisnu Uriawan", role: "Asesor" },
+  { id: "p-usr-24", nama: "M. Ridha Taufiq Rahman", role: "Asesor" },
 
   // Direktur
-  { id: 'p-usr-25', nama: 'Gitarja, S.T., M.T.', role: 'Direktur' },
+  { id: "p-usr-25", nama: "Gitarja, S.T., M.T.", role: "Direktur" },
 
   // Dewan Pengarah
-  { id: 'p-usr-26', nama: 'Dr. Ir. H. Muhammad Zulkifli, M.T.', role: 'Dewan Pengarah' },
-  { id: 'p-usr-27', nama: 'Prof. Dr. Ir. Hj. Endang Suhartini', role: 'Dewan Pengarah' },
+  {
+    id: "p-usr-26",
+    nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
+    role: "Dewan Pengarah",
+  },
+  {
+    id: "p-usr-27",
+    nama: "Prof. Dr. Ir. Hj. Endang Suhartini",
+    role: "Dewan Pengarah",
+  },
 
   // Komite Skema
-  { id: 'p-usr-28', nama: 'Drs. Hendra Gunawan, M.Kom.', role: 'Komite Skema' },
-  { id: 'p-usr-29', nama: 'Rina Fitriani, S.Kom., M.T.', role: 'Komite Skema' },
+  { id: "p-usr-28", nama: "Drs. Hendra Gunawan, M.Kom.", role: "Komite Skema" },
+  { id: "p-usr-29", nama: "Rina Fitriani, S.Kom., M.T.", role: "Komite Skema" },
 
   // Manajer Administrasi dan Keuangan
-  { id: 'p-usr-30', nama: 'Ahmad Syahputra, S.E., M.M.', role: 'Manajer Administrasi dan Keuangan' },
+  {
+    id: "p-usr-30",
+    nama: "Ahmad Syahputra, S.E., M.M.",
+    role: "Manajer Administrasi dan Keuangan",
+  },
 
   // Manajer Standardisasi
-  { id: 'p-usr-31', nama: 'Budi Santoso, S.T., M.Eng.', role: 'Manajer Standardisasi' },
+  {
+    id: "p-usr-31",
+    nama: "Budi Santoso, S.T., M.Eng.",
+    role: "Manajer Standardisasi",
+  },
 
   // Manajer Manajemen Mutu
-  { id: 'p-usr-32', nama: 'Dr. Hj. Nurhayati, M.Pd.', role: 'Manajer Manajemen Mutu' },
+  {
+    id: "p-usr-32",
+    nama: "Dr. Hj. Nurhayati, M.Pd.",
+    role: "Manajer Manajemen Mutu",
+  },
 
   // Manajer Sertifikasi
-  { id: 'p-usr-33', nama: 'Dedi Kurniawan, S.T., M.T.', role: 'Manajer Sertifikasi' },
+  {
+    id: "p-usr-33",
+    nama: "Dedi Kurniawan, S.T., M.T.",
+    role: "Manajer Sertifikasi",
+  },
 ];
+
 export function AssessmentSchedule() {
-  const { user, plenoSessions, addPlenoSession, assessments, updatePlenoSession, deletePlenoSession } = useAppContext();
-  const readOnly = user?.role === 'direktur' || user?.role === 'manajer';
+  const {
+    user,
+    plenoSessions,
+    addPlenoSession,
+    assessments,
+    updatePlenoSession,
+    deletePlenoSession,
+  } = useAppContext();
+  const isPlenoOnlyRole =
+    user?.role === "direktur" ||
+    user?.role === "manajer" ||
+    user?.role === "dewan_pengarah" ||
+    user?.role === "komite_skema";
+  const readOnly = user?.role !== "admin";
 
   const [confirmAsesmenId, setConfirmAsesmenId] = useState<number | null>(null);
   const [confirmPlenoId, setConfirmPlenoId] = useState<string | null>(null);
 
   // Pleno State
   const [isPlenoModalOpen, setIsPlenoModalOpen] = useState(false);
+  const [isGeneratePenugasanModalOpen, setIsGeneratePenugasanModalOpen] =
+    useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [editId, setEditId] = useState<any>(null);
+  const [editId, setEditId] = useState<string | number | null>(null);
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
-  const handlePreviewAsesmen = (item: any) => {
+  const handlePreviewAsesmen = (item: ScheduleItem) => {
     setIsPreviewMode(true);
     setEditId(item.id);
+    const start =
+      item.startTime ||
+      (item.jam ? item.jam.split(" - ")[0].replace(" WIB", "") : "08:00");
     setFormData({
-      batchName: item.batchName,
-      scheme: item.scheme,
-      date: item.date,
-      startTime: item.startTime || "",
-      endTime: item.endTime || "",
+      batchName: item.batchName || "",
+      nomorSurat: item.nomorSurat || "",
+      scheme: item.scheme || "",
+      method: item.method || item.metode || "Offline",
+      tukType: item.tukType || "Sewaktu",
+      alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
+      date: item.date || "",
+      startTime: start,
+      endTime: "",
+      jam: item.jam || `${start} WIB`,
       tuk: item.tuk || "",
-      tukType: item.tukType || "",
-      assessorName: item.assessorName,
+      assessorName: item.assessorName || "",
       suratPenugasanName: item.suratPenugasanName || "",
-      candidatesCount: item.candidatesCount,
-      status: item.status,
+      candidatesCount: item.candidatesCount || 0,
+      status: item.status || "Terjadwal",
     });
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
 
-  const handleEditAsesmen = (item: any) => {
+  const handleEditAsesmen = (item: ScheduleItem) => {
     setIsEditMode(true);
     setEditId(item.id);
+    const start =
+      item.startTime ||
+      (item.jam ? item.jam.split(" - ")[0].replace(" WIB", "") : "08:00");
     setFormData({
-      batchName: item.batchName,
-      scheme: item.scheme,
-      date: item.date,
-      startTime: item.startTime || '',
-      endTime: item.endTime || '',
-      tuk: item.tuk || '',
-      tukType: item.tukType || '',
-      assessorName: item.assessorName,
-      suratPenugasanName: item.suratPenugasanName || '',
-      candidatesCount: item.candidatesCount,
-      status: item.status,
+      batchName: item.batchName || "",
+      nomorSurat: item.nomorSurat || "",
+      scheme: item.scheme || "",
+      method: item.method || item.metode || "Offline",
+      tukType: item.tukType || "Sewaktu",
+      alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
+      date: item.date || "",
+      startTime: start,
+      endTime: "",
+      jam: item.jam || `${start} WIB`,
+      tuk: item.tuk || "",
+      assessorName: item.assessorName || "",
+      suratPenugasanName: item.suratPenugasanName || "",
+      candidatesCount: item.candidatesCount || 0,
+      status: item.status || "Terjadwal",
     });
-     
+
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
-  const handlePreviewPleno = (item: any) => {
+  const handlePreviewPleno = (item: PlenoSession) => {
     setIsPreviewMode(true);
     setEditId(item.id);
     setPlenoForm({
-      id: item.id,
+      id: String(item.id),
       tanggal: item.tanggal,
       waktuMulai: item.waktu?.split(" s.d ")[0] || "",
       waktuSelesai: item.waktu?.split(" s.d ")[1] || "",
@@ -135,182 +238,223 @@ export function AssessmentSchedule() {
       deskripsi: item.deskripsi || "",
       plenoAttendees: item.plenoAttendees || [],
       suratPlenoName: item.suratPlenoName || "",
-      suratPlenoUrl: item.suratPlenoUrl || ""
+      suratPlenoUrl: item.suratPlenoUrl || "",
     });
     setSelectedAsesiForPleno(item.asesiList || []);
     setIsPlenoModalOpen(true);
   };
 
-  const handleEditPleno = (item: any) => {
-    setIsEditMode(true);
-    setEditId(item.id);
-    setPlenoForm({
-      id: item.id,
-      tanggal: item.tanggal,
-      waktuMulai: item.waktu.split(' s.d ')[0],
-      waktuSelesai: item.waktu.split(' s.d ')[1],
-      skema: item.skema,
-      lokasi: item.lokasi,
-      detailLokasi: item.detailLokasi || '',
-      deskripsi: item.deskripsi || '',
-      plenoAttendees: item.plenoAttendees || [],
-      suratPlenoName: item.suratPlenoName || '',
-      suratPlenoUrl: item.suratPlenoUrl || ''
-    });
-    setSelectedAsesiForPleno(item.asesiList || []);
-    setIsPlenoModalOpen(true);
-  };
   const handleDeletePleno = (id: string) => {
     deletePlenoSession(id);
   };
-  
-  const handleDeleteSchedule = (id: number) => {
-    setSchedules(schedules.filter(s => s.id !== id));
+
+  const handleDeleteSchedule = (id: number | string) => {
+    setSchedules(schedules.filter((s) => s.id !== id));
   };
 
   const handleSelesaiSchedule = () => {
     if (confirmAsesmenId !== null) {
-      setSchedules(schedules.map(s => s.id === confirmAsesmenId ? { ...s, status: 'Selesai' } : s));
+      setSchedules(
+        schedules.map((s) =>
+          s.id === confirmAsesmenId ? { ...s, status: "Selesai" } : s,
+        ),
+      );
       setConfirmAsesmenId(null);
     }
   };
   const handleSelesaiPleno = () => {
     if (confirmPlenoId !== null) {
-      updatePlenoSession(confirmPlenoId, { status: 'Selesai' });
+      updatePlenoSession(confirmPlenoId, { status: "Selesai" });
       setConfirmPlenoId(null);
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'asesmen' | 'pleno'>('asesmen');
+  const [activeTab, setActiveTab] = useState<"asesmen" | "pleno">(
+    isPlenoOnlyRole ? "pleno" : "asesmen",
+  );
 
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedRiwayat, setSelectedRiwayat] = useState<any>(null);
-  
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  useEffect(() => {
+    if (isPlenoOnlyRole) {
+      setActiveTab("pleno");
+    }
+  }, [isPlenoOnlyRole]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-';
+    if (!dateStr) return "-";
     try {
       const date = new Date(dateStr);
-      return new Intl.DateTimeFormat('id-ID', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+      if (isNaN(date.getTime())) return dateStr;
+      return new Intl.DateTimeFormat("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       }).format(date);
-    } catch(e) {
+    } catch {
       return dateStr;
     }
   };
-  
+
   // Asesmen State
-  const [schedules, setSchedules] = useState([
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([
     {
       id: 1,
-      batchName: 'BATCH-IT-2026-001',
-      scheme: 'Auditor Halal',
-      date: '15 Okt 2026',
-      startTime: '08:00',
-      endTime: '12:00',
-      tuk: '1',
-      tukType: 'Sewaktu',
+      batchName: "BATCH-IT-2026-001",
+      nomorSurat: "ST/LSP-P1/BATCH-001/2026",
+      scheme: "Auditor Halal",
+      method: "Offline",
+      date: "15 Okt 2026",
+      startTime: "08:00",
+      endTime: "",
+      tuk: "GD-001",
+      tukType: "Sewaktu",
       candidatesCount: 20,
-      assessorName: 'Dr. Aris Thorne',
-      assessorInitial: 'AT',
-      suratPenugasanName: 'Surat_Penugasan_Dr_Aris.pdf',
-      status: 'Dikonfirmasi',
-      asesiList: [1, 5]
+      assessorName: "Dr. Aris Thorne",
+      assessorInitial: "AT",
+      suratPenugasanName:
+        "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J/view",
+      status: "Dikonfirmasi",
+      asesiList: [1, 5],
     },
     {
       id: 2,
-      batchName: 'BATCH-NET-2026-002',
-      scheme: 'Jenjang 5 Bidang Kewirausahaan Industri',
-      date: '18 Okt 2026',
-      startTime: '13:00',
-      endTime: '17:00',
-      tuk: '2',
-      tukType: 'Mandiri',
+      batchName: "BATCH-NET-2026-002",
+      nomorSurat: "ST/LSP-P1/BATCH-002/2026",
+      scheme: "Jenjang 5 Bidang Kewirausahaan Industri",
+      method: "Online",
+      date: "18 Okt 2026",
+      startTime: "13:00",
+      endTime: "",
+      tuk: "GD-004",
+      tukType: "Mandiri",
       candidatesCount: 15,
-      assessorName: 'Budi Santoso, M.Kom',
-      assessorInitial: 'BS',
-      suratPenugasanName: 'Surat_Penugasan_Budi_Santoso.pdf',
-      status: 'Terjadwal',
-      asesiList: [2, 4]
-    }
+      assessorName: "Budi Santoso, M.Kom",
+      assessorInitial: "BS",
+      suratPenugasanName:
+        "https://drive.google.com/file/d/0J9I8H7G6F5E4D3C2B1A/view",
+      status: "Terjadwal",
+      asesiList: [2, 4],
+    },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAsesiForJadwal, setSelectedAsesiForJadwal] = useState<number[]>([]);
+  const [selectedAsesiForJadwal, setSelectedAsesiForJadwal] = useState<
+    (string | number)[]
+  >([]);
   const [formData, setFormData] = useState({
-    batchName: '',
-    scheme: '',
-    date: '',
-    startTime: '',
-    endTime: '',
+    batchName: "",
+    nomorSurat: "",
+    scheme: "",
+    method: "Offline",
+    tukType: "Sewaktu",
+    alamat: "UIN Sunan Gunung Djati Bandung",
+    date: "",
+    startTime: "08:00",
+    endTime: "",
+    jam: "08:00 WIB",
+    tuk: "",
+    assessorName: "",
+    suratPenugasanName: "",
     candidatesCount: 0,
-    assessorName: '',
-    suratPenugasanName: '',
-    tuk: '',
-    tukType: '',
-    status: 'Terjadwal'
+    status: "Terjadwal",
   });
 
   const handleAddSchedule = () => {
-    if (!formData.batchName || !formData.scheme || !formData.date || !formData.assessorName || !formData.tuk || !formData.tukType || selectedAsesiForJadwal.length === 0) return;
+    if (
+      !formData.batchName ||
+      !formData.scheme ||
+      !formData.date ||
+      !formData.assessorName ||
+      !formData.tuk ||
+      !formData.tukType ||
+      selectedAsesiForJadwal.length === 0
+    )
+      return;
     if (isEditMode) {
-      setSchedules(schedules.map(s => s.id === editId ? { ...s, ...formData, assessorInitial: formData.assessorName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase(), candidatesCount: selectedAsesiForJadwal.length,
-      asesiList: selectedAsesiForJadwal } : s));
+      setSchedules(
+        schedules.map((s) =>
+          s.id === editId
+            ? {
+                ...s,
+                ...formData,
+                assessorInitial: formData.assessorName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .substring(0, 2)
+                  .toUpperCase(),
+                candidatesCount: selectedAsesiForJadwal.length,
+                asesiList: selectedAsesiForJadwal,
+              }
+            : s,
+        ),
+      );
     } else {
       const newSchedule = {
         id: schedules.length + 1,
         ...formData,
-        assessorInitial: formData.assessorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+        assessorInitial: formData.assessorName
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .substring(0, 2)
+          .toUpperCase(),
         candidatesCount: selectedAsesiForJadwal.length,
-        asesiList: selectedAsesiForJadwal
+        asesiList: selectedAsesiForJadwal,
       };
       setSchedules([newSchedule, ...schedules]);
     }
     setIsModalOpen(false);
-    setFormData({ 
-      batchName: '', scheme: '', date: '',
-      startTime: '',
-      endTime: '', candidatesCount: 0, assessorName: '', suratPenugasanName: '', tuk: '', tukType: '', status: 'Terjadwal'
+    setFormData({
+      batchName: "",
+      nomorSurat: "",
+      scheme: "",
+      method: "Offline",
+      tukType: "Sewaktu",
+      alamat: "UIN Sunan Gunung Djati Bandung",
+      date: "",
+      startTime: "08:00",
+      endTime: "",
+      jam: "08:00 WIB",
+      tuk: "",
+      candidatesCount: 0,
+      assessorName: "",
+      suratPenugasanName: "",
+      status: "Terjadwal",
     });
     setSelectedAsesiForJadwal([]);
   };
 
-  const filteredSchedules = schedules.filter(item => 
-    (item.batchName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.scheme.toLowerCase().includes(searchQuery.toLowerCase())) &&
-    (filterStatus === 'Semua' || item.status === filterStatus)
+  const filteredSchedules = schedules.filter(
+    (item) =>
+      (String(item.batchName)
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+        String(item.scheme)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())) &&
+      (filterStatus === "Semua" || item.status === filterStatus),
   );
 
   // Get unique schemes from completed assessments
-  const completedAssessments = assessments.filter(a => a.status === 'Selesai');
+  const completedAssessments = assessments.filter(
+    (a) => a.status === "Selesai",
+  );
   const uniqueSchemes = [
-    'Auditor Halal',
-    'Jenjang 5 Bidang Kewirausahaan Industri',
-    'Melaksanakan Komunikasi Dengan Pemangku Kepentingan',
-    'Penerjemah Teks Umum',
-    'Penyelia Halal'
+    "Auditor Halal",
+    "Jenjang 5 Bidang Kewirausahaan Industri",
+    "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+    "Penerjemah Teks Umum",
+    "Penyelia Halal",
   ];
-  
-  const generateNextPlenoId = () => {
-    if (plenoSessions.length === 0) return 'PLN-001';
-    const ids = plenoSessions.map(session => {
-      const match = session.id.match(/PLN-(\d+)/);
-      return match ? parseInt(match[1], 10) : 0;
-    });
-    const maxId = Math.max(...ids, 0);
-    return `PLN-${String(maxId + 1).padStart(3, '0')}`;
-  };
 
-  const [selectedPlenoRole, setSelectedPlenoRole] = useState<string>('Asesor');
-  const [previewDocModal, setPreviewDocModal] = useState<{ name: string; url: string } | null>(null);
-  const plenoFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedPlenoRole, setSelectedPlenoRole] = useState<string>("Asesor");
+  const [previewDocModal, setPreviewDocModal] = useState<{
+    name: string;
+    url: string;
+  } | null>(null);
 
   const [plenoForm, setPlenoForm] = useState<{
     id: string;
@@ -325,277 +469,442 @@ export function AssessmentSchedule() {
     suratPlenoName?: string;
     suratPlenoUrl?: string;
   }>({
-    id: '',
-    tanggal: '',
-    waktuMulai: '',
-    waktuSelesai: '',
-    skema: '',
-    lokasi: 'Ruang Rapat Utama (Offline)',
-    detailLokasi: '',
-    deskripsi: '',
+    id: "",
+    tanggal: "",
+    waktuMulai: "",
+    waktuSelesai: "",
+    skema: "",
+    lokasi: "Ruang Rapat Utama (Offline)",
+    detailLokasi: "",
+    deskripsi: "",
     plenoAttendees: [],
-    suratPlenoName: '',
-    suratPlenoUrl: ''
+    suratPlenoName: "",
+    suratPlenoUrl: "",
   });
 
   const isAttendeeSelected = (nama: string, role: string) => {
-    return plenoForm.plenoAttendees.some(a => a.nama === nama && a.role === role);
+    return plenoForm.plenoAttendees.some(
+      (a) => a.nama === nama && a.role === role,
+    );
   };
 
   const toggleAttendeeSelection = (userObj: { nama: string; role: string }) => {
     if (isPreviewMode) return;
     const isSelected = isAttendeeSelected(userObj.nama, userObj.role);
     if (isSelected) {
-      setPlenoForm(prev => ({
+      setPlenoForm((prev) => ({
         ...prev,
-        plenoAttendees: prev.plenoAttendees.filter(a => !(a.nama === userObj.nama && a.role === userObj.role))
+        plenoAttendees: prev.plenoAttendees.filter(
+          (a) => !(a.nama === userObj.nama && a.role === userObj.role),
+        ),
       }));
     } else {
-      setPlenoForm(prev => ({
+      setPlenoForm((prev) => ({
         ...prev,
-        plenoAttendees: [...prev.plenoAttendees.filter(a => a.nama.trim() !== ''), { role: userObj.role, nama: userObj.nama }]
+        plenoAttendees: [
+          ...prev.plenoAttendees.filter((a) => a.nama.trim() !== ""),
+          { role: userObj.role, nama: userObj.nama },
+        ],
       }));
     }
   };
-  
-  const [selectedAsesiForPleno, setSelectedAsesiForPleno] = useState<string[]>([]);
+
+  const [selectedAsesiForPleno, setSelectedAsesiForPleno] = useState<
+    AsesiPlenoItem[]
+  >([]);
 
   // Available candidates for plenary session (all completed assessments awaiting decision)
   const availableAsesiForPleno = completedAssessments;
 
   const handleAddPleno = () => {
-    if(!plenoForm.tanggal || selectedAsesiForPleno.length === 0) return;
-    
-    const selectedAsesiObjects = completedAssessments.filter(a => selectedAsesiForPleno.includes(a.id) || selectedAsesiForPleno.includes(a.nama));
-    const selectedSchemes = Array.from(new Set(selectedAsesiObjects.map(a => a.skema).filter(Boolean)));
-    const skemaLabel = selectedSchemes.length > 0 ? selectedSchemes.join(', ') : (plenoForm.skema || 'Multi Skema');
+    if (!plenoForm.tanggal || selectedAsesiForPleno.length === 0) return;
+
+    const selectedAsesiObjects = completedAssessments.filter(
+      (a) =>
+        selectedAsesiForPleno.includes(a.id) ||
+        selectedAsesiForPleno.includes(a.nama),
+    );
+    const selectedSchemes = Array.from(
+      new Set(selectedAsesiObjects.map((a) => a.skema).filter(Boolean)),
+    );
+    const skemaLabel =
+      selectedSchemes.length > 0
+        ? selectedSchemes.join(", ")
+        : plenoForm.skema || "Multi Skema";
 
     const { waktuMulai, waktuSelesai, ...restPlenoForm } = plenoForm;
     const newPleno: PlenoSession = {
       ...restPlenoForm,
+      id: String(restPlenoForm.id || editId || Date.now()),
       skema: skemaLabel,
-      waktu: `${waktuMulai || '-'} s.d ${waktuSelesai || '-'}`,
+      waktu: `${waktuMulai || "-"} s.d ${waktuSelesai || "-"}`,
       jumlahAsesi: selectedAsesiForPleno.length,
-      status: 'Terjadwal',
+      status: "Terjadwal",
       asesiList: selectedAsesiForPleno,
-      plenoAttendees: plenoForm.plenoAttendees.filter(a => a.nama.trim() !== '')
+      plenoAttendees: plenoForm.plenoAttendees.filter(
+        (a) => a.nama.trim() !== "",
+      ),
     };
-    
-    if (isEditMode) {
-      updatePlenoSession(editId, newPleno);
+
+    if (isEditMode && editId) {
+      updatePlenoSession(String(editId), newPleno as PlenoDetailData);
     } else {
-      addPlenoSession(newPleno);
+      addPlenoSession(newPleno as PlenoDetailData);
     }
     setIsPlenoModalOpen(false);
     setPlenoForm({
-      id: '', // Will be updated on next open
-      tanggal: '',
-      waktuMulai: '',
-      waktuSelesai: '',
-      skema: '',
-      lokasi: 'Ruang Rapat Utama (Offline)',
-      detailLokasi: '',
-      deskripsi: '',
+      id: "", // Will be updated on next open
+      tanggal: "",
+      waktuMulai: "",
+      waktuSelesai: "",
+      skema: "",
+      lokasi: "Ruang Rapat Utama (Offline)",
+      detailLokasi: "",
+      deskripsi: "",
       plenoAttendees: [],
-      suratPlenoName: '',
-      suratPlenoUrl: ''
+      suratPlenoName: "",
+      suratPlenoUrl: "",
     });
     setSelectedAsesiForPleno([]);
   };
 
-  const toggleAsesiSelection = (nama: string) => {
-    if(selectedAsesiForPleno.includes(nama)) {
-      setSelectedAsesiForPleno(prev => prev.filter(n => n !== nama));
-    } else {
-      setSelectedAsesiForPleno(prev => [...prev, nama]);
-    }
-  };
-
-  const filteredPleno = plenoSessions.filter(item => 
-    (item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.skema.toLowerCase().includes(searchQuery.toLowerCase())) &&
-    (filterStatus === 'Semua' || item.status === filterStatus)
+  const filteredPleno = plenoSessions.filter(
+    (item) =>
+      (item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.skema.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (filterStatus === "Semua" || item.status === filterStatus),
   );
 
   if (isModalOpen) {
-    const availableSchemes = Array.from(new Set(assessments.map((a: any) => a.skema)));
     const availableAsesi = assessments
-      .filter((a: any) => a.skema === formData.scheme)
-      .filter((a: any) => formData.tuk ? a.metode_pelaksanaan === 'Offline' : true)
-      .sort((a: any, b: any) => a.nama.localeCompare(b.nama));
-    const selectedTuk = TUK_LIST.find(t => t.id === formData.tuk);
+      .filter((a: Candidate) => {
+        const matchScheme = !formData.scheme || a.skema === formData.scheme;
+        const candidateMethod =
+          a.metode_pelaksanaan || a.jenis_asesmen || "Offline";
+        const matchMethod =
+          !formData.method ||
+          candidateMethod.toLowerCase() === formData.method.toLowerCase();
+        return matchScheme && matchMethod;
+      })
+      .sort((a: Candidate, b: Candidate) => a.nama.localeCompare(b.nama));
+    const selectedTuk = TUK_LIST.find((t) => t.id === formData.tuk);
     const kapasitas = selectedTuk ? selectedTuk.kapasitas : 0;
 
     return (
       <div className="p-8 pb-24 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setIsModalOpen(false)} 
+          <button
+            onClick={() => setIsModalOpen(false)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali"
           >
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Buat Jadwal Baru</h1>
-            <p className="text-sm text-slate-500 mt-1 font-medium">Buat jadwal asesmen baru untuk batch asesi</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              Buat Jadwal Baru
+            </h1>
+            <p className="text-sm text-slate-500 mt-1 font-medium">
+              Buat jadwal asesmen baru untuk batch asesi
+            </p>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
           <div className="p-8 space-y-8">
             <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">1</span>
+              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
+                1
+              </span>
               Jadwal Asesmen
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1. Nama Batch, 2. Skema Sertifikasi, 3. Metode Pelaksanaan */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Nama Batch/Grup</label>
-                <input type="text" placeholder="Contoh: BATCH-IT-2026-005" value={formData.batchName} onChange={(e) => setFormData({...formData, batchName: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Skema Sertifikasi</label>
-                <select 
-                  value={formData.scheme} 
-                  disabled={isPreviewMode} onChange={(e) => {
-                    setFormData({...formData, scheme: e.target.value});
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on scheme change
-                  }} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
-                >
-                  <option value="">Pilih Skema</option>
-                  {uniqueSchemes.map((skema: any) => (
-                    <option key={skema} value={skema}>{skema}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tanggal Uji</label>
-                <input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Gedung/Alamat</label>
-                <select 
-                  value={formData.tuk} 
-                  disabled={isPreviewMode} onChange={(e) => setFormData({...formData, tuk: e.target.value})} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
-                >
-                  <option value="">Pilih Gedung/Alamat</option>
-                  {TUK_LIST.map((tuk) => (
-                    <option key={tuk.id} value={tuk.id}>{tuk.nama}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Waktu Mulai</label>
-                <input type="time" value={formData.startTime} onChange={(e) => setFormData({...formData, startTime: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Waktu Selesai</label>
-                <input type="time" value={formData.endTime} onChange={(e) => setFormData({...formData, endTime: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">TUK</label>
-                <select 
-                  value={formData.tukType} 
-                  disabled={isPreviewMode} onChange={(e) => setFormData({...formData, tukType: e.target.value})} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
-                >
-                  <option value="">Pilih TUK</option>
-                  <option value="Sewaktu">Sewaktu</option>
-                  <option value="Mandiri">Mandiri</option>
-                </select>
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Asesor Ditugaskan</label>
-                <select 
-                  value={formData.assessorName} 
-                  disabled={isPreviewMode} onChange={(e) => setFormData({...formData, assessorName: e.target.value})} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
-                >
-                  <option value="">Pilih Asesor</option>
-                  {ALL_PLENO_USERS.filter(u => u.role === 'Asesor').map(a => (
-                    <option key={a.id} value={a.nama}>{a.nama}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Field Upload Surat Penugasan Asesor */}
-            <div className="min-w-0">
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                Surat Penugasan Asesor <span className="text-[#008BE3] font-semibold text-xs">(PDF / Gambar, Maks. 10MB)</span>
-              </label>
-              <div className="border-2 border-dashed border-gray-200 hover:border-[#008BE3] rounded-xl p-4 text-center bg-slate-50/50 hover:bg-sky-50/30 transition-colors relative">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  1. Nama Batch/Grup
+                </label>
                 <input
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
+                  type="text"
+                  placeholder="Contoh: BATCH-IT-2026-005"
+                  value={formData.batchName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, batchName: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  2. Skema Sertifikasi
+                </label>
+                <select
+                  value={formData.scheme}
                   disabled={isPreviewMode}
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setFormData({ ...formData, suratPenugasanName: file.name });
-                    }
+                    setFormData({ ...formData, scheme: e.target.value });
+                    setSelectedAsesiForJadwal([]); // Reset selected asesi on scheme change
                   }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                />
-                <div className="flex items-center justify-center gap-3">
-                  <Upload size={22} className="text-[#008BE3] shrink-0" />
-                  {formData.suratPenugasanName ? (
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 truncate">
-                        <CheckCircle size={16} className="shrink-0 text-emerald-600" /> {formData.suratPenugasanName}
-                      </p>
-                      {!isPreviewMode && <p className="text-xs text-slate-400 mt-0.5">Klik di sini untuk mengganti file surat penugasan</p>}
-                    </div>
-                  ) : (
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-bold text-slate-700">Upload Surat Penugasan Asesor</p>
-                      <p className="text-xs text-slate-400">Pilih atau unggah file dokumen penugasan (PDF/JPG/PNG)</p>
-                    </div>
-                  )}
-                </div>
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                >
+                  <option value="">Pilih Skema</option>
+                  {uniqueSchemes.map((skema: string) => (
+                    <option key={skema} value={skema}>
+                      {skema}
+                    </option>
+                  ))}
+                </select>
               </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  3. Metode Pelaksanaan
+                </label>
+                <select
+                  value={formData.method || "Offline"}
+                  disabled={isPreviewMode}
+                  onChange={(e) => {
+                    setFormData({ ...formData, method: e.target.value });
+                    setSelectedAsesiForJadwal([]); // Reset selected asesi on method change
+                  }}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-bold text-[#008BE3]"
+                >
+                  <option value="Offline">Offline (TUK Fisik)</option>
+                  <option value="Online">Online (Daring)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* 4. Jenis TUK & 5. Alamat TUK */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  4. Jenis TUK
+                </label>
+                <select
+                  value={formData.tukType}
+                  disabled={isPreviewMode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tukType: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                >
+                  <option value="">Pilih Jenis TUK</option>
+                  <option value="Sewaktu">Sewaktu</option>
+                  <option value="Mandiri">Mandiri</option>
+                  <option value="Tempat Kerja">Tempat Kerja</option>
+                </select>
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  5. Alamat TUK
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: UIN Sunan Gunung Djati Bandung"
+                  value={formData.alamat}
+                  onChange={(e) =>
+                    setFormData({ ...formData, alamat: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                />
+              </div>
+            </div>
+
+            {/* 6. Tanggal Uji & 7. Jam Pelaksanaan */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  6. Tanggal Uji
+                </label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  7. Jam Pelaksanaan (Mulai)
+                </label>
+                <input
+                  type="time"
+                  value={formData.startTime || "08:00"}
+                  onChange={(e) => {
+                    const newStart = e.target.value;
+                    setFormData({
+                      ...formData,
+                      startTime: newStart,
+                      jam: `${newStart} WIB`,
+                    });
+                  }}
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900 bg-white"
+                />
+              </div>
+            </div>
+
+            {/* 8. Spesifikasi Ruang TUK & 9. Asesor Ditugaskan */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  8. Spesifikasi Ruang TUK
+                </label>
+                <select
+                  value={formData.tuk}
+                  disabled={isPreviewMode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tuk: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                >
+                  <option value="">Pilih Gedung / Spesifikasi Ruangan</option>
+                  {TUK_LIST.map((tuk) => (
+                    <option key={tuk.id} value={tuk.id}>
+                      {tuk.nama}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  9. Asesor Ditugaskan
+                </label>
+                <select
+                  value={formData.assessorName}
+                  disabled={isPreviewMode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, assessorName: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                >
+                  <option value="">Pilih Asesor</option>
+                  {ALL_PLENO_USERS.filter((u) => u.role === "Asesor").map(
+                    (a) => (
+                      <option key={a.id} value={a.nama}>
+                        {a.nama}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+            </div>
+
+            {/* Field Tautan Link Google Drive Surat Penugasan Asesor */}
+            <div className="min-w-0">
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Tautan / Link Google Drive Surat Penugasan Asesor{" "}
+                <span className="text-slate-400 font-normal text-xs">
+                  (Opsional)
+                </span>
+              </label>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <div className="relative flex-1 flex items-center min-w-0">
+                  <input
+                    type="url"
+                    placeholder="Contoh: https://drive.google.com/file/d/.../view"
+                    value={formData.suratPenugasanName || ""}
+                    disabled={isPreviewMode}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        suratPenugasanName: e.target.value,
+                      })
+                    }
+                    className="w-full pl-4 pr-28 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white placeholder:text-slate-400 font-medium text-slate-900 disabled:bg-slate-50 disabled:text-slate-600"
+                  />
+                  {formData.suratPenugasanName ? (
+                    <a
+                      href={formData.suratPenugasanName}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute right-2 px-3.5 py-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
+                    >
+                      Buka Link
+                    </a>
+                  ) : null}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsGeneratePenugasanModalOpen(true)}
+                  className="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shrink-0 shadow-xs cursor-pointer active:scale-95"
+                  title="Generate dan cetak dokumen Surat Penugasan Asesor"
+                >
+                  <Sparkles size={16} />
+                  <span>Generate Surat</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">
+                Masukkan tautan/link file dokumen Surat Penugasan Asesor dari
+                Google Drive atau klik tombol <strong>Generate Surat</strong> di
+                sebelah kanan.
+              </p>
             </div>
 
             <div className="space-y-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <label className="block text-sm font-bold text-slate-700">Pilih Asesi</label>
+                  <label className="block text-sm font-bold text-slate-700">
+                    Pilih Asesi
+                  </label>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Menampilkan asesi untuk skema{" "}
+                    <span className="font-bold text-slate-900">
+                      {formData.scheme || "-"}
+                    </span>{" "}
+                    dengan metode{" "}
+                    <span className="font-bold text-[#008BE3]">
+                      {formData.method || "Offline"}
+                    </span>
+                  </p>
                   {formData.tuk && (
-                    <p className="text-xs text-slate-500 mt-1">
-                      Kapasitas TUK: <span className="font-bold text-slate-900">{kapasitas}</span> orang
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Kapasitas TUK:{" "}
+                      <span className="font-bold text-slate-900">
+                        {kapasitas}
+                      </span>{" "}
+                      orang
                     </p>
                   )}
                 </div>
-                 <div className="flex items-center gap-3 min-w-0">
-                  <button 
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
                     onClick={() => {
-                        if (isPreviewMode) return;
+                      if (isPreviewMode) return;
                       if (availableAsesi.length > 0 && formData.tuk) {
-                        const maxAllowed = Math.min(availableAsesi.length, kapasitas);
-                        setSelectedAsesiForJadwal(availableAsesi.slice(0, maxAllowed).map((a: any) => a.id));
+                        const maxAllowed = Math.min(
+                          availableAsesi.length,
+                          kapasitas,
+                        );
+                        setSelectedAsesiForJadwal(
+                          availableAsesi
+                            .slice(0, maxAllowed)
+                            .map((a: Candidate) => a.id),
+                        );
                       }
                     }}
                     className="text-xs font-bold text-[#008BE3] hover:text-[#0076C2] transition-colors"
                   >
-                    Pilih Maksimal ({kapasitas > 0 ? Math.min(availableAsesi.length, kapasitas) : 0})
+                    Pilih Maksimal (
+                    {kapasitas > 0
+                      ? Math.min(availableAsesi.length, kapasitas)
+                      : 0}
+                    )
                   </button>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-md ${selectedAsesiForJadwal.length > kapasitas && kapasitas > 0 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'}`}>
+                  <span
+                    className={`text-xs font-medium px-2.5 py-1 rounded-md ${selectedAsesiForJadwal.length > kapasitas && kapasitas > 0 ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-500"}`}
+                  >
                     {selectedAsesiForJadwal.length} asesi terpilih
                   </span>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
                 {!formData.scheme ? (
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
@@ -603,41 +912,88 @@ export function AssessmentSchedule() {
                   </div>
                 ) : availableAsesi.length === 0 ? (
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                    Tidak ada asesi yang tersedia untuk skema ini.
+                    Tidak ada asesi yang tersedia untuk skema{" "}
+                    <span className="font-bold text-slate-800">
+                      {formData.scheme}
+                    </span>{" "}
+                    dengan metode{" "}
+                    <span className="font-bold text-[#008BE3]">
+                      {formData.method || "Offline"}
+                    </span>
+                    .
                   </div>
                 ) : (
-                  availableAsesi.map((asesi: any) => {
-                    const isSelected = selectedAsesiForJadwal.includes(asesi.id);
-                    const isDisabled = !isSelected && selectedAsesiForJadwal.length >= kapasitas && kapasitas > 0;
-                    
+                  availableAsesi.map((asesi: Candidate) => {
+                    const isSelected = selectedAsesiForJadwal.some(
+                      (id) => String(id) === String(asesi.id),
+                    );
+                    const isDisabled =
+                      !isSelected &&
+                      selectedAsesiForJadwal.length >= kapasitas &&
+                      kapasitas > 0;
+                    const asesiMethod =
+                      asesi.metode_pelaksanaan ||
+                      asesi.jenis_asesmen ||
+                      "Offline";
+
                     return (
-                      <div 
-                        key={asesi.id} 
+                      <div
+                        key={asesi.id}
                         onClick={() => {
-                        if (isPreviewMode) return;
+                          if (isPreviewMode) return;
                           if (isDisabled || isPreviewMode) return;
-                          const newIds = isSelected 
-                            ? selectedAsesiForJadwal.filter(id => id !== asesi.id)
+                          const newIds = isSelected
+                            ? selectedAsesiForJadwal.filter(
+                                (id) => String(id) !== String(asesi.id),
+                              )
                             : [...selectedAsesiForJadwal, asesi.id];
                           setSelectedAsesiForJadwal(newIds);
                         }}
                         className={`p-4 rounded-xl border transition-all flex items-center gap-4 ${
-                          isDisabled ? 'opacity-50 cursor-not-allowed bg-slate-50 border-gray-200' : 'cursor-pointer'
+                          isDisabled
+                            ? "opacity-50 cursor-not-allowed bg-slate-50 border-gray-200"
+                            : "cursor-pointer"
                         } ${
                           isSelected
-                            ? 'border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20'
-                            : isDisabled ? '' : 'border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50'
+                            ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
+                            : isDisabled
+                              ? ""
+                              : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
                         }`}
                       >
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
-                          isSelected
-                            ? 'bg-[#008BE3] border-[#008BE3] text-white'
-                            : isDisabled ? 'bg-slate-200 border-slate-300' : 'border-gray-300'
-                        }`}>
-                          {isSelected && <CheckSquare size={14} className="stroke-[3]" />}
+                        <div
+                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
+                            isSelected
+                              ? "bg-[#008BE3] border-[#008BE3] text-white"
+                              : isDisabled
+                                ? "bg-slate-200 border-slate-300"
+                                : "border-gray-300"
+                          }`}
+                        >
+                          {isSelected && (
+                            <CheckSquare size={14} className="stroke-[3]" />
+                          )}
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-slate-900 text-sm">{asesi.nama}</h4>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="font-bold text-slate-900 text-sm truncate">
+                              {asesi.nama}
+                            </h4>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 border ${
+                                asesiMethod === "Online"
+                                  ? "bg-purple-50 text-purple-700 border-purple-200"
+                                  : "bg-sky-50 text-[#008BE3] border-sky-200"
+                              }`}
+                            >
+                              {asesiMethod}
+                            </span>
+                          </div>
+                          {asesi.nik && (
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              NIK: {asesi.nik}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
@@ -647,214 +1003,182 @@ export function AssessmentSchedule() {
             </div>
           </div>
           <div className="p-6 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
-            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">{isPreviewMode ? "Kembali" : "Batal"}</button>
-            {!isPreviewMode && <button onClick={handleAddSchedule} disabled={!formData.batchName || !formData.scheme || !formData.date || !formData.assessorName || !formData.tuk || selectedAsesiForJadwal.length === 0} className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">Simpan Jadwal</button>}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
+            >
+              {isPreviewMode ? "Kembali" : "Batal"}
+            </button>
+            {!isPreviewMode && (
+              <button
+                onClick={handleAddSchedule}
+                disabled={
+                  !formData.batchName ||
+                  !formData.scheme ||
+                  !formData.date ||
+                  !formData.assessorName ||
+                  !formData.tuk ||
+                  selectedAsesiForJadwal.length === 0
+                }
+                className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Simpan Jadwal
+              </button>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-    if (isPlenoModalOpen) {
+  if (isPlenoModalOpen) {
     return (
       <div className="p-8 pb-24 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setIsPlenoModalOpen(false)} 
+          <button
+            onClick={() => setIsPlenoModalOpen(false)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali"
           >
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Jadwalkan Sidang Pleno</h1>
-            <p className="text-sm text-slate-500 mt-1 font-medium">Buat jadwal sidang pleno baru untuk penetapan kelulusan</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              Jadwalkan Sidang Pleno
+            </h1>
+            <p className="text-sm text-slate-500 mt-1 font-medium">
+              Buat jadwal sidang pleno baru untuk penetapan kelulusan
+            </p>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
           <div className="p-8 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Nama Batch/Grup</label>
-                <input type="text" value={plenoForm.id} onChange={(e) => setPlenoForm({...plenoForm, id: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" placeholder="Contoh: BATCH-IT-2026-005" />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Lokasi / Tautan Pertemuan</label>
-                <input type="text" placeholder="Contoh: Ruang Rapat Lt. 2 atau Link Zoom/Meet" value={plenoForm.lokasi} onChange={(e) => setPlenoForm({...plenoForm, lokasi: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tanggal Sidang</label>
-                <input type="date" value={plenoForm.tanggal} onChange={(e) => setPlenoForm({...plenoForm, tanggal: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Waktu Mulai</label>
-                <input type="time" value={plenoForm.waktuMulai} onChange={(e) => setPlenoForm({...plenoForm, waktuMulai: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-              <div className="min-w-0">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Waktu Selesai</label>
-                <input type="time" value={plenoForm.waktuSelesai} onChange={(e) => setPlenoForm({...plenoForm, waktuSelesai: e.target.value})} disabled={isPreviewMode} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                Surat Sidang Pleno <span className="text-[#008BE3] font-semibold text-xs">(PDF / Gambar, Maks. 10MB)</span>
-              </label>
-              
-              <input
-                ref={plenoFileInputRef}
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg"
-                disabled={isPreviewMode}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setPlenoForm(prev => ({
-                        ...prev,
-                        suratPlenoName: file.name,
-                        suratPlenoUrl: reader.result as string
-                      }));
-                    };
-                    reader.readAsDataURL(file);
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Nama Batch/Grup
+                </label>
+                <input
+                  type="text"
+                  value={plenoForm.id}
+                  onChange={(e) =>
+                    setPlenoForm({ ...plenoForm, id: e.target.value })
                   }
-                  e.target.value = '';
-                }}
-                className="hidden"
-              />
-
-              {plenoForm.suratPlenoName ? (
-                <div className="border border-emerald-200 bg-emerald-50/70 rounded-xl p-3.5 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold">
-                      <FileText size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate flex items-center gap-1.5">
-                        <CheckCircle size={15} className="shrink-0 text-emerald-600" /> {plenoForm.suratPlenoName}
-                      </p>
-                      {!isPreviewMode && (
-                        <button
-                          type="button"
-                          onClick={() => plenoFileInputRef.current?.click()}
-                          className="text-xs font-semibold text-[#008BE3] hover:underline mt-0.5 inline-block cursor-pointer"
-                        >
-                          Ganti File Surat
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Preview Button: Eye Icon Only */}
-                    <button
-                      type="button"
-                      title="Lihat Pratinjau Surat / Foto"
-                      onClick={() => {
-                        setPreviewDocModal({
-                          name: plenoForm.suratPlenoName || 'Surat Sidang Pleno',
-                          url: getDocumentPreviewUrl(plenoForm.suratPlenoName, plenoForm.suratPlenoUrl)
-                        });
-                      }}
-                      className="p-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center"
-                    >
-                      <Eye size={18} />
-                    </button>
-
-                    {/* Delete Button: Trash Icon Only */}
-                    {!isPreviewMode && (
-                      <button
-                        type="button"
-                        title="Hapus Surat"
-                        onClick={() => {
-                          setPlenoForm(prev => ({
-                            ...prev,
-                            suratPlenoName: '',
-                            suratPlenoUrl: ''
-                          }));
-                        }}
-                        className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded-xl border border-rose-200 transition-colors cursor-pointer flex items-center justify-center"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onClick={() => !isPreviewMode && plenoFileInputRef.current?.click()}
-                  className={`border-2 border-dashed border-gray-200 hover:border-[#008BE3] rounded-xl p-4 text-center bg-slate-50/50 hover:bg-sky-50/30 transition-colors flex items-center justify-center gap-3 ${
-                    isPreviewMode ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
-                  }`}
-                >
-                  <Upload size={22} className="text-[#008BE3] shrink-0" />
-                  <div className="text-left min-w-0">
-                    <p className="text-sm font-bold text-slate-700">Upload Surat Sidang Pleno</p>
-                    <p className="text-xs text-slate-400">Pilih atau unggah file dokumen surat sidang pleno (PDF/JPG/PNG)</p>
-                  </div>
-                </div>
-              )}
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                  placeholder="Contoh: BATCH-IT-2026-005"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Rentang Tanggal Pelaksanaan Pleno
+                </label>
+                <input
+                  type="text"
+                  value={plenoForm.tanggal}
+                  onChange={(e) =>
+                    setPlenoForm({ ...plenoForm, tanggal: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  placeholder="Contoh: 25 - 27 Februari 2026"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  TUK
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Gedung Al-Jamiah / Lab Komputer / Online"
+                  value={plenoForm.lokasi}
+                  onChange={(e) =>
+                    setPlenoForm({ ...plenoForm, lokasi: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                />
+              </div>
             </div>
 
             <div className="space-y-4 pt-4 border-t border-gray-100">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <label className="block text-sm font-bold text-slate-800">Pilih Asesi Sidang Pleno</label>
-                  <p className="text-xs text-slate-500">Menampilkan seluruh asesi yang sudah selesai dinilai oleh asesor dan siap disidangkan</p>
+                  <label className="block text-sm font-bold text-slate-800">
+                    Pilih Asesi Sidang Pleno
+                  </label>
+                  <p className="text-xs text-slate-500">
+                    Menampilkan seluruh asesi yang sudah selesai dinilai oleh
+                    asesor dan siap disidangkan
+                  </p>
                 </div>
                 <span className="text-xs font-bold text-[#008BE3] bg-[#008BE3]/10 px-2.5 py-1 rounded-md self-start sm:self-auto shrink-0">
                   {selectedAsesiForPleno.length} asesi terpilih
                 </span>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
                 {availableAsesiForPleno.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                    Tidak ada asesi yang selesai dinilai dan siap untuk disidangkan.
+                    Tidak ada asesi yang selesai dinilai dan siap untuk
+                    disidangkan.
                   </div>
                 ) : (
-                  availableAsesiForPleno.map(asesi => {
-                    const isSelected = selectedAsesiForPleno.includes(asesi.id) || selectedAsesiForPleno.includes(asesi.nama);
+                  availableAsesiForPleno.map((asesi) => {
+                    const isSelected =
+                      selectedAsesiForPleno.includes(asesi.id) ||
+                      selectedAsesiForPleno.includes(asesi.nama);
                     return (
-                      <div 
-                        key={asesi.id} 
+                      <div
+                        key={asesi.id}
                         onClick={() => {
                           if (isPreviewMode) return;
                           const newIds = isSelected
-                            ? selectedAsesiForPleno.filter(id => id !== asesi.id && id !== asesi.nama)
+                            ? selectedAsesiForPleno.filter(
+                                (id) => id !== asesi.id && id !== asesi.nama,
+                              )
                             : [...selectedAsesiForPleno, asesi.id];
                           setSelectedAsesiForPleno(newIds);
                         }}
                         className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3.5 ${
                           isSelected
-                            ? 'border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20'
-                            : 'border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50'
+                            ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
+                            : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
                         }`}
                       >
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
-                          isSelected
-                            ? 'bg-[#008BE3] border-[#008BE3] text-white'
-                            : 'border-gray-300'
-                        }`}>
-                          {isSelected && <CheckSquare size={14} className="stroke-[3]" />}
+                        <div
+                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
+                            isSelected
+                              ? "bg-[#008BE3] border-[#008BE3] text-white"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {isSelected && (
+                            <CheckSquare size={14} className="stroke-[3]" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <h4 className="font-bold text-slate-900 text-sm truncate">{asesi.nama}</h4>
+                            <h4 className="font-bold text-slate-900 text-sm truncate">
+                              {asesi.nama}
+                            </h4>
                             {asesi.hasil && (
-                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
-                                asesi.hasil === 'Kompeten' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                              }`}>
+                              <span
+                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                  asesi.hasil === "Kompeten"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-amber-100 text-amber-700"
+                                }`}
+                              >
                                 {asesi.hasil}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-[#008BE3] font-semibold truncate mt-0.5" title={asesi.skema}>
+                          <p
+                            className="text-xs text-[#008BE3] font-semibold truncate mt-0.5"
+                            title={asesi.skema}
+                          >
                             {asesi.skema}
                           </p>
                         </div>
@@ -868,12 +1192,18 @@ export function AssessmentSchedule() {
             <div className="pt-4 border-t border-gray-100 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <label className="block text-sm font-bold text-slate-800">Daftar Peserta Sidang Pleno</label>
-                  <p className="text-xs text-slate-500">Pilih peran/jabatan lalu centang nama user yang bertugas</p>
+                  <label className="block text-sm font-bold text-slate-800">
+                    Daftar Peserta Sidang Pleno
+                  </label>
+                  <p className="text-xs text-slate-500">
+                    Pilih peran/jabatan lalu centang nama user yang bertugas
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-bold text-slate-600 shrink-0">Filter Peran:</label>
-                  <select 
+                  <label className="text-xs font-bold text-slate-600 shrink-0">
+                    Filter Peran:
+                  </label>
+                  <select
                     value={selectedPlenoRole}
                     onChange={(e) => setSelectedPlenoRole(e.target.value)}
                     className="px-3 py-2 border border-gray-200 rounded-lg text-xs font-bold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
@@ -882,26 +1212,46 @@ export function AssessmentSchedule() {
                     <option value="Direktur">Direktur</option>
                     <option value="Dewan Pengarah">Dewan Pengarah</option>
                     <option value="Komite Skema">Komite Skema</option>
-                    <option value="Manajer Administrasi dan Keuangan">Manajer Administrasi dan Keuangan</option>
-                    <option value="Manajer Standardisasi">Manajer Standardisasi</option>
-                    <option value="Manajer Manajemen Mutu">Manajer Manajemen Mutu</option>
-                    <option value="Manajer Sertifikasi">Manajer Sertifikasi</option>
+                    <option value="Manajer Administrasi dan Keuangan">
+                      Manajer Administrasi dan Keuangan
+                    </option>
+                    <option value="Manajer Standardisasi">
+                      Manajer Standardisasi
+                    </option>
+                    <option value="Manajer Manajemen Mutu">
+                      Manajer Manajemen Mutu
+                    </option>
+                    <option value="Manajer Sertifikasi">
+                      Manajer Sertifikasi
+                    </option>
                     <option value="Semua Peran">Semua Peran</option>
                   </select>
                 </div>
               </div>
 
               {/* Selected attendees tags */}
-              {plenoForm.plenoAttendees.filter(a => a.nama.trim() !== '').length > 0 && (
+              {plenoForm.plenoAttendees.filter((a) => a.nama.trim() !== "")
+                .length > 0 && (
                 <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-700">
-                      Peserta Terpilih ({plenoForm.plenoAttendees.filter(a => a.nama.trim() !== '').length}):
+                      Peserta Terpilih (
+                      {
+                        plenoForm.plenoAttendees.filter(
+                          (a) => a.nama.trim() !== "",
+                        ).length
+                      }
+                      ):
                     </span>
                     {!isPreviewMode && (
-                      <button 
-                        type="button" 
-                        onClick={() => setPlenoForm(prev => ({ ...prev, plenoAttendees: [] }))}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPlenoForm((prev) => ({
+                            ...prev,
+                            plenoAttendees: [],
+                          }))
+                        }
                         className="text-[11px] text-red-500 hover:underline font-semibold cursor-pointer"
                       >
                         Hapus Semua
@@ -909,20 +1259,28 @@ export function AssessmentSchedule() {
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {plenoForm.plenoAttendees.filter(a => a.nama.trim() !== '').map((att, idx) => (
-                      <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-[#008BE3]/30 text-[#008BE3] rounded-lg text-xs font-bold shadow-2xs">
-                        <span className="text-slate-500 font-normal">[{att.role}]</span> {att.nama}
-                        {!isPreviewMode && (
-                          <button 
-                            type="button" 
-                            onClick={() => toggleAttendeeSelection(att)}
-                            className="hover:text-red-500 ml-1 cursor-pointer"
-                          >
-                            <X size={12} />
-                          </button>
-                        )}
-                      </span>
-                    ))}
+                    {plenoForm.plenoAttendees
+                      .filter((a) => a.nama.trim() !== "")
+                      .map((att, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-[#008BE3]/30 text-[#008BE3] rounded-lg text-xs font-bold shadow-2xs"
+                        >
+                          <span className="text-slate-500 font-normal">
+                            [{att.role}]
+                          </span>{" "}
+                          {att.nama}
+                          {!isPreviewMode && (
+                            <button
+                              type="button"
+                              onClick={() => toggleAttendeeSelection(att)}
+                              className="hover:text-red-500 ml-1 cursor-pointer"
+                            >
+                              <X size={12} />
+                            </button>
+                          )}
+                        </span>
+                      ))}
                   </div>
                 </div>
               )}
@@ -931,29 +1289,36 @@ export function AssessmentSchedule() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
                 {(() => {
                   const mergedUsers = [...ALL_PLENO_USERS];
-                  plenoForm.plenoAttendees.forEach(att => {
-                    if (att.nama.trim() && !mergedUsers.some(u => u.nama === att.nama && u.role === att.role)) {
+                  plenoForm.plenoAttendees.forEach((att) => {
+                    if (
+                      att.nama.trim() &&
+                      !mergedUsers.some(
+                        (u) => u.nama === att.nama && u.role === att.role,
+                      )
+                    ) {
                       mergedUsers.push({
                         id: `custom-${att.role}-${att.nama}`,
                         nama: att.nama,
-                        role: att.role
+                        role: att.role,
                       });
                     }
                   });
 
-                  const filtered = selectedPlenoRole === 'Semua Peran'
-                    ? mergedUsers
-                    : mergedUsers.filter(u => u.role === selectedPlenoRole);
+                  const filtered =
+                    selectedPlenoRole === "Semua Peran"
+                      ? mergedUsers
+                      : mergedUsers.filter((u) => u.role === selectedPlenoRole);
 
                   if (filtered.length === 0) {
                     return (
                       <div className="col-span-full text-center py-6 text-slate-500 text-xs border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                        Tidak ada user terdaftar untuk peran {selectedPlenoRole}.
+                        Tidak ada user terdaftar untuk peran {selectedPlenoRole}
+                        .
                       </div>
                     );
                   }
 
-                  return filtered.map(usr => {
+                  return filtered.map((usr) => {
                     const selected = isAttendeeSelected(usr.nama, usr.role);
                     return (
                       <div
@@ -961,19 +1326,25 @@ export function AssessmentSchedule() {
                         onClick={() => toggleAttendeeSelection(usr)}
                         className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
                           selected
-                            ? 'border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20'
-                            : 'border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50'
+                            ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
+                            : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
                         }`}
                       >
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
-                          selected
-                            ? 'bg-[#008BE3] border-[#008BE3] text-white'
-                            : 'border-gray-300'
-                        }`}>
-                          {selected && <CheckSquare size={14} className="stroke-[3]" />}
+                        <div
+                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
+                            selected
+                              ? "bg-[#008BE3] border-[#008BE3] text-white"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {selected && (
+                            <CheckSquare size={14} className="stroke-[3]" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-slate-900 text-sm truncate">{usr.nama}</h4>
+                          <h4 className="font-bold text-slate-900 text-sm truncate">
+                            {usr.nama}
+                          </h4>
                           <span className="text-[11px] font-semibold text-[#008BE3] bg-[#008BE3]/10 px-2 py-0.5 rounded-md inline-block mt-1">
                             {usr.role}
                           </span>
@@ -985,13 +1356,20 @@ export function AssessmentSchedule() {
               </div>
             </div>
           </div>
-          
+
           <div className="p-6 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
-            <button onClick={() => setIsPlenoModalOpen(false)} className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors">{isPreviewMode ? "Kembali" : "Batal"}</button>
+            <button
+              onClick={() => setIsPlenoModalOpen(false)}
+              className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
+            >
+              {isPreviewMode ? "Kembali" : "Batal"}
+            </button>
             {!isPreviewMode && (
-              <button 
-                onClick={handleAddPleno} 
-                disabled={selectedAsesiForPleno.length === 0 || !plenoForm.tanggal}
+              <button
+                onClick={handleAddPleno}
+                disabled={
+                  selectedAsesiForPleno.length === 0 || !plenoForm.tanggal
+                }
                 className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Jadwalkan Sidang Pleno
@@ -1006,60 +1384,72 @@ export function AssessmentSchedule() {
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-         <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
             <Calendar size={20} className="stroke-[2.5]" />
           </div>
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Jadwal & Penugasan
+              {isPlenoOnlyRole ? "Jadwal Sidang Pleno" : "Jadwal & Penugasan"}
             </h1>
             <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
-              Kelola jadwal asesmen dan sidang pleno penetapan kelulusan
+              {isPlenoOnlyRole
+                ? "Melihat jadwal sidang pleno penetapan kelulusan yang dijadwalkan oleh admin"
+                : "Kelola jadwal asesmen dan sidang pleno penetapan kelulusan"}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-1 rounded-xl shadow-xs border border-gray-100 flex items-center w-full max-w-sm">
-        <button
-          onClick={() => setActiveTab('asesmen')}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'asesmen' ? 'bg-[#008BE3] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-        >
-          Jadwal Asesmen
-        </button>
-        <button
-          onClick={() => setActiveTab('pleno')}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'pleno' ? 'bg-[#008BE3] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
-        >
-          Sidang Pleno
-        </button>
-      </div>
+      {!isPlenoOnlyRole && (
+        <div className="bg-white p-1 rounded-xl shadow-xs border border-gray-100 flex items-center w-full max-w-sm">
+          <button
+            onClick={() => setActiveTab("asesmen")}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === "asesmen" ? "bg-[#008BE3] text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
+          >
+            Jadwal Asesmen
+          </button>
+          <button
+            onClick={() => setActiveTab("pleno")}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === "pleno" ? "bg-[#008BE3] text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
+          >
+            Sidang Pleno
+          </button>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
         <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           <div className="flex-1 min-w-0 order-1">
             <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-2 sm:px-3 h-[42px] w-full border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search size={16} className="text-gray-400 shrink-0" />
-              <input 
-                type="text" 
-                placeholder={activeTab === 'asesmen' ? "Cari batch..." : "Cari skema..."} 
+              <input
+                type="text"
+                placeholder={
+                  activeTab === "asesmen" ? "Cari batch..." : "Cari skema..."
+                }
                 className="bg-transparent border-none outline-none text-[13px] sm:text-sm w-full font-medium placeholder:text-gray-400 min-w-0"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shrink-0 order-2">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
                 className="items-center justify-center gap-2 px-3 py-2.5 sm:px-4 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold shadow-xs hover:bg-gray-50 transition-colors flex shrink-0"
               >
-                <Filter size={16} /> <span className="hidden sm:inline">Filter</span> {filterStatus !== 'Semua' && <span className="bg-[#008BE3] text-white text-[10px] px-1.5 py-0.5 rounded-full">{filterStatus}</span>}
+                <Filter size={16} />{" "}
+                <span className="hidden sm:inline">Filter</span>{" "}
+                {filterStatus !== "Semua" && (
+                  <span className="bg-[#008BE3] text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {filterStatus}
+                  </span>
+                )}
               </button>
-              
+
               <AnimatePresence>
                 {isFilterDropdownOpen && (
                   <motion.div
@@ -1069,129 +1459,313 @@ export function AssessmentSchedule() {
                     className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-20"
                   >
                     <div className="p-2 space-y-1">
-                      {['Semua', 'Terjadwal', 'Dikonfirmasi', 'Selesai'].map((status) => (
-                        <button
-                          key={status}
-                          onClick={() => {
-                            setFilterStatus(status);
-                            setIsFilterDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === status ? 'bg-[#008BE3]/10 text-[#008BE3]' : 'text-gray-700 hover:bg-gray-50'}`}
-                        >
-                          {status}
-                        </button>
-                      ))}
+                      {["Semua", "Terjadwal", "Dikonfirmasi", "Selesai"].map(
+                        (status) => (
+                          <button
+                            key={status}
+                            onClick={() => {
+                              setFilterStatus(status);
+                              setIsFilterDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === status ? "bg-[#008BE3]/10 text-[#008BE3]" : "text-gray-700 hover:bg-gray-50"}`}
+                          >
+                            {status}
+                          </button>
+                        ),
+                      )}
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            {activeTab === 'asesmen' && !readOnly && (
-              <button 
+            {activeTab === "asesmen" && !readOnly && (
+              <button
                 onClick={() => {
                   setIsPreviewMode(false);
                   setIsEditMode(false);
                   setFormData({
-                    batchName: '',
-                    scheme: '',
-                    date: '',
-                    startTime: '',
-                    endTime: '',
+                    batchName: "",
+                    nomorSurat: "",
+                    scheme: "",
+                    method: "Offline",
+                    tukType: "Sewaktu",
+                    alamat: "UIN Sunan Gunung Djati Bandung",
+                    date: "",
+                    startTime: "08:00",
+                    endTime: "",
+                    jam: "08:00 WIB",
+                    tuk: "",
                     candidatesCount: 0,
-                    assessorName: '',
-                    suratPenugasanName: '',
-                    tuk: '',
-                    tukType: '',
-                    status: 'Terjadwal'
+                    assessorName: "",
+                    suratPenugasanName: "",
+                    status: "Terjadwal",
                   });
                   setSelectedAsesiForJadwal([]);
                   setIsModalOpen(true);
                 }}
                 className="flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:gap-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors shrink-0 cursor-pointer"
               >
-                <Plus size={16} className="stroke-[2.5]" /> <span className="hidden sm:inline">Buat Jadwal Baru</span><span className="sm:hidden">Baru</span>
+                <Plus size={16} className="stroke-[2.5]" />{" "}
+                <span className="hidden sm:inline">Buat Jadwal Baru</span>
+                <span className="sm:hidden">Baru</span>
               </button>
             )}
-            {activeTab === 'pleno' && !readOnly && (
-              <button 
+            {activeTab === "pleno" && !readOnly && (
+              <button
                 onClick={() => {
                   setIsPreviewMode(false);
                   setIsEditMode(false);
                   setPlenoForm({
-                    id: '',
-                    tanggal: '',
-                    waktuMulai: '',
-                    waktuSelesai: '',
-                    skema: '',
-                    lokasi: 'Ruang Rapat Utama (Offline)',
-                    detailLokasi: '',
-                    deskripsi: '',
-                    plenoAttendees: [{ role: '', nama: '' }],
-                    suratPlenoName: ''
+                    id: "",
+                    tanggal: "",
+                    waktuMulai: "",
+                    waktuSelesai: "",
+                    skema: "",
+                    lokasi: "Ruang Rapat Utama (Offline)",
+                    detailLokasi: "",
+                    deskripsi: "",
+                    plenoAttendees: [{ role: "", nama: "" }],
+                    suratPlenoName: "",
                   });
                   setSelectedAsesiForPleno([]);
                   setIsPlenoModalOpen(true);
                 }}
                 className="flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:gap-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors shrink-0 cursor-pointer"
               >
-                <Plus size={16} className="stroke-[2.5]" /> <span className="hidden sm:inline">Buat Sidang Pleno</span><span className="sm:hidden">Pleno</span>
+                <Plus size={16} className="stroke-[2.5]" />{" "}
+                <span className="hidden sm:inline">Buat Sidang Pleno</span>
+                <span className="sm:hidden">Pleno</span>
               </button>
             )}
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
-          {activeTab === 'asesmen' && (
+          {activeTab === "asesmen" && (
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px]">Nama Batch/Grup</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[150px]">Tanggal Uji</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[150px]">Jumlah Asesi</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px]">Asesor Ditugaskan</th>
-                  {!readOnly && (
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[150px] text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">Aksi</th>
-                  )}
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Nama Batch
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Skema Sertifikasi
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Jenis TUK
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Alamat TUK
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Tanggal Uji
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Jam Pelaksanaan
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Spesifikasi Ruang TUK
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Asesor Ditugaskan
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Surat Penugasan
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Total Asesi
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100/60">
-                {filteredSchedules.filter(s => s.status !== 'Selesai').map(item => (
-                  <tr key={item.id} className="group/row hover:bg-[#F9FAFC] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-slate-900">{item.batchName}</div>
-                      <div className="text-xs text-gray-500 font-medium">{item.scheme}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-slate-700 font-medium">{formatDate(item.date)}</div>
-                      <div className="text-[10px] text-gray-500 font-bold mt-1 inline-block bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wider">
-                        {item.startTime || "08:00"} - {item.endTime || "12:00"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-700 font-medium">{item.candidatesCount} Asesi</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center text-[10px] font-bold border border-[#BCE0FD] shrink-0">{item.assessorInitial}</div>
-                        <div className="min-w-0">
-                          <span className="text-sm font-bold text-slate-700 block truncate">{item.assessorName}</span>
-                          {item.suratPenugasanName && (
-                            <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 mt-0.5" title={item.suratPenugasanName}>
-                              <FileText size={12} className="shrink-0" />
-                              <span className="truncate max-w-[140px]">{item.suratPenugasanName}</span>
+                {filteredSchedules
+                  .filter((s) => s.status !== "Selesai")
+                  .map((item) => (
+                    <tr
+                      key={item.id}
+                      className="group/row hover:bg-[#F9FAFC] transition-colors"
+                    >
+                      {/* 1. Nama Batch */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-slate-900">
+                          {item.batchName}
+                        </div>
+                      </td>
+
+                      {/* 2. Skema Sertifikasi */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs font-semibold text-slate-700 whitespace-nowrap">
+                          {item.scheme || "-"}
+                        </div>
+                        <span
+                          className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mt-1 border ${
+                            (item.method || item.metode) === "Online"
+                              ? "bg-purple-50 text-purple-700 border-purple-200"
+                              : "bg-sky-50 text-[#008BE3] border-sky-200"
+                          }`}
+                        >
+                          {item.method || item.metode || "Offline"}
+                        </span>
+                      </td>
+
+                      {/* 3. Jenis TUK */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
+                          {item.tukType || "Sewaktu"}
+                        </span>
+                      </td>
+
+                      {/* 4. Alamat TUK */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 whitespace-nowrap">
+                          <MapPin
+                            size={14}
+                            className="text-slate-400 shrink-0"
+                          />
+                          <span className="whitespace-nowrap">
+                            {item.alamat || "UIN Sunan Gunung Djati Bandung"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 5. Tanggal Uji */}
+                      <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-semibold text-slate-600">
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                          <Calendar
+                            size={13}
+                            className="text-slate-400 shrink-0"
+                          />
+                          {formatDate(item.date)}
+                        </span>
+                      </td>
+
+                      {/* 6. Jam Pelaksanaan */}
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-semibold text-slate-700">
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                          <Clock
+                            size={13}
+                            className="text-slate-400 shrink-0"
+                          />
+                          {item.startTime
+                            ? `${item.startTime} WIB`
+                            : item.jam || "08:00 WIB"}
+                        </span>
+                      </td>
+
+                      {/* 7. Spesifikasi Ruang TUK */}
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-medium text-slate-700">
+                        <span className="whitespace-nowrap">
+                          {getTukRuangSpec(item.tuk)}
+                        </span>
+                      </td>
+
+                      {/* 8. Asesor Ditugaskan */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <div className="w-6 h-6 rounded bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center text-[10px] font-bold border border-[#BCE0FD] shrink-0">
+                            {item.assessorInitial ||
+                              (item.assessorName
+                                ? item.assessorName
+                                    .split(" ")
+                                    .map((n: string) => n[0])
+                                    .join("")
+                                    .substring(0, 2)
+                                    .toUpperCase()
+                                : "AS")}
+                          </div>
+                          <span className="text-xs font-bold text-slate-800 whitespace-nowrap">
+                            {item.assessorName || "-"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 9. Surat Penugasan */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {item.suratPenugasanName ? (
+                          item.suratPenugasanName.startsWith("http") ? (
+                            <a
+                              href={item.suratPenugasanName}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors whitespace-nowrap"
+                              title="Buka Link Google Drive Penugasan"
+                            >
+                              <FileText
+                                size={13}
+                                className="shrink-0 text-[#008BE3]"
+                              />
+                              <span className="whitespace-nowrap">
+                                Link Drive
+                              </span>
+                            </a>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg whitespace-nowrap">
+                              <FileText size={13} className="shrink-0" />
+                              <span className="whitespace-nowrap">
+                                {item.suratPenugasanName}
+                              </span>
                             </span>
+                          )
+                        ) : (
+                          <span className="text-xs text-slate-400 italic whitespace-nowrap">
+                            Belum Ada
+                          </span>
+                        )}
+                      </td>
+
+                      {/* 10. Total Asesi */}
+                      <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-bold text-slate-700">
+                        <span className="whitespace-nowrap">
+                          {item.candidatesCount || item.asesiList?.length || 0}{" "}
+                          Asesi
+                        </span>
+                      </td>
+
+                      {/* 11. Aksi (Detail, Edit, Hapus) */}
+                      <td className="px-6 py-4 whitespace-nowrap sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.02)]">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <button
+                            onClick={() => handlePreviewAsesmen(item)}
+                            className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            title="Detail"
+                          >
+                            <Eye size={14} />
+                            <span>Detail</span>
+                          </button>
+                          {!readOnly && (
+                            <>
+                              <button
+                                onClick={() => handleEditAsesmen(item)}
+                                className="px-3 py-1.5 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Edit"
+                              >
+                                <FileEdit size={14} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSchedule(item.id)}
+                                className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Hapus"
+                              >
+                                <Trash2 size={14} />
+                                <span>Hapus</span>
+                              </button>
+                            </>
                           )}
                         </div>
-                      </div>
-                    </td>
-                    {!readOnly && (
-                    <td className="px-6 py-4 sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.02)]">
-                      <div className="flex items-center gap-2"><button onClick={() => setConfirmAsesmenId(item.id)} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Selesai?</button><button onClick={() => handlePreviewAsesmen(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Eye size={16} /></button><button onClick={() => handleEditAsesmen(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><FileEdit size={16} /></button><button onClick={() => handleDeleteSchedule(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button></div>
-                    </td>
-                    )}
-                  </tr>
-                ))}
-                {filteredSchedules.filter(s => s.status !== 'Selesai').length === 0 && (
+                      </td>
+                    </tr>
+                  ))}
+                {filteredSchedules.filter((s) => s.status !== "Selesai")
+                  .length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium">
+                    <td
+                      colSpan={11}
+                      className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
+                    >
                       Tidak ada jadwal asesmen aktif.
                     </td>
                   </tr>
@@ -1199,103 +1773,185 @@ export function AssessmentSchedule() {
               </tbody>
             </table>
           )}
-          
-          {activeTab === 'pleno' && (
+
+          {activeTab === "pleno" && (
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px]">Nama Batch/Grup</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">Jadwal</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">Lokasi</th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[120px]">Jml Asesi</th>
-                  {!readOnly && (
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[150px] text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">Aksi</th>
-                  )}
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px]">
+                    Nama Sidang Pleno
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">
+                    Tanggal Pelaksanaan
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">
+                    TUK
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[120px]">
+                    Total Asesi
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[140px]">
+                    Status Sidang
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[140px] text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100/60">
-                {filteredPleno.filter(p => p.status !== 'Selesai').length > 0 ? (
-                  filteredPleno.filter(p => p.status !== 'Selesai').map((item) => (
-                    <tr key={item.id} className="group/row hover:bg-[#F9FAFC] transition-colors">
+                {filteredPleno.length > 0 ? (
+                  filteredPleno.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="group/row hover:bg-[#F9FAFC] transition-colors"
+                    >
                       <td className="px-6 py-4">
-                        <div className="text-sm font-bold text-slate-900">{item.id}</div>
-                        <div className="text-xs text-gray-500 font-medium">{item.skema}</div>
+                        <div className="text-sm font-bold text-slate-900">
+                          {item.id}
+                        </div>
                         {item.suratPlenoName && (
                           <button
                             type="button"
-                            onClick={() => setPreviewDocModal({
-                              name: item.suratPlenoName || 'Surat Sidang Pleno',
-                              url: getDocumentPreviewUrl(item.suratPlenoName, item.suratPlenoUrl)
-                            })}
+                            onClick={() =>
+                              setPreviewDocModal({
+                                name:
+                                  item.suratPlenoName || "Surat Sidang Pleno",
+                                url: getDocumentPreviewUrl(
+                                  item.suratPlenoName,
+                                  item.suratPlenoUrl,
+                                ),
+                              })
+                            }
                             className="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5 mt-1.5 transition-colors cursor-pointer group/doc"
                             title="Klik untuk melihat foto/isi surat"
                           >
-                            <FileText size={13} className="shrink-0 text-emerald-600" />
-                            <span className="truncate max-w-[130px]">{item.suratPlenoName}</span>
-                            <Eye size={12} className="shrink-0 text-emerald-600 group-hover/doc:scale-110 transition-transform" />
+                            <FileText
+                              size={13}
+                              className="shrink-0 text-emerald-600"
+                            />
+                            <span className="whitespace-nowrap">
+                              {item.suratPlenoName}
+                            </span>
+                            <Eye
+                              size={12}
+                              className="shrink-0 text-emerald-600 group-hover/doc:scale-110 transition-transform"
+                            />
                           </button>
                         )}
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
-                        <div className="flex flex-col gap-1">
-                          <span className="inline-flex items-center gap-1.5"><Calendar size={13} className="text-gray-400" /> {formatDate(item.tanggal)}</span>
-                          <span className="inline-flex items-center gap-1.5"><Clock size={13} className="text-gray-400" /> {item.waktu}</span>
-                        </div>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Calendar
+                            size={13}
+                            className="text-gray-400 shrink-0"
+                          />
+                          {item.tanggal || "-"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-medium text-gray-700">
-                        <div className="flex flex-col gap-1">
-                          <span className="inline-flex items-center gap-1.5"><MapPin size={14} className="text-gray-400" /> {item.lokasi}</span>
-                        </div>
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin
+                            size={14}
+                            className="text-gray-400 shrink-0"
+                          />
+                          {item.lokasi}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700">
-                        <div className="flex flex-col gap-1">
-                          <span>{item.jumlahAsesi} Orang</span>
+                        <span>
+                          {item.jumlahAsesi || item.asesiList?.length || 0}{" "}
+                          Asesi
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-bold">
+                        {item.status === "Selesai" ? (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Sudah Selesai
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            Belum Selesai
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.02)]">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handlePreviewPleno(item)}
+                            className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            title="Detail"
+                          >
+                            <Eye size={14} />
+                            <span>Detail</span>
+                          </button>
+                          {!readOnly && (
+                            <button
+                              onClick={() => handleDeletePleno(item.id)}
+                              className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                              title="Hapus"
+                            >
+                              <Trash2 size={14} />
+                              <span>Hapus</span>
+                            </button>
+                          )}
                         </div>
                       </td>
-                      {!readOnly && (
-                      <td className="px-6 py-4 sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.02)]">
-                        <div className="flex items-center gap-2"><button onClick={() => setConfirmPlenoId(item.id)} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Selesai?</button><button onClick={() => handleEditPleno(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><FileEdit size={16} /></button><button onClick={() => handlePreviewPleno(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Eye size={16} /></button><button onClick={() => handleDeletePleno(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button></div>
-                      </td>
-                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium">
-                      Tidak ada jadwal sidang pleno aktif.
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
+                    >
+                      Tidak ada jadwal sidang pleno.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           )}
-
-
         </div>
       </div>
-
-      
 
       {/* Modals for Confirmation */}
       <AnimatePresence>
         {confirmAsesmenId !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setConfirmAsesmenId(null)}
               className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="bg-white rounded-xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden"
             >
               <div className="p-6">
-                <h3 className="font-bold text-slate-900 text-lg mb-2">Konfirmasi Asesmen</h3>
-                <p className="text-sm text-slate-500">Apakah anda yakin asesmen telah selesai?</p>
+                <h3 className="font-bold text-slate-900 text-lg mb-2">
+                  Konfirmasi Asesmen
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Apakah anda yakin asesmen telah selesai?
+                </p>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
-                <button onClick={() => setConfirmAsesmenId(null)} className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors">Batal</button>
-                <button onClick={handleSelesaiSchedule} className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs">Ya, Selesai</button>
+                <button
+                  onClick={() => setConfirmAsesmenId(null)}
+                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSelesaiSchedule}
+                  className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs"
+                >
+                  Ya, Selesai
+                </button>
               </div>
             </motion.div>
           </div>
@@ -1303,22 +1959,40 @@ export function AssessmentSchedule() {
 
         {confirmPlenoId !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setConfirmPlenoId(null)}
               className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="bg-white rounded-xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden"
             >
               <div className="p-6">
-                <h3 className="font-bold text-slate-900 text-lg mb-2">Konfirmasi Sidang Pleno</h3>
-                <p className="text-sm text-slate-500">Apakah anda yakin sidang pleno telah selesai?</p>
+                <h3 className="font-bold text-slate-900 text-lg mb-2">
+                  Konfirmasi Sidang Pleno
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Apakah anda yakin sidang pleno telah selesai?
+                </p>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
-                <button onClick={() => setConfirmPlenoId(null)} className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors">Batal</button>
-                <button onClick={handleSelesaiPleno} className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs">Ya, Selesai</button>
+                <button
+                  onClick={() => setConfirmPlenoId(null)}
+                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSelesaiPleno}
+                  className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs"
+                >
+                  Ya, Selesai
+                </button>
               </div>
             </motion.div>
           </div>
@@ -1327,8 +2001,10 @@ export function AssessmentSchedule() {
         {/* Lightbox / Preview Modal Surat Sidang Pleno */}
         {previewDocModal !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setPreviewDocModal(null)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
             />
@@ -1345,8 +2021,12 @@ export function AssessmentSchedule() {
                     <FileText size={18} />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-bold text-slate-900 text-sm truncate">{previewDocModal.name}</h3>
-                    <p className="text-xs text-slate-500">Pratinjau Dokumen / Foto Surat Sidang Pleno</p>
+                    <h3 className="font-bold text-slate-900 text-sm truncate">
+                      {previewDocModal.name}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Pratinjau Dokumen / Foto Surat Sidang Pleno
+                    </p>
                   </div>
                 </div>
                 <button
@@ -1359,7 +2039,8 @@ export function AssessmentSchedule() {
 
               {/* Body */}
               <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-[300px]">
-                {previewDocModal.url.startsWith('data:image') || previewDocModal.url.startsWith('http') ? (
+                {previewDocModal.url.startsWith("data:image") ||
+                previewDocModal.url.startsWith("http") ? (
                   <img
                     src={previewDocModal.url}
                     alt={previewDocModal.name}
@@ -1400,8 +2081,208 @@ export function AssessmentSchedule() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
 
+        {/* Printable / Generated Modal Surat Penugasan Asesor */}
+        {isGeneratePenugasanModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsGeneratePenugasanModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full relative z-10 overflow-hidden flex flex-col max-h-[92vh]"
+            >
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold">
+                    <Sparkles size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">
+                      Pratinjau Surat Penugasan Asesor
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Dokumen Penugasan Resmi Uji Kompetensi
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsGeneratePenugasanModalOpen(false)}
+                  className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+
+              {/* Modal Printable Document Content */}
+              <div className="p-6 md:p-8 overflow-y-auto space-y-6 bg-slate-50 text-slate-900">
+                <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-2xs space-y-6 font-serif">
+                  {/* Kop Surat Header */}
+                  <div className="text-center border-b-2 border-slate-900 pb-4 space-y-1">
+                    <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 font-sans">
+                      LSP UIN SUNAN GUNUNG DJATI BANDUNG
+                    </h2>
+                    <p className="text-xs font-semibold text-slate-600 font-sans">
+                      Lembaga Sertifikasi Profesi Pihak Pertama (LSP-P1)
+                    </p>
+                    <p className="text-[10px] text-slate-500 font-sans">
+                      Jl. A.H. Nasution No. 105, Cipadung, Cibiru, Kota Bandung,
+                      Jawa Barat 40614
+                    </p>
+                  </div>
+
+                  {/* Judul Surat */}
+                  <div className="text-center space-y-1 font-sans">
+                    <h3 className="text-base font-black uppercase text-slate-900 underline tracking-wide">
+                      SURAT TUGAS ASESOR KOMPETENSI
+                    </h3>
+                    <p className="text-xs font-bold text-slate-700 font-mono">
+                      Nomor: ST/LSP-P1/{formData.batchName || "BATCH-01"}/2026
+                    </p>
+                  </div>
+
+                  {/* Body Text */}
+                  <div className="text-xs space-y-4 leading-relaxed font-sans text-slate-800">
+                    <p>
+                      Ketua Lembaga Sertifikasi Profesi (LSP-P1) UIN Sunan
+                      Gunung Djati Bandung dengan ini memberikan tugas penuh
+                      kepada Asesor Kompetensi berikut:
+                    </p>
+
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Nama Asesor
+                        </span>
+                        <span className="col-span-2 font-black text-slate-900">
+                          {formData.assessorName || "Ichsan Taufik"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Skema Sertifikasi
+                        </span>
+                        <span className="col-span-2 font-bold text-slate-800">
+                          {formData.scheme || "Skema Sertifikasi"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Nama Batch / Asesmen
+                        </span>
+                        <span className="col-span-2 font-bold text-slate-800">
+                          {formData.batchName || "-"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p>
+                      Untuk bertugas melaksanakan Uji Kompetensi / Asesmen
+                      Mandiri dan Asesmen Lapangan terhadap para peserta (asesi)
+                      terdaftar dengan rincian jadwal sebagai berikut:
+                    </p>
+
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Tanggal Pelaksanaan
+                        </span>
+                        <span className="col-span-2 font-bold text-slate-800">
+                          {formData.date || "-"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Waktu Asesmen
+                        </span>
+                        <span className="col-span-2 font-bold text-slate-800">
+                          Pukul {formData.startTime || "08:00"} WIB
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Tempat Uji Kompetensi
+                        </span>
+                        <span className="col-span-2 font-bold text-slate-800">
+                          {formData.tuk || "-"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="font-bold text-slate-600">
+                          Jumlah Asesi
+                        </span>
+                        <span className="col-span-2 font-bold text-slate-800">
+                          {formData.candidatesCount || 0} Orang Asesi
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-600 italic pt-1">
+                      Demikian Surat Tugas ini dibuat untuk dilaksanakan
+                      sebagaimana mestinya dan penuh tanggung jawab.
+                    </p>
+                  </div>
+
+                  {/* Tanda Tangan */}
+                  <div className="grid grid-cols-2 gap-8 pt-6 text-center font-sans text-xs">
+                    <div>
+                      <p className="font-bold text-slate-500">
+                        Asesor Penerima Tugas
+                      </p>
+                      <div className="h-16 flex items-center justify-center italic text-slate-400">
+                        [ TTD Digital Asesor ]
+                      </div>
+                      <p className="font-bold underline text-slate-900">
+                        {formData.assessorName || "Ichsan Taufik"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-500">
+                        Direktur / Ketua LSP-P1
+                      </p>
+                      <div className="h-16 flex items-center justify-center italic text-slate-400">
+                        [ CAP STAMPEL & TTD ]
+                      </div>
+                      <p className="font-bold underline text-slate-900">
+                        Gitarja, S.T., M.T.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <span className="text-xs text-slate-500 font-medium">
+                  Dokumen Surat Penugasan siap dicetak.
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Printer size={15} />
+                    <span>Cetak PDF</span>
+                  </button>
+                  <button
+                    onClick={() => setIsGeneratePenugasanModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

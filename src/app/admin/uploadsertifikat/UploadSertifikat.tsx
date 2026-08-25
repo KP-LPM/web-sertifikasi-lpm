@@ -6,15 +6,11 @@ import {
   ExternalLink,
   Copy,
   Check,
-  Plus,
   Edit2,
   Link as LinkIcon,
-  Trash2,
   CheckCircle2,
   AlertCircle,
-  FileText,
   Calendar,
-  Building,
   X,
   ArrowRight,
   ArrowLeft,
@@ -24,35 +20,16 @@ import {
   MapPin,
   Globe,
   ChevronDown,
+  Sparkles,
+  Eye,
 } from "lucide-react";
-import { useAppContext } from "../../context";
-
-export interface AsesiPlenoRecord {
-  id: string;
-  asesiName: string;
-  nimNik: string;
-  scheme: string;
-  certificateNo: string;
-  issueDate: string;
-  gdriveUrl: string;
-  status: "Terbit" | "Belum Upload";
-  notes?: string;
-}
-
-export interface PlenoGroupRecord {
-  plenoId: string;
-  plenoTitle: string;
-  skemaList: string[];
-  tanggal: string;
-  waktu: string;
-  lokasi: string;
-  isOnline: boolean;
-  status: string;
-  asesiList: AsesiPlenoRecord[];
-}
+import { useAppContext } from "@/context/context";
+import { AsesiPlenoRecord, PlenoGroupRecord } from "@/types/types";
+export type { AsesiPlenoRecord, PlenoGroupRecord };
 
 export function UploadSertifikat() {
-  const { plenoSessions } = useAppContext();
+  const { plenoSessions, user } = useAppContext();
+  const readOnly = user?.role !== "admin";
 
   // State for Pleno Sessions and their Asesi lists
   const [plenoGroups, setPlenoGroups] = useState<PlenoGroupRecord[]>([
@@ -293,6 +270,27 @@ export function UploadSertifikat() {
     setIsModalOpen(true);
   };
 
+  // Generate automatic certificate link & cert number
+  const handleGenerateCertificate = () => {
+    if (!editingAsesi) return;
+    const certId = editingAsesi.asesi.id || "AS-001";
+    const randomHash = Math.random()
+      .toString(36)
+      .substring(2, 10)
+      .toUpperCase();
+    const generatedUrl = `https://drive.google.com/file/d/CERT-BNSP-${certId}-${randomHash}/view?usp=sharing`;
+
+    const defaultCertNo =
+      inputForm.certificateNo ||
+      `50${Math.floor(100 + Math.random() * 900)}/LSP-SGD/VIII/2026`;
+
+    setInputForm((prev) => ({
+      ...prev,
+      gdriveUrl: generatedUrl,
+      certificateNo: defaultCertNo,
+    }));
+  };
+
   // Save GDrive link and info for asesi
   const handleSaveGDriveLink = (e: React.FormEvent) => {
     e.preventDefault();
@@ -331,39 +329,6 @@ export function UploadSertifikat() {
 
     setIsModalOpen(false);
     setEditingAsesi(null);
-  };
-
-  // Remove/reset GDrive link
-  const handleRemoveLink = (plenoId: string, asesiId: string) => {
-    if (
-      confirm(
-        "Apakah Anda yakin ingin mereset/menghapus link sertifikat asesi ini?",
-      )
-    ) {
-      setPlenoGroups((prev) =>
-        prev.map((group) => {
-          if (group.plenoId === plenoId) {
-            return {
-              ...group,
-              asesiList: group.asesiList.map((item) => {
-                if (item.id === asesiId) {
-                  return {
-                    ...item,
-                    certificateNo: "",
-                    issueDate: "",
-                    gdriveUrl: "",
-                    status: "Belum Upload",
-                    notes: "",
-                  };
-                }
-                return item;
-              }),
-            };
-          }
-          return group;
-        }),
-      );
-    }
   };
 
   // Filtered Pleno Groups for Level 1
@@ -432,42 +397,41 @@ export function UploadSertifikat() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
-      {/* Header Banner */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-50 flex items-center justify-center text-[#008BE3] border border-sky-100 shrink-0 shadow-2xs mt-0.5 sm:mt-0">
-            <Award size={22} className="sm:w-6 sm:h-6 stroke-[2.5]" />
+      {/* Header Title - Aligned with standard admin page headers */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+            <Award size={20} className="stroke-[2.5]" />
           </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight mb-1">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Upload Sertifikat (Link GDrive)
-            </h1>
+            </h2>
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+              Pengelolaan & pengunggahan tautan sertifikat per Sidang Pleno
+            </p>
           </div>
         </div>
 
-        {/* Top High-Level Metrics */}
-        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 mt-1 sm:mt-0">
-          <div className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-center">
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Sidang Pleno
+        {/* High-Level Metrics Badges */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs">
+            <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+              Sidang Pleno:
             </span>
-            <span className="text-xs sm:text-sm font-black text-slate-900">
-              {totalPlenoCount}
-            </span>
+            <span className="text-slate-900 font-black">{totalPlenoCount}</span>
           </div>
-          <div className="px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-center">
-            <span className="block text-[10px] font-bold text-blue-600 uppercase tracking-wider">
-              Total Asesi
+          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs">
+            <span className="text-[10px] uppercase tracking-wider text-[#008BE3] font-bold">
+              Total Asesi:
             </span>
-            <span className="text-xs sm:text-sm font-black text-blue-900">
-              {totalAsesiAll}
-            </span>
+            <span className="text-[#008BE3] font-black">{totalAsesiAll}</span>
           </div>
-          <div className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-center">
-            <span className="block text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-              Terbit GDrive
+          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs">
+            <span className="text-[10px] uppercase tracking-wider text-emerald-600 font-bold">
+              Terbit GDrive:
             </span>
-            <span className="text-xs sm:text-sm font-black text-emerald-800">
+            <span className="text-emerald-700 font-black">
               {totalCertUploadedAll}/{totalAsesiAll}
             </span>
           </div>
@@ -488,7 +452,11 @@ export function UploadSertifikat() {
               />
               <select
                 value={plenoFilterStatus}
-                onChange={(e) => setPlenoFilterStatus(e.target.value as any)}
+                onChange={(e) =>
+                  setPlenoFilterStatus(
+                    e.target.value as "Semua" | "Selesai" | "Terjadwal",
+                  )
+                }
                 className="w-full appearance-none pl-10 pr-9 py-2.5 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
               >
                 <option value="Semua">
@@ -711,18 +679,10 @@ export function UploadSertifikat() {
               </div>
 
               {/* Meta Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3 border-t border-slate-100 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100 text-xs">
                 <div>
                   <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    Total Skema
-                  </p>
-                  <p className="font-bold text-slate-800 text-xs sm:text-sm mt-0.5">
-                    {selectedPlenoGroup?.skemaList.length} Skema Sertifikasi
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    Tanggal & Waktu Pleno
+                    Rentang Waktu
                   </p>
                   <p className="font-bold text-slate-800 text-xs sm:text-sm mt-0.5">
                     {selectedPlenoGroup?.tanggal} ({selectedPlenoGroup?.waktu})
@@ -730,7 +690,7 @@ export function UploadSertifikat() {
                 </div>
                 <div>
                   <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    Lokasi Pelaksanaan
+                    TUK
                   </p>
                   <p className="font-bold text-slate-800 text-xs sm:text-sm mt-0.5">
                     {selectedPlenoGroup?.lokasi}
@@ -738,7 +698,7 @@ export function UploadSertifikat() {
                 </div>
                 <div>
                   <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    Progress Sertifikat GDrive
+                    Progres Sertifikat
                   </p>
                   <p className="font-black text-[#008BE3] text-xs sm:text-sm mt-0.5">
                     {
@@ -746,7 +706,18 @@ export function UploadSertifikat() {
                         (a) => a.status === "Terbit",
                       ).length
                     }{" "}
-                    dari {selectedPlenoGroup?.asesiList.length} Asesi Terbit
+                    dari {selectedPlenoGroup?.asesiList.length} Asesi Terbit (
+                    {selectedPlenoGroup &&
+                    selectedPlenoGroup.asesiList.length > 0
+                      ? Math.round(
+                          (selectedPlenoGroup.asesiList.filter(
+                            (a) => a.status === "Terbit",
+                          ).length /
+                            selectedPlenoGroup.asesiList.length) *
+                            100,
+                        )
+                      : 0}
+                    %)
                   </p>
                 </div>
               </div>
@@ -768,7 +739,7 @@ export function UploadSertifikat() {
                   <Search className="text-slate-400 shrink-0" size={15} />
                   <input
                     type="text"
-                    placeholder="Cari Asesi, NIM, No. Sertifikat..."
+                    placeholder="Cari Asesi, No. Sertifikat..."
                     value={candidateSearchTerm}
                     onChange={(e) => setCandidateSearchTerm(e.target.value)}
                     className="bg-transparent border-none focus:ring-0 text-xs w-full outline-none text-slate-800 placeholder-slate-400 font-semibold"
@@ -779,7 +750,9 @@ export function UploadSertifikat() {
                 <select
                   value={candidateFilterStatus}
                   onChange={(e) =>
-                    setCandidateFilterStatus(e.target.value as any)
+                    setCandidateFilterStatus(
+                      e.target.value as "Semua" | "Terbit" | "Belum Upload",
+                    )
                   }
                   className="bg-white border border-slate-200 text-xs rounded-xl px-3 h-[38px] outline-none font-bold text-slate-700 cursor-pointer shadow-2xs"
                 >
@@ -800,9 +773,6 @@ export function UploadSertifikat() {
                     </th>
                     <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Nama Asesi
-                    </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                      NIM / NIK
                     </th>
                     <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Skema Sertifikasi
@@ -842,13 +812,6 @@ export function UploadSertifikat() {
                         <td className="px-4 py-4 align-middle whitespace-nowrap">
                           <p className="font-bold text-slate-900 text-sm whitespace-nowrap">
                             {candidate.asesiName}
-                          </p>
-                        </td>
-
-                        {/* NIM / NIK */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
-                          <p className="text-xs font-semibold text-slate-700 whitespace-nowrap">
-                            {candidate.nimNik || "-"}
                           </p>
                         </td>
 
@@ -941,7 +904,21 @@ export function UploadSertifikat() {
 
                         {/* ACTION COLUMN ON THE RIGHT */}
                         <td className="px-4 py-4 align-middle text-center bg-white group-hover:bg-slate-50/80 sticky right-0 z-10 border-l border-slate-100 whitespace-nowrap">
-                          {candidate.status === "Terbit" ? (
+                          {readOnly ? (
+                            <button
+                              onClick={() =>
+                                selectedPlenoGroup &&
+                                handleOpenInputModal(
+                                  selectedPlenoGroup.plenoId,
+                                  candidate,
+                                )
+                              }
+                              className="bg-sky-50 hover:bg-sky-100 text-[#008BE3] border border-sky-200 px-3 py-1.5 rounded-lg font-bold text-xs shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                              title="Lihat Detail Sertifikat Asesi"
+                            >
+                              <Eye size={14} /> Detail
+                            </button>
+                          ) : candidate.status === "Terbit" ? (
                             <button
                               onClick={() =>
                                 selectedPlenoGroup &&
@@ -975,7 +952,7 @@ export function UploadSertifikat() {
                   ) : (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={8}
                         className="px-6 py-12 text-center text-slate-400 font-medium"
                       >
                         Tidak ada data asesi yang cocok dengan kriteria
@@ -999,8 +976,10 @@ export function UploadSertifikat() {
               <div className="flex items-center gap-2">
                 <Award size={18} className="text-[#008BE3]" />
                 <h3 className="font-bold text-sm">
-                  Input Link Sertifikat (GDrive) -{" "}
-                  {editingAsesi.asesi.asesiName}
+                  {readOnly
+                    ? "Detail Sertifikat Asesi"
+                    : "Input Link Sertifikat (GDrive)"}{" "}
+                  - {editingAsesi.asesi.asesiName}
                 </h3>
               </div>
               <button
@@ -1015,7 +994,17 @@ export function UploadSertifikat() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSaveGDriveLink} className="p-6 space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!readOnly) handleSaveGDriveLink(e);
+                else {
+                  setIsModalOpen(false);
+                  setEditingAsesi(null);
+                }
+              }}
+              className="p-6 space-y-4"
+            >
               {/* Asesi Identity Display */}
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -1025,8 +1014,7 @@ export function UploadSertifikat() {
                   {editingAsesi.asesi.asesiName}
                 </p>
                 <p className="text-xs text-slate-600 font-medium">
-                  NIM/NIK: {editingAsesi.asesi.nimNik || "-"} • Skema:{" "}
-                  {editingAsesi.asesi.scheme}
+                  Skema: {editingAsesi.asesi.scheme}
                 </p>
               </div>
 
@@ -1034,12 +1022,13 @@ export function UploadSertifikat() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Nomor Sertifikat *
+                    Nomor Sertifikat {!readOnly && "*"}
                   </label>
                   <input
                     type="text"
-                    required
-                    placeholder="50012/LSP-SGD/VIII/2026"
+                    required={!readOnly}
+                    readOnly={readOnly}
+                    placeholder={readOnly ? "-" : "50012/LSP-SGD/VIII/2026"}
                     value={inputForm.certificateNo}
                     onChange={(e) =>
                       setInputForm({
@@ -1047,74 +1036,138 @@ export function UploadSertifikat() {
                         certificateNo: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none focus:border-[#008BE3] focus:bg-white transition-all"
+                    className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-slate-50 focus:border-[#008BE3] focus:bg-white"
+                    }`}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Tanggal Terbit *
+                    Tanggal Terbit {!readOnly && "*"}
                   </label>
                   <input
                     type="date"
-                    required
+                    required={!readOnly}
+                    readOnly={readOnly}
                     value={inputForm.issueDate}
                     onChange={(e) =>
                       setInputForm({ ...inputForm, issueDate: e.target.value })
                     }
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none focus:border-[#008BE3] focus:bg-white transition-all"
+                    className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${
+                      readOnly
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-slate-50 focus:border-[#008BE3] focus:bg-white"
+                    }`}
                   />
                 </div>
               </div>
 
-              {/* Google Drive Link Input (MANDATORY) */}
+              {/* Google Drive Link Input */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                  <span>Tautan Google Drive Sertifikat *</span>
+                  <span>Tautan Google Drive Sertifikat {!readOnly && "*"}</span>
                   <span className="text-[10px] text-[#008BE3] font-bold">
                     PDF / Google Drive URL
                   </span>
                 </label>
-                <div className="relative flex items-center">
-                  <LinkIcon
-                    size={16}
-                    className="absolute left-3 text-slate-400"
-                  />
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://drive.google.com/file/d/.../view"
-                    value={inputForm.gdriveUrl}
-                    onChange={(e) =>
-                      setInputForm({ ...inputForm, gdriveUrl: e.target.value })
-                    }
-                    className="w-full bg-sky-50/50 border border-sky-200 rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:bg-white transition-all"
-                  />
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                  <div className="relative flex-1 flex items-center">
+                    <LinkIcon
+                      size={16}
+                      className="absolute left-3 text-slate-400 shrink-0"
+                    />
+                    <input
+                      type="url"
+                      required={!readOnly}
+                      readOnly={readOnly}
+                      placeholder={
+                        readOnly
+                          ? "Belum ada link sertifikat"
+                          : "https://drive.google.com/file/d/.../view"
+                      }
+                      value={inputForm.gdriveUrl}
+                      onChange={(e) =>
+                        setInputForm({
+                          ...inputForm,
+                          gdriveUrl: e.target.value,
+                        })
+                      }
+                      className={`w-full border border-sky-200 rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm font-semibold outline-none transition-all ${
+                        readOnly
+                          ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                          : "bg-sky-50/50 text-slate-800 focus:border-[#008BE3] focus:bg-white"
+                      }`}
+                    />
+                  </div>
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      onClick={handleGenerateCertificate}
+                      className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                      title="Generate otomatis tautan Google Drive sertifikat"
+                    >
+                      <Sparkles size={14} />
+                      <span>Generate Sertifikat</span>
+                    </button>
+                  )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
-                  Pastikan tautan Google Drive telah diset izin aksesnya menjadi{" "}
-                  <strong>"Siapa saja yang memiliki link" (Public View)</strong>{" "}
-                  agar dapat diakses oleh Asesi.
-                </p>
+                {!readOnly && (
+                  <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                    Pastikan tautan Google Drive telah diset izin aksesnya
+                    menjadi{" "}
+                    <strong>Siapa saja yang memiliki link (Public View)</strong>{" "}
+                    agar dapat diakses oleh Asesi.
+                  </p>
+                )}
               </div>
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setEditingAsesi(null);
-                  }}
-                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-xs font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
-                >
-                  <Check size={16} /> Simpan Link Sertifikat
-                </button>
+                {readOnly ? (
+                  <>
+                    {inputForm.gdriveUrl && (
+                      <a
+                        href={inputForm.gdriveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 text-xs font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
+                      >
+                        <ExternalLink size={14} /> Buka Link GDrive
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setEditingAsesi(null);
+                      }}
+                      className="px-5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                    >
+                      Tutup
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setEditingAsesi(null);
+                      }}
+                      className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 text-xs font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Check size={16} /> Simpan Link Sertifikat
+                    </button>
+                  </>
+                )}
               </div>
             </form>
           </div>

@@ -1,71 +1,131 @@
-import React, { useState } from 'react';
-import { Plus, Search, Filter, Code, BarChart2, Shield, PenTool, Edit, Archive, XCircle, Trash2, GraduationCap, Eye, ArrowLeft } from 'lucide-react';
-import { schemesData as initialSchemesData } from '../../data';
-import { AVAILABLE_SCHEMES } from '../../data/schemes';
-import { motion, AnimatePresence } from 'motion/react';
-import { Scheme, MasterSkemaPayload } from '../../types';
-import { useAppContext } from '../../context';
-import { TambahSkemaForm } from '../../components/admin/TambahSkemaForm';
+import React, { useState } from "react";
+import {
+  Plus,
+  Search,
+  Code,
+  BarChart2,
+  Shield,
+  PenTool,
+  Edit,
+  Archive,
+  XCircle,
+  Trash2,
+  GraduationCap,
+  Eye,
+  ArrowLeft,
+} from "lucide-react";
+import { schemesData as initialSchemesData } from "../../data";
+import { AVAILABLE_SCHEMES } from "@/data/schemes";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  MasterSkemaPayload,
+  MasterSkemaUnitPayload,
+  MasterSkemaElemenPayload,
+  MasterSkemaFormState,
+  SchemeElemen,
+  SchemeUnit,
+  SchemeItem,
+  StatCardProps,
+  SchemeCardProps,
+} from "@/types/types";
+import { useAppContext } from "@/context/context";
+import { TambahSkemaForm } from "@/components/forms/TambahSkemaForm";
 
 export function ManageSchemes() {
   const { user } = useAppContext();
-  const readOnly = user?.role === 'direktur' || user?.role === 'manajer';
+  const readOnly = user?.role !== "admin";
 
   // Remove "Draft" status from initial data and setup state
-  const [schemes, setSchemes] = useState<any[]>(() => {
-    return initialSchemesData.filter(s => s.status !== 'Draft').map(s => {
-      const detail = AVAILABLE_SCHEMES.find(d => d.name === s.name);
-      let mappedUnits = detail?.units?.map((u: any) => ({
-        unitCode: u.code || '',
-        unitTitle: u.title || '',
-        unitDesc: '',
-        elemen: u.elemen || [{ title: '', kuk: [''] }]
-      })) || [{ unitCode: '', unitTitle: '', unitDesc: '', elemen: [{ title: '', kuk: [''] }] }];
+  const [schemes, setSchemes] = useState<SchemeItem[]>(() => {
+    return initialSchemesData
+      .filter((s) => s.status !== "Draft")
+      .map((s) => {
+        const detail = AVAILABLE_SCHEMES.find((d) => d.name === s.name);
+        let mappedUnits: SchemeUnit[] = detail?.units?.map((u) => ({
+          unitCode: u.code || "",
+          unitTitle: u.title || "",
+          unitDesc: "",
+          elemen: u.elemen
+            ? u.elemen.map((e) => ({
+                title: e.title || "",
+                kuk: Array.isArray(e.kuk) ? e.kuk : [e.kuk],
+              }))
+            : [{ title: "", kuk: [""] }],
+        })) || [
+          {
+            unitCode: "",
+            unitTitle: "",
+            unitDesc: "",
+            elemen: [{ title: "", kuk: [""] }],
+          },
+        ];
 
-      if (s.name === 'Penyelia Halal' && mappedUnits.length > 0) {
-        mappedUnits = mappedUnits.map(u => {
-          let desc = '';
-          if (u.unitCode === 'M.74PHI00.001.2') desc = 'Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam menyusun dokumen SJPH sesuai persyaratan standar.';
-          else if (u.unitCode === 'M.74PHI00.002.2') desc = 'Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang berkaitan dengan penyiapan daftar bahan halal dan dokumen pendukungnya.';
-          else if (u.unitCode === 'M.74PHI00.003.2') desc = 'Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam mengawasi bahan, proses, dan produk halal sesuai persyaratan standar.';
-          else if (u.unitCode === 'M.74PHI00.004.2') desc = 'Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan penanganan produk yang tidak memenuhi kriteria halal sesuai persyaratan standar.';
-          else if (u.unitCode === 'M.74PHI00.005.2') desc = 'Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan audit internal penerapan Sistem Jaminan Produk Halal (SJPH).';
-          else if (u.unitCode === 'M.74PHI00.006.2') desc = 'Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan dan sikap kerja yang dibutuhkan dalam melakukan evaluasi tindak lanjut hasil audit internal Sistem Jaminan Produk Halal (SJPH).';
-          
-          return { ...u, unitDesc: desc };
-        });
-      }
+        if (s.name === "Penyelia Halal" && mappedUnits.length > 0) {
+          mappedUnits = mappedUnits.map((u) => {
+            let desc = "";
+            if (u.unitCode === "M.74PHI00.001.2")
+              desc =
+                "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam menyusun dokumen SJPH sesuai persyaratan standar.";
+            else if (u.unitCode === "M.74PHI00.002.2")
+              desc =
+                "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang berkaitan dengan penyiapan daftar bahan halal dan dokumen pendukungnya.";
+            else if (u.unitCode === "M.74PHI00.003.2")
+              desc =
+                "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam mengawasi bahan, proses, dan produk halal sesuai persyaratan standar.";
+            else if (u.unitCode === "M.74PHI00.004.2")
+              desc =
+                "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan penanganan produk yang tidak memenuhi kriteria halal sesuai persyaratan standar.";
+            else if (u.unitCode === "M.74PHI00.005.2")
+              desc =
+                "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan audit internal penerapan Sistem Jaminan Produk Halal (SJPH).";
+            else if (u.unitCode === "M.74PHI00.006.2")
+              desc =
+                "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan dan sikap kerja yang dibutuhkan dalam melakukan evaluasi tindak lanjut hasil audit internal Sistem Jaminan Produk Halal (SJPH).";
 
-      return {
-        ...s,
-        units: mappedUnits
-      };
-    });
+            return { ...u, unitDesc: desc };
+          });
+        }
+
+        return {
+          ...s,
+          units: mappedUnits,
+        };
+      });
   });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Semua Status');
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Semua Status");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
-  const [selectedScheme, setSelectedScheme] = useState<any | null>(null);
+  const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
 
-  const [categories, setCategories] = useState(['IT & Software', 'Data Science', 'Security', 'Creative Design']);
+  const [categories, setCategories] = useState([
+    "IT & Software",
+    "Data Science",
+    "Security",
+    "Creative Design",
+  ]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
-  const [editingCategoryIndex, setEditingCategoryIndex] = useState<number | null>(null);
-  const [editCategoryName, setEditCategoryName] = useState('');
+  const [newCategory, setNewCategory] = useState("");
+  const [editingCategoryIndex, setEditingCategoryIndex] = useState<
+    number | null
+  >(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
       setCategories([...categories, newCategory.trim()]);
-      setNewCategory('');
+      setNewCategory("");
     }
   };
 
   const handleUpdateCategory = (idx: number) => {
-    if (editCategoryName.trim() && !categories.includes(editCategoryName.trim())) {
+    if (
+      editCategoryName.trim() &&
+      !categories.includes(editCategoryName.trim())
+    ) {
       const updated = [...categories];
       updated[idx] = editCategoryName.trim();
       setCategories(updated);
@@ -78,72 +138,93 @@ export function ManageSchemes() {
   };
 
   // Form State
-  const [formData, setFormData] = useState({ name: '', code: 'KKNI', category: 'IT & Software', status: 'Active' });
-  const [units, setUnits] = useState([{ unitCode: '', unitTitle: '', unitDesc: '', elemen: [{ title: '', kuk: [''] }] }]);
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "KKNI",
+    nomor_sertifikat: "",
+    nomor_registrasi: "",
+    category: "IT & Software",
+    status: "Active",
+  });
+  const [units, setUnits] = useState<SchemeUnit[]>([
+    {
+      unitCode: "",
+      unitTitle: "",
+      unitDesc: "",
+      elemen: [{ title: "", kuk: [""] }],
+    },
+  ]);
 
-  const filteredSchemes = schemes.filter(scheme => {
-    const matchesSearch = scheme.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          scheme.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'Semua Status' || scheme.status === statusFilter;
+  const filteredSchemes = schemes.filter((scheme) => {
+    const matchesSearch =
+      scheme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      scheme.code.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "Semua Status" || scheme.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const totalActive = schemes.filter(s => s.status === 'Active').length;
-  const totalArchived = schemes.filter(s => s.status === 'Archived').length;
+  const totalActive = schemes.filter((s) => s.status === "Active").length;
+  const totalArchived = schemes.filter((s) => s.status === "Archived").length;
 
-  const handleAddScheme = () => {
-    const newScheme: any = {
-      id: Date.now().toString(),
-      name: formData.name || 'Skema Baru',
-      code: formData.code || 'CODE-00',
-      category: formData.category,
-      status: formData.status as 'Active' | 'Archived' | 'Draft',
-      applicantsCount: 0,
-      units: units
-    };
-    setSchemes([...schemes, newScheme]);
-    setIsModalOpen(false);
-    setFormData({ name: '', code: 'KKNI', category: 'IT & Software', status: 'Active' });
-    setUnits([{ unitCode: '', unitTitle: '', unitDesc: '', elemen: [{ title: '', kuk: [''] }] }]);
-  };
-
-  const openPreviewModal = (scheme: any) => {
+  const openPreviewModal = (scheme: SchemeItem) => {
     setSelectedScheme(scheme);
-    setFormData({ name: scheme.name, code: scheme.code, category: scheme.category, status: scheme.status });
-    setUnits(scheme.units || [{ unitCode: '', unitTitle: '', unitDesc: '', elemen: [{ title: '', kuk: [''] }] }]);
+    setFormData({
+      name: scheme.name,
+      code: scheme.code,
+      nomor_sertifikat: scheme.nomor_sertifikat || "",
+      nomor_registrasi: scheme.nomor_registrasi || "",
+      category: scheme.category,
+      status: scheme.status,
+    });
+    setUnits(
+      scheme.units || [
+        {
+          unitCode: "",
+          unitTitle: "",
+          unitDesc: "",
+          elemen: [{ title: "", kuk: [""] }],
+        },
+      ],
+    );
     setIsPreviewModalOpen(true);
   };
 
-  const openEditModal = (scheme: any) => {
+  const openEditModal = (scheme: SchemeItem) => {
     setSelectedScheme(scheme);
-    setFormData({ name: scheme.name, code: scheme.code, category: scheme.category, status: scheme.status });
-    setUnits(scheme.units || [{ unitCode: '', unitTitle: '', unitDesc: '', elemen: [{ title: '', kuk: [''] }] }]);
+    setFormData({
+      name: scheme.name,
+      code: scheme.code,
+      nomor_sertifikat: scheme.nomor_sertifikat || "",
+      nomor_registrasi: scheme.nomor_registrasi || "",
+      category: scheme.category,
+      status: scheme.status,
+    });
+    setUnits(
+      scheme.units || [
+        {
+          unitCode: "",
+          unitTitle: "",
+          unitDesc: "",
+          elemen: [{ title: "", kuk: [""] }],
+        },
+      ],
+    );
     setIsEditModalOpen(true);
   };
 
-  const handleEditScheme = () => {
-    if (selectedScheme) {
-      setSchemes(schemes.map(s => s.id === selectedScheme.id ? { 
-        ...s, 
-        name: formData.name, 
-        code: formData.code, 
-        category: formData.category,
-        status: formData.status as 'Active' | 'Archived' | 'Draft',
-        units: units
-      } : s));
-    }
-    setIsEditModalOpen(false);
-    setSelectedScheme(null);
-  };
-
-  const openArchiveModal = (scheme: any) => {
+  const openArchiveModal = (scheme: SchemeItem) => {
     setSelectedScheme(scheme);
     setIsArchiveModalOpen(true);
   };
 
   const handleArchiveScheme = () => {
     if (selectedScheme) {
-      setSchemes(schemes.map(s => s.id === selectedScheme.id ? { ...s, status: 'Archived' } : s));
+      setSchemes(
+        schemes.map((s) =>
+          s.id === selectedScheme.id ? { ...s, status: "Archived" } : s,
+        ),
+      );
     }
     setIsArchiveModalOpen(false);
     setSelectedScheme(null);
@@ -153,14 +234,14 @@ export function ManageSchemes() {
     <AnimatePresence>
       {isCategoryModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsCategoryModalOpen(false)}
             className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
           />
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -169,22 +250,28 @@ export function ManageSchemes() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-5">
                 <h3 className="font-bold text-slate-900">Manajemen Kategori</h3>
-                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <button
+                  onClick={() => setIsCategoryModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600"
+                >
                   <XCircle size={20} />
                 </button>
               </div>
 
               <div className="flex gap-2 mb-6">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Nama kategori baru..."
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                 />
-                <button 
+                <button
                   onClick={handleAddCategory}
-                  disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
+                  disabled={
+                    !newCategory.trim() ||
+                    categories.includes(newCategory.trim())
+                  }
                   className="px-4 py-2 bg-[#008BE3] text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0076C2] transition-colors"
                 >
                   Tambah
@@ -193,23 +280,26 @@ export function ManageSchemes() {
 
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
                 {categories.map((cat, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 border border-slate-100 bg-slate-50 rounded-lg group">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 border border-slate-100 bg-slate-50 rounded-lg group"
+                  >
                     {editingCategoryIndex === idx ? (
                       <div className="flex gap-2 flex-1">
-                        <input 
+                        <input
                           type="text"
                           value={editCategoryName}
                           onChange={(e) => setEditCategoryName(e.target.value)}
                           className="flex-1 px-2 py-1 text-sm border border-slate-300 rounded outline-none"
                           autoFocus
                         />
-                        <button 
+                        <button
                           onClick={() => handleUpdateCategory(idx)}
                           className="text-xs font-bold text-emerald-600 px-2 hover:underline"
                         >
                           Simpan
                         </button>
-                        <button 
+                        <button
                           onClick={() => setEditingCategoryIndex(null)}
                           className="text-xs font-bold text-slate-500 px-2 hover:underline"
                         >
@@ -218,9 +308,11 @@ export function ManageSchemes() {
                       </div>
                     ) : (
                       <>
-                        <span className="text-sm font-medium text-slate-700">{cat}</span>
+                        <span className="text-sm font-medium text-slate-700">
+                          {cat}
+                        </span>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
+                          <button
                             onClick={() => {
                               setEditingCategoryIndex(idx);
                               setEditCategoryName(cat);
@@ -229,7 +321,7 @@ export function ManageSchemes() {
                           >
                             <Edit size={14} />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDeleteCategory(idx)}
                             className="p-1.5 text-slate-400 hover:text-red-500 rounded"
                           >
@@ -250,28 +342,37 @@ export function ManageSchemes() {
 
   if (isModalOpen) {
     return (
-      <TambahSkemaForm 
+      <TambahSkemaForm
         onCancel={() => setIsModalOpen(false)}
         onSaveSuccess={(payload: MasterSkemaPayload) => {
-          const newScheme: any = {
+          const newScheme: SchemeItem = {
             id: Date.now().toString(),
             name: payload.nama_skema,
             code: payload.kode_skema,
-            category: 'IT & Software',
-            status: payload.status_aktif ? 'Active' : 'Draft',
+            nomor_sertifikat: payload.nomor_sertifikat,
+            nomor_registrasi: payload.nomor_registrasi,
+            category: "IT & Software",
+            status: payload.status_aktif ? "Active" : "Draft",
             applicantsCount: 0,
-            units: payload.unit_kompetensi.map(u => ({
-              unitCode: u.kode_unit,
-              unitTitle: u.judul_unit,
-              unitDesc: '',
-              elemen: u.elemen.map(e => ({
-                title: e.nama_elemen,
-                kuk: e.kriteria_unjuk_kerja.split('\n')
-              }))
-            })),
-            persyaratan_dasar: payload.persyaratan_dasar
+            units: payload.unit_kompetensi?.map(
+              (u: MasterSkemaUnitPayload) => ({
+                unitCode: u.kode_unit,
+                unitTitle: u.judul_unit,
+                unitDesc: "",
+                elemen:
+                  u.elemen?.map((e: MasterSkemaElemenPayload) => ({
+                    title: e.nama_elemen,
+                    kuk: Array.isArray(e.kriteria_unjuk_kerja)
+                      ? e.kriteria_unjuk_kerja
+                      : e.kriteria_unjuk_kerja
+                        ? e.kriteria_unjuk_kerja.split("\n")
+                        : e.kuk || [],
+                  })) || [],
+              }),
+            ),
+            persyaratan_dasar: payload.persyaratan_dasar,
           };
-          setSchemes(prev => [newScheme, ...prev]);
+          setSchemes((prev) => [newScheme, ...prev]);
           setIsModalOpen(false);
         }}
       />
@@ -279,61 +380,95 @@ export function ManageSchemes() {
   }
 
   if (isEditModalOpen && selectedScheme) {
-    const initialData = {
-      kode_skema: selectedScheme.code || '',
-      nama_skema: selectedScheme.name || '',
-      status_aktif: selectedScheme.status === 'Active',
+    const initialData: Partial<MasterSkemaFormState> = {
+      kode_skema: selectedScheme.code || "",
+      nama_skema: selectedScheme.name || "",
+      nomor_sertifikat: selectedScheme.nomor_sertifikat || "",
+      nomor_registrasi: selectedScheme.nomor_registrasi || "",
+      status_aktif: selectedScheme.status === "Active",
       persyaratan_dasar: selectedScheme.persyaratan_dasar || [
         {
-          nama_dokumen: 'Transkrip Nilai Semester 5',
-          deskripsi: 'Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.',
+          nama_dokumen: "Transkrip Nilai Semester 5",
+          deskripsi:
+            "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
           urutan: 1,
-          is_wajib: true
-        }
+          is_wajib: true,
+        },
       ],
       persyaratan_administrasi: selectedScheme.persyaratan_administrasi || [
         {
-          nama_dokumen: 'Kartu Tanda Penduduk (KTP)',
-          deskripsi: 'Scan KTP asli atau identitas resmi yang masih berlaku.',
+          nama_dokumen: "Kartu Tanda Penduduk (KTP)",
+          deskripsi: "Scan KTP asli atau identitas resmi yang masih berlaku.",
           urutan: 1,
-          is_wajib: true
-        }
+          is_wajib: true,
+        },
       ],
-      unit_kompetensi: selectedScheme.units?.map((u: any, idx: number) => ({
-        kode_unit: u.unitCode || '',
-        judul_unit: u.unitTitle || '',
-        urutan: idx + 1,
-        elemen: u.elemen?.map((e: any, eIdx: number) => ({
-          nama_elemen: e.title || '',
-          kriteria_unjuk_kerja: Array.isArray(e.kuk) ? e.kuk : (e.kuk ? [e.kuk] : ['']),
-          urutan: eIdx + 1,
-          is_wajib: true
-        })) || [{ nama_elemen: '', kriteria_unjuk_kerja: [''], urutan: 1, is_wajib: true }]
-      })) || []
+      unit_kompetensi:
+        selectedScheme.units?.map((u: SchemeUnit, idx: number) => ({
+          kode_unit: u.unitCode || "",
+          judul_unit: u.unitTitle || "",
+          urutan: idx + 1,
+          elemen: u.elemen?.map((e: SchemeElemen, eIdx: number) => ({
+            nama_elemen: e.title || "",
+            kriteria_unjuk_kerja: Array.isArray(e.kuk)
+              ? e.kuk
+              : e.kuk
+                ? [e.kuk]
+                : [""],
+            urutan: eIdx + 1,
+            is_wajib: true,
+          })) || [
+            {
+              nama_elemen: "",
+              kriteria_unjuk_kerja: [""],
+              urutan: 1,
+              is_wajib: true,
+            },
+          ],
+        })) || [],
     };
 
     return (
-      <TambahSkemaForm 
-        onCancel={() => { setIsEditModalOpen(false); setSelectedScheme(null); }}
+      <TambahSkemaForm
+        onCancel={() => {
+          setIsEditModalOpen(false);
+          setSelectedScheme(null);
+        }}
         initialData={initialData}
         onSaveSuccess={(payload: MasterSkemaPayload) => {
-          setSchemes(schemes.map(s => s.id === selectedScheme.id ? {
-            ...s,
-            name: payload.nama_skema,
-            code: payload.kode_skema,
-            status: payload.status_aktif ? 'Active' : 'Draft',
-            persyaratan_dasar: payload.persyaratan_dasar,
-            persyaratan_administrasi: payload.persyaratan_administrasi,
-            units: payload.unit_kompetensi.map(u => ({
-              unitCode: u.kode_unit,
-              unitTitle: u.judul_unit,
-              unitDesc: '',
-              elemen: u.elemen.map(e => ({
-                title: e.nama_elemen,
-                kuk: e.kriteria_unjuk_kerja.split('\n')
-              }))
-            }))
-          } : s));
+          setSchemes(
+            schemes.map((s) =>
+              s.id === selectedScheme.id
+                ? {
+                    ...s,
+                    name: payload.nama_skema,
+                    code: payload.kode_skema,
+                    nomor_sertifikat: payload.nomor_sertifikat,
+                    nomor_registrasi: payload.nomor_registrasi,
+                    status: payload.status_aktif ? "Active" : "Draft",
+                    persyaratan_dasar: payload.persyaratan_dasar,
+                    persyaratan_administrasi: payload.persyaratan_administrasi,
+                    units: payload.unit_kompetensi?.map(
+                      (u: MasterSkemaUnitPayload) => ({
+                        unitCode: u.kode_unit,
+                        unitTitle: u.judul_unit,
+                        unitDesc: "",
+                        elemen: u.elemen?.map(
+                          (e: MasterSkemaElemenPayload) => ({
+                            title: e.nama_elemen,
+                            kuk: Array.isArray(e.kriteria_unjuk_kerja)
+                              ? e.kriteria_unjuk_kerja
+                              : e.kriteria_unjuk_kerja
+                                ? e.kriteria_unjuk_kerja.split("\n")
+                                : e.kuk || [],
+                          }),
+                        ),
+                      }),
+                    ),
+                  }
+                : s,
+            ),
+          );
           setIsEditModalOpen(false);
           setSelectedScheme(null);
         }}
@@ -343,71 +478,102 @@ export function ManageSchemes() {
 
   if (isPreviewModalOpen) {
     return (
-      <div className="min-h-screen bg-[#F8F9FC] pb-24 font-sans text-slate-800">
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => setIsPreviewModalOpen(false)}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
-                  title="Kembali"
-                >
-                  <ArrowLeft size={18} />
-                </button>
-                <div className="min-w-0">
-                  <h1 className="text-lg font-black text-slate-900 tracking-tight">
-                    Detail Skema
-                  </h1>
-                </div>
-              </div>
-               <div className="flex items-center gap-3 min-w-0">
-                <button 
-                  onClick={() => setIsPreviewModalOpen(false)}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors shadow-xs"
-                >
-                  Kembali
-                </button>
+      <div className="min-h-screen bg-[#F8F9FC] p-3 sm:p-6 md:p-8 pb-24 text-sm text-gray-700">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
+                title="Kembali"
+              >
+                <ArrowLeft size={20} className="stroke-[2.5]" />
+              </button>
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                  Detail Skema Sertifikasi
+                </h2>
+                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+                  Preview Informasi Utama, Persyaratan & Unit Kompetensi
+                </p>
               </div>
             </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="px-4 py-2 text-xs sm:text-sm font-bold text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 rounded-lg transition-colors cursor-pointer"
+              >
+                Kembali
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
           <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-gray-100">
             <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">1</span>
+              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
+                1
+              </span>
               Informasi Utama
             </h2>
             <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Kode Skema</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                    Kode Skema
+                  </label>
                   <input
                     type="text"
                     disabled
                     value={formData.code}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
                 <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Nama Skema</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                    Nama Skema
+                  </label>
+                  <input
+                    type="text"
                     disabled
                     value={formData.name}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50" 
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Status</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                    Nomor Sertifikat
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={formData.nomor_sertifikat || "-"}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                    Nomor Registrasi
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={formData.nomor_registrasi || "-"}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                    Status
+                  </label>
                   <input
                     type="text"
                     disabled
                     value={formData.status}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
               </div>
@@ -416,26 +582,35 @@ export function ManageSchemes() {
 
           <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-gray-100">
             <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">2</span>
+              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
+                2
+              </span>
               Unit & Elemen Kompetensi
             </h2>
-            
+
             <div className="space-y-8">
               {units.map((unit, uIdx) => (
-                <div key={uIdx} className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+                <div
+                  key={uIdx}
+                  className="border border-slate-200 rounded-xl overflow-hidden shadow-xs"
+                >
                   <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1 flex flex-col gap-4 w-full">
                       <div className="min-w-0">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Kode Unit</label>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                          Kode Unit
+                        </label>
                         <input
                           type="text"
                           disabled
-                          value={unit.unitCode || ''}
+                          value={unit.unitCode || ""}
                           className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-[42px]"
                         />
                       </div>
                       <div className="min-w-0">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Judul Unit</label>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                          Judul Unit
+                        </label>
                         <input
                           type="text"
                           disabled
@@ -445,12 +620,17 @@ export function ManageSchemes() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-5 space-y-6">
-                    {unit.elemen.map((el, eIdx) => (
-                      <div key={eIdx} className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs relative">
+                    {unit.elemen?.map((el, eIdx) => (
+                      <div
+                        key={eIdx}
+                        className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs relative"
+                      >
                         <div className="mb-4 pr-8">
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Elemen Kompetensi</label>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Elemen Kompetensi
+                          </label>
                           <input
                             type="text"
                             disabled
@@ -458,13 +638,20 @@ export function ManageSchemes() {
                             className="w-full text-sm border-b-2 border-slate-200 bg-transparent px-0 py-1.5 font-semibold text-slate-800"
                           />
                         </div>
-                        
+
                         <div className="min-w-0">
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Kriteria untuk Kerja</label>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                            Kriteria untuk Kerja
+                          </label>
                           <div className="space-y-2">
                             {el.kuk.map((kukStr, kIdx) => (
-                              <div key={kIdx} className="flex gap-2 items-start">
-                                <span className="text-xs font-bold text-slate-400 mt-2.5 w-4 shrink-0 text-right">{kIdx + 1}.</span>
+                              <div
+                                key={kIdx}
+                                className="flex gap-2 items-start"
+                              >
+                                <span className="text-xs font-bold text-slate-400 mt-2.5 w-4 shrink-0 text-right">
+                                  {kIdx + 1}.
+                                </span>
                                 <textarea
                                   disabled
                                   value={kukStr}
@@ -488,11 +675,10 @@ export function ManageSchemes() {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-         <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
             <GraduationCap size={20} className="stroke-[2.5]" />
           </div>
@@ -506,30 +692,48 @@ export function ManageSchemes() {
           </div>
         </div>
         {!readOnly && (
-        <button 
-          onClick={() => {
-            setFormData({ name: '', code: 'KKNI', category: 'IT & Software', status: 'Active' });
-            setIsModalOpen(true);
-          }}
-          className="bg-[#008BE3] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors"
-        >
-          <Plus size={18} className="stroke-[2.5]" />
-          Skema Baru
-        </button>
+          <button
+            onClick={() => {
+              setFormData({
+                name: "",
+                code: "KKNI",
+                nomor_sertifikat: "",
+                nomor_registrasi: "",
+                category: "IT & Software",
+                status: "Active",
+              });
+              setIsModalOpen(true);
+            }}
+            className="bg-[#008BE3] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors"
+          >
+            <Plus size={18} className="stroke-[2.5]" />
+            Skema Baru
+          </button>
         )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <StatCard label="Total Skema" value={schemes.length} color="text-slate-900" />
+        <StatCard
+          label="Total Skema"
+          value={schemes.length}
+          color="text-slate-900"
+        />
         <StatCard label="Aktif" value={totalActive} color="text-[#008BE3]" />
-        <StatCard label="Diarsipkan" value={totalArchived} color="text-gray-400" />
+        <StatCard
+          label="Diarsipkan"
+          value={totalArchived}
+          color="text-gray-400"
+        />
       </div>
 
       <div className="bg-white rounded-lg p-5 shadow-xs border border-gray-100 flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input 
-            type="text" 
+          <Search
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
+          <input
+            type="text"
             placeholder="Cari skema berdasarkan nama atau kode..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -537,7 +741,7 @@ export function ManageSchemes() {
           />
         </div>
         <div className="flex gap-2">
-          <select 
+          <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-white border border-gray-200 px-4 py-2.5 rounded-lg text-sm text-slate-700 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]"
@@ -551,10 +755,10 @@ export function ManageSchemes() {
 
       <div className="space-y-3">
         {filteredSchemes.map((scheme, i) => (
-          <SchemeCard 
-            key={scheme.id} 
-            scheme={scheme} 
-            index={i} 
+          <SchemeCard
+            key={scheme.id}
+            scheme={scheme}
+            index={i}
             onEdit={() => openEditModal(scheme)}
             onPreview={() => openPreviewModal(scheme)}
             onArchive={() => openArchiveModal(scheme)}
@@ -563,21 +767,19 @@ export function ManageSchemes() {
         ))}
       </div>
 
-      
-
       {categoryModalNode}
 
       <AnimatePresence>
         {isArchiveModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsArchiveModalOpen(false)}
               className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -587,17 +789,22 @@ export function ManageSchemes() {
                 <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mx-auto mb-4">
                   <Archive size={24} />
                 </div>
-                <h3 className="font-bold text-slate-900 mb-2">Arsipkan Skema</h3>
-                <p className="text-sm text-gray-500">Apakah Anda yakin ingin mengarsipkan skema {selectedScheme?.name}?</p>
+                <h3 className="font-bold text-slate-900 mb-2">
+                  Arsipkan Skema
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Apakah Anda yakin ingin mengarsipkan skema{" "}
+                  {selectedScheme?.name}?
+                </p>
               </div>
               <div className="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
-                <button 
+                <button
                   onClick={() => setIsArchiveModalOpen(false)}
                   className="px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   Batal
                 </button>
-                <button 
+                <button
                   onClick={handleArchiveScheme}
                   className="px-4 py-2 text-sm font-bold text-white bg-slate-700 hover:bg-slate-800 rounded-lg transition-colors"
                 >
@@ -612,27 +819,36 @@ export function ManageSchemes() {
   );
 }
 
-function StatCard({ label, value, color = "text-[#008BE3]" }: any) {
+function StatCard({ label, value, color = "text-[#008BE3]" }: StatCardProps) {
   return (
     <div className="bg-white p-5 rounded-lg shadow-xs border border-gray-100 flex flex-col justify-center">
-      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+        {label}
+      </p>
       <p className={`text-2xl font-black ${color}`}>{value}</p>
     </div>
   );
 }
 
-function SchemeCard({ scheme, index, onEdit, onArchive, onPreview, readOnly }: any) {
-  const icons: Record<string, any> = {
-    'IT & Software': Code,
-    'Data Science': BarChart2,
-    'Security': Shield,
-    'Creative Design': PenTool
+function SchemeCard({
+  scheme,
+  index,
+  onEdit,
+  onArchive,
+  onPreview,
+  readOnly,
+}: SchemeCardProps) {
+  const icons: Record<string, React.ElementType> = {
+    "IT & Software": Code,
+    "Data Science": BarChart2,
+    Security: Shield,
+    "Creative Design": PenTool,
   };
 
   const Icon = icons[scheme.category] || Code;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
@@ -645,16 +861,20 @@ function SchemeCard({ scheme, index, onEdit, onArchive, onPreview, readOnly }: a
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-bold text-slate-900">{scheme.name}</h3>
-            <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border ${
-              scheme.status === 'Active' 
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-gray-50 text-gray-500 border-gray-200'
-            }`}>
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border ${
+                scheme.status === "Active"
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : "bg-gray-50 text-gray-500 border-gray-200"
+              }`}
+            >
               {scheme.status}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
-            <span className="bg-gray-100 px-2 py-0.5 rounded">{scheme.code}</span>
+            <span className="bg-gray-100 px-2 py-0.5 rounded">
+              {scheme.code}
+            </span>
             <span>•</span>
             <span>{scheme.category}</span>
           </div>
@@ -663,24 +883,40 @@ function SchemeCard({ scheme, index, onEdit, onArchive, onPreview, readOnly }: a
 
       <div className="mt-4 md:mt-0 flex items-center gap-6">
         <div className="text-center md:text-right">
-          <p className="text-xl font-black text-slate-900 leading-none">{scheme.applicantsCount}</p>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">Total Asesi</p>
+          <p className="text-xl font-black text-slate-900 leading-none">
+            {scheme.applicantsCount}
+          </p>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+            Total Asesi
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onPreview} className="p-2 text-gray-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors border border-transparent hover:border-sky-100" title="Lihat">
+          <button
+            onClick={onPreview}
+            className="p-2 text-gray-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors border border-transparent hover:border-sky-100"
+            title="Lihat"
+          >
             <Eye size={16} />
           </button>
           {!readOnly && (
-          <>
-            <button onClick={onEdit} className="p-2 text-gray-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors border border-transparent hover:border-sky-100" title="Edit">
-              <Edit size={16} />
-            </button>
-            {scheme.status !== 'Archived' && (
-              <button onClick={onArchive} className="p-2 text-gray-400 hover:text-slate-700 hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-gray-200" title="Arsip">
-                <Archive size={16} />
+            <>
+              <button
+                onClick={onEdit}
+                className="p-2 text-gray-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors border border-transparent hover:border-sky-100"
+                title="Edit"
+              >
+                <Edit size={16} />
               </button>
-            )}
-          </>
+              {scheme.status !== "Archived" && (
+                <button
+                  onClick={onArchive}
+                  className="p-2 text-gray-400 hover:text-slate-700 hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-gray-200"
+                  title="Arsip"
+                >
+                  <Archive size={16} />
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
