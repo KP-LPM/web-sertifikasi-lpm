@@ -23,6 +23,7 @@ import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
 import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { useAppContext } from "@/context/context";
+import { supabase } from "@/lib/supabase";
 
 import { 
   DATA_PROVINSI, 
@@ -226,7 +227,7 @@ export default function PengajuanSkemaPage() {
 
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
-  const [submissions, setSubmissions] = useState<Submission[]>(() => {
+  const [submissions] = useState<Submission[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lsp_submissions");
       if (saved) {
@@ -442,52 +443,83 @@ export default function PengajuanSkemaPage() {
     }
   };
 
-  const handleSubmitForm = () => {
-    const newSubmission: Submission = {
-      id: String(submissions.length + 1),
-      name: selectedScheme?.name || "Uji Kompetensi Mandiri",
-      code: selectedScheme?.code || "001/SKM/LSP-KJN/II/2023",
-      date: new Date().toLocaleDateString("en-GB"),
-      status: "Menunggu Persetujuan",
-      namaLengkap,
-      tempatLahir,
-      tanggalLahir,
-      jenisKelamin,
-      alamat,
-      alamatWilayah,
-      nik,
-      kewarganegaraan,
-      kodePos,
-      noTelp,
-      pendidikanTerakhir,
-      pekerjaan,
-      institusiPerusahaan,
-      jabatan,
-      emailInstitusi,
-      kodePosInstitusi,
-      alamatInstitusi,
-      telpInstitusi,
-      faxInstitusi,
-      tuk: tuk, 
-      metode: metode,
-      penyesuaianWajar,
-      berpengalaman,
-    };
+  const handleSubmitForm = async () => {
+    try {
+      showAlert("Mengunggah dokumen dan memproses pengajuan...");
+      const uploadedDokumen = [];
 
-    const updated = [newSubmission, ...submissions];
-    setSubmissions(updated);
-    localStorage.setItem("lsp_submissions", JSON.stringify(updated));
+      // 1. UPLOAD FILE KE SUPABASE STORAGE
+      // Karena eFormData[key] bisa menyimpan Array of File
+      for (const [namaDokumen, value] of Object.entries(eFormData)) {
+        const files = Array.isArray(value) ? value : [value];
+        
+        for (const file of files) {
+          if (file instanceof File) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 
-    setTempatLahir("");
-    setAlamat("");
-    setNik("");
-    setKodePos("");
-    setTuk("");
-    setMetode("");
-    setBerpengalaman(false);
-    setStep(1);
-    showAlert(`Pengajuan Skema ${newSubmission.name} Berhasil Diajukan!`);
-    setSubView("list");
+            const { error: uploadError } = await supabase.storage
+              .from('dokumen-pengajuan')
+              .upload(fileName, file);
+
+            if (uploadError) {
+              throw new Error(`Gagal mengunggah ${namaDokumen}: ${uploadError.message}`);
+            }
+
+            const { data: urlData } = supabase.storage
+              .from('dokumen-pengajuan')
+              .getPublicUrl(fileName);
+
+            uploadedDokumen.push({
+              namaDokumen: namaDokumen,
+              fileUrl: urlData.publicUrl
+            });
+          }
+        }
+      }
+
+      // 2. KUMPULKAN SEMUA DATA (Teks + URL File)
+      const payloadData = {
+        name: selectedScheme?.name || "Uji Kompetensi Mandiri",
+        code: selectedScheme?.code || "001/SKM/LSP-KJN/II/2023",
+        namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, alamat,
+        provinsi, kota, nik, kewarganegaraan, kodePos, noTelp,
+        pendidikanTerakhir, pekerjaan, institusiPerusahaan, jabatan,
+        emailInstitusi, kodePosInstitusi, alamatInstitusi, telpInstitusi,
+        faxInstitusi, tuk, metode, penyesuaianWajar, berpengalaman,
+        dokumen: uploadedDokumen, 
+      };
+
+      // 3. KIRIM KE API DATABASE
+      const response = await fetch('/api/pengajuan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadData),
+      });
+
+      if (!response.ok) {
+        // Casting ke interface sederhana tanpa 'any'
+        const errData = (await response.json()) as { message?: string };
+        throw new Error(errData.message || "Gagal ngirim data ke server database");
+      }
+
+      showAlert(`Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`);
+      
+      // Kosongkan form setelah sukses
+      setTempatLahir(""); setAlamat(""); setNik(""); setKodePos("");
+      setTuk(""); setMetode(""); setBerpengalaman(false);
+      setStep(1); setSubView("list");
+      
+    } catch (error: unknown) { // <--- Bebas 'any', ganti pakai 'unknown'
+      console.error(error);
+      
+      // Pengecekan tipe error yang aman
+      if (error instanceof Error) {
+        showAlert(error.message);
+      } else {
+        showAlert("Yah, terjadi kesalahan saat mengirim pengajuan.");
+      }
+    }
   };
 
   const filteredSubmissions = submissions.filter((item) => {
