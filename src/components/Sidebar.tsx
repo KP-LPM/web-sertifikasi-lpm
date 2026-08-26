@@ -187,35 +187,64 @@ function getNavItems(role: string | null | undefined) {
     case "admin":
       return [
         {
-          id: "dashboard",
+          id: "overview",
           label: "Dashboard",
           icon: LayoutDashboard,
-          path: "/dashboard",
+          path: "/admin/overview",
+        },
+        {
+          id: "kelolapengguna",
+          label: "Kelola Pengguna",
+          icon: Users,
+          path: "/admin/kelolapengguna",
         },
         {
           id: "users",
           label: "Verifikasi Berkas",
-          icon: Users,
-          path: "/users",
+          icon: FolderCheck,
+          path: "/admin/users",
         },
         {
           id: "schemes",
           label: "Skema Sertifikasi",
           icon: FolderTree,
-          path: "/schemes",
+          path: "/admin/schemes",
         },
         {
-          id: "schedules",
+          id: "schedule",
           label: "Jadwal & Penugasan",
           icon: CalendarDays,
-          path: "/schedules",
+          path: "/admin/schedule",
         },
-        { id: "tuk", label: "Manajemen TUK", icon: Building2, path: "/tuk" },
+        {
+          id: "sidangpleno",
+          label: "Sidang Pleno",
+          icon: Scale,
+          path: "/admin/sidangpleno",
+        },
+        {
+          id: "riwayatasesmenadmin",
+          label: "Riwayat Asesmen",
+          icon: History,
+          path: "/admin/riwayatasesmenadmin",
+        },
+        {
+          id: "uploadsertifikat",
+          label: "Upload Sertifikat",
+          icon: FileEdit,
+          path: "/admin/uploadsertifikat",
+        },
+        {
+          id: "tuk",
+          label: "Manajemen TUK",
+          icon: Building2,
+          path: "/admin/tuk",
+        },
         {
           id: "reports",
           label: "Laporan",
           icon: ClipboardList,
-          path: "/reports",
+          path: "/admin/reports",
         },
       ];
     case "asesor":

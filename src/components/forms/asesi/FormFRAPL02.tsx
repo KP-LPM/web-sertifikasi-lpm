@@ -1,47 +1,6 @@
 import React from "react";
 import { FormFRAPL02 } from "@/components/forms/FormFRAPL02";
-import { EvidenceFileItem, JenisMetode, StatusAsesmen } from "@/types/types";
-
-export interface EFormApl02FormData {
-  id?: string | number;
-  isAdmin?: boolean;
-  kompetensi?: Record<string, string>;
-  metode?: string;
-  status?: string;
-  namaLengkap?: string;
-  skema?: string;
-  nomorSkema?: string;
-  tuk?: string;
-  tanggal?: string;
-  schemeDetail?: {
-    name?: string;
-    code?: string;
-    units?: Array<{
-      code: string;
-      title: string;
-      elemen?: Array<{
-        title: string;
-        kuk: string[];
-      }>;
-    }>;
-  };
-  asesorName?: string;
-  asesorReg?: string;
-  readOnly?: boolean;
-  ttdAsesi?: string;
-  signature?: string;
-  ttdAsesor?: string;
-  rekomendasiApl02?: "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | "";
-  penyusun?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  validator?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  [key: string]: unknown;
-}
-
-export interface EFormApl02Props {
-  formData: EFormApl02FormData;
-  onChange: (val: EFormApl02FormData) => void;
-  allData?: Record<string, EvidenceFileItem | File | string>;
-}
+import { EFormApl02Props } from "@/types/types";
 
 export function EFormApl02({
   formData,
@@ -65,8 +24,8 @@ export function EFormApl02({
       <FormFRAPL02
         asesmenData={{
           id: Number(formData.id) || 0,
-          metode: (formData.metode || "") as JenisMetode,
-          status: (formData.status || "") as StatusAsesmen,
+          metode: formData.metode || "",
+          status: formData.status || "",
           nama: formData.namaLengkap || "AHMAD FAUZI",
           skema:
             formData.skema ||
@@ -83,8 +42,12 @@ export function EFormApl02({
           asesorReg: formData.asesorReg,
         }}
         units={formData.schemeDetail?.units?.map((u) => ({
-          ...u,
-          elemen: u.elemen || [],
+          code: u.unitCode || u.kode || "",
+          title: u.unitTitle || u.judul || "",
+          elemen: (u.elemen || []).map((e) => ({
+            title: e.title || e.nama || "",
+            kuk: e.kuk || [],
+          })),
         }))}
         answers={(formData.kompetensi as Record<string, "K" | "BK">) || {}}
         onAnswerChange={(key, val) => toggleK(key, val === "K")}
@@ -102,19 +65,42 @@ export function EFormApl02({
         }
         asesorName={formData.asesorName}
         asesorReg={formData.asesorReg}
-        asesorSignature={formData.ttdAsesor}
+        asesorSignature={
+          typeof formData.ttdAsesor === "string"
+            ? formData.ttdAsesor
+            : undefined
+        }
         onAsesorSignatureChange={(sig) =>
           formData.isAdmin && onChange({ ...formData, ttdAsesor: sig })
         }
-        rekomendasi={formData.rekomendasiApl02}
+        rekomendasi={
+          formData.rekomendasiApl02 === "Dapat dilanjutkan" ||
+          formData.rekomendasiApl02 === "Tidak dapat dilanjutkan"
+            ? formData.rekomendasiApl02
+            : ""
+        }
         onRekomendasiChange={(val) =>
           formData.isAdmin && onChange({ ...formData, rekomendasiApl02: val })
         }
-        penyusun={formData.penyusun}
+        penyusun={(Array.isArray(formData.penyusun)
+          ? formData.penyusun
+          : []
+        ).map((p) => ({
+          nama: p.nama ?? "",
+          noMet: p.noMet ?? "",
+          ttdTanggal: p.ttdTanggal ?? "",
+        }))}
         onPenyusunChange={(val) =>
           formData.isAdmin && onChange({ ...formData, penyusun: val })
         }
-        validator={formData.validator}
+        validator={(Array.isArray(formData.validator)
+          ? formData.validator
+          : []
+        ).map((v) => ({
+          nama: v.nama ?? "",
+          noMet: v.noMet ?? "",
+          ttdTanggal: v.ttdTanggal ?? "",
+        }))}
         onValidatorChange={(val) =>
           formData.isAdmin && onChange({ ...formData, validator: val })
         }

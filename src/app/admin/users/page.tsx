@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Search,
@@ -21,7 +23,7 @@ import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { useAppContext } from "@/context/context";
 import { UserItem, Apl01FormData, Apl02FormData } from "@/types/types";
 
-export function UsersManagement() {
+export default function UsersManagement() {
   const { user } = useAppContext();
   const readOnly = user?.role === "direktur" || user?.role === "manajer";
 
@@ -30,8 +32,8 @@ export function UsersManagement() {
   const [users, setUsers] = useState<UserItem[]>([
     {
       id: "1",
-      initial: "AH",
-      name: "Ahmad Hidayat",
+      inisial: "AH",
+      nama: "Ahmad Hidayat",
       email: "ahmad.h@student.uin.ac.id",
       role: "Asesi",
       status: "Menunggu Verifikasi",
@@ -44,8 +46,8 @@ export function UsersManagement() {
     },
     {
       id: "2",
-      initial: "BP",
-      name: "Budi Pratama",
+      inisial: "BP",
+      nama: "Budi Pratama",
       email: "budi.p@student.uin.ac.id",
       role: "Asesi",
       status: "Menunggu Verifikasi",
@@ -58,8 +60,8 @@ export function UsersManagement() {
     },
     {
       id: "3",
-      initial: "DL",
-      name: "Dewi Lestari",
+      inisial: "DL",
+      nama: "Dewi Lestari",
       email: "dewi.l@student.uin.ac.id",
       role: "Asesi",
       status: "Terverifikasi",
@@ -72,8 +74,8 @@ export function UsersManagement() {
     },
     {
       id: "4",
-      initial: "RH",
-      name: "Rahmat Hidayat",
+      inisial: "RH",
+      nama: "Rahmat Hidayat",
       email: "rahmat.h@student.uin.ac.id",
       role: "Asesi",
       status: "Terverifikasi",
@@ -86,200 +88,200 @@ export function UsersManagement() {
     },
     {
       id: "5",
-      initial: "SR",
-      name: "Dr. Siti Rohmah",
+      inisial: "SR",
+      nama: "Dr. Siti Rohmah",
       email: "siti.r@lecturer.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-1",
-      initial: "IT",
-      name: "Ichsan Taufik",
+      inisial: "IT",
+      nama: "Ichsan Taufik",
       email: "ichsan.taufik@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-2",
-      initial: "AK",
-      name: "Aceng Abdul Kodir",
+      inisial: "AK",
+      nama: "Aceng Abdul Kodir",
       email: "aceng.kodir@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-3",
-      initial: "SF",
-      name: "Susanti Ainul Fitri",
+      inisial: "SF",
+      nama: "Susanti Ainul Fitri",
       email: "susanti.fitri@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-4",
-      initial: "SM",
-      name: "M Sandi Marta",
+      inisial: "SM",
+      nama: "M Sandi Marta",
       email: "sandi.marta@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-5",
-      initial: "GS",
-      name: "Gina Sakinah",
+      inisial: "GS",
+      nama: "Gina Sakinah",
       email: "gina.sakinah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-6",
-      initial: "EW",
-      name: "Elis Ratna Wulan",
+      inisial: "EW",
+      nama: "Elis Ratna Wulan",
       email: "elis.wulan@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-7",
-      initial: "AS",
-      name: "Asep Abdul Sahid",
+      inisial: "AS",
+      nama: "Asep Abdul Sahid",
       email: "asep.sahid@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-8",
-      initial: "SA",
-      name: "Siti Alia",
+      inisial: "SA",
+      nama: "Siti Alia",
       email: "siti.alia@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-9",
-      initial: "AF",
-      name: "Azmi Fasa",
+      inisial: "AF",
+      nama: "Azmi Fasa",
       email: "azmi.fasa@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-10",
-      initial: "CS",
-      name: "Cucu Susilawati",
+      inisial: "CS",
+      nama: "Cucu Susilawati",
       email: "cucu.susilawati@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-11",
-      initial: "FW",
-      name: "Fitri Pebriani Wahyu",
+      inisial: "FW",
+      nama: "Fitri Pebriani Wahyu",
       email: "fitri.wahyu@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-12",
-      initial: "TR",
-      name: "Tina Dewi Rosahdi",
+      inisial: "TR",
+      nama: "Tina Dewi Rosahdi",
       email: "tina.rosahdi@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-13",
-      initial: "UJ",
-      name: "Ucu Julita",
+      inisial: "UJ",
+      nama: "Ucu Julita",
       email: "ucu.julita@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-14",
-      initial: "AM",
-      name: "Acep Muslim",
+      inisial: "AM",
+      nama: "Acep Muslim",
       email: "acep.muslim@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-15",
-      initial: "IK",
-      name: "Izzah Faizah Siti Rusydati Khaerani",
+      inisial: "IK",
+      nama: "Izzah Faizah Siti Rusydati Khaerani",
       email: "izzah.faizah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-16",
-      initial: "MA",
-      name: "Muhammad Alfan",
+      inisial: "MA",
+      nama: "Muhammad Alfan",
       email: "muhammad.alfan@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-17",
-      initial: "EA",
-      name: "Erlan Aditya Ardiansyah",
+      inisial: "EA",
+      nama: "Erlan Aditya Ardiansyah",
       email: "erlan.ardiansyah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-18",
-      initial: "DG",
-      name: "Dian Rachmat Gumelar",
+      inisial: "DG",
+      nama: "Dian Rachmat Gumelar",
       email: "dian.gumelar@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-19",
-      initial: "RN",
-      name: "Reza Fauzi Nazar",
+      inisial: "RN",
+      nama: "Reza Fauzi Nazar",
       email: "reza.nazar@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-20",
-      initial: "RS",
-      name: "Rini Sulastri",
+      inisial: "RS",
+      nama: "Rini Sulastri",
       email: "rini.sulastri@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-21",
-      initial: "YM",
-      name: "Yadi Mardiansyah",
+      inisial: "YM",
+      nama: "Yadi Mardiansyah",
       email: "yadi.mardiansyah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-22",
-      initial: "DY",
-      name: "Dayudin",
+      inisial: "DY",
+      nama: "Dayudin",
       email: "dayudin@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-23",
-      initial: "WU",
-      name: "Wisnu Uriawan",
+      inisial: "WU",
+      nama: "Wisnu Uriawan",
       email: "wisnu.uriawan@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-24",
-      initial: "MR",
-      name: "M. Ridha Taufiq Rahman",
+      inisial: "MR",
+      nama: "M. Ridha Taufiq Rahman",
       email: "ridha.rahman@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -352,7 +354,7 @@ export function UsersManagement() {
                 lspSignatureUrl: u.verificationData?.lspSignatureUrl,
                 rekomendasiApl02: u.verificationData?.rekomendasiApl02,
                 ttdAsesor: u.verificationData?.ttdAsesor,
-                asesorName: u.verificationData?.asesorName,
+                asesornama: u.verificationData?.asesornama,
                 asesorReg: u.verificationData?.asesorReg,
                 penyusun: u.verificationData?.penyusun,
                 validator: u.verificationData?.validator,
@@ -370,7 +372,7 @@ export function UsersManagement() {
 
   // Form State
   const [formData, setFormData] = useState({
-    name: "",
+    nama: "",
     email: "",
     role: "Asesor",
   });
@@ -383,7 +385,7 @@ export function UsersManagement() {
 
   const filteredUsers = currentList.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.role.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -391,15 +393,15 @@ export function UsersManagement() {
   const handleAddUser = () => {
     const newUser: UserItem = {
       id: Date.now().toString(),
-      initial: formData.name.substring(0, 2).toUpperCase() || "U",
-      name: formData.name || "User Baru",
+      inisial: formData.nama.substring(0, 2).toUpperCase() || "U",
+      nama: formData.nama || "User Baru",
       email: formData.email || "user@example.com",
       role: formData.role,
       status: "Terverifikasi",
     };
     setUsers([...users, newUser]);
     setIsModalOpen(false);
-    setFormData({ name: "", email: "", role: "Asesor" });
+    setFormData({ nama: "", email: "", role: "Asesor" });
   };
 
   const handleEditUser = () => {
@@ -409,10 +411,10 @@ export function UsersManagement() {
           u.id === selectedUser.id
             ? {
                 ...u,
-                name: formData.name,
+                nama: formData.nama,
                 email: formData.email,
                 role: formData.role,
-                initial: formData.name.substring(0, 2).toUpperCase() || "U",
+                inisial: formData.nama.substring(0, 2).toUpperCase() || "U",
               }
             : u,
         ),
@@ -559,7 +561,7 @@ export function UsersManagement() {
     setSelectedAsesorId(user.verificationData?.assignedAsesorId || "");
     setApl01FormData({
       isAdmin: true,
-      namaLengkap: user.name,
+      namaLengkap: user.nama,
       rekomendasi: user.verificationData?.rekomendasi || "Diterima",
       catatan: user.verificationData?.catatan || "",
       statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
@@ -589,7 +591,7 @@ export function UsersManagement() {
     });
     setApl02FormData({
       isAdmin: true,
-      namaLengkap: user.name,
+      namaLengkap: user.nama,
       rekomendasiApl02:
         user.verificationData?.rekomendasiApl02 || "Dapat dilanjutkan",
       ttdAsesi: { type: "auto" },
@@ -643,7 +645,8 @@ export function UsersManagement() {
 
     let currentAdminUrl =
       userToVerify.verificationData?.adminSignatureUrl || null;
-    const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
+    const currentLspUrl =
+      userToVerify.verificationData?.lspSignatureUrl || null;
 
     if (activeVerifyTab === "apl01") {
       currentAdminUrl = apl01FormData.ttdAdmin || null;
@@ -729,7 +732,7 @@ export function UsersManagement() {
                 Tinjauan Verifikasi Berkas
               </h2>
               <p className="text-xs text-gray-500 font-medium mt-1">
-                Periksa detail dokumen {userToVerify.name} sebelum menyetujui.
+                Periksa detail dokumen {userToVerify.nama} sebelum menyetujui.
               </p>
             </div>
           </div>
@@ -740,11 +743,11 @@ export function UsersManagement() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-sm border border-sky-100">
-                      {userToVerify.initial}
+                      {userToVerify.inisial}
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-slate-900">
-                        {userToVerify.name}
+                        {userToVerify.nama}
                       </p>
                       <p className="text-xs text-gray-500 font-medium">
                         {userToVerify.email}
@@ -878,7 +881,7 @@ export function UsersManagement() {
                           .filter((u) => u.role === "Asesor")
                           .map((asesor) => (
                             <option key={asesor.id} value={asesor.id}>
-                              {asesor.name}
+                              {asesor.nama}
                             </option>
                           ))}
                       </select>
@@ -1092,10 +1095,10 @@ export function UsersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-xs border border-sky-100 shrink-0">
-                          {user.initial}
+                          {user.inisial}
                         </div>
                         <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
-                          {user.name}
+                          {user.nama}
                         </span>
                       </div>
                     </td>
@@ -1252,9 +1255,9 @@ export function UsersManagement() {
                   <input
                     type="text"
                     placeholder="Masukkan nama lengkap"
-                    value={formData.name}
+                    value={formData.nama}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, nama: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                   />
@@ -1374,7 +1377,7 @@ export function UsersManagement() {
                   Hapus Pengguna
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Apakah Anda yakin ingin menghapus {selectedUser?.name}?
+                  Apakah Anda yakin ingin menghapus {selectedUser?.nama}?
                   Tindakan ini tidak dapat dibatalkan.
                 </p>
               </div>
@@ -1425,7 +1428,7 @@ export function UsersManagement() {
                       Ubah Status Pembayaran
                     </h3>
                     <p className="text-xs text-slate-500 font-medium">
-                      Asesi: {userToEditPayment.name}
+                      Asesi: {userToEditPayment.nama}
                     </p>
                   </div>
                 </div>

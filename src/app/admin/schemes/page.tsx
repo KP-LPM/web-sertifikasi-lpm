@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Plus,
@@ -31,7 +33,7 @@ import {
 import { useAppContext } from "@/context/context";
 import { TambahSkemaForm } from "@/components/forms/TambahSkemaForm";
 
-export function ManageSchemes() {
+export default function ManageSchemes() {
   const { user } = useAppContext();
   const readOnly = user?.role !== "admin";
 
@@ -42,7 +44,7 @@ export function ManageSchemes() {
       .map((s) => {
         const detail = AVAILABLE_SCHEMES.find((d) => d.name === s.name);
         let mappedUnits: SchemeUnit[] = detail?.units?.map((u) => ({
-          unitCode: u.code || "",
+          unitCode: u.kode || "",
           unitTitle: u.title || "",
           unitDesc: "",
           elemen: u.elemen
@@ -63,22 +65,22 @@ export function ManageSchemes() {
         if (s.name === "Penyelia Halal" && mappedUnits.length > 0) {
           mappedUnits = mappedUnits.map((u) => {
             let desc = "";
-            if (u.unitCode === "M.74PHI00.001.2")
+            if (u.kode === "M.74PHI00.001.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam menyusun dokumen SJPH sesuai persyaratan standar.";
-            else if (u.unitCode === "M.74PHI00.002.2")
+            else if (u.kode === "M.74PHI00.002.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang berkaitan dengan penyiapan daftar bahan halal dan dokumen pendukungnya.";
-            else if (u.unitCode === "M.74PHI00.003.2")
+            else if (u.kode === "M.74PHI00.003.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam mengawasi bahan, proses, dan produk halal sesuai persyaratan standar.";
-            else if (u.unitCode === "M.74PHI00.004.2")
+            else if (u.kode === "M.74PHI00.004.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan penanganan produk yang tidak memenuhi kriteria halal sesuai persyaratan standar.";
-            else if (u.unitCode === "M.74PHI00.005.2")
+            else if (u.kode === "M.74PHI00.005.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan audit internal penerapan Sistem Jaminan Produk Halal (SJPH).";
-            else if (u.unitCode === "M.74PHI00.006.2")
+            else if (u.kode === "M.74PHI00.006.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan dan sikap kerja yang dibutuhkan dalam melakukan evaluasi tindak lanjut hasil audit internal Sistem Jaminan Produk Halal (SJPH).";
 
@@ -140,7 +142,7 @@ export function ManageSchemes() {
   // Form State
   const [formData, setFormData] = useState({
     name: "",
-    code: "KKNI",
+    kode: "KKNI",
     nomor_sertifikat: "",
     nomor_registrasi: "",
     category: "IT & Software",
@@ -148,10 +150,10 @@ export function ManageSchemes() {
   });
   const [units, setUnits] = useState<SchemeUnit[]>([
     {
-      unitCode: "",
-      unitTitle: "",
+      kode: "",
+      judul: "",
       unitDesc: "",
-      elemen: [{ title: "", kuk: [""] }],
+      elemen: [{ judul: "", kuk: [""] }],
     },
   ]);
 
@@ -183,7 +185,7 @@ export function ManageSchemes() {
           unitCode: "",
           unitTitle: "",
           unitDesc: "",
-          elemen: [{ title: "", kuk: [""] }],
+          elemen: [{ judul: "", kuk: [""] }],
         },
       ],
     );
@@ -206,7 +208,7 @@ export function ManageSchemes() {
           unitCode: "",
           unitTitle: "",
           unitDesc: "",
-          elemen: [{ title: "", kuk: [""] }],
+          elemen: [{ judul: "", kuk: [""] }],
         },
       ],
     );
@@ -354,14 +356,14 @@ export function ManageSchemes() {
             category: "IT & Software",
             status: payload.status_aktif ? "Active" : "Draft",
             applicantsCount: 0,
-            units: payload.unit_kompetensi?.map(
+            unitKompetensi: payload.unit_kompetensi?.map(
               (u: MasterSkemaUnitPayload) => ({
                 unitCode: u.kode_unit,
                 unitTitle: u.judul_unit,
                 unitDesc: "",
                 elemen:
                   u.elemen?.map((e: MasterSkemaElemenPayload) => ({
-                    title: e.nama_elemen,
+                    judul: e.nama_elemen,
                     kuk: Array.isArray(e.kriteria_unjuk_kerja)
                       ? e.kriteria_unjuk_kerja
                       : e.kriteria_unjuk_kerja
