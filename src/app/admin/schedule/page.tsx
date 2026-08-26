@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
   FileEdit,
@@ -141,7 +143,7 @@ const ALL_PLENO_USERS = [
   },
 ];
 
-export function AssessmentSchedule() {
+export default function AssessmentSchedule() {
   const {
     user,
     plenoSessions,
@@ -169,6 +171,7 @@ export function AssessmentSchedule() {
   const [editId, setEditId] = useState<string | number | null>(null);
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handlePreviewAsesmen = (item: ScheduleItem) => {
     setIsPreviewMode(true);
@@ -195,6 +198,49 @@ export function AssessmentSchedule() {
     });
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
+  };
+
+  const handleDownloadSuratTugas = async () => {
+    try {
+      const payload = {
+        nomorSurat: "B-005/UN.05/V.7/PP.00.9/07/2025",
+        namaAsesor: "M Sandi Marta",
+        noRegMet: "MET.000.007354 2024",
+        bidangSkema: "Jenjang 5 Kewirausahaan Industri",
+        namaTuk: "TUK Sewaktu",
+        alamatTuk: "UIN Sunan Gunung Djati Bandung",
+        hariTanggal: "Minggu, 06 Juli 2025",
+        jam: "08.00 WIB",
+        jumlahPeserta: 1,
+        jumlahSkema: 1,
+        namaAsesi: "Ach.Angga prasetya Harisman",
+        spesifikasiRuangTuk: "Gd. Al-Jamiah Lt.6 - Ruangan Rapat Dharma Wanita",
+        kegiatanPengujian: "witness",
+        kotaSurat: "Bandung",
+        tanggalSurat: "02 Juli 2025",
+        namaDirektur: "Prof. Dr. Ija Suntana, M.Ag",
+      };
+
+      const res = await fetch("/api/surat/penugasanassessor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Gagal mendownload Surat Tugas");
+
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `Surat_Tugas_${payload.namaAsesor}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleEditAsesmen = (item: ScheduleItem) => {
@@ -579,8 +625,7 @@ export function AssessmentSchedule() {
     const availableAsesi = assessments
       .filter((a: Candidate) => {
         const matchScheme = !formData.scheme || a.skema === formData.scheme;
-        const candidateMethod =
-          a.metode_pelaksanaan || a.jenis_asesmen || "Offline";
+        const candidateMethod = a.metode || "Offline";
         const matchMethod =
           !formData.method ||
           candidateMethod.toLowerCase() === formData.method.toLowerCase();
@@ -832,7 +877,7 @@ export function AssessmentSchedule() {
 
                 <button
                   type="button"
-                  onClick={() => setIsGeneratePenugasanModalOpen(true)}
+                  onClick={() => handleDownloadSuratTugas()}
                   className="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shrink-0 shadow-xs cursor-pointer active:scale-95"
                   title="Generate dan cetak dokumen Surat Penugasan Asesor"
                 >
@@ -1072,7 +1117,7 @@ export function AssessmentSchedule() {
               </div>
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  Rentang Tanggal Pelaksanaan Pleno
+                  Tanggal Pelaksanaan Pleno
                 </label>
                 <input
                   type="text"

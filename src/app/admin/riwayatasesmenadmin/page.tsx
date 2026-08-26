@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Search,
@@ -261,7 +263,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
   },
 ];
 
-export function RiwayatAsesmenAdmin() {
+export default function RiwayatAsesmenAdmin() {
   const { assessments, plenoSessions } = useAppContext();
 
   // Page Option Tab State
@@ -349,7 +351,7 @@ export function RiwayatAsesmenAdmin() {
   };
 
   // Filtered Assessments
-  const filteredAssessments = assessments.filter((item) => {
+  const filteredAssessments = assessments.filter((item: AssessmentItem) => {
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (statusFilter && item.status !== statusFilter) return false;
     if (searchTerm) {
@@ -948,7 +950,7 @@ export function RiwayatAsesmenAdmin() {
                 </thead>
                 <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
                   {filteredAssessments.length > 0 ? (
-                    filteredAssessments.map((item) => (
+                    filteredAssessments.map((item: AssessmentItem) => (
                       <tr
                         key={item.id}
                         className="group/row hover:bg-[#F9FAFC] transition-colors"
@@ -1246,7 +1248,7 @@ export function RiwayatAsesmenAdmin() {
                               <button
                                 onClick={() => {
                                   const found = assessments.find(
-                                    (a) =>
+                                    (a: AssessmentItem) =>
                                       a.nama?.toLowerCase() ===
                                       asesi.nama.toLowerCase(),
                                   ) || {
@@ -1890,14 +1892,16 @@ export function RiwayatAsesmenAdmin() {
                     <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
                       K:{" "}
                       {selectedPleno.asesiList?.filter(
-                        (a: AsesiPlenoItem | string) =>
-                          typeof a === "string" ? true : a.statusPleno === "K",
+                        (a: AsesiPlenoItem | string | number) =>
+                          typeof a === "object" &&
+                          a !== null &&
+                          a.statusPleno === "K",
                       ).length || 0}
                     </span>
                     <span className="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold">
                       BK:{" "}
                       {selectedPleno.asesiList?.filter(
-                        (a: AsesiPlenoItem | string) =>
+                        (a: AsesiPlenoItem | string | number) =>
                           typeof a === "object" &&
                           a !== null &&
                           a.statusPleno === "BK",
@@ -1931,20 +1935,25 @@ export function RiwayatAsesmenAdmin() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs font-medium">
-                      {selectedPleno.asesiList?.map(
-                        (asesiItem: AsesiPlenoItem | string, idx: number) => {
+                      {(selectedPleno.asesiList || []).map(
+                        (
+                          asesiItem: AsesiPlenoItem | string | number,
+                          idx: number,
+                        ) => {
                           const asesi: AsesiPlenoItem =
-                            typeof asesiItem === "string"
+                            typeof asesiItem === "string" ||
+                            typeof asesiItem === "number"
                               ? {
                                   id: `asesi-${idx}`,
                                   nim: `121705${1000 + idx}`,
-                                  nama: asesiItem,
+                                  nama: String(asesiItem),
                                   skema: selectedPleno.skema,
                                   asesor: "Asesor LSP",
                                   rekomendasiAsesor: "K",
                                   statusPleno: "K",
                                 }
                               : asesiItem;
+
                           return (
                             <tr
                               key={asesi.id || idx}

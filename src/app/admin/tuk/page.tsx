@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Search,
@@ -46,7 +48,7 @@ const INITIAL_TUK_DATA = [
     id: "GD-001",
     nama: "Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik",
     keterangan: "Ruang Aula Utama",
-    jenis: "Sewaktu",
+    tipe: "Sewaktu",
     alamat: DEFAULT_ADDRESS,
     status: "Aktif",
     kapasitas: 50,
@@ -61,7 +63,7 @@ const INITIAL_TUK_DATA = [
     id: "GD-002",
     nama: "Gedung D: Gedung Abjan Soelaiman (Auditorium)",
     keterangan: "Ruang Seminar 1",
-    jenis: "Sewaktu",
+    tipe: "Sewaktu",
     alamat: DEFAULT_ADDRESS,
     status: "Aktif",
     kapasitas: 200,
@@ -74,13 +76,13 @@ const INITIAL_TUK_DATA = [
   },
 ];
 
-export function TukManagement() {
+export default function TukManagement() {
   const { user } = useAppContext();
   const readOnly = user?.role !== "admin";
 
   const [tukData, setTukData] = useState<TukItem[]>(INITIAL_TUK_DATA);
   const [searchTerm, setSearchTerm] = useState("");
-  const [jenisFilter, setJenisFilter] = useState("Semua Jenis");
+  const [tipeFilter, settipeFilter] = useState("Semua tipe");
   const [statusFilter, setStatusFilter] = useState("Semua Status");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -92,7 +94,7 @@ export function TukManagement() {
   const DEFAULT_FORM_DATA: TukItem = {
     id: "",
     nama: UIN_BUILDINGS[0],
-    jenis: "Sewaktu",
+    tipe: "Sewaktu",
     alamat: DEFAULT_ADDRESS,
     status: "Aktif",
     kapasitas: 0,
@@ -112,11 +114,10 @@ export function TukManagement() {
     const matchSearch =
       tuk.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tuk.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchJenis =
-      jenisFilter === "Semua Jenis" || tuk.jenis === jenisFilter;
+    const matchtipe = tipeFilter === "Semua tipe" || tuk.tipe === tipeFilter;
     const matchStatus =
       statusFilter === "Semua Status" || tuk.status === statusFilter;
-    return matchSearch && matchJenis && matchStatus;
+    return matchSearch && matchtipe && matchStatus;
   });
 
   const openEditModal = (tuk: TukItem) => {
@@ -234,11 +235,11 @@ export function TukManagement() {
         </div>
         <div className="flex gap-3">
           <select
-            value={jenisFilter}
-            onChange={(e) => setJenisFilter(e.target.value)}
+            value={tipeFilter}
+            onChange={(e) => settipeFilter(e.target.value)}
             className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-[140px]"
           >
-            <option>Semua Jenis</option>
+            <option>Semua tipe</option>
             <option>Sewaktu</option>
             <option>Mandiri</option>
           </select>
@@ -328,7 +329,7 @@ export function TukManagement() {
                   </div>
                 </div>
                 <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-white border border-gray-200 px-2 py-1 rounded-md">
-                  {tuk.jenis}
+                  {tuk.tipe}
                 </div>
               </div>
             </motion.div>
@@ -459,12 +460,12 @@ export function TukManagement() {
 
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Jenis TUK
+                      tipe TUK
                     </label>
                     <select
-                      value={formData.jenis}
+                      value={formData.tipe}
                       onChange={(e) =>
-                        setFormData({ ...formData, jenis: e.target.value })
+                        setFormData({ ...formData, tipe: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                     >
@@ -696,10 +697,10 @@ export function TukManagement() {
 
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                      Jenis TUK
+                      tipe TUK
                     </p>
                     <p className="text-sm font-bold text-slate-700">
-                      {selectedTuk?.jenis}
+                      {selectedTuk?.tipe}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">

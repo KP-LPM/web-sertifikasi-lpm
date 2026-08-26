@@ -24,9 +24,9 @@ import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { useAppContext } from "@/context/context";
 
-import { 
-  DATA_PROVINSI, 
-  DATA_KOTA, 
+import {
+  DATA_PROVINSI,
+  DATA_KOTA,
   DATA_PEKERJAAN,
   DATA_PENDIDIKAN,
   DATA_INSTANSI,
@@ -252,23 +252,23 @@ export default function PengajuanSkemaPage() {
   const [searchScheme, setSearchScheme] = useState("");
   const [schemePage, setSchemePage] = useState(1);
 
-  const [namaLengkap, setNamaLengkap] = useState(user?.name || '');
-  const [tempatLahir, setTempatLahir] = useState('');
-  const [tanggalLahir, setTanggalLahir] = useState('');
-  const [jenisKelamin, setJenisKelamin] = useState('');
-  const [alamat, setAlamat] = useState('');
-  const [provinsi, setProvinsi] = useState('');
-  const [kota, setKota] = useState('');
-  
+  const [namaLengkap, setNamaLengkap] = useState(user?.name || "");
+  const [tempatLahir, setTempatLahir] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState("");
+  const [jenisKelamin, setJenisKelamin] = useState("");
+  const [alamat, setAlamat] = useState("");
+  const [provinsi, setProvinsi] = useState("");
+  const [kota, setKota] = useState("");
+
   // Mengubah ID Provinsi dan Kota menjadi nama lengkapnya untuk disimpan
   const namaProvinsi = provinsis.find((p) => p.id === provinsi)?.label || "";
   const namaKota = kotas.find((k) => k.id === kota)?.label || "";
-  const alamatWilayah = [namaKota, namaProvinsi].filter(Boolean).join(', ');
-  
-  const [nik, setNik] = useState('');
-  const [kewarganegaraan, setKewarganegaraan] = useState('WNI');
-  const [kodePos, setKodePos] = useState('');
-  const [noTelp, setNoTelp] = useState('');
+  const alamatWilayah = [namaKota, namaProvinsi].filter(Boolean).join(", ");
+
+  const [nik, setNik] = useState("");
+  const [kewarganegaraan, setKewarganegaraan] = useState("WNI");
+  const [kodePos, setKodePos] = useState("");
+  const [noTelp, setNoTelp] = useState("");
 
   const [pendidikanTerakhir, setPendidikanTerakhir] = useState("");
   const [pekerjaan, setPekerjaan] = useState("");
@@ -288,35 +288,42 @@ export default function PengajuanSkemaPage() {
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
-        const response = await fetch('/api/profil');
-        
+        const response = await fetch("/api/profil");
+
         if (response.ok) {
           const dataProfil = await response.json();
-          
+
           if (dataProfil.namaLengkap) setNamaLengkap(dataProfil.namaLengkap);
           if (dataProfil.nik) setNik(dataProfil.nik);
           if (dataProfil.tempatLahir) setTempatLahir(dataProfil.tempatLahir);
-          
+
           if (dataProfil.tanggalLahir) {
             const dateObj = new Date(dataProfil.tanggalLahir);
-            setTanggalLahir(dateObj.toISOString().split('T')[0]);
+            setTanggalLahir(dateObj.toISOString().split("T")[0]);
           }
-          
+
           if (dataProfil.jenisKelamin) setJenisKelamin(dataProfil.jenisKelamin);
-          if (dataProfil.kewarganegaraan) setKewarganegaraan(dataProfil.kewarganegaraan);
+          if (dataProfil.kewarganegaraan)
+            setKewarganegaraan(dataProfil.kewarganegaraan);
           if (dataProfil.noHp) setNoTelp(dataProfil.noHp);
           if (dataProfil.alamat) setAlamat(dataProfil.alamat);
           if (dataProfil.kodeProvinsi) setProvinsi(dataProfil.kodeProvinsi);
           if (dataProfil.kodeKota) setKota(dataProfil.kodeKota);
           if (dataProfil.kodePos) setKodePos(dataProfil.kodePos);
-          if (dataProfil.pendidikanTerakhir) setPendidikanTerakhir(dataProfil.pendidikanTerakhir);
+          if (dataProfil.pendidikanTerakhir)
+            setPendidikanTerakhir(dataProfil.pendidikanTerakhir);
           if (dataProfil.pekerjaan) setPekerjaan(dataProfil.pekerjaan);
-          if (dataProfil.namaInstitusi) setInstitusiPerusahaan(dataProfil.namaInstitusi);
+          if (dataProfil.namaInstitusi)
+            setInstitusiPerusahaan(dataProfil.namaInstitusi);
           if (dataProfil.jabatan) setJabatan(dataProfil.jabatan);
-          if (dataProfil.emailInstitusi) setEmailInstitusi(dataProfil.emailInstitusi);
-          if (dataProfil.kodePosInstitusi) setKodePosInstitusi(dataProfil.kodePosInstitusi);
-          if (dataProfil.telpInstitusi) setTelpInstitusi(dataProfil.telpInstitusi);
-          if (dataProfil.alamatInstitusi) setAlamatInstitusi(dataProfil.alamatInstitusi);
+          if (dataProfil.emailInstitusi)
+            setEmailInstitusi(dataProfil.emailInstitusi);
+          if (dataProfil.kodePosInstitusi)
+            setKodePosInstitusi(dataProfil.kodePosInstitusi);
+          if (dataProfil.telpInstitusi)
+            setTelpInstitusi(dataProfil.telpInstitusi);
+          if (dataProfil.alamatInstitusi)
+            setAlamatInstitusi(dataProfil.alamatInstitusi);
           if (dataProfil.faxInstitusi) setFaxInstitusi(dataProfil.faxInstitusi);
         }
       } catch (error) {
@@ -325,7 +332,7 @@ export default function PengajuanSkemaPage() {
     };
 
     fetchProfil();
-  }, []); 
+  }, []);
 
   interface Step1Errors {
     namaLengkap: boolean;
@@ -468,7 +475,7 @@ export default function PengajuanSkemaPage() {
       alamatInstitusi,
       telpInstitusi,
       faxInstitusi,
-      tuk: tuk, 
+      tuk: tuk,
       metode: metode,
       penyesuaianWajar,
       berpengalaman,
@@ -1404,7 +1411,8 @@ export default function PengajuanSkemaPage() {
                             noTelp: noTelp.trim() === "",
                             pendidikanTerakhir: pendidikanTerakhir === "",
                             pekerjaan: pekerjaan === "",
-                            institusiPerusahaan: institusiPerusahaan.trim() === "",
+                            institusiPerusahaan:
+                              institusiPerusahaan.trim() === "",
                             jabatan: jabatan.trim() === "",
                             emailInstitusi: emailInstitusi.trim() === "",
                             telpInstitusi: telpInstitusi.trim() === "",
@@ -1536,7 +1544,8 @@ export default function PengajuanSkemaPage() {
                       value={tanggalLahir}
                       onChange={(e) => {
                         setTanggalLahir(e.target.value);
-                        if (errors.tanggalLahir) setErrors({ ...errors, tanggalLahir: false });
+                        if (errors.tanggalLahir)
+                          setErrors({ ...errors, tanggalLahir: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${errors.tanggalLahir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
                     />
@@ -1550,7 +1559,9 @@ export default function PengajuanSkemaPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> Jenis Kelamin
                     </label>
-                    <div className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${errors.jenisKelamin ? "border-red-400 bg-red-50/10" : "border-transparent"}`}>
+                    <div
+                      className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${errors.jenisKelamin ? "border-red-400 bg-red-50/10" : "border-transparent"}`}
+                    >
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
                         <input
                           type="radio"
@@ -1559,7 +1570,8 @@ export default function PengajuanSkemaPage() {
                           checked={jenisKelamin === "Laki-laki"}
                           onChange={() => {
                             setJenisKelamin("Laki-laki");
-                            if (errors.jenisKelamin) setErrors({ ...errors, jenisKelamin: false });
+                            if (errors.jenisKelamin)
+                              setErrors({ ...errors, jenisKelamin: false });
                           }}
                           className="text-[#008BE3] w-4 h-4 cursor-pointer"
                         />{" "}
@@ -1573,7 +1585,8 @@ export default function PengajuanSkemaPage() {
                           checked={jenisKelamin === "Perempuan"}
                           onChange={() => {
                             setJenisKelamin("Perempuan");
-                            if (errors.jenisKelamin) setErrors({ ...errors, jenisKelamin: false });
+                            if (errors.jenisKelamin)
+                              setErrors({ ...errors, jenisKelamin: false });
                           }}
                           className="text-[#008BE3] w-4 h-4 cursor-pointer"
                         />{" "}
@@ -1594,14 +1607,17 @@ export default function PengajuanSkemaPage() {
                       value={provinsi}
                       onChange={(e) => {
                         setProvinsi(e.target.value);
-                        setKota(""); 
-                        if (errors.provinsi) setErrors({ ...errors, provinsi: false });
+                        setKota("");
+                        if (errors.provinsi)
+                          setErrors({ ...errors, provinsi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"} cursor-pointer`}
                     >
                       <option value="">Pilih Provinsi</option>
                       {provinsis.map((prov) => (
-                        <option key={prov.id} value={prov.id}>{prov.label}</option>
+                        <option key={prov.id} value={prov.id}>
+                          {prov.label}
+                        </option>
                       ))}
                     </select>
                     {errors.provinsi && (
@@ -1620,13 +1636,17 @@ export default function PengajuanSkemaPage() {
                         setKota(e.target.value);
                         if (errors.kota) setErrors({ ...errors, kota: false });
                       }}
-                      disabled={!provinsi} 
+                      disabled={!provinsi}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${!provinsi ? "bg-slate-100 cursor-not-allowed" : "bg-white cursor-pointer"} ${errors.kota ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
                     >
                       <option value="">Pilih Kota/Kabupaten</option>
-                      {kotas.filter(k => k.provId === provinsi).map((k) => (
-                        <option key={k.id} value={k.id}>{k.label}</option>
-                      ))}
+                      {kotas
+                        .filter((k) => k.provId === provinsi)
+                        .map((k) => (
+                          <option key={k.id} value={k.id}>
+                            {k.label}
+                          </option>
+                        ))}
                     </select>
                     {errors.kota && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -1638,22 +1658,28 @@ export default function PengajuanSkemaPage() {
 
                 <div className="min-w-0">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="text-red-500">*</span> Alamat Lengkap Rumah (Jalan, RT/RW, Kel/Desa, Kec)
+                    <span className="text-red-500">*</span> Alamat Lengkap Rumah
+                    (Jalan, RT/RW, Kel/Desa, Kec)
                   </label>
                   <input
                     type="text"
                     value={alamat}
                     onChange={(e) => {
                       setAlamat(e.target.value);
-                      if (errors.alamat) setErrors({ ...errors, alamat: false });
+                      if (errors.alamat)
+                        setErrors({ ...errors, alamat: false });
                     }}
                     placeholder="Masukkan alamat lengkap"
                     className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
-                      errors.alamat ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      errors.alamat
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                     }`}
                   />
                   {errors.alamat && (
-                    <p className="text-[10px] text-red-500 mt-1 font-bold">Masukkan alamat lengkap rumah</p>
+                    <p className="text-[10px] text-red-500 mt-1 font-bold">
+                      Masukkan alamat lengkap rumah
+                    </p>
                   )}
                 </div>
 
@@ -1682,8 +1708,14 @@ export default function PengajuanSkemaPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5"><span className="text-red-500">*</span> Kewarganegaraan</label>
-                    <select value={kewarganegaraan} onChange={(e) => setKewarganegaraan(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Kewarganegaraan
+                    </label>
+                    <select
+                      value={kewarganegaraan}
+                      onChange={(e) => setKewarganegaraan(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
+                    >
                       <option value="WNI">WNI</option>
                       <option value="WNA">WNA</option>
                     </select>
@@ -1721,11 +1753,16 @@ export default function PengajuanSkemaPage() {
                       value={noTelp}
                       onChange={(e) => {
                         setNoTelp(e.target.value.replace(/[^0-9]/g, ""));
-                        if (errors.noTelp) setErrors({ ...errors, noTelp: false });
+                        if (errors.noTelp)
+                          setErrors({ ...errors, noTelp: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.noTelp ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
-                    {errors.noTelp && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
+                    {errors.noTelp && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Wajib diisi
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1740,22 +1777,32 @@ export default function PengajuanSkemaPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Pendidikan Terakhir
+                      <span className="text-red-500">*</span> Pendidikan
+                      Terakhir
                     </label>
                     <select
                       value={pendidikanTerakhir}
                       onChange={(e) => {
                         setPendidikanTerakhir(e.target.value);
-                        if (errors.pendidikanTerakhir) setErrors({ ...errors, pendidikanTerakhir: false });
+                        if (errors.pendidikanTerakhir)
+                          setErrors({ ...errors, pendidikanTerakhir: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pendidikanTerakhir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="" disabled>Pilih Pendidikan</option>
+                      <option value="" disabled>
+                        Pilih Pendidikan
+                      </option>
                       {pendidikans.map((pend) => (
-                        <option key={pend.id} value={pend.label}>{pend.label}</option>
+                        <option key={pend.id} value={pend.label}>
+                          {pend.label}
+                        </option>
                       ))}
                     </select>
-                    {errors.pendidikanTerakhir && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih pendidikan</p>}
+                    {errors.pendidikanTerakhir && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih pendidikan
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1776,36 +1823,56 @@ export default function PengajuanSkemaPage() {
                       value={pekerjaan}
                       onChange={(e) => {
                         setPekerjaan(e.target.value);
-                        if (errors.pekerjaan) setErrors({ ...errors, pekerjaan: false });
+                        if (errors.pekerjaan)
+                          setErrors({ ...errors, pekerjaan: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pekerjaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="" disabled>Pilih Pekerjaan</option>
+                      <option value="" disabled>
+                        Pilih Pekerjaan
+                      </option>
                       {pekerjaans.map((pek) => (
-                        <option key={pek.id} value={pek.label}>{pek.label}</option>
+                        <option key={pek.id} value={pek.label}>
+                          {pek.label}
+                        </option>
                       ))}
                     </select>
-                    {errors.pekerjaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih pekerjaan</p>}
+                    {errors.pekerjaan && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih pekerjaan
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Institusi/Perusahaan
+                      <span className="text-red-500">*</span>{" "}
+                      Institusi/Perusahaan
                     </label>
                     <select
                       value={institusiPerusahaan}
                       onChange={(e) => {
                         setInstitusiPerusahaan(e.target.value);
-                        if (errors.institusiPerusahaan) setErrors({ ...errors, institusiPerusahaan: false });
+                        if (errors.institusiPerusahaan)
+                          setErrors({ ...errors, institusiPerusahaan: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.institusiPerusahaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="" disabled>Pilih Institusi/Perusahaan</option>
+                      <option value="" disabled>
+                        Pilih Institusi/Perusahaan
+                      </option>
                       {instansis.map((inst) => (
-                        <option key={inst.id} value={inst.label}>{inst.label}</option>
+                        <option key={inst.id} value={inst.label}>
+                          {inst.label}
+                        </option>
                       ))}
                     </select>
-                    {errors.institusiPerusahaan && <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih institusi</p>}
-                  </div>                 <div className="min-w-0">
+                    {errors.institusiPerusahaan && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih institusi
+                      </p>
+                    )}
+                  </div>{" "}
+                  <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       <span className="text-red-500">*</span> Jabatan
                     </label>
@@ -1814,26 +1881,37 @@ export default function PengajuanSkemaPage() {
                       value={jabatan}
                       onChange={(e) => {
                         setJabatan(e.target.value);
-                        if (errors.jabatan) setErrors({ ...errors, jabatan: false });
+                        if (errors.jabatan)
+                          setErrors({ ...errors, jabatan: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.jabatan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
-                    {errors.jabatan && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
+                    {errors.jabatan && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Wajib diisi
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Email Institusi/Perusahaan
+                      <span className="text-red-500">*</span> Email
+                      Institusi/Perusahaan
                     </label>
                     <input
                       type="email"
                       value={emailInstitusi}
                       onChange={(e) => {
                         setEmailInstitusi(e.target.value);
-                        if (errors.emailInstitusi) setErrors({ ...errors, emailInstitusi: false });
+                        if (errors.emailInstitusi)
+                          setErrors({ ...errors, emailInstitusi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.emailInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
-                    {errors.emailInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
+                    {errors.emailInstitusi && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Wajib diisi
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -1842,38 +1920,54 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={kodePosInstitusi}
-                      onChange={(e) => setKodePosInstitusi(e.target.value.replace(/[^0-9]/g, ""))}
+                      onChange={(e) =>
+                        setKodePosInstitusi(
+                          e.target.value.replace(/[^0-9]/g, ""),
+                        )
+                      }
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
                     />
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> No Telepon Institusi
+                      <span className="text-red-500">*</span> No Telepon
+                      Institusi
                     </label>
                     <input
                       type="text"
                       value={telpInstitusi}
                       onChange={(e) => {
                         setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ""));
-                        if (errors.telpInstitusi) setErrors({ ...errors, telpInstitusi: false });
+                        if (errors.telpInstitusi)
+                          setErrors({ ...errors, telpInstitusi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.telpInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
-                    {errors.telpInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
+                    {errors.telpInstitusi && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Wajib diisi
+                      </p>
+                    )}
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Alamat Institusi/Perusahaan
+                      <span className="text-red-500">*</span> Alamat
+                      Institusi/Perusahaan
                     </label>
                     <textarea
                       value={alamatInstitusi}
                       onChange={(e) => {
                         setAlamatInstitusi(e.target.value);
-                        if (errors.alamatInstitusi) setErrors({ ...errors, alamatInstitusi: false });
+                        if (errors.alamatInstitusi)
+                          setErrors({ ...errors, alamatInstitusi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${errors.alamatInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     />
-                    {errors.alamatInstitusi && <p className="text-[10px] text-red-500 mt-1 font-bold">Wajib diisi</p>}
+                    {errors.alamatInstitusi && (
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Wajib diisi
+                      </p>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -1912,13 +2006,17 @@ export default function PengajuanSkemaPage() {
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="" disabled>Pilih TUK</option>
+                      <option value="" disabled>
+                        Pilih TUK
+                      </option>
                       <option value="Sewaktu">Sewaktu</option>
                       <option value="Mandiri">Mandiri</option>
                       <option value="Tempat Kerja">Tempat Kerja</option>
                     </select>
                     {errors.tuk && (
-                      <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih klasifikasi TUK</p>
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih klasifikasi TUK
+                      </p>
                     )}
                   </div>
 
@@ -1931,16 +2029,21 @@ export default function PengajuanSkemaPage() {
                       value={metode}
                       onChange={(e) => {
                         setMetode(e.target.value);
-                        if (errors.metode) setErrors({ ...errors, metode: false });
+                        if (errors.metode)
+                          setErrors({ ...errors, metode: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.metode ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
                     >
-                      <option value="" disabled>Pilih Metode</option>
+                      <option value="" disabled>
+                        Pilih Metode
+                      </option>
                       <option value="Offline">Offline (Tatap Muka)</option>
                       <option value="Online">Online (Daring)</option>
                     </select>
                     {errors.metode && (
-                      <p className="text-[10px] text-red-500 mt-1 font-bold">Pilih metode ujian</p>
+                      <p className="text-[10px] text-red-500 mt-1 font-bold">
+                        Pilih metode ujian
+                      </p>
                     )}
                   </div>
 

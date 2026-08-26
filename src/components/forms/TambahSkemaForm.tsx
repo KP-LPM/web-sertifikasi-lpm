@@ -23,8 +23,8 @@ import {
   PersyaratanDasar,
   UnitKompetensiItem,
   ElemenKompetensiItem,
-} from "../../types";
-import { useAppContext } from "../../context";
+} from "@/types/types";
+import { useAppContext } from "@/context/context";
 import { FormFRAK07 } from "../forms/FormFRAK07";
 import { FormFRIA04A } from "../forms/FormFRIA04A";
 import { FormFRIA04B } from "../forms/FormFRIA04B";
@@ -595,7 +595,7 @@ export function TambahSkemaForm({
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
                   Kode unik identitas skema sertifikasi (Contoh:
-                  "06/LSPUINBdg/XI/2023")
+                  `06/LSPUINBdg/XI/2023`)
                 </p>
               </div>
 

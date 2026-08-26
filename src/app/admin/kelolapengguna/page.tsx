@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Search,
@@ -29,15 +30,15 @@ export const ROLE_OPTIONS = [
   "Anggota Komite Skema",
 ];
 
-export function KelolaPengguna() {
+export default function KelolaPengguna() {
   const { user } = useAppContext();
   const readOnly = user?.role === "direktur" || user?.role === "manajer";
 
   const [users, setUsers] = useState<ManagedUser[]>([
     {
       id: "usr-001",
-      initial: "DR",
-      name: "Prof. Dr. H. Mahmud, M.Ag",
+      inisial: "DR",
+      nama: "Prof. Dr. H. Mahmud, M.Ag",
       email: "mahmud@uin.ac.id",
       role: "Direktur",
       status: "Aktif",
@@ -45,8 +46,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-002",
-      initial: "MN",
-      name: "Bambang Sugianto, M.M.",
+      inisial: "MN",
+      nama: "Bambang Sugianto, M.M.",
       email: "bambang.s@lsp.uin.ac.id",
       role: "Manajer",
       status: "Aktif",
@@ -54,8 +55,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-003",
-      initial: "KP",
-      name: "Dr. Ir. H. Muhammad Zaini, M.T.",
+      inisial: "KP",
+      nama: "Dr. Ir. H. Muhammad Zaini, M.T.",
       email: "m.zaini@uin.ac.id",
       role: "Ketua Dewan Pengarah",
       status: "Aktif",
@@ -63,8 +64,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-004",
-      initial: "AP",
-      name: "Dra. Hj. Siti Fatimah, M.Si",
+      inisial: "AP",
+      nama: "Dra. Hj. Siti Fatimah, M.Si",
       email: "siti.fatimah@uin.ac.id",
       role: "Anggota Dewan Pengarah",
       status: "Aktif",
@@ -72,8 +73,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-005",
-      initial: "KS",
-      name: "Dr. Eng. Dian Wahyudi, S.T., M.T.",
+      inisial: "KS",
+      nama: "Dr. Eng. Dian Wahyudi, S.T., M.T.",
       email: "dian.w@uin.ac.id",
       role: "Ketua Komite Skema",
       status: "Aktif",
@@ -81,8 +82,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-006",
-      initial: "AS",
-      name: "Rahmat Hidayat, M.T.",
+      inisial: "AS",
+      nama: "Rahmat Hidayat, M.T.",
       email: "rahmat.h@uin.ac.id",
       role: "Anggota Komite Skema",
       status: "Aktif",
@@ -90,8 +91,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-007",
-      initial: "AD",
-      name: "Aditya Rahman, S.Kom",
+      inisial: "AD",
+      nama: "Aditya Rahman, S.Kom",
       email: "admin.lsp@uin.ac.id",
       role: "Admin",
       status: "Aktif",
@@ -99,8 +100,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-008",
-      initial: "SR",
-      name: "Dr. Siti Rohmah, M.Kom",
+      inisial: "SR",
+      nama: "Dr. Siti Rohmah, M.Kom",
       email: "siti.r@lecturer.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -108,8 +109,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-1",
-      initial: "IT",
-      name: "Ichsan Taufik",
+      inisial: "IT",
+      nama: "Ichsan Taufik",
       email: "ichsan.taufik@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -117,8 +118,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-2",
-      initial: "AK",
-      name: "Aceng Abdul Kodir",
+      inisial: "AK",
+      nama: "Aceng Abdul Kodir",
       email: "aceng.kodir@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -126,8 +127,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-3",
-      initial: "SF",
-      name: "Susanti Ainul Fitri",
+      inisial: "SF",
+      nama: "Susanti Ainul Fitri",
       email: "susanti.fitri@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -135,8 +136,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-4",
-      initial: "SM",
-      name: "M Sandi Marta",
+      inisial: "SM",
+      nama: "M Sandi Marta",
       email: "sandi.marta@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -144,8 +145,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-5",
-      initial: "GS",
-      name: "Gina Sakinah",
+      inisial: "GS",
+      nama: "Gina Sakinah",
       email: "gina.sakinah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -153,8 +154,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-6",
-      initial: "EW",
-      name: "Elis Ratna Wulan",
+      inisial: "EW",
+      nama: "Elis Ratna Wulan",
       email: "elis.wulan@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -162,8 +163,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-7",
-      initial: "AS",
-      name: "Asep Abdul Sahid",
+      inisial: "AS",
+      nama: "Asep Abdul Sahid",
       email: "asep.sahid@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -171,8 +172,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-8",
-      initial: "SA",
-      name: "Siti Alia",
+      inisial: "SA",
+      nama: "Siti Alia",
       email: "siti.alia@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -180,8 +181,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-9",
-      initial: "AF",
-      name: "Azmi Fasa",
+      inisial: "AF",
+      nama: "Azmi Fasa",
       email: "azmi.fasa@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -189,8 +190,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-10",
-      initial: "CS",
-      name: "Cucu Susilawati",
+      inisial: "CS",
+      nama: "Cucu Susilawati",
       email: "cucu.susilawati@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -198,8 +199,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-11",
-      initial: "FW",
-      name: "Fitri Pebriani Wahyu",
+      inisial: "FW",
+      nama: "Fitri Pebriani Wahyu",
       email: "fitri.wahyu@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -207,8 +208,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-12",
-      initial: "TR",
-      name: "Tina Dewi Rosahdi",
+      inisial: "TR",
+      nama: "Tina Dewi Rosahdi",
       email: "tina.rosahdi@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -216,8 +217,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-13",
-      initial: "UJ",
-      name: "Ucu Julita",
+      inisial: "UJ",
+      nama: "Ucu Julita",
       email: "ucu.julita@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -225,8 +226,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-14",
-      initial: "AM",
-      name: "Acep Muslim",
+      inisial: "AM",
+      nama: "Acep Muslim",
       email: "acep.muslim@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -234,8 +235,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-15",
-      initial: "IK",
-      name: "Izzah Faizah Siti Rusydati Khaerani",
+      inisial: "IK",
+      nama: "Izzah Faizah Siti Rusydati Khaerani",
       email: "izzah.faizah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -243,8 +244,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-16",
-      initial: "MA",
-      name: "Muhammad Alfan",
+      inisial: "MA",
+      nama: "Muhammad Alfan",
       email: "muhammad.alfan@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -252,8 +253,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-17",
-      initial: "EA",
-      name: "Erlan Aditya Ardiansyah",
+      inisial: "EA",
+      nama: "Erlan Aditya Ardiansyah",
       email: "erlan.ardiansyah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -261,8 +262,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-18",
-      initial: "DG",
-      name: "Dian Rachmat Gumelar",
+      inisial: "DG",
+      nama: "Dian Rachmat Gumelar",
       email: "dian.gumelar@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -270,8 +271,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-19",
-      initial: "RN",
-      name: "Reza Fauzi Nazar",
+      inisial: "RN",
+      nama: "Reza Fauzi Nazar",
       email: "reza.nazar@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -279,8 +280,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-20",
-      initial: "RS",
-      name: "Rini Sulastri",
+      inisial: "RS",
+      nama: "Rini Sulastri",
       email: "rini.sulastri@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -288,8 +289,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-21",
-      initial: "YM",
-      name: "Yadi Mardiansyah",
+      inisial: "YM",
+      nama: "Yadi Mardiansyah",
       email: "yadi.mardiansyah@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -297,8 +298,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-22",
-      initial: "DY",
-      name: "Dayudin",
+      inisial: "DY",
+      nama: "Dayudin",
       email: "dayudin@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -306,8 +307,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-23",
-      initial: "WU",
-      name: "Wisnu Uriawan",
+      inisial: "WU",
+      nama: "Wisnu Uriawan",
       email: "wisnu.uriawan@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -315,8 +316,8 @@ export function KelolaPengguna() {
     },
     {
       id: "asr-24",
-      initial: "MR",
-      name: "M. Ridha Taufiq Rahman",
+      inisial: "MR",
+      nama: "M. Ridha Taufiq Rahman",
       email: "ridha.rahman@lsp.uin.ac.id",
       role: "Asesor",
       status: "Terverifikasi",
@@ -324,8 +325,8 @@ export function KelolaPengguna() {
     },
     {
       id: "usr-009",
-      initial: "AH",
-      name: "Ahmad Hidayat",
+      inisial: "AH",
+      nama: "Ahmad Hidayat",
       email: "ahmad.h@student.uin.ac.id",
       role: "Asesi",
       status: "Menunggu Verifikasi",
@@ -344,7 +345,7 @@ export function KelolaPengguna() {
 
   // Form State
   const [formData, setFormData] = useState({
-    name: "",
+    nama: "",
     email: "",
     nipNim: "",
     role: "Asesor",
@@ -354,7 +355,7 @@ export function KelolaPengguna() {
 
   const filteredUsers = users.filter((userItem) => {
     const matchesSearch =
-      userItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userItem.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       userItem.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (userItem.nipNim &&
         userItem.nipNim.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -367,7 +368,7 @@ export function KelolaPengguna() {
 
   const handleOpenAddModal = () => {
     setFormData({
-      name: "",
+      nama: "",
       email: "",
       nipNim: "",
       role: "Asesor",
@@ -380,12 +381,12 @@ export function KelolaPengguna() {
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim()) return;
+    if (!formData.nama.trim() || !formData.email.trim()) return;
 
     const newUser: ManagedUser = {
       id: `usr-${Date.now()}`,
-      initial: formData.name.substring(0, 2).toUpperCase() || "US",
-      name: formData.name.trim(),
+      inisial: formData.nama.substring(0, 2).toUpperCase() || "US",
+      nama: formData.nama.trim(),
       email: formData.email.trim(),
       nipNim: formData.nipNim.trim(),
       role: formData.role,
@@ -400,7 +401,7 @@ export function KelolaPengguna() {
   const handleOpenEditModal = (userItem: ManagedUser) => {
     setSelectedUser(userItem);
     setFormData({
-      name: userItem.name,
+      nama: userItem.nama,
       email: userItem.email,
       nipNim: userItem.nipNim || "",
       role: userItem.role,
@@ -420,13 +421,13 @@ export function KelolaPengguna() {
         u.id === selectedUser.id
           ? {
               ...u,
-              name: formData.name,
+              nama: formData.nama,
               email: formData.email,
               nipNim: formData.nipNim,
               role: formData.role,
               status: formData.status,
               tempPassword: formData.tempPassword.trim() || u.tempPassword,
-              initial: formData.name.substring(0, 2).toUpperCase() || "US",
+              inisial: formData.nama.substring(0, 2).toUpperCase() || "US",
             }
           : u,
       ),
@@ -567,10 +568,10 @@ export function KelolaPengguna() {
                     <td className="px-6 py-4 align-middle whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-xs border border-sky-100 shrink-0">
-                          {u.initial}
+                          {u.inisial}
                         </div>
                         <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
-                          {u.name}
+                          {u.nama}
                         </span>
                       </div>
                     </td>
@@ -719,9 +720,9 @@ export function KelolaPengguna() {
                     required={!readOnly}
                     readOnly={readOnly}
                     placeholder="Contoh: Dr. Ahmad Fauzi, M.Kom"
-                    value={formData.name}
+                    value={formData.nama}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, nama: e.target.value })
                     }
                     className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
                       readOnly
@@ -943,7 +944,7 @@ export function KelolaPengguna() {
                 <p className="text-xs text-gray-500">
                   Apakah Anda yakin ingin menghapus{" "}
                   <strong className="text-slate-800">
-                    {selectedUser?.name}
+                    {selectedUser?.nama}
                   </strong>
                   ? Tindakan ini tidak dapat dibatalkan.
                 </p>

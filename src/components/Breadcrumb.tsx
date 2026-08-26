@@ -101,9 +101,7 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
 
   // ---------------- ASESI ----------------
   "/asesi/overview": [{ label: "Dashboard" }],
-  "/asesi/pengajuanskema": [
-    { label: "Dashboard", path: "/asesi/overview" },
-  ],
+  "/asesi/pengajuanskema": [{ label: "Dashboard", path: "/asesi/overview" }],
   "/asesi/riwayatasesmen": [
     { label: "Dashboard", path: "/asesi/overview" },
     // Label disesuaikan dengan kode asesi lama
@@ -122,24 +120,40 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
   // ---------------- ADMIN / DIREKTUR / MANAJER ----------------
   "/admin/overview": [{ label: "Dashboard" }],
   "/direktur/dashboard": [{ label: "Dashboard" }],
-  "/schemes": [
-    { label: "Dashboard", path: "/dashboard" },
+  "/admin/kelolapengguna": [
+    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Kelola Pengguna" },
+  ],
+  "/admin/schemes": [
+    { label: "Dashboard", path: "/admin/overview" },
     { label: "Skema Sertifikasi" },
   ],
-  "/schedules": [
-    { label: "Dashboard", path: "/dashboard" },
+  "/admin/schedule": [
+    { label: "Dashboard", path: "/admin/overview" },
     { label: "Jadwal & Penugasan" },
   ],
-  "/users": [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Daftar Pengguna" },
+  "/admin/riwayatasesmenadmin": [
+    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Riwayat Asesmen" },
   ],
-  "/tuk": [
-    { label: "Dashboard", path: "/dashboard" },
+  "/admin/sidangpleno": [
+    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Sidang Pleno" },
+  ],
+  "/admin/tuk": [
+    { label: "Dashboard", path: "/admin/overview" },
     { label: "Manajemen TUK" },
   ],
-  "/reports": [
-    { label: "Dashboard", path: "/dashboard" },
+  "/admin/uploadsertifikat": [
+    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Upload Sertifikat" },
+  ],
+  "/admin/users": [
+    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Daftar Pengguna" },
+  ],
+  "/admin/reports": [
+    { label: "Dashboard", path: "/admin/overview" },
     { label: "Laporan" },
   ],
 };
@@ -186,7 +200,9 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
               // so ensure safe check for onClick
               // Jika ini rute state (seperti saat klik kembali ke Daftar Skema), gunakan tombol
               <button
-                onClick={crumb.onClick as React.MouseEventHandler<HTMLButtonElement>}
+                onClick={
+                  crumb.onClick as React.MouseEventHandler<HTMLButtonElement>
+                }
                 className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
               >
                 {crumb.label}

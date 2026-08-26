@@ -1,32 +1,7 @@
 import { SignatureField } from "@/components/forms/asesi/SignatureField";
 import React from "react";
 import { Eye } from "lucide-react";
-import { Apl01FormData } from "@/types/types";
-
-export interface EFormApl01Props {
-  formData: Apl01FormData;
-  onChange: (val: Apl01FormData) => void;
-  onSave?: () => void;
-}
-
-export interface FormDataType {
-  readOnly?: boolean;
-  isAdmin?: boolean;
-  tujuan?: string;
-  checklist?: Record<string, "memenuhi" | "tidak_memenuhi">;
-  nik?: string;
-  tempatLahir?: string;
-  tanggalLahir?: string;
-  institusiPerusahaan?: string;
-  schemeDetail?: {
-    persyaratanDasar?: (string | { name: string })[];
-    buktiAdministratif?: string[];
-    buktiKompetensi?: string[];
-    [key: string]: unknown;
-  };
-  onPreview?: (req: string) => void;
-  [key: string]: unknown;
-}
+import { FormDataType, RequirementType } from "@/types/types";
 
 type SignatureValue = {
   type: "auto" | "upload" | "draw";
@@ -95,7 +70,7 @@ export function EFormApl01({
     onChange({ ...formData, tujuan: val });
   };
 
-  const handleCheck = (key: string, value: "memenuhi" | "tidak_memenuhi") => {
+  const handleCheck = (key: string, value: "memenuhi" | "tidak memenuhi") => {
     if (formData?.readOnly || !formData?.isAdmin) return;
     const newChecklist = { ...(formData.checklist || {}) };
     newChecklist[key] = value;
@@ -343,19 +318,21 @@ export function EFormApl01({
             </thead>
             <tbody>
               {(formData.schemeDetail?.persyaratanDasar || []).map(
-                (req: string | { name: string }, idx: number) => (
+                (req: RequirementType, idx: number) => (
                   <tr key={`dasar-${idx}`}>
                     <td className="border border-slate-300 p-2 whitespace-nowrap">
                       <div className="flex items-center justify-between gap-4">
                         <span className="whitespace-nowrap">
-                          {typeof req === "string" ? req : req.name}
+                          {typeof req === "string" ? req : req.nama_dokumen}
                         </span>
                         {formData.onPreview && (
                           <button
                             type="button"
                             onClick={() =>
                               formData.onPreview?.(
-                                typeof req === "string" ? req : req.name,
+                                typeof req === "string"
+                                  ? req
+                                  : req.nama_dokumen || "",
                               )
                             }
                             className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
@@ -370,12 +347,16 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                            typeof req === "string" ? req : req.name
+                            typeof req === "string"
+                              ? req
+                              : req.nama_dokumen || ""
                           ] === "memenuhi"
                         }
                         onChange={() =>
                           handleCheck(
-                            typeof req === "string" ? req : req.name,
+                            typeof req === "string"
+                              ? req
+                              : req.nama_dokumen || "",
                             "memenuhi",
                           )
                         }
@@ -388,13 +369,17 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                            typeof req === "string" ? req : req.name
-                          ] === "tidak_memenuhi"
+                            typeof req === "string"
+                              ? req
+                              : req.nama_dokumen || ""
+                          ] === "tidak memenuhi"
                         }
                         onChange={() =>
                           handleCheck(
-                            typeof req === "string" ? req : req.name,
-                            "tidak_memenuhi",
+                            typeof req === "string"
+                              ? req
+                              : req.nama_dokumen || "",
+                            "tidak memenuhi",
                           )
                         }
                         disabled={formData?.readOnly || !formData?.isAdmin}
@@ -405,84 +390,92 @@ export function EFormApl01({
                 ),
               )}
               {(formData.schemeDetail?.buktiAdministratif || []).map(
-                (req: string, idx: number) => (
-                  <tr key={`admin-${idx}`}>
-                    <td className="border border-slate-300 p-2 whitespace-nowrap">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="whitespace-nowrap">{req}</span>
-                        {formData.onPreview && (
-                          <button
-                            type="button"
-                            onClick={() => formData.onPreview?.(req)}
-                            className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                          >
-                            <Eye size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                    <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={formData?.checklist?.[req] === "memenuhi"}
-                        onChange={() => handleCheck(req, "memenuhi")}
-                        disabled={formData?.readOnly || !formData?.isAdmin}
-                        className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"
-                      />
-                    </td>
-                    <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={
-                          formData?.checklist?.[req] === "tidak_memenuhi"
-                        }
-                        onChange={() => handleCheck(req, "tidak_memenuhi")}
-                        disabled={formData?.readOnly || !formData?.isAdmin}
-                        className="text-red-500 focus:ring-red-500 rounded border-gray-300"
-                      />
-                    </td>
-                  </tr>
-                ),
+                (req: RequirementType, idx: number) => {
+                  const label =
+                    typeof req === "string" ? req : (req.nama_dokumen ?? "");
+                  return (
+                    <tr key={`admin-${idx}`}>
+                      <td className="border border-slate-300 p-2 whitespace-nowrap">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="whitespace-nowrap">{label}</span>
+                          {formData.onPreview && (
+                            <button
+                              type="button"
+                              onClick={() => formData.onPreview?.(label)}
+                              className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={formData?.checklist?.[label] === "memenuhi"}
+                          onChange={() => handleCheck(label, "memenuhi")}
+                          disabled={formData?.readOnly || !formData?.isAdmin}
+                          className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={
+                            formData?.checklist?.[label] === "tidak memenuhi"
+                          }
+                          onChange={() => handleCheck(label, "tidak memenuhi")}
+                          disabled={formData?.readOnly || !formData?.isAdmin}
+                          className="text-red-500 focus:ring-red-500 rounded border-gray-300"
+                        />
+                      </td>
+                    </tr>
+                  );
+                },
               )}
               {(formData.schemeDetail?.buktiKompetensi || []).map(
-                (req: string, idx: number) => (
-                  <tr key={`kompetensi-${idx}`}>
-                    <td className="border border-slate-300 p-2 whitespace-nowrap">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="whitespace-nowrap">{req}</span>
-                        {formData.onPreview && (
-                          <button
-                            type="button"
-                            onClick={() => formData.onPreview?.(req)}
-                            className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                          >
-                            <Eye size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                    <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={formData?.checklist?.[req] === "memenuhi"}
-                        onChange={() => handleCheck(req, "memenuhi")}
-                        disabled={formData?.readOnly || !formData?.isAdmin}
-                        className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"
-                      />
-                    </td>
-                    <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={
-                          formData?.checklist?.[req] === "tidak_memenuhi"
-                        }
-                        onChange={() => handleCheck(req, "tidak_memenuhi")}
-                        disabled={formData?.readOnly || !formData?.isAdmin}
-                        className="text-red-500 focus:ring-red-500 rounded border-gray-300"
-                      />
-                    </td>
-                  </tr>
-                ),
+                (req: RequirementType, idx: number) => {
+                  const label =
+                    typeof req === "string" ? req : (req.nama_dokumen ?? "");
+                  return (
+                    <tr key={`kompetensi-${idx}`}>
+                      <td className="border border-slate-300 p-2 whitespace-nowrap">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="whitespace-nowrap">{label}</span>
+                          {formData.onPreview && (
+                            <button
+                              type="button"
+                              onClick={() => formData.onPreview?.(label)}
+                              className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={formData?.checklist?.[label] === "memenuhi"}
+                          onChange={() => handleCheck(label, "memenuhi")}
+                          disabled={formData?.readOnly || !formData?.isAdmin}
+                          className="text-[#008BE3] focus:ring-[#008BE3] rounded border-gray-300"
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-2 text-center bg-white whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={
+                            formData?.checklist?.[label] === "tidak memenuhi"
+                          }
+                          onChange={() => handleCheck(label, "tidak memenuhi")}
+                          disabled={formData?.readOnly || !formData?.isAdmin}
+                          className="text-red-500 focus:ring-red-500 rounded border-gray-300"
+                        />
+                      </td>
+                    </tr>
+                  );
+                },
               )}
               {!formData.schemeDetail?.persyaratanDasar?.length &&
                 !formData.schemeDetail?.buktiAdministratif?.length &&

@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useMemo } from "react";
 import {
   BarChart2,
@@ -525,7 +526,7 @@ const dummyReportData = [
 
 const COLORS = ["#10B981", "#EF4444"]; // Emerald for Kompeten, Red for Belum Kompeten
 
-export function Reports() {
+export default function Reports() {
   const [selectedSkema, setSelectedSkema] = useState("ALL");
   const [selectedTahun, setSelectedTahun] = useState("ALL");
   const [selectedPeriode, setSelectedPeriode] = useState("ALL");

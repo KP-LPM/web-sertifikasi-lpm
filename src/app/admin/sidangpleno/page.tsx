@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
   Scale,
@@ -213,7 +215,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
   },
 ];
 
-export function SidangPleno() {
+export default function SidangPleno() {
   const { user } = useAppContext();
   const readOnly = user?.role !== "admin";
 
@@ -230,6 +232,7 @@ export function SidangPleno() {
     null,
   );
   const [formData, setFormData] = useState<PlenoDetailData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Dirty & Saved State Management for Save / Generate requirements
   const [isDirty, setIsDirty] = useState<boolean>(false);
@@ -283,8 +286,351 @@ export function SidangPleno() {
       return;
     }
     setIsBeritaAcaraModalOpen(false);
-    setActiveDocType("berita_acara");
-    setIsGenerateModalOpen(true);
+    handleDownloadBerita();
+  };
+
+  const handleDownloadSkPdf = async () => {
+    try {
+      setIsLoading(true);
+
+      // Data payload (dapat diambil dari state tabel atau form input admin)
+      const payload = {
+        nomorSk: "001/SKKL/LSPP1UINSGD/XII/2025",
+        tanggalPelaksanaan: "16-19 Desember 2025",
+        tempatUji: "Kantor LSP P1 UIN Sunan Gunung Djati Bandung",
+        lokasiDitetapkan: "Bandung",
+        tanggalDitetapkan: "22 Desember 2025",
+        namaDirektur: "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
+        asesiList: [
+          {
+            no: 1,
+            nama: "Intan Tania",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 2,
+            nama: "Anggita Firdayanti",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 3,
+            nama: "Mila Fajariah",
+            skema: "Auditor Halal",
+            isKompeten: true,
+          },
+        ],
+      };
+
+      const response = await fetch("/api/surat/hasilsidangpleno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Gagal mendownload PDF");
+
+      // Convert response stream menjadi blob file dan picu browser download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `SK_Hasil_Uji_Kompetensi_${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Error saat download SK:", error);
+      alert("Terjadi kesalahan saat membuat dokumen PDF.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadBerita = async () => {
+    try {
+      setIsLoading(true);
+
+      // Data fallback jika tidak dipassing lewat props
+      const payloadBeritaAcara = {
+        tanggalPleno: "22 Desember tahun 2025",
+        tanggalPelaksanaan: "16-19 Desember 2025",
+        totalAsesi: 30,
+        totalKompeten: 29,
+        totalBelumKompeten: 1,
+        kotaPleno: "Bandung",
+        tanggalSurat: "22 Desember 2025",
+        asesiList: [
+          // Skema 1: Melaksanakan Komunikasi dengan Pemangku Kepentingan (11 Asesi)
+          {
+            no: 1,
+            nama: "Intan Tania",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 2,
+            nama: "Anggita Firdayanti",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 3,
+            nama: "Hasna Zahra Annabilah",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 4,
+            nama: "Ananda Anggunistiani",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 5,
+            nama: "Nurul Hasanah",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 6,
+            nama: "Anisa Sapitri",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 7,
+            nama: "Nurul Aini",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 8,
+            nama: "Puji Anggraeni",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 9,
+            nama: "Ira Dian Nurmala",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 10,
+            nama: "Sara Magdi Mamdouh Salama",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+          {
+            no: 11,
+            nama: "Raisha Srikandi Sekartaji",
+            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+            isKompeten: true,
+          },
+
+          // Skema 2: Penerjemah Teks Umum (9 Asesi)
+          {
+            no: 12,
+            nama: "Tri Ramadani",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 13,
+            nama: "Intan Permata Sari",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 14,
+            nama: "Zuvika Amoret Syarifatul Ainiyyah",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 15,
+            nama: "Muhammad Aditia",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 16,
+            nama: "Khadijah",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 17,
+            nama: "Rr. Ririh Widowati",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 18,
+            nama: "Khoerul Amin",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 19,
+            nama: "Anwar Sudirja",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+          {
+            no: 20,
+            nama: "Nur Irmandi",
+            skema: "Penerjemah Teks Umum",
+            isKompeten: true,
+          },
+
+          // Skema 3: Penyelia Halal (8 Asesi)
+          {
+            no: 21,
+            nama: "Gisna Maulida Qurosyiyah",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+          {
+            no: 22,
+            nama: "Irfan Muhammad Ihsanuddin",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+          {
+            no: 23,
+            nama: "Annisa Hakim",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+          {
+            no: 24,
+            nama: "Mayang Sri Rahayu",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+          {
+            no: 25,
+            nama: "Hanny Aurelya",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+          {
+            no: 26,
+            nama: "Zulfa Ayu Zahra",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+          {
+            no: 27,
+            nama: "Falama Fauzia",
+            skema: "Penyelia Halal",
+            isKompeten: false,
+          }, // Contoh asesi Belum Kompeten (BK)
+          {
+            no: 28,
+            nama: "Milatul Afifah",
+            skema: "Penyelia Halal",
+            isKompeten: true,
+          },
+
+          // Skema 4: Auditor Halal (2 Asesi)
+          {
+            no: 29,
+            nama: "Asep Andri",
+            skema: "Auditor Halal",
+            isKompeten: true,
+          },
+          {
+            no: 30,
+            nama: "Muhammad Algi Al Hanafi",
+            skema: "Auditor Halal",
+            isKompeten: true,
+          },
+        ],
+        anggotaKomiteList: [
+          { nama: "Prof. Dr. H. Ija Suntana, M. Ag., CLA" },
+          { nama: "Ichsan Taufik, M.T." },
+          { nama: "Dr. Elis Ratna Wulan, S. Si., MT" },
+        ],
+      };
+
+      const res = await fetch("/api/surat/beritasidangpleno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadBeritaAcara),
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal menghasilkan dokumen Berita Acara");
+      }
+
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `Berita_Acara_Pleno_${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Terjadi kesalahan saat mengunduh Berita Acara.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadBlankoBnsp = async () => {
+    try {
+      setIsLoading(true);
+
+      const payload = {
+        kotaSurat: "Bandung",
+        tanggalSurat: "22 Desember 2025",
+        nomorSurat: "003/SP/LSPP1UINSGD/XII/2025",
+        lampiran: "1 (Satu) berkas",
+        tujuanYth: "Ketua Badan Nasional Sertifikasi Profesi (BNSP)",
+        kotaTujuan: "Jakarta",
+        jumlahPeserta: 44,
+        kompetenBnsp: "-",
+        kompetenKementerian: "-",
+        kompetenMandiri: 43,
+        kompetenRcc: "-",
+        belumKompeten: 1,
+        totalJumlah: 44,
+        jumlahLembarBlanko: 43,
+        terbilangLembarBlanko: "empat puluh tiga",
+        namaKetua: "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
+      };
+
+      const res = await fetch("/api/surat/blankobnsp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Gagal menghasilkan file PDF.");
+
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `Surat_Permohonan_Blanko_${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan saat mengunduh surat permohonan blanko.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleConfirmSKDirektur = (e: React.FormEvent) => {
@@ -297,8 +643,7 @@ export function SidangPleno() {
       setFormData((prev) => (prev ? { ...prev, noSK: skDirekturNomor } : null));
     }
     setIsSKDirekturModalOpen(false);
-    setActiveDocType("sk_direktur");
-    setIsGenerateModalOpen(true);
+    handleDownloadSkPdf();
   };
 
   const handleConfirmBlankoBNSP = (e: React.FormEvent) => {
@@ -308,8 +653,7 @@ export function SidangPleno() {
       return;
     }
     setIsBlankoBNSPModalOpen(false);
-    setActiveDocType("blanko_bnsp");
-    setIsGenerateModalOpen(true);
+    handleDownloadBlankoBnsp();
   };
 
   // Load session into formData when selectedPlenoId changes

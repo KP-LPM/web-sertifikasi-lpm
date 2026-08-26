@@ -8,8 +8,8 @@
 
 export interface ManagedUser {
   id: string;
-  initial: string;
-  name: string;
+  inisial: string;
+  nama: string;
   email: string;
   role: string;
   status: "Aktif" | "Terverifikasi" | "Nonaktif" | "Menunggu Verifikasi";
@@ -43,8 +43,8 @@ export interface UserVerificationData {
 
 export interface UserItem {
   id: string;
-  initial: string;
-  name: string;
+  inisial: string;
+  nama: string;
   email: string;
   role: string;
   status: string;
@@ -53,26 +53,14 @@ export interface UserItem {
 
 export interface AsesiPlenoRecord {
   id: string;
-  asesiName: string;
+  namaAsesi: string;
   nimNik: string;
-  scheme: string;
-  certificateNo: string;
+  skema: string;
+  noSertifikat: string;
   issueDate: string;
   gdriveUrl: string;
   status: "Terbit" | "Belum Upload";
   notes?: string;
-}
-
-export interface PlenoGroupRecord {
-  plenoId: string;
-  plenoTitle: string;
-  skemaList: string[];
-  tanggal: string;
-  waktu: string;
-  lokasi: string;
-  isOnline: boolean;
-  status: string;
-  asesiList: AsesiPlenoRecord[];
 }
 
 export interface AsesiPlenoItem {
@@ -121,7 +109,7 @@ export type TukDetailItem = TukItem;
 
 export interface PersyaratanDasar {
   id?: string;
-  nama_dokumen: string;
+  namaDokumen: string;
   deskripsi?: string;
   urutan?: number;
   is_wajib?: boolean;
@@ -129,91 +117,88 @@ export interface PersyaratanDasar {
 
 export interface ElemenKompetensiItem {
   id?: string;
-  nama_elemen: string;
-  kriteria_unjuk_kerja: string[];
+  namaElemen: string;
+  kriteriaUnjukKerja: string[];
   urutan: number;
   is_wajib: boolean;
 }
 
 export interface UnitKompetensiItem {
   id?: string;
-  kode_unit: string;
-  judul_unit: string;
+  kodeUnit: string;
+  judulUnit: string;
   urutan: number;
   elemen: ElemenKompetensiItem[];
 }
 
 export interface MasterSkemaFormState {
-  kode_skema: string;
-  nama_skema: string;
-  nomor_sertifikat?: string;
-  nomor_registrasi?: string;
-  status_aktif: boolean;
-  persyaratan_dasar: PersyaratanDasar[];
-  persyaratan_administrasi: PersyaratanDasar[];
-  unit_kompetensi: UnitKompetensiItem[];
-  konfigurasi_soal_id?: string;
+  kodeSkema: string;
+  namaSkema: string;
+  nomorSertifikat?: string;
+  nomorRegistrasi?: string;
+  statusAktif: boolean;
+  persyaratanDasar: PersyaratanDasar[];
+  persyaratanAdministrasi: PersyaratanDasar[];
+  unitKompetensi: UnitKompetensiItem[];
+  konfigurasiSoalId?: string;
 }
 
 export interface MasterSkemaElemenPayload {
-  nama_elemen: string;
-  kriteria_unjuk_kerja?: string | string[];
+  namaElemen: string;
+  kriteriaUnjukKerja?: string | string[];
   kuk?: string[];
   urutan?: number;
   is_wajib?: boolean;
 }
 
 export interface MasterSkemaUnitPayload {
-  kode_unit: string;
-  judul_unit: string;
-  jenis_unit?: string;
+  kodeUnit: string;
+  judulUnit: string;
+  jenisUnit?: string;
   urutan?: number;
   elemen?: MasterSkemaElemenPayload[];
 }
 
 export interface MasterSkemaPayload {
   id?: string;
-  kode_skema: string;
-  nama_skema: string;
-  nomor_sertifikat?: string;
-  nomor_registrasi?: string;
-  status_aktif: boolean;
-  persyaratan_dasar?: Array<{
-    nama_dokumen: string;
+  kodeSkema: string;
+  namaSkema: string;
+  nomorSertifikat?: string;
+  nomorRegistrasi?: string;
+  statusAktif: boolean;
+  persyaratanDasar?: Array<{
+    namaDokumen: string;
     deskripsi?: string;
     urutan?: number;
     is_wajib?: boolean;
   }>;
   persyaratan_administrasi?: Array<{
-    nama_dokumen: string;
+    namaDokumen: string;
     deskripsi?: string;
     urutan?: number;
     is_wajib?: boolean;
   }>;
-  unit_kompetensi?: MasterSkemaUnitPayload[];
-  konfigurasi_soal_id?: string;
+  unitKompetensi?: MasterSkemaUnitPayload[];
+  konfigurasiSoalId?: string;
 }
 
 export interface ScheduleItem {
   id: string | number;
-  batchCode?: string;
-  batchName?: string;
+  kodeBatch?: string;
+  namaBatch?: string;
   nomorSurat?: string;
-  title?: string;
+  judul?: string;
   skema?: string;
-  scheme?: string;
-  method?: string;
   metode?: string;
-  date: string;
-  startTime?: string;
-  endTime?: string;
+  tanggal: string;
+  waktuMulai?: string;
+  waktuAkhir?: string;
   jam?: string;
   tuk: string;
-  tukType?: string;
   alamat?: string;
-  candidatesCount?: number;
-  assessorName?: string;
-  assessorInitial?: string;
+  totalKandidat?: number;
+  namaAssessor?: string;
+  inisialAssessor?: string;
   suratPenugasanName?: string;
   suratTugasName?: string;
   suratTugasUrl?: string;
@@ -228,36 +213,26 @@ export interface TukInventarisItem {
 
 export interface TukItem {
   id: string;
-  code?: string;
-  name?: string;
   nama?: string;
-  type?: "Sewaktu" | "Mandiri" | "Terverifikasi" | string;
-  jenis?: string;
-  address?: string;
+  keterangan?: string;
+  tipe?: "Sewaktu" | "Mandiri" | "Terverifikasi" | string;
   alamat?: string;
-  capacity?: number;
   kapasitas?: number;
-  picName?: string;
-  picPhone?: string;
   penanggungJawab?: string;
   status: "Aktif" | "Nonaktif" | string;
-  keterangan?: string;
   inventaris?: TukInventarisItem[];
 }
 
 export interface SchemeElemen {
-  title?: string;
+  judul?: string;
   nama?: string;
   kuk: string[];
 }
 
 export interface SchemeUnit {
-  unitCode?: string;
   kode?: string;
-  unitTitle?: string;
   judul?: string;
   unitDesc?: string;
-  jenis?: string;
   elemen?: SchemeElemen[];
 }
 
@@ -265,25 +240,22 @@ export interface SchemeItem {
   id: string;
   code: string;
   name: string;
-  category: string;
-  level?: string;
-  unitsCount?: number;
+  kategori: string;
   applicantsCount?: number;
   status: "Active" | "Aktif" | "Draft" | "Archived" | "Nonaktif" | string;
-  nomor_sertifikat?: string;
-  nomor_registrasi?: string;
+  nomorSertifikat?: string;
+  nomorRegistrasi?: string;
   deskripsi?: string;
   persyaratan?: string[];
   unitKompetensi?: SchemeUnit[];
-  units?: SchemeUnit[];
   persyaratan_dasar?: Array<{
-    nama_dokumen: string;
+    namaDokumen: string;
     deskripsi?: string;
     urutan?: number;
     is_wajib?: boolean;
   }>;
   persyaratan_administrasi?: Array<{
-    nama_dokumen: string;
+    namaDokumen: string;
     deskripsi?: string;
     urutan?: number;
     is_wajib?: boolean;
@@ -293,9 +265,8 @@ export interface SchemeItem {
 export interface AdminScheme extends SchemeItem {
   applicantsCount?: number;
 }
-
 export interface RequirementItem {
-  nama_dokumen?: string;
+  namaDokumen?: string;
   deskripsi?: string;
   urutan?: number;
   is_wajib?: boolean;
@@ -306,12 +277,26 @@ export type RequirementType = string | RequirementItem;
 
 export interface SchemeDetailInfo {
   id?: string;
-  name?: string;
+  nama?: string;
   code?: string;
   units?: SchemeUnit[];
   persyaratanDasar?: RequirementType[];
   buktiAdministratif?: RequirementType[];
   buktiKompetensi?: RequirementType[];
+  [key: string]: unknown;
+}
+
+export interface FormDataType {
+  readOnly?: boolean;
+  isAdmin?: boolean;
+  tujuan?: string;
+  checklist?: Record<string, "memenuhi" | "tidak memenuhi">;
+  nik?: string;
+  tempatLahir?: string;
+  tanggalLahir?: string;
+  institusiPerusahaan?: string;
+  schemeDetail?: SchemeDetailInfo;
+  onPreview?: (req: string) => void;
   [key: string]: unknown;
 }
 
@@ -327,8 +312,28 @@ export interface Apl01FormData {
   buktiAdministratif?: RequirementType[] | unknown;
   buktiKompetensi?: RequirementType[] | unknown;
   schemeDetail?: SchemeDetailInfo;
-  checklist?: Record<string, "memenuhi" | "tidak_memenuhi" | boolean>;
+  checklist?: Record<string, "memenuhi" | "tidak memenuhi">;
   readOnly?: boolean;
+  [key: string]: unknown;
+}
+
+export interface EFormApl02FormData extends Apl02FormData {
+  id?: string | number;
+  metode?: string;
+  status?: string;
+}
+
+export interface EFormApl02Props {
+  formData: EFormApl02FormData;
+  onChange: (val: EFormApl02FormData) => void;
+  allData?: Record<string, EvidenceFileItem | File | string>;
+}
+
+export interface EvidenceFileItem {
+  id?: string;
+  nama?: string;
+  url?: string;
+  file?: File;
   [key: string]: unknown;
 }
 
@@ -337,7 +342,7 @@ export interface Apl02FormData {
   rekomendasiApl02?: string;
   ttdAsesor?: string | null | Record<string, null> | unknown;
   ttdAsesi?: string | null | Record<string, null> | unknown;
-  asesorName?: string;
+  namaAssessor?: string;
   asesorReg?: string;
   penyusun?: string | PenyusunValidatorItem[] | unknown;
   validator?: string | PenyusunValidatorItem[] | unknown;
@@ -347,7 +352,7 @@ export interface Apl02FormData {
   nomorSkema?: string;
   tuk?: string;
   tanggal?: string;
-  schemeDetail?: SchemeDetailInfo;
+  detailSkema?: SchemeDetailInfo;
   readOnly?: boolean;
   signature?: string;
   [key: string]: unknown;
@@ -362,9 +367,9 @@ export interface CompletedBatchAsesi {
 
 export interface CompletedBatchItem {
   code: string;
-  name: string;
+  nama: string;
   skema: string;
-  asesor: string;
+  assessor: string;
   tuk: string;
   jenis: "Offline" | "Online" | string;
   tanggal: string;
@@ -463,8 +468,7 @@ export interface Candidate {
   skema: string;
   status?: string;
   email?: string;
-  jenis_asesmen?: string;
-  metode_pelaksanaan?: string;
+  metode?: string;
   tglAsesmen?: string;
   waktu?: string;
   tuk?: string;
@@ -484,10 +488,10 @@ export interface Candidate {
 }
 
 export interface BatchGroup {
-  batchCode: string;
-  batchName: string;
+  kodaBatch: string;
+  namaBatch: string;
   skema: string;
-  jenis_asesmen: string;
+  metode: string;
   tglAsesmen: string;
   waktu: string;
   tuk: string;
@@ -706,9 +710,9 @@ export interface KompetensiItem {
 
 export interface FormDocumentItem {
   id?: string | number;
-  name?: string;
-  description?: string;
-  type?: string;
+  nama?: string;
+  deskripsi?: string;
+  tipe?: string;
   required?: boolean;
   isEForm?: boolean;
   isPreview?: boolean;
