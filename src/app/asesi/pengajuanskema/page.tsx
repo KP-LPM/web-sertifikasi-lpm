@@ -472,6 +472,7 @@ export default function PengajuanSkemaPage() {
   const handleSubmitForm = async () => {
     try {
       showAlert("Mengunggah dokumen dan memproses pengajuan...");
+<<<<<<< HEAD
       
       const uploadedDokumen: Array<{namaDokumen: string; fileUrl: string}> = [];
 =======
@@ -512,6 +513,7 @@ export default function PengajuanSkemaPage() {
       }
 
       const payloadData = {
+<<<<<<< HEAD
         userId: user?.id, // Jangan lupa kirim userId!
         name: selectedScheme?.name || "Uji Kompetensi Mandiri",
         code: selectedScheme?.code || "001/SKM/LSP-KJN/II/2023",
@@ -638,6 +640,7 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
+<<<<<<< HEAD
   // MENGGUNAKAN DATA API SCHEMES DATA
   const filteredSchemes = schemesData.filter((item) => {
     const name = item.name?.toLowerCase() ?? "";
@@ -675,6 +678,7 @@ export default function PengajuanSkemaPage() {
   const totalSchemePages =
     Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
 
+<<<<<<< HEAD
   const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme ? {
     ...selectedScheme,
     nama: selectedScheme.name,
