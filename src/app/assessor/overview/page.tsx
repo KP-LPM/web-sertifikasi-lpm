@@ -15,7 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
-  Assessment,
+  AssessmentItem,
   BatchGroup,
   JenisMetode,
   TipeTuk,
@@ -31,7 +31,7 @@ export default function AssessorOverview() {
 
   const batchMap = new Map<string, BatchGroup>();
 
-  (assessments || []).forEach((item: Assessment) => {
+  (assessments || []).forEach((item: AssessmentItem) => {
     // Berikan fallback string kosong '' untuk mencegah error undefined pada substring
     const skemaVal = item.skema || "Umum";
     const code =
@@ -62,9 +62,9 @@ export default function AssessorOverview() {
     (b) => !completedBatchCodes.includes(b.batchCode),
   );
 
-  // 2. Perbaiki tipe 'any' menjadi 'Assessment'
+  // 2. Perbaiki tipe 'any' menjadi 'AssessmentItem'
   const bandingItems = (assessments || []).filter(
-    (item: Assessment) => item.hasil === "Belum Kompeten" && item.isBanding,
+    (item: AssessmentItem) => item.hasil === "Belum Kompeten" && item.isBanding,
   );
 
   return (
@@ -154,7 +154,7 @@ export default function AssessorOverview() {
             {availableBatches.length > 0 ? (
               availableBatches.slice(0, 2).map((batch: BatchGroup) => {
                 const completedCount = batch.candidates.filter(
-                  (c: Assessment) => c.status === "Selesai",
+                  (c: AssessmentItem) => c.status === "Selesai",
                 ).length;
                 const totalCount = batch.candidates.length;
                 return (
@@ -240,7 +240,7 @@ export default function AssessorOverview() {
 
           <div className="p-4 space-y-3 flex-1">
             {bandingItems.length > 0 ? (
-              bandingItems.slice(0, 2).map((item: Assessment) => (
+              bandingItems.slice(0, 2).map((item: AssessmentItem) => (
                 <div
                   key={item.id}
                   onClick={() => {

@@ -210,7 +210,7 @@ export interface PersyaratanDasar {
 export interface PersyaratanAdministrasi {
   id: string;
   namaDokumen: string;
-  deskripsi: string;
+  deskripsi?: string;
   isWajib: boolean;
   isAktif: boolean;
 }
@@ -342,8 +342,8 @@ export interface SchemeDetailInfo {
   nama?: string;
   kode?: string;
   units?: UnitKompetensiItem[];
-  persyaratanDasar?: RequirementType[];
-  buktiAdministratif?: RequirementType[];
+  persyaratanDasar?: PersyaratanDasar[];
+  buktiAdministratif?: PersyaratanAdministrasi[];
   buktiKompetensi?: RequirementType[];
   [key: string]: unknown;
 }
@@ -370,8 +370,8 @@ export interface Apl01FormData {
   catatan?: string;
   statusPembayaran?: "Sudah" | "Belum" | string;
   sumberAnggaran?: string;
-  persyaratanDasar?: RequirementType[] | unknown;
-  buktiAdministratif?: RequirementType[] | unknown;
+  persyaratanDasar?: PersyaratanDasar[] | unknown;
+  buktiAdministratif?: PersyaratanAdministrasi[] | unknown;
   buktiKompetensi?: RequirementType[] | unknown;
   schemeDetail?: SchemeDetailInfo;
   checklist?: Record<string, "memenuhi" | "tidak memenuhi">;
@@ -664,6 +664,7 @@ export interface AssessmentItem {
   tipeTuk: TipeTuk;
   hasil: "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | string;
   status?: string;
+  alamat?: string;
   asesor?: string;
   metode?: JenisMetode;
   catatan?: string;

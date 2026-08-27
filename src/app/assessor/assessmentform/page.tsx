@@ -51,7 +51,7 @@ const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
 
 export default function AssessmentForm() {
   const router = useRouter();
-  const { selectedAsesmen, updateAssessment } = useAppContext();
+  const { selectedAsesmen, updateAssessmentItem } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [asesiSignatureApl02, setAsesiSignatureApl02] = useState<string>("");
@@ -65,7 +65,7 @@ export default function AssessmentForm() {
     nama: String(selectedAsesmen?.nama || "Kandidat Default"),
     skema: String(selectedAsesmen?.skema || "Teknisi Muda Jaringan Komputer"),
     noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-    tuk: String(selectedAsesmen?.tuk || ""),
+    tuk: String(selectedAsesmen?.tipeTuk || ""),
     metodeAsesmen: String(selectedAsesmen?.metode),
     tanggal: "11 Oktober 2024",
     asesor: "Ichsan Taufik",
@@ -825,7 +825,7 @@ export default function AssessmentForm() {
     setIsSubmitting(false);
 
     if (selectedAsesmen) {
-      updateAssessment(selectedAsesmen.id, {
+      updateAssessmentItem(selectedAsesmen.id, {
         status: "Selesai",
         hasil: finalDecision,
       });
@@ -914,7 +914,7 @@ export default function AssessmentForm() {
       asesmenData?.skema ||
       ""
     ).toLowerCase();
-    const targetSkemaCode = selectedAsesmen?.noSkema || "";
+    const targetSkemaCode = selectedAsesmen?.id || "";
 
     // 2. Pencarian skema yang aman dari error undefined
     const matchedSchemeApl02 =
@@ -964,11 +964,7 @@ export default function AssessmentForm() {
             {
               nama: asesmenData.nama,
               skema: asesmenData.skema,
-              noSkema:
-                selectedAsesmen?.noSkema ||
-                selectedAsesmen?.nomorSkema ||
-                "04/SKM/LSP P1 UIN SGD/V/2022",
-              tuk: asesmenData.tuk,
+              tuk: asesmenData.tipeTuk,
               tanggal: asesmenData.tglAsesmen,
               asesor: asesmenData.asesor,
               asesorReg: "MET.000.001234 2021",

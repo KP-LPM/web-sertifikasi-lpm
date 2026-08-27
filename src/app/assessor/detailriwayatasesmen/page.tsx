@@ -22,7 +22,7 @@ import {
   FormFRIA07,
   FormFRAPL02,
 } from "@/components/forms";
-import { Assessment } from "@/types/types";
+import { AssessmentItem } from "@/types/types";
 
 export default function DetailRiwayatAsesmen() {
   const router = useRouter();
@@ -67,7 +67,7 @@ export default function DetailRiwayatAsesmen() {
                   <h3 className="text-lg md:text-xl font-black text-slate-900">
                     {selectedAsesmen.nama}
                   </h3>
-                  {selectedAsesmen.metode.toLowerCase() === "online" ? (
+                  {selectedAsesmen.metode?.toLowerCase() === "online" ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                       <Video size={13} /> Online
                     </span>
@@ -113,7 +113,7 @@ export default function DetailRiwayatAsesmen() {
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                 <Building size={14} className="text-[#008BE3] shrink-0" />
-                {selectedAsesmen.tuk}
+                {selectedAsesmen.tipeTuk}
               </div>
             </div>
             <div className="min-w-0">
@@ -402,10 +402,10 @@ export default function DetailRiwayatAsesmen() {
                         nama: selectedAsesmen.nama,
                         skema: selectedAsesmen.skema,
                         noSkema: "006/SKM/LSP-KJN/II/2023",
-                        tuk: selectedAsesmen.tuk,
+                        tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as Assessment
+                      } as unknown as AssessmentItem
                     }
                   />
                 )}
@@ -417,10 +417,10 @@ export default function DetailRiwayatAsesmen() {
                         nama: selectedAsesmen.nama,
                         skema: selectedAsesmen.skema,
                         noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tuk,
+                        tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as Assessment
+                      } as unknown as AssessmentItem
                     }
                   />
                 )}
@@ -432,10 +432,10 @@ export default function DetailRiwayatAsesmen() {
                         nama: selectedAsesmen.nama,
                         skema: selectedAsesmen.skema,
                         noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tuk,
+                        tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as Assessment
+                      } as unknown as AssessmentItem
                     }
                   />
                 )}
@@ -447,10 +447,10 @@ export default function DetailRiwayatAsesmen() {
                         nama: selectedAsesmen.nama,
                         skema: selectedAsesmen.skema,
                         noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tuk,
+                        tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as Assessment
+                      } as unknown as AssessmentItem
                     }
                     rekomendasi={selectedAsesmen.hasil}
                   />
@@ -463,10 +463,10 @@ export default function DetailRiwayatAsesmen() {
                         nama: selectedAsesmen.nama,
                         skema: selectedAsesmen.skema,
                         noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tuk,
+                        tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as Assessment
+                      } as unknown as AssessmentItem
                     }
                   />
                 )}
