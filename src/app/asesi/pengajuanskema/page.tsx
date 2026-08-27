@@ -31,6 +31,16 @@ import type {
   SchemeElemen, 
   RequirementType,
   SchemeDetailInfo
+<<<<<<< HEAD
+=======
+// IMPORT SEMUA INTERFACE DARI TYPES.TS BUATAN TEMANMU
+import type {
+  SchemeItem,
+  Profile,
+  UnitKompetensiItem,
+  ElemenKompetensiItem,
+  SchemeDetailInfo,
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
 } from "@/types/types";
 
 import {
@@ -94,6 +104,10 @@ export default function PengajuanSkemaPage() {
   // STATE BARU: Untuk menyimpan data Skema dari Supabase API
   const [schemesData, setSchemesData] = useState<SchemeItem[]>([]);
   const [isLoadingSchemes, setIsLoadingSchemes] = useState(true);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
 
   const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
 
@@ -460,6 +474,12 @@ export default function PengajuanSkemaPage() {
       showAlert("Mengunggah dokumen dan memproses pengajuan...");
       
       const uploadedDokumen: Array<{namaDokumen: string; fileUrl: string}> = [];
+=======
+
+      // Tipe eksplisit agar bebas dari omelan implicit any
+      const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> =
+        [];
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
 
       for (const [namaDokumen, value] of Object.entries(eFormData)) {
         const files: unknown[] = Array.isArray(value) ? value : [value];
@@ -501,6 +521,35 @@ export default function PengajuanSkemaPage() {
         emailInstitusi, kodePosInstitusi, alamatInstitusi, telpInstitusi,
         faxInstitusi, tuk, metode, penyesuaianWajar, berpengalaman,
         dokumen: uploadedDokumen, 
+=======
+        name: selectedScheme?.nama || "Uji Kompetensi Mandiri",
+        kode: selectedScheme?.kode || "001/SKM/LSP-KJN/II/2023",
+        namaLengkap,
+        tempatLahir,
+        tanggalLahir,
+        jenisKelamin,
+        alamat,
+        provinsi,
+        kota,
+        nik,
+        kewarganegaraan,
+        kodePos,
+        noTelp,
+        pendidikanTerakhir,
+        pekerjaan,
+        institusiPerusahaan,
+        jabatan,
+        emailInstitusi,
+        kodePosInstitusi,
+        alamatInstitusi,
+        telpInstitusi,
+        faxInstitusi,
+        tuk,
+        metode,
+        penyesuaianWajar,
+        berpengalaman,
+        dokumen: uploadedDokumen,
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
       };
 
       const response = await fetch("/api/pengajuan", {
@@ -598,6 +647,18 @@ export default function PengajuanSkemaPage() {
       code.includes(searchScheme.toLowerCase())
     );
   });
+=======
+  const filteredSchemes = (AVAILABLE_SCHEMES as unknown as SchemeItem[]).filter(
+    (item) => {
+      const name = item.nama?.toLowerCase() ?? "";
+      const kode = item.kode?.toLowerCase() ?? "";
+      return (
+        name.includes(searchScheme.toLowerCase()) ||
+        kode.includes(searchScheme.toLowerCase())
+      );
+    },
+  );
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const paginatedSubmissions = filteredSubmissions.slice(
@@ -621,6 +682,18 @@ export default function PengajuanSkemaPage() {
     persyaratanDasar: selectedScheme.persyaratan_dasar,
     buktiAdministratif: selectedScheme.persyaratan_administrasi,
   } : undefined;
+=======
+  // Pemetaan yang rapi dan Type-Safe tanpa 'any'
+  const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme
+    ? {
+        ...selectedScheme,
+        nama: selectedScheme.nama,
+        units: selectedScheme.unitKompetensi,
+        persyaratanDasar: selectedScheme.persyaratanDasar,
+        buktiAdministratif: selectedScheme.persyaratanAdministrasi,
+      }
+    : undefined;
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
 
   return (
     <>

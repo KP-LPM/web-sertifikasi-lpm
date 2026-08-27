@@ -3,6 +3,37 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+<<<<<<< HEAD
+=======
+// ==============================================================================
+// MODULE AUGMENTATION:
+// ==============================================================================
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      username: string;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    id: string;
+    role: string;
+    username: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    id: string;
+    role: string;
+    username: string;
+  }
+}
+// ==============================================================================
+
+>>>>>>> 4c3637bef43bf2d0a65acb6c6f4fde6ece72e51d
 export const runtime = "nodejs";
 
 const handler = NextAuth({
