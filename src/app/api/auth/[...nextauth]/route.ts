@@ -1,36 +1,7 @@
-import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
-import { DefaultJWT } from "next-auth/jwt";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-
-// ==============================================================================
-// MODULE AUGMENTATION: 
-// ==============================================================================
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      role: string;
-      username: string;
-    } & DefaultSession["user"];
-  }
-
-  interface User extends DefaultUser {
-    id: string;
-    role: string;
-    username: string;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT extends DefaultJWT {
-    id: string;
-    role: string;
-    username: string;
-  }
-}
-// ==============================================================================
 
 export const runtime = "nodejs";
 
@@ -60,7 +31,6 @@ const handler = NextAuth({
           throw new Error("Akun tidak ditemukan. Periksa kembali username atau email Anda.");
         }
 
-        // Cek kecocokan password dengan bcrypt
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isPasswordValid) {
