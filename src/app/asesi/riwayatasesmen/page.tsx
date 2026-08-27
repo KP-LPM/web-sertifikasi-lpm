@@ -7,19 +7,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/context';
 
-interface AssessmentHistory {
-  id: string;
-  asesmen: string;
-  skemaSertifikasi: string;
-  tuk: string;
-  metodePelaksanaan: 'Online' | 'Offline';
-  jenisBukti: string;
-  noSertifikat: string;
-  tanggalBerlaku: string;
-  rekomendasi: string;
-  statusAsesmen: string;
-  tanggalPenilaian?: string;
-}
+// IMPORT DARI types.ts
+import type { AssessmentHistory, AppealRecord } from '@/types/types';
 
 const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
   {
@@ -172,27 +161,6 @@ export default function AsesiHistoryPage() {
   const totalPages = Math.ceil((filteredHistory?.length || 0) / itemsPerPage);
   const currentRecords = filteredHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getRekomendasiBadge = (rek: string) => {
-    if (rek === 'Kompeten') {
-      return (
-        <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-green-200">
-          <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-          K (Kompeten)
-        </span>
-      );
-    }
-    if (rek === 'Belum Kompeten') {
-      return (
-        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-red-200">
-          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-          BK (Belum Kompeten)
-        </span>
-      );
-    }
-    return <span className="text-gray-400 text-xs font-semibold px-2 whitespace-nowrap">-</span>;
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Selesai':
@@ -213,22 +181,26 @@ export default function AsesiHistoryPage() {
   const totalAsesmenSelesai = ASSESSMENT_HISTORY_DATA.filter(item => item.statusAsesmen === 'Selesai').length;
 
   const handleSubmitBanding = () => {
-    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]');
-    const newAppeal = {
+    // Memastikan parse menggunakan tipe AppealRecord[]
+    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]') as AppealRecord[];
+    
+    // Objek ini sudah menyesuaikan bentuk AppealRecord
+    const newAppeal: AppealRecord = {
       id: `APP-${Date.now().toString().slice(-4)}`,
       tanggalPengajuan: new Date().toLocaleDateString('en-GB'),
       namaAsesi: user?.name || 'Asesi',
-      asesmen: selectedAssessment?.asesmen,
-      skemaSertifikasi: selectedAssessment?.skemaSertifikasi,
+      asesmen: selectedAssessment?.asesmen || '',
+      skemaSertifikasi: selectedAssessment?.skemaSertifikasi || '',
       status: 'Menunggu Verifikasi',
       alasan: bandingForm.alasan,
       penjelasan: bandingForm.alasan,
-      dijelaskan: bandingForm.dijelaskan,
-      didiskusikan: bandingForm.didiskusikan,
-      melibatkanOrangLain: bandingForm.melibatkanOrangLain,
+      dijelaskan: bandingForm.dijelaskan ?? false,
+      didiskusikan: bandingForm.didiskusikan ?? false,
+      melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
       namaAsesor: bandingForm.namaAsesor,
       ttdAsesi: bandingForm.ttdAsesi
     };
+    
     localStorage.setItem('appeals', JSON.stringify([newAppeal, ...savedAppeals]));
     
     alert('Banding berhasil diajukan!');
@@ -303,7 +275,7 @@ export default function AsesiHistoryPage() {
                         className="w-full bg-transparent outline-none focus:bg-slate-50 p-1 border border-transparent focus:border-slate-300 rounded"
                         placeholder="Ketik nama asesor jika tahu, atau biarkan kosong"
                         value={bandingForm.namaAsesor || ''}
-                        onChange={(e) => setBandingForm({...bandingForm, namaAsesor: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBandingForm({...bandingForm, namaAsesor: e.target.value})}
                       />
                     </td>
                   </tr>
@@ -363,7 +335,7 @@ export default function AsesiHistoryPage() {
                         className="w-full h-32 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008BE3] focus:border-transparent outline-none resize-none"
                         placeholder="Tuliskan alasan Anda..."
                         value={bandingForm.alasan}
-                        onChange={(e) => setBandingForm({...bandingForm, alasan: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBandingForm({...bandingForm, alasan: e.target.value})}
                       ></textarea>
                       <div className="text-xs text-slate-500 mt-2 italic">
                         Anda mempunyai hak mengajukan banding jika Anda menilai Proses Asesmen tidak sesuai SOP dan tidak memenuhi Prinsip Asesmen.
@@ -376,7 +348,7 @@ export default function AsesiHistoryPage() {
                         <div className="min-w-0">
                           <span className="font-semibold mb-2 block">Tanda tangan Asesi :</span>
                           <label className="flex items-center gap-2 cursor-pointer p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                            <input type="checkbox" className="w-4 h-4" checked={bandingForm.ttdAsesi} onChange={(e) => setBandingForm({...bandingForm, ttdAsesi: e.target.checked})} />
+                            <input type="checkbox" className="w-4 h-4" checked={bandingForm.ttdAsesi} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBandingForm({...bandingForm, ttdAsesi: e.target.checked})} />
                             <span className="font-medium text-xs">Gunakan tanda tangan dari profil</span>
                           </label>
                         </div>
@@ -513,7 +485,7 @@ export default function AsesiHistoryPage() {
                 type="text" 
                 placeholder="Cari asesmen, skema, atau sertifikat..." 
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400"
               />
             </div>
@@ -521,7 +493,7 @@ export default function AsesiHistoryPage() {
             {/* Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)}
               className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
             >
               <option value="Semua">Semua Status</option>
@@ -533,7 +505,7 @@ export default function AsesiHistoryPage() {
               <input
                 type="date"
                 value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDateFilter(e.target.value)}
                 className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 font-semibold"
               />
             </div>

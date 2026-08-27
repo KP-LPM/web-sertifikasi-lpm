@@ -16,27 +16,32 @@ function getProfilePath() {
   return "/profile";
 }
 
+type ProfileDataType = {
+  nama?: string;
+  nama_lengkap?: string;
+  avatar?: string;
+  [key: string]: unknown;
+};
+
 export function Header() {
-  const { user, sidebarCollapsed, setSidebarCollapsed, logout, requestNavigation } = useAppContext();
+  const { user, sidebarCollapsed, setSidebarCollapsed, logout, requestNavigation, registeredProfile } = useAppContext();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // State baru khusus untuk nyimpen data dari database
-  const [dbProfile, setDbProfile] = useState<{name?: string, avatar?: string} | null>(null);
+  const [dbProfile, setDbProfile] = useState<{name?: string; avatar?: string} | null>(null);
 
-  // Fungsi untuk ngambil profil terbaru tiap kali Header muncul
-  useEffect(() => {
+useEffect(() => {
     const fetchHeaderProfile = async () => {
       try {
         const res = await fetch('/api/profil');
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()) as ProfileDataType;
           setDbProfile({
-            name: data.namaLengkap,
-            avatar: data.avatar
+            name: (data.namaLengkap || data.nama_lengkap || data.nama) as string | undefined,
+            avatar: data.avatar as string | undefined
           });
         }
       } catch (error) {
@@ -44,7 +49,7 @@ export function Header() {
       }
     };
     fetchHeaderProfile();
-  }, []);
+  }, [registeredProfile]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -70,9 +75,19 @@ export function Header() {
       .toUpperCase();
   };
 
-  // Prioritaskan data dari database, kalau kosong baru pakai data session NextAuth
-  const displayName = dbProfile?.name || user.name || "Pengguna";
-  const displayAvatar = dbProfile?.avatar || user.avatar;
+  const typedRegisteredProfile = registeredProfile as ProfileDataType | null;
+
+  const displayName = 
+    typedRegisteredProfile?.nama || 
+    typedRegisteredProfile?.nama_lengkap || 
+    dbProfile?.name || 
+    user.name || 
+    "Pengguna";
+
+  const displayAvatar = 
+    typedRegisteredProfile?.avatar || 
+    dbProfile?.avatar || 
+    user.avatar;
 
   return (
     <header className={`sticky top-0 z-40 h-20 bg-[#F8F9FC]/95 backdrop-blur-md border-b border-slate-200 px-6 flex justify-between items-center w-full transition-all duration-300 md:pl-24 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-76"}`}>
@@ -142,10 +157,9 @@ export function Header() {
                 {user.role}
               </span>
             </div>
-            <ChevronDown
-              size={14}
-              className={`text-slate-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-            />
+            <div className={`text-slate-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}>
+              <ChevronDown size={14} />
+            </div>
           </button>
 
           {isDropdownOpen && (

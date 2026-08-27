@@ -40,7 +40,7 @@ export default function Profile() {
       (user as SessionUser)?.username ||
       (user?.email ? user.email.split("@")[0] : ""),
     email: user?.email || "",
-    namaLengkap: (registeredProfile?.nama as string) || user?.nama || "",
+    namaLengkap: (registeredProfile?.nama as string) || user?.username || "",
     tempatLahir: (registeredProfile?.tempatLahir as string) || "",
     tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
     jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
@@ -67,7 +67,7 @@ export default function Profile() {
     }));
   };
 
-  // 1. Fungsi Kompresi Foto (Biar dibawah 500kb)
+  // 1. Fungsi Kompresi Foto
   const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -89,6 +89,7 @@ export default function Profile() {
                 resolve(new File([blob], file.name, { type: "image/jpeg" }));
             },
             "image/jpeg",
+
             0.8,
           );
         };
@@ -101,7 +102,7 @@ export default function Profile() {
     const file = e.target.files?.[0];
     if (file) {
       setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file)); // Tampilkan preview lokal
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
@@ -144,8 +145,7 @@ export default function Profile() {
         string,
         string | undefined
       >;
-      const namaAsli = data.nama_lengkap || data.nama || user?.nama || "";
-
+      const namaAsli = data.nama_lengkap || data.nama || user?.username || "";
       setFormData((prev) => ({
         ...prev,
         username:
@@ -158,7 +158,6 @@ export default function Profile() {
         tanggalLahir: data.tanggal_lahir || data.tanggalLahir || "",
         jenisKelamin: data.jenis_kelamin || data.jenisKelamin || "",
         alamat: data.alamat || data.alamat_rumah || prev.alamat,
-        alamatWilayah: data.alamat_wilayah || data.alamatWilayah || "",
         kodePos: data.kode_pos || data.kodePos || "",
         nik: data.nik || "",
         noRegistrasi: data.no_registrasi || data.noRegistrasi || "",
@@ -211,15 +210,17 @@ export default function Profile() {
   }, [user]);
 
   // 3. Fungsi Utama Simpan Perubahan (Termasuk Upload Foto)
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       let finalAvatarUrl = (user as SessionUser)?.avatar || "";
 
-      // Upload ke Supabase Storage kalau ada file foto baru
       if (avatarFile) {
         const compressedFile = await compressImage(avatarFile);
-        const fileName = `avatar-${(user as SessionUser)?.id || Date.now()}-${Date.now()}.jpg`;
+        const fileName = `avatar-${
+          (user as SessionUser)?.id || Date.now()
+        }-${Date.now()}.jpg`;
 
         const { error: uploadError } = await supabase.storage
           .from("avatars")
@@ -242,7 +243,6 @@ export default function Profile() {
         tanggal_lahir: formData.tanggalLahir,
         jenis_kelamin: formData.jenisKelamin,
         alamat_rumah: formData.alamat,
-        alamat_wilayah: formData.alamatWilayah,
         kode_pos: formData.kodePos,
         nik: formData.nik,
         no_registrasi: formData.noRegistrasi,
@@ -254,6 +254,7 @@ export default function Profile() {
       };
 
       // Kirim data lengkap ke API profil
+
       const response = await fetch("/api/profil", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -265,7 +266,6 @@ export default function Profile() {
       updateUser(payload as unknown as Record<string, string | undefined>);
       alert("Profil berhasil disimpan!");
     } catch (error) {
-      // Kita cek dulu apakah error-nya benar-benar sebuah "Error" bawaan sistem
       if (error instanceof Error) {
         alert(error.message);
       } else {
@@ -425,8 +425,8 @@ export default function Profile() {
                       <input
                         type="radio"
                         name="jenisKelamin"
-                        value="laki-laki"
-                        checked={formData.jenisKelamin === "laki-laki"}
+                        value="Laki_laki"
+                        checked={formData.jenisKelamin === "Laki_laki"}
                         onChange={handleChange}
                         className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
                       />
@@ -436,8 +436,8 @@ export default function Profile() {
                       <input
                         type="radio"
                         name="jenisKelamin"
-                        value="perempuan"
-                        checked={formData.jenisKelamin === "perempuan"}
+                        value="Perempuan"
+                        checked={formData.jenisKelamin === "Perempuan"}
                         onChange={handleChange}
                         className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
                       />
@@ -459,7 +459,6 @@ export default function Profile() {
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
                   ></textarea>
                 </div>
-
                 <div className="md:col-span-2 lg:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     <span className="text-red-500">*</span> Alamat
@@ -473,7 +472,6 @@ export default function Profile() {
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
-
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     <span className="text-red-500">*</span> NIK

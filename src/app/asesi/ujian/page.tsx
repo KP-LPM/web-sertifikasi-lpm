@@ -1,20 +1,29 @@
 'use client';
 
-import React from 'react';
-import { useState } from 'react';
-import { FileEdit, CheckCircle, Video, Eye, AlertCircle, ArrowLeft, Calendar, User } from 'lucide-react';
-import { useAppContext } from '@/context/context';
+import React, { useState } from 'react';
+import { 
+  FileEdit, CheckCircle, Video, Eye, AlertCircle, ArrowLeft, Calendar, User 
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { FormFRIA04A } from '@/components/forms/FormFRIA04A';
 import { FormFRAK07 } from '@/components/forms/FormFRAK07';
 import { FormFRAPL02 } from '@/components/forms/FormFRAPL02';
 
-export default function UjianAsesi() {
-  const { setCurrentView } = useAppContext();
-  const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [showConfirmFinish, setShowConfirmFinish] = useState(false);
+interface ExamItem {
+  id: string;
+  name: string;
+  actionType: string;
+  canPreview: boolean;
+}
 
-  const examItems = [
+export default function UjianAsesi() {
+  const router = useRouter(); 
+  
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [showConfirmFinish, setShowConfirmFinish] = useState<boolean>(false);
+
+  const examItems: ExamItem[] = [
     {
       id: 'apl02',
       name: 'Asesmen Mandiri',
@@ -47,7 +56,8 @@ export default function UjianAsesi() {
 
   const confirmFinishExam = () => {
     setShowConfirmFinish(false);
-    setCurrentView('history');
+
+    router.push('/asesi/riwayatasesmen'); 
   };
 
   const activeExam = examItems.find(item => item.actionType === activeModal);
@@ -56,7 +66,12 @@ export default function UjianAsesi() {
   function requestNavigation(destination: string): void {
     setActiveModal(null);
     setShowConfirmFinish(false);
-    setCurrentView(destination);
+    
+    if (destination === 'dashboard') {
+      router.push('/asesi/overview'); 
+    } else {
+      router.push(`/asesi/${destination}`);
+    }
   }
 
   return (
@@ -149,13 +164,11 @@ export default function UjianAsesi() {
                         {item.canPreview ? (
                           <button
                             onClick={() => setActiveModal(item.actionType)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-colors bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm"
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-colors bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer"
                           >
                             <Eye size={14} /> Lihat Dokumen
                           </button>
-                        ) : (
-                          <span></span>
-                        )}
+                        ) : null}
                       </td>
                     </tr>
                   ))}
@@ -167,7 +180,7 @@ export default function UjianAsesi() {
           <div className="flex justify-end mt-4">
               <button
                 onClick={() => setShowConfirmFinish(true)}
-                className="w-full sm:w-auto px-8 py-3 bg-[#008BE3] text-white rounded-xl font-bold hover:bg-[#0076C2] transition-colors shadow-sm"
+                className="w-full sm:w-auto px-8 py-3 bg-[#008BE3] text-white rounded-xl font-bold hover:bg-[#0076C2] transition-colors shadow-sm cursor-pointer"
               >
                 Selesaikan Ujian
               </button>
@@ -268,7 +281,7 @@ export default function UjianAsesi() {
 
       {/* Confirm Finish All Modal */}
       {showConfirmFinish && (
-        <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-150">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0 mx-auto mb-4">

@@ -6,8 +6,6 @@ import { useSession } from "next-auth/react";
 import React from "react";
 import { useAppContext } from "@/context/context";
 
-// Peta role -> halaman dashboard tujuan.
-// Sesuaikan path ini dengan struktur folder route kamu yang sebenarnya.
 const ROLE_HOME: Record<string, string> = {
   admin: "/admin/overview",
   asesor: "/assessor/overview",

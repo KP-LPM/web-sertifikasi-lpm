@@ -47,16 +47,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Mapping data dari form frontend ke schema Prisma database
-    const dataProfil = {
+const dataProfil = {
         namaLengkap: body.nama_lengkap,
         tempatLahir: body.tempat_lahir,
         tanggalLahir: body.tanggal_lahir ? new Date(body.tanggal_lahir) : null,
         jenisKelamin: body.jenis_kelamin,
         alamat: body.alamat_rumah,
-        kodePos: body.kode_pos,
+        kodeProvinsi: body.provinsi,
+        kodeKota: body.kota,
         nik: body.nik,
+        kewarganegaraan: body.kewarganegaraan,
+        kodePos: body.kodePos || body.kode_pos, 
+        noHp: body.noTelp || body.no_telp,
         nomorRegistrasiMet: body.no_registrasi,
-        noHp: body.no_telp,
         pekerjaan: body.pekerjaan,
         pendidikanTerakhir: body.pendidikan_terakhir,
         tandaTangan: body.tanda_tangan,

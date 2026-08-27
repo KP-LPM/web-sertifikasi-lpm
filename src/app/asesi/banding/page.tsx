@@ -5,22 +5,8 @@ import {
   Search, Scale, AlertTriangle, Eye, ArrowLeft 
 } from 'lucide-react';
 
-interface AppealRecord {
-  id: string;
-  tanggalPengajuan: string;
-  namaAsesi: string;
-  asesmen: string;
-  skemaSertifikasi: string;
-  status: 'Menunggu Verifikasi' | 'Disetujui' | 'Ditolak' | 'Dalam Penyelidikan';
-  alasan: string;
-  penjelasan: string;
-  keputusanAdmin?: string;
-  dijelaskan?: boolean;
-  didiskusikan?: boolean;
-  melibatkanOrangLain?: boolean;
-  ttdAsesi?: boolean;
-  namaAsesor?: string;
-}
+// IMPORT DARI types.ts
+import type { AppealRecord } from '@/types/types';
 
 const INITIAL_APPEALS: AppealRecord[] = [
   {
@@ -112,7 +98,8 @@ export default function AsesiAppeals() {
   const [selectedAppeal, setSelectedAppeal] = useState<AppealRecord | null>(null);
   
   React.useEffect(() => {
-    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]');
+    // Mencegah any dari JSON.parse
+    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]') as AppealRecord[];
     if (savedAppeals.length > 0) {
       setAppeals([...savedAppeals, ...INITIAL_APPEALS]);
     }
@@ -150,7 +137,7 @@ export default function AsesiAppeals() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const formatTanggal = (tanggal: string) => {
+  const formatTanggal = (tanggal: string): string => {
     if (!tanggal) return '-';
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(tanggal)) return tanggal;
     const parts = tanggal.split(' ');
@@ -343,13 +330,13 @@ export default function AsesiAppeals() {
                 placeholder="Cari asesi, skema, dll..."
                 className="bg-transparent border-none outline-none text-[14px] w-full text-slate-700 placeholder-gray-400"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               />
             </div>
             <select
               className="bg-gray-50/80 border border-gray-200/50 text-slate-700 text-[14px] rounded-lg px-3 h-10.5 outline-none focus:border-[#008BE3]/40 transition-colors font-semibold appearance-none cursor-pointer"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)}
             >
               <option value="Semua">Semua Status</option>
               <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
@@ -362,7 +349,7 @@ export default function AsesiAppeals() {
               <input
                 type="date"
                 value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDateFilter(e.target.value)}
                 className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 font-semibold"
               />
             </div>
@@ -424,7 +411,7 @@ export default function AsesiAppeals() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium">
+                  <td colSpan={7} className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium">
                     Tidak ada pengajuan banding yang cocok dengan kriteria filter Anda.
                   </td>
                 </tr>
@@ -476,4 +463,3 @@ export default function AsesiAppeals() {
     </div>
   );
 }
-

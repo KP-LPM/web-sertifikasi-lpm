@@ -1,7 +1,37 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
+import { DefaultJWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+
+// ==============================================================================
+// MODULE AUGMENTATION:
+// ==============================================================================
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      username: string;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    id: string;
+    role: string;
+    username: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    id: string;
+    role: string;
+    username: string;
+  }
+}
+// ==============================================================================
+
 export const runtime = "nodejs";
 
 const handler = NextAuth({
@@ -17,7 +47,6 @@ const handler = NextAuth({
           throw new Error("Tolong isi username/email dan password!");
         }
 
-        // Cari user di database menggunakan findFirst dan operator OR
         const user = await prisma.user.findFirst({
           where: {
             OR: [
@@ -43,18 +72,16 @@ const handler = NextAuth({
           throw new Error("Password salah.");
         }
 
-        // Jika sukses, kembalikan data user untuk disimpan di Session
         return {
           id: user.id.toString(),
           username: user.username,
           email: user.email,
-          role: user.role, // Membawa role (asesi/asesor/admin) ke session
+          role: user.role,
         };
       },
     }),
   ],
   callbacks: {
-    // Menyisipkan data tambahan (id, role, username) ke JWT
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
