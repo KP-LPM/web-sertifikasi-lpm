@@ -25,6 +25,16 @@ import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { useAppContext } from "@/context/context";
 import { supabase } from "@/lib/supabase";
 
+// IMPORT SEMUA INTERFACE DARI TYPES.TS BUATAN TEMANMU
+import type { 
+  SchemeItem, 
+  Submission, 
+  SchemeUnit, 
+  SchemeElemen, 
+  RequirementType,
+  SchemeDetailInfo
+} from "@/types/types";
+
 import {
   DATA_PROVINSI,
   DATA_KOTA,
@@ -50,73 +60,6 @@ const pendidikans = DATA_PENDIDIKAN as RujukanItem[];
 const instansis = DATA_INSTANSI as RujukanItem[];
 // ------------------------------------
 
-interface SchemeRequirement {
-  name: string;
-}
-
-type SchemeRequirementItem = string | SchemeRequirement;
-
-type SchemeDocumentRequirement = string[];
-
-interface SchemeUnit {
-  code: string;
-  title: string;
-  elemen?: {
-    title: string;
-    kuk: string[];
-  }[];
-}
-
-interface Scheme {
-  name?: string;
-  code?: string;
-  units?: SchemeUnit[];
-  persyaratanDasar?: SchemeRequirementItem[];
-  buktiAdministratif?: SchemeDocumentRequirement;
-  buktiKompetensi?: SchemeDocumentRequirement;
-  [key: string]:
-    | string
-    | string[]
-    | SchemeRequirementItem[]
-    | SchemeDocumentRequirement
-    | SchemeUnit[]
-    | undefined;
-}
-
-interface Submission {
-  noHp?: string;
-  telepon?: string;
-  units?: { code: string; title: string }[];
-  penyesuaianWajar?: boolean;
-  id: string;
-  name: string;
-  code: string;
-  date: string;
-  status: string;
-  namaLengkap?: string;
-  tempatLahir?: string;
-  tanggalLahir?: string;
-  jenisKelamin?: string;
-  alamat?: string;
-  alamatWilayah?: string;
-  nik?: string;
-  kewarganegaraan?: string;
-  kodePos?: string;
-  noTelp?: string;
-  pendidikanTerakhir?: string;
-  pekerjaan?: string;
-  institusiPerusahaan?: string;
-  jabatan?: string;
-  emailInstitusi?: string;
-  kodePosInstitusi?: string;
-  alamatInstitusi?: string;
-  telpInstitusi?: string;
-  faxInstitusi?: string;
-  tuk?: string;
-  metode?: string;
-  berpengalaman?: boolean;
-}
-
 interface Breadcrumb {
   label: string;
   onClick?: () => void;
@@ -128,7 +71,8 @@ export default function PengajuanSkemaPage() {
   const [subView, setSubView] = useState<
     "list" | "choose-scheme" | "apply-form"
   >("list");
-  const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
+  
+  const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
 
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [exitDestination, setExitDestination] = useState<
@@ -184,7 +128,6 @@ export default function PengajuanSkemaPage() {
     }
   }, [subView, selectedDetailSubmission]);
 
-  // SET EXPLICIT TYPE NUMBER AGAR TIDAK ERROR DI TYPE CHECKING
   const [step, setStep] = useState<number>(1);
   const [showStep2Errors, setShowStep2Errors] = useState(false);
   const [showStep3Errors, setShowStep3Errors] = useState(false);
@@ -261,13 +204,12 @@ export default function PengajuanSkemaPage() {
   const [provinsi, setProvinsi] = useState("");
   const [kota, setKota] = useState("");
 
-  // Mengubah ID Provinsi dan Kota menjadi nama lengkapnya untuk disimpan
   const namaProvinsi = provinsis.find((p) => p.id === provinsi)?.label || "";
   const namaKota = kotas.find((k) => k.id === kota)?.label || "";
   const alamatWilayah = [namaKota, namaProvinsi].filter(Boolean).join(", ");
 
   const [nik, setNik] = useState("");
-  const [kewarganegaraan, setKewarganegaraan] = useState("WNI");
+  const [kewarganegaraan, setKewarganegaraan] = useState("WNI");  
   const [kodePos, setKodePos] = useState("");
   const [noTelp, setNoTelp] = useState("");
 
@@ -285,7 +227,6 @@ export default function PengajuanSkemaPage() {
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
-  // Fitur Auto-Fill Data Profil
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
@@ -304,8 +245,8 @@ export default function PengajuanSkemaPage() {
           }
 
           if (dataProfil.jenisKelamin) setJenisKelamin(dataProfil.jenisKelamin);
-          if (dataProfil.kewarganegaraan)
-            setKewarganegaraan(dataProfil.kewarganegaraan);
+          if (dataProfil.kewarganegaraan) setKewarganegaraan(dataProfil.kewarganegaraan);
+          
           if (dataProfil.noHp) setNoTelp(dataProfil.noHp);
           if (dataProfil.alamat) setAlamat(dataProfil.alamat);
           if (dataProfil.kodeProvinsi) setProvinsi(dataProfil.kodeProvinsi);
@@ -417,10 +358,10 @@ export default function PengajuanSkemaPage() {
         scrollToTopMobile();
       }
     } else if (step === 2) {
-      const reqs = selectedScheme?.persyaratanDasar || [];
-      const valid = reqs.every((req: SchemeRequirementItem) => {
-        const key = typeof req === "string" ? req : req.name;
-        return Boolean(eFormData[key]);
+      const reqs = selectedScheme?.persyaratan_dasar || [];
+      const valid = reqs.every((req: RequirementType) => {
+        const key = typeof req === "string" ? req : req.namaDokumen;
+        return Boolean(key && eFormData[key]);
       });
       if (!valid) {
         setShowStep2Errors(true);
@@ -430,10 +371,10 @@ export default function PengajuanSkemaPage() {
         scrollToTopMobile();
       }
     } else if (step === 3) {
-      const reqs = selectedScheme?.buktiAdministratif || [];
-      const valid = reqs.every((req: SchemeRequirementItem) => {
-        const key = typeof req === "string" ? req : req.name;
-        return Boolean(eFormData[key]);
+      const reqs = selectedScheme?.persyaratan_administrasi || [];
+      const valid = reqs.every((req: RequirementType) => {
+        const key = typeof req === "string" ? req : req.namaDokumen;
+        return Boolean(key && eFormData[key]);
       });
       if (!valid) {
         setShowStep3Errors(true);
@@ -453,16 +394,17 @@ export default function PengajuanSkemaPage() {
   const handleSubmitForm = async () => {
     try {
       showAlert("Mengunggah dokumen dan memproses pengajuan...");
-      const uploadedDokumen = [];
+      
+      // Tipe eksplisit agar bebas dari omelan implicit any
+      const uploadedDokumen: Array<{namaDokumen: string; fileUrl: string}> = [];
 
-      // 1. UPLOAD FILE KE SUPABASE STORAGE
-      // Karena eFormData[key] bisa menyimpan Array of File
       for (const [namaDokumen, value] of Object.entries(eFormData)) {
-        const files = Array.isArray(value) ? value : [value];
+        // Pengecekan ketat tanpa any
+        const files: unknown[] = Array.isArray(value) ? value : [value];
         
         for (const file of files) {
           if (file instanceof File) {
-            const fileExt = file.name.split('.').pop();
+            const fileExt = file.name.split('.').pop() || 'pdf';
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
@@ -485,7 +427,6 @@ export default function PengajuanSkemaPage() {
         }
       }
 
-      // 2. KUMPULKAN SEMUA DATA (Teks + URL File)
       const payloadData = {
         name: selectedScheme?.name || "Uji Kompetensi Mandiri",
         code: selectedScheme?.code || "001/SKM/LSP-KJN/II/2023",
@@ -497,7 +438,6 @@ export default function PengajuanSkemaPage() {
         dokumen: uploadedDokumen, 
       };
 
-      // 3. KIRIM KE API DATABASE
       const response = await fetch('/api/pengajuan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -505,22 +445,18 @@ export default function PengajuanSkemaPage() {
       });
 
       if (!response.ok) {
-        // Casting ke interface sederhana tanpa 'any'
         const errData = (await response.json()) as { message?: string };
         throw new Error(errData.message || "Gagal ngirim data ke server database");
       }
 
       showAlert(`Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`);
       
-      // Kosongkan form setelah sukses
       setTempatLahir(""); setAlamat(""); setNik(""); setKodePos("");
       setTuk(""); setMetode(""); setBerpengalaman(false);
       setStep(1); setSubView("list");
       
-    } catch (error: unknown) { // <--- Bebas 'any', ganti pakai 'unknown'
+    } catch (error: unknown) { 
       console.error(error);
-      
-      // Pengecekan tipe error yang aman
       if (error instanceof Error) {
         showAlert(error.message);
       } else {
@@ -581,7 +517,7 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
-  const filteredSchemes = (AVAILABLE_SCHEMES as Scheme[]).filter((item) => {
+  const filteredSchemes = (AVAILABLE_SCHEMES as unknown as SchemeItem[]).filter((item) => {
     const name = item.name?.toLowerCase() ?? "";
     const code = item.code?.toLowerCase() ?? "";
     return (
@@ -604,6 +540,15 @@ export default function PengajuanSkemaPage() {
     Math.ceil(filteredSubmissions.length / itemsPerPage) || 1;
   const totalSchemePages =
     Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
+
+  // Pemetaan yang rapi dan Type-Safe tanpa 'any'
+  const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme ? {
+    ...selectedScheme,
+    nama: selectedScheme.name,
+    units: selectedScheme.unitKompetensi,
+    persyaratanDasar: selectedScheme.persyaratan_dasar,
+    buktiAdministratif: selectedScheme.persyaratan_administrasi,
+  } : undefined;
 
   return (
     <>
@@ -955,10 +900,11 @@ export default function PengajuanSkemaPage() {
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
                             <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
-                              Alamat Wilayah
+                              Provinsi & Kota
                             </td>
                             <td className="p-3">
-                              {selectedDetailSubmission.alamatWilayah || "-"}
+                              {/* Menggabungkan kota dan provinsi secara dinamis */}
+                              {[selectedDetailSubmission.kota, selectedDetailSubmission.provinsi].filter(Boolean).join(", ") || "-"}
                             </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
@@ -1289,22 +1235,22 @@ export default function PengajuanSkemaPage() {
                                 <div className="pl-10">
                                   <table className="w-full border-collapse text-xs text-slate-600 font-medium">
                                     <tbody>
-                                      {(scheme.units ?? []).map(
+                                      {(scheme.unitKompetensi ?? []).map(
                                         (unit, unitIdx) => (
                                           <tr
-                                            key={`${unit.code}-${unitIdx}`}
+                                            key={`${unit.kode}-${unitIdx}`}
                                             className="border-b border-slate-100 last:border-0"
                                           >
                                             <td className="py-2 font-mono text-slate-500 w-32">
-                                              {unit.code}
+                                              {unit.kode}
                                             </td>
                                             <td className="py-2">
-                                              {unit.title}
+                                              {unit.judul}
                                             </td>
                                           </tr>
                                         ),
                                       )}
-                                      {!scheme.units?.length && (
+                                      {!scheme.unitKompetensi?.length && (
                                         <tr>
                                           <td
                                             colSpan={2}
@@ -1479,12 +1425,12 @@ export default function PengajuanSkemaPage() {
                           }
                         } else if (step === 2 && tabStep > 2) {
                           const reqs =
-                            (selectedScheme as Scheme)?.persyaratanDasar || [];
+                            selectedScheme?.persyaratan_dasar || [];
                           const valid = reqs.every(
-                            (req: SchemeRequirementItem) =>
-                              eFormData[
-                                typeof req === "string" ? req : req.name
-                              ],
+                            (req: RequirementType) => {
+                              const key = typeof req === "string" ? req : req.namaDokumen;
+                              return Boolean(key && eFormData[key]);
+                            }
                           );
                           if (!valid) setShowStep2Errors(true);
                           else {
@@ -1493,13 +1439,13 @@ export default function PengajuanSkemaPage() {
                           }
                         } else if (step === 3 && tabStep > 3) {
                           const reqs =
-                            (selectedScheme as Scheme)?.buktiAdministratif ||
+                            selectedScheme?.persyaratan_administrasi ||
                             [];
                           const valid = reqs.every(
-                            (req: SchemeRequirementItem) =>
-                              eFormData[
-                                typeof req === "string" ? req : req.name
-                              ],
+                            (req: RequirementType) => {
+                              const key = typeof req === "string" ? req : req.namaDokumen;
+                              return Boolean(key && eFormData[key]);
+                            }
                           );
                           if (!valid) setShowStep3Errors(true);
                           else {
@@ -1688,7 +1634,7 @@ export default function PengajuanSkemaPage() {
                   </div>
                 </div>
 
-                <div className="min-w-0">
+              <div className="col-span-full">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     <span className="text-red-500">*</span> Alamat Lengkap Rumah
                     (Jalan, RT/RW, Kel/Desa, Kec)
@@ -2131,15 +2077,15 @@ export default function PengajuanSkemaPage() {
                 title="Persyaratan Dasar"
                 infoText="File Persyaratan Dasar akan ditampilkan pada Form APL - 01"
                 documents={(
-                  (selectedScheme as Scheme)?.persyaratanDasar || []
-                ).map((req: SchemeRequirementItem) => ({
+                  selectedScheme?.persyaratan_dasar || []
+                ).map((req: RequirementType) => ({
                   required: true,
-                  name: typeof req === "string" ? req : req.name,
+                  name: typeof req === "string" ? req : req.namaDokumen,
                   description:
                     typeof req === "string"
                       ? ""
-                      : "description" in req
-                        ? req.description
+                      : "deskripsi" in req
+                        ? req.deskripsi
                         : "",
                   type: "File Upload",
                 }))}
@@ -2162,10 +2108,10 @@ export default function PengajuanSkemaPage() {
                 title="Bukti Administratif"
                 infoText="File Bukti Administratif akan ditampilkan pada Form APL - 01"
                 documents={(
-                  (selectedScheme as Scheme)?.buktiAdministratif || []
-                ).map((req: SchemeRequirementItem) => ({
+                  selectedScheme?.persyaratan_administrasi || []
+                ).map((req: RequirementType) => ({
                   required: true,
-                  name: typeof req === "string" ? req : req.name,
+                  name: typeof req === "string" ? req : req.namaDokumen,
                   type: "File Upload",
                 }))}
                 eFormData={eFormData}
@@ -2188,14 +2134,14 @@ export default function PengajuanSkemaPage() {
                 title="Bukti Kompetensi"
                 infoText="File Bukti Kompetensi akan ditampilkan pada Form APL - 02"
                 kompetensiList={(
-                  (selectedScheme as Scheme)?.units || []
+                  selectedScheme?.unitKompetensi || []
                 ).flatMap((unit: SchemeUnit, uIdx: number) =>
                   (unit.elemen || []).map(
-                    (el: { title: string; kuk: string[] }, eIdx: number) => ({
+                    (el: SchemeElemen, eIdx: number) => ({
                       id: `u${uIdx}e${eIdx}`,
-                      unitTitle: unit.title,
-                      unitCode: unit.code,
-                      elemen: el.title,
+                      unitTitle: unit.judul || "",
+                      unitCode: unit.kode || "",
+                      elemen: el.judul || el.nama || "",
                       kuk: el.kuk || [],
                       idx: eIdx + 1,
                     }),
@@ -2309,7 +2255,7 @@ export default function PengajuanSkemaPage() {
                     jabatan,
                     skema: selectedScheme?.name || "",
                     nomorSkema: selectedScheme?.code || "",
-                    schemeDetail: selectedScheme || undefined,
+                    schemeDetail: currentSchemeDetail,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
                     ...(tempEFormData || {}),
@@ -2323,7 +2269,7 @@ export default function PengajuanSkemaPage() {
                     namaLengkap,
                     skema: selectedScheme?.name || "",
                     nomorSkema: selectedScheme?.code || "",
-                    schemeDetail: selectedScheme || undefined,
+                    schemeDetail: currentSchemeDetail,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
                     ...(tempEFormData || {}),
@@ -2380,11 +2326,11 @@ export default function PengajuanSkemaPage() {
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
                       let firstUnfilled: string | null = null;
                       const elements: string[] =
-                        selectedScheme?.units?.flatMap(
+                        selectedScheme?.unitKompetensi?.flatMap(
                           (u: SchemeUnit, uIdx: number) =>
                             (u.elemen || []).map(
                               (
-                                e: { title: string; kuk: string[] },
+                                e: SchemeElemen,
                                 eIdx: number,
                               ) => {
                                 const key = `u${uIdx}e${eIdx}`;
@@ -2509,7 +2455,7 @@ export default function PengajuanSkemaPage() {
                       <p className="text-sm font-bold text-slate-800 mb-2">
                         Pilih dari Dokumen Persyaratan Dasar:
                       </p>
-                      <select
+                    <select
                         className="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white text-slate-700 cursor-pointer"
                         onChange={(e) => {
                           if (e.target.value) {
@@ -2524,27 +2470,24 @@ export default function PengajuanSkemaPage() {
                         }}
                       >
                         <option value="">-- Pilih Dokumen --</option>
-                        {[
-                          ...(selectedScheme?.persyaratanDasar || []).map(
-                            (req: SchemeRequirementItem) =>
-                              typeof req === "string" ? req : req.name,
+                        {([
+                          ...(selectedScheme?.persyaratan_dasar || []).map((req: RequirementType) =>
+                            typeof req === "string" ? req : req.namaDokumen
                           ),
-                          ...(selectedScheme?.buktiAdministratif || []).map(
-                            (req: SchemeRequirementItem) =>
-                              typeof req === "string" ? req : req.name,
+                          ...(selectedScheme?.persyaratan_administrasi || []).map((req: RequirementType) =>
+                            typeof req === "string" ? req : req.namaDokumen
                           ),
-                        ]
-                          .filter(
-                            (docName: string) =>
+                        ].filter(Boolean) as string[]) 
+                          .filter((docName: string) =>
                               (eFormData[docName] as File[]) &&
-                              (eFormData[docName] as File[]).length > 0,
+                              (eFormData[docName] as File[]).length > 0
                           )
                           .map((docName: string, idx: number) => (
                             <option key={idx} value={docName}>
                               {docName}
                             </option>
                           ))}
-                      </select>
+                      </select>                      
                       <div className="flex items-center gap-3 my-4">
                         <div className="h-px bg-slate-200 flex-1"></div>
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">

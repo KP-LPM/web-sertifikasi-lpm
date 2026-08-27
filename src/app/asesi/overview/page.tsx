@@ -2,22 +2,22 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, CheckCircle, Search, FileText, Calendar, User, Plus, LayoutDashboard, Eye, FileEdit } from 'lucide-react';
+import { 
+  Clock, 
+  CheckCircle, 
+  Search, 
+  FileText, 
+  Calendar, 
+  User, 
+  Plus, 
+  LayoutDashboard, 
+  Eye, 
+  FileEdit 
+} from 'lucide-react';
 import { useAppContext } from '@/context/context'; 
 
-interface RegisteredAssessment {
-  id: string;
-  asesmen: string;
-  skemaSertifikasi: string;
-  tuk: string;
-  alamat: string;
-  tanggalAsesmen: string;
-  linkVirtualMeeting: string;
-  asesor: string;
-  jenisBukti: string;
-  rekomendasi: string;
-  statusAsesmen: string;
-}
+// IMPORT DARI types.ts
+import type { RegisteredAssessment } from '@/types/types';
 
 const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
   {
@@ -89,7 +89,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
 
 export default function AsesiOverviewPage() {
   const { user } = useAppContext();
-  const router = useRouter(); // Inisialisasi router Next.js
+  const router = useRouter(); 
   
   // 1. Siapkan state untuk menampung nama dan ID
   const [namaLengkap, setNamaLengkap] = useState<string>("Asesi");
@@ -101,7 +101,12 @@ export default function AsesiOverviewPage() {
       try {
         const response = await fetch('/api/profil');
         if (response.ok) {
-          const data = await response.json();
+          // Type assertion untuk menghindari 'any' type
+          const data = (await response.json()) as { 
+            namaLengkap?: string; 
+            id?: string; 
+            userId?: string | number;
+          };
           
           // Set Nama: Prioritas dari database (namaLengkap) -> Session (name/email) -> "Asesi"
           if (data.namaLengkap) {
@@ -113,15 +118,19 @@ export default function AsesiOverviewPage() {
           }
 
           // Set ID: Ambil dari database. 
-          if (data.id) {
+          if (data.id && data.userId) {
             setAsesiId(`ASESI-${String(data.userId).padStart(4, '0')}`);
           } else if (user?.id) {
             const numericId = String(user.id).replace(/[^0-9]/g, ''); 
             setAsesiId(`ASESI-${numericId.padStart(4, '0')}`);
           }
         }
-      } catch (error) {
-        console.error("Gagal mengambil profil untuk dashboard:", error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error("Gagal mengambil profil untuk dashboard:", error.message);
+        } else {
+          console.error("Gagal mengambil profil untuk dashboard:", error);
+        }
       }
     };
 
@@ -213,7 +222,7 @@ export default function AsesiOverviewPage() {
           </div>
         </div>
         <button
-          onClick={() => router.push('/asesi/pengajuanskema')} // Routing pindah halaman pakai Next.js
+          onClick={() => router.push('/asesi/pengajuanskema')} 
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
         >
           <Plus size={16} className="stroke-3" />
@@ -224,7 +233,6 @@ export default function AsesiOverviewPage() {
       {/* Greeting Banner */}
       <div className="bg-[#E6F4FF] rounded-lg border border-sky-200 p-4 md:p-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 overflow-hidden relative shadow-2xs">
         <div className="space-y-2 z-10 max-w-xl">
-          {/* Tambahkan capitalize biar awalan namanya otomatis huruf besar */}
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none capitalize">
             Selamat Datang, {namaLengkap}
           </h2>
@@ -410,7 +418,7 @@ export default function AsesiOverviewPage() {
                           Tersedia
                         </span>
                       ) : (item.alamat === 'Online' || item.tuk.includes('Virtual') || item.tuk.includes('Online')) ? (
-                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
                           <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
                           Belum Tersedia
                         </span>
@@ -426,7 +434,7 @@ export default function AsesiOverviewPage() {
                         <button 
                           onClick={() => {
                             if (item.tuk === 'Mandiri' && item.statusAsesmen === 'Terjadwal') {
-                              router.push('/asesi/ujian'); // Routing Next.js ke halaman ujian
+                              router.push('/asesi/ujian'); 
                             } else {
                               setSelectedAssessment(item);
                             }

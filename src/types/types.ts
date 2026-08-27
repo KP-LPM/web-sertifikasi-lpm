@@ -683,7 +683,7 @@ export interface Submission {
   provinsi?: string;
   kota?: string;
   nik?: string;
-  kebangsaan?: string;
+  kewarganegaraan?: string;
   kodePos?: string;
   noTelp?: string;
   pendidikanTerakhir?: string;
