@@ -199,7 +199,7 @@ export default function TukManagement() {
             <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Manajemen TUK
             </h1>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
               Kelola Tempat Uji Kompetensi dan kapasitasnya
             </p>
           </div>
@@ -237,7 +237,7 @@ export default function TukManagement() {
           <select
             value={tipeFilter}
             onChange={(e) => settipeFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-[140px]"
+            className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-35"
           >
             <option>Semua tipe</option>
             <option>Sewaktu</option>
@@ -246,7 +246,7 @@ export default function TukManagement() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-[140px]"
+            className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-35"
           >
             <option>Semua Status</option>
             <option>Aktif</option>

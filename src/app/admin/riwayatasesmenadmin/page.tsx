@@ -45,12 +45,12 @@ import {
 
 const initialCompletedBatches: CompletedBatchItem[] = [
   {
-    code: "BATCH-IT-2025-089",
-    name: "Batch 89 - Auditor Halal Gelombang 3",
+    kode: "BATCH-IT-2025-089",
+    nama: "Batch 89 - Auditor Halal Gelombang 3",
     skema: "Auditor Halal",
     asesor: "Dr. Aris Thorne",
-    tuk: "Gedung L PTIPD Lab 1 (Sewaktu)",
-    jenis: "Offline",
+    tipeTuk: "Gedung L PTIPD Lab 1 (Sewaktu)",
+    metode: "Offline",
     tanggal: "12 Sep 2025",
     waktu: "08:00 - 12:00 WIB",
     totalAsesi: 20,
@@ -71,12 +71,12 @@ const initialCompletedBatches: CompletedBatchItem[] = [
     ],
   },
   {
-    code: "BATCH-NET-2025-090",
-    name: "Batch 90 - Kewirausahaan Industri Online",
+    kode: "BATCH-NET-2025-090",
+    nama: "Batch 90 - Kewirausahaan Industri Online",
     skema: "Jenjang 5 Bidang Kewirausahaan Industri",
     asesor: "Budi Santoso, M.Kom",
-    tuk: "Online Meeting (Google Meet)",
-    jenis: "Online",
+    tipeTuk: "Online Meeting (Google Meet)",
+    metode: "Online",
     tanggal: "20 Sep 2025",
     waktu: "13:00 - 17:00 WIB",
     totalAsesi: 15,
@@ -91,12 +91,12 @@ const initialCompletedBatches: CompletedBatchItem[] = [
     ],
   },
   {
-    code: "BATCH-PRG-2025-091",
-    name: "Batch 91 - Pemangku Kepentingan",
+    kode: "BATCH-PRG-2025-091",
+    nama: "Batch 91 - Pemangku Kepentingan",
     skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     asesor: "Ichsan Taufik, M.T.",
-    tuk: "Ruang Rapat Utama (Tempat Kerja)",
-    jenis: "Offline",
+    tipeTuk: "Ruang Rapat Utama (Tempat Kerja)",
+    metode: "Offline",
     tanggal: "05 Okt 2025",
     waktu: "09:00 - 13:00 WIB",
     totalAsesi: 12,
@@ -114,12 +114,12 @@ const initialCompletedBatches: CompletedBatchItem[] = [
     ],
   },
   {
-    code: "BATCH-SEC-2025-092",
-    name: "Batch 92 - Penerjemah Teks Umum",
+    kode: "BATCH-SEC-2025-092",
+    nama: "Batch 92 - Penerjemah Teks Umum",
     skema: "Penerjemah Teks Umum",
     asesor: "Susanti Ainul Fitri, M.Pd.",
-    tuk: "Gedung C FISIP Lab Bahasa",
-    jenis: "Offline",
+    tipeTuk: "Gedung C FISIP Lab Bahasa",
+    metode: "Offline",
     tanggal: "18 Nov 2025",
     waktu: "08:30 - 12:30 WIB",
     totalAsesi: 18,
@@ -141,10 +141,10 @@ const initialCompletedPleno: PlenoDetailData[] = [
     title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
     skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     noSK: "SK/LSP-UIN/PLN/2026/003",
-    notulis: "Rina Fitriani, S.Kom., M.T.",
     tanggal: "2026-10-25",
     waktu: "10:00 - 12:00 WIB",
-    lokasi: "Ruang Sidang Lt. 3 Gedung Rektorat",
+    alamat: "Ruang Rapat Utama (Offline)",
+    detailAlamat: "Ruang Sidang Lt. 3 Gedung Rektorat",
     linkSuratBeritaPleno:
       "https://drive.google.com/file/d/berita-pleno-003/view",
     linkSuratHasil: "https://drive.google.com/file/d/3x4y5z/view",
@@ -152,7 +152,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
     asesiList: [
       {
         id: "11",
-        nim: "1217050011",
+        nik: "1217050011",
         nama: "Lani Wijaya",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
         asesor: "Fitri Pebriani Wahyu, M.T.",
@@ -161,7 +161,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
       },
       {
         id: "12",
-        nim: "1217050012",
+        nik: "1217050012",
         nama: "Muhammad Rizky",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
         asesor: "Tina Dewi Rosahdi, M.T.",
@@ -180,18 +180,19 @@ const initialCompletedPleno: PlenoDetailData[] = [
       "Sidang Pleno Penetapan Hasil Uji Kompetensi Auditor Halal Gelombang 3",
     skema: "Auditor Halal",
     noSK: "012/SK-PLENO/LSP-UIN/IX/2025",
-    notulis: "Siti Rahmawati, S.T.",
     tanggal: "2025-09-25",
     waktu: "09:00 - 11:30 WIB",
-    lokasi: "Ruang Rapat Utama Gedung Rektorat Lt. 2",
+    alamat: "Ruang Rapat Utama (OfflinedetailA",
+    detailAlamat: "Ruang Rapat Utama Gedung Rektorat Lt. 2",
     linkSuratBeritaPleno:
       "https://drive.google.com/file/d/berita-pleno-001/view",
     linkSuratHasil: "https://drive.google.com/file/d/1a2b3c4d5e6f7g8h9/view",
+
     status: "Selesai",
     asesiList: [
       {
         id: "1",
-        nim: "3273012810010001",
+        nik: "3273012810010001",
         nama: "Ahmad Hidayat",
         skema: "Auditor Halal",
         asesor: "Dr. Aris Thorne",
@@ -201,7 +202,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
       },
       {
         id: "2",
-        nim: "3273012810020001",
+        nik: "3273012810020001",
         nama: "Siti Rohmah",
         skema: "Auditor Halal",
         asesor: "Dr. Aris Thorne",
@@ -210,7 +211,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
       },
       {
         id: "3",
-        nim: "3273012810030001",
+        nik: "3273012810030001",
         nama: "Budi Pratama",
         skema: "Auditor Halal",
         asesor: "Dr. Aris Thorne",
@@ -229,18 +230,19 @@ const initialCompletedPleno: PlenoDetailData[] = [
     title: "Sidang Pleno Penetapan Hasil Kewirausahaan Industri Gelombang 1",
     skema: "Jenjang 5 Bidang Kewirausahaan Industri",
     noSK: "015/SK-PLENO/LSP-UIN/X/2025",
-    notulis: "Rina Fitriani, S.Kom., M.T.",
     tanggal: "2025-10-02",
     waktu: "13:30 - 15:30 WIB",
-    lokasi: "Zoom Meeting Room 1 (Online)",
+    alamat: "Ruang Rapat Utama (Offline)",
+    detailAlamat: "Zoom Meeting Room 1 (Online)",
     linkSuratBeritaPleno:
       "https://drive.google.com/file/d/berita-pleno-002/view",
     linkSuratHasil: "https://drive.google.com/file/d/sk-pleno-002/view",
+
     status: "Selesai",
     asesiList: [
       {
         id: "7",
-        nim: "3273012810060001",
+        nik: "3273012810060001",
         nama: "Eko Prasetyo",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
         asesor: "Budi Santoso, M.Kom",
@@ -249,7 +251,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
       },
       {
         id: "8",
-        nim: "3273012810070001",
+        nik: "3273012810070001",
         nama: "Fitriani",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
         asesor: "Budi Santoso, M.Kom",
@@ -264,7 +266,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
 ];
 
 export default function RiwayatAsesmenAdmin() {
-  const { assessments, plenoSessions } = useAppContext();
+  const { AssessmentItems, plenoSessions } = useAppContext();
 
   // Page Option Tab State
   const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">(
@@ -351,7 +353,7 @@ export default function RiwayatAsesmenAdmin() {
   };
 
   // Filtered Assessments
-  const filteredAssessments = assessments.filter((item: AssessmentItem) => {
+  const filteredAssessments = AssessmentItems.filter((item: AssessmentItem) => {
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (statusFilter && item.status !== statusFilter) return false;
     if (searchTerm) {
@@ -370,13 +372,13 @@ export default function RiwayatAsesmenAdmin() {
 
   // Filtered Batches
   const filteredBatches = initialCompletedBatches.filter((b) => {
-    if (batchTypeFilter !== "Semua" && b.jenis !== batchTypeFilter)
+    if (batchTypeFilter !== "Semua" && b.metode !== batchTypeFilter)
       return false;
     if (!searchTerm) return true;
     const query = searchTerm.toLowerCase();
     return (
-      b.code.toLowerCase().includes(query) ||
-      b.name.toLowerCase().includes(query) ||
+      b.kode.toLowerCase().includes(query) ||
+      b.nama.toLowerCase().includes(query) ||
       b.skema.toLowerCase().includes(query) ||
       b.asesor.toLowerCase().includes(query)
     );
@@ -392,30 +394,31 @@ export default function RiwayatAsesmenAdmin() {
           !initialCompletedPleno.some((i) => i.id === p.id),
       )
       .map((p) => ({
-        id: p.id,
+        id: String(p.id), // pastikan string, sesuai interface
         batchCode: `BATCH-${p.id}`,
         title: `Sidang Pleno ${p.skema}`,
         skema: p.skema,
         noSK: `SK-${p.id}`,
-        notulis: "Sekretariat LSP",
+        // "notulis" DIHAPUS — field ini tidak ada di interface PlenoDetailData
         tanggal: p.tanggal,
         waktu: p.waktu,
-        lokasi: p.lokasi,
+        alamat: p.alamat,
+        detailAlamat: p.detailAlamat,
         linkSuratBeritaPleno:
           p.suratPlenoUrl ||
           "https://drive.google.com/file/d/berita-pleno/view",
         linkSuratHasil:
           p.suratPlenoUrl || "https://drive.google.com/file/d/hasil-pleno/view",
         status: "Selesai" as const,
-        asesiList: (p.asesiList || []).map((name, idx) => ({
+        asesiList: (p.asesiList || []).map((name: string, idx: number) => ({
           id: `asesi-${idx}`,
-          nim: `121705${1000 + idx}`,
+          nik: `121705${1000 + idx}`,
           nama:
             typeof name === "string"
               ? name
               : (name as { nama?: string }).nama || `Asesi ${idx + 1}`,
           skema: p.skema,
-          asesor: "Asesor LSP",
+          asesor: "Asesor LSP", // ← diganti dari "asesor" jadi "asesor"
           rekomendasiAsesor: "K" as const,
           statusPleno: "K" as const,
         })),
@@ -431,10 +434,7 @@ export default function RiwayatAsesmenAdmin() {
     const query = searchTerm.toLowerCase();
     return (
       (p.title && p.title.toLowerCase().includes(query)) ||
-      (p.batchCode && p.batchCode.toLowerCase().includes(query)) ||
-      String(p.id).toLowerCase().includes(query) ||
-      (p.noSK && p.noSK.toLowerCase().includes(query)) ||
-      p.skema.toLowerCase().includes(query)
+      String(p.id).toLowerCase().includes(query)
     );
   });
 
@@ -491,11 +491,11 @@ export default function RiwayatAsesmenAdmin() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                  TUK
+                  tipeTuk
                 </p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                   <MapPin size={14} className="text-slate-400 shrink-0" />
-                  {selectedAsesmen.tuk}
+                  {selectedAsesmen.tipeTuk}
                 </div>
               </div>
               <div className="min-w-0">
@@ -504,7 +504,7 @@ export default function RiwayatAsesmenAdmin() {
                 </p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                   <Building size={14} className="text-slate-400 shrink-0" />
-                  {selectedAsesmen.jenis_asesmen}
+                  {selectedAsesmen.metode}
                 </div>
               </div>
               <div className="min-w-0">
@@ -719,7 +719,7 @@ export default function RiwayatAsesmenAdmin() {
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
                       noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-                      tuk: selectedAsesmen.tuk,
+                      tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                       asesorReg: "MET.000.001234 2021",
@@ -743,7 +743,7 @@ export default function RiwayatAsesmenAdmin() {
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
                       noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-                      tuk: selectedAsesmen.tuk,
+                      tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                       asesorReg: "MET.000.001234 2021",
@@ -757,7 +757,7 @@ export default function RiwayatAsesmenAdmin() {
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
                       noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-                      tuk: selectedAsesmen.tuk,
+                      tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                       asesorReg: "MET.000.001234 2021",
@@ -771,7 +771,7 @@ export default function RiwayatAsesmenAdmin() {
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
                       noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-                      tuk: selectedAsesmen.tuk,
+                      tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                       asesorReg: "MET.000.001234 2021",
@@ -785,7 +785,7 @@ export default function RiwayatAsesmenAdmin() {
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
                       noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-                      tuk: selectedAsesmen.tuk,
+                      tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                       asesorReg: "MET.000.001234 2021",
@@ -813,7 +813,7 @@ export default function RiwayatAsesmenAdmin() {
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Riwayat
             </h2>
-            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px]">
+            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4">
               Arsip dan riwayat asesmen, batch jadwal, dan sidang pleno yang
               telah selesai
             </p>
@@ -866,7 +866,7 @@ export default function RiwayatAsesmenAdmin() {
               </h3>
 
               <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto xl:justify-end">
-                <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-64 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-64 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                   <Search className="text-gray-400 shrink-0" size={16} />
                   <input
                     type="text"
@@ -880,7 +880,7 @@ export default function RiwayatAsesmenAdmin() {
                 <select
                   value={hasilFilter}
                   onChange={(e) => setHasilFilter(e.target.value)}
-                  className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-[42px] outline-none text-gray-700 cursor-pointer font-bold"
+                  className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
                 >
                   <option value="">Semua Hasil</option>
                   <option value="Kompeten">Kompeten</option>
@@ -890,14 +890,14 @@ export default function RiwayatAsesmenAdmin() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-[42px] outline-none text-gray-700 cursor-pointer font-bold"
+                  className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
                 >
                   <option value="">Semua Status</option>
                   <option value="Selesai">Selesai</option>
                   <option value="Belum Selesai">Belum Selesai</option>
                 </select>
 
-                <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-[42px] w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                   <Calendar className="text-gray-400 shrink-0" size={16} />
                   <input
                     type="date"
@@ -919,7 +919,7 @@ export default function RiwayatAsesmenAdmin() {
             </div>
 
             <div className="overflow-x-auto relative">
-              <table className="w-full text-left border-collapse min-w-[700px] sm:min-w-[1000px]">
+              <table className="w-full text-left border-collapse min-w-175 sm:min-w-250">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                     <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -932,7 +932,7 @@ export default function RiwayatAsesmenAdmin() {
                       Asesor Penguji
                     </th>
                     <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                      TUK / Jenis
+                      tipeTuk / Jenis
                     </th>
                     <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Tanggal & Waktu
@@ -968,17 +968,17 @@ export default function RiwayatAsesmenAdmin() {
                           <div className="flex items-center gap-1.5">
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                                item.tuk === "Sewaktu"
+                                item.tipeTuk === "Sewaktu"
                                   ? "bg-blue-50 text-blue-700 border-blue-200"
-                                  : item.tuk === "Tempat Kerja"
+                                  : item.tipeTuk === "Tempat Kerja"
                                     ? "bg-purple-50 text-purple-700 border-purple-200"
                                     : "bg-orange-50 text-orange-700 border-orange-200"
                               }`}
                             >
-                              {item.tuk}
+                              {item.tipeTuk}
                             </span>
                             <span className="text-[10px] text-slate-500 font-medium bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                              {item.jenis_asesmen}
+                              {item.metode}
                             </span>
                           </div>
                         </td>
@@ -1069,13 +1069,13 @@ export default function RiwayatAsesmenAdmin() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <h3 className="text-lg md:text-xl font-black text-slate-900">
-                          {selectedBatch.name}
+                          {selectedBatch.nama}
                         </h3>
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 text-xs font-black border border-slate-200">
                           <Layers size={12} className="text-slate-500" />
-                          {selectedBatch.code}
+                          {selectedBatch.kode}
                         </span>
-                        {selectedBatch.jenis === "Online" ? (
+                        {selectedBatch.metode === "Online" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
                             <Video size={11} className="stroke-[2.5]" />
                             Online
@@ -1116,15 +1116,15 @@ export default function RiwayatAsesmenAdmin() {
 
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Lokasi / TUK
+                      Lokasi / tipeTuk
                     </span>
                     <div className="flex items-center gap-1.5 text-slate-800 font-bold">
-                      {selectedBatch.jenis === "Online" ? (
+                      {selectedBatch.metode === "Online" ? (
                         <Globe size={14} className="text-purple-500 shrink-0" />
                       ) : (
                         <MapPin size={14} className="text-[#008BE3] shrink-0" />
                       )}
-                      <span className="truncate">{selectedBatch.tuk}</span>
+                      <span className="truncate">{selectedBatch.tipeTuk}</span>
                     </div>
                   </div>
 
@@ -1169,7 +1169,7 @@ export default function RiwayatAsesmenAdmin() {
                       Seluruh asesmen dalam batch ini telah selesai dilaksanakan
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3.5 h-[42px] w-full sm:w-72 border border-gray-200 focus-within:border-[#008BE3] focus-within:ring-1 focus-within:ring-[#008BE3]/30 transition-all">
+                  <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3.5 h-10.5 w-full sm:w-72 border border-gray-200 focus-within:border-[#008BE3] focus-within:ring-1 focus-within:ring-[#008BE3]/30 transition-all">
                     <Search className="text-gray-400 shrink-0" size={18} />
                     <input
                       type="text"
@@ -1182,7 +1182,7 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
 
                 <div className="overflow-x-auto relative">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
+                  <table className="w-full text-left border-collapse min-w-175">
                     <thead>
                       <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                         <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider w-12 text-center">
@@ -1247,7 +1247,7 @@ export default function RiwayatAsesmenAdmin() {
                             <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover:bg-slate-50/80 border-l border-gray-100">
                               <button
                                 onClick={() => {
-                                  const found = assessments.find(
+                                  const found = AssessmentItems.find(
                                     (a: AssessmentItem) =>
                                       a.nama?.toLowerCase() ===
                                       asesi.nama.toLowerCase(),
@@ -1257,8 +1257,8 @@ export default function RiwayatAsesmenAdmin() {
                                     nik: asesi.nik,
                                     skema: selectedBatch.skema,
                                     asesor: selectedBatch.asesor,
-                                    tuk: selectedBatch.tuk,
-                                    jenis_asesmen: selectedBatch.jenis,
+                                    tipeTuk: selectedBatch.tipeTuk,
+                                    metode: selectedBatch.metode,
                                     tglAsesmen: selectedBatch.tanggal,
                                     waktu: selectedBatch.waktu,
                                     status: "Selesai",
@@ -1282,7 +1282,7 @@ export default function RiwayatAsesmenAdmin() {
               </div>
             </div>
           ) : (
-            /* LEVEL 1: BATCH CARDS GRID (MIRRORING ASSESSOR DAFTAR ASESMEN) */
+            /* LEVEL 1: BATCH CARDS GRID (MIRRORING asesor DAFTAR ASESMEN) */
             <div className="space-y-6">
               {/* Filters & Search Row */}
               <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
@@ -1308,7 +1308,7 @@ export default function RiwayatAsesmenAdmin() {
                       Offline Batch (
                       {
                         initialCompletedBatches.filter(
-                          (b) => b.jenis.toLowerCase() === "offline",
+                          (b) => b.metode.toLowerCase() === "offline",
                         ).length
                       }
                       )
@@ -1317,7 +1317,7 @@ export default function RiwayatAsesmenAdmin() {
                       Online Batch (
                       {
                         initialCompletedBatches.filter(
-                          (b) => b.jenis.toLowerCase() === "online",
+                          (b) => b.metode.toLowerCase() === "online",
                         ).length
                       }
                       )
@@ -1330,7 +1330,7 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
 
                 {/* Search Input */}
-                <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3.5 h-[42px] w-full md:w-80 border border-gray-200 focus-within:border-[#008BE3] focus-within:ring-1 focus-within:ring-[#008BE3]/30 transition-all">
+                <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3.5 h-10.5 w-full md:w-80 border border-gray-200 focus-within:border-[#008BE3] focus-within:ring-1 focus-within:ring-[#008BE3]/30 transition-all">
                   <Search className="text-gray-400 shrink-0" size={18} />
                   <input
                     type="text"
@@ -1346,11 +1346,11 @@ export default function RiwayatAsesmenAdmin() {
               {filteredBatches.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredBatches.map((batch) => {
-                    const isOnline = batch.jenis.toLowerCase() === "online";
+                    const isOnline = batch.metode.toLowerCase() === "online";
 
                     return (
                       <div
-                        key={batch.code}
+                        key={batch.kode}
                         className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#008BE3]/50 transition-all flex flex-col justify-between overflow-hidden group"
                       >
                         {/* Card Top Header */}
@@ -1359,7 +1359,7 @@ export default function RiwayatAsesmenAdmin() {
                             {/* Batch Code Badge */}
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-black tracking-wide border border-slate-200">
                               <Layers size={13} className="text-slate-500" />
-                              {batch.code}
+                              {batch.kode}
                             </div>
 
                             {/* Assessment Type Badge */}
@@ -1379,7 +1379,7 @@ export default function RiwayatAsesmenAdmin() {
                           {/* Batch Name & Scheme */}
                           <div className="min-w-0">
                             <h3 className="text-base font-black text-slate-900 group-hover:text-[#008BE3] transition-colors leading-snug">
-                              {batch.name}
+                              {batch.nama}
                             </h3>
                             <p className="text-xs font-semibold text-slate-500 mt-0.5 leading-relaxed line-clamp-1">
                               {batch.skema}
@@ -1409,7 +1409,7 @@ export default function RiwayatAsesmenAdmin() {
                               </div>
                             </div>
 
-                            {/* Location / TUK */}
+                            {/* Location / tipeTuk */}
                             <div className="flex items-start gap-2">
                               {isOnline ? (
                                 <>
@@ -1417,8 +1417,8 @@ export default function RiwayatAsesmenAdmin() {
                                     size={14}
                                     className="text-purple-500 shrink-0 mt-0.5"
                                   />
-                                  <span className="text-purple-700 font-semibold break-words leading-snug">
-                                    {batch.tuk}
+                                  <span className="text-purple-700 font-semibold wrap-break-word leading-snug">
+                                    {batch.tipeTuk}
                                   </span>
                                 </>
                               ) : (
@@ -1427,8 +1427,8 @@ export default function RiwayatAsesmenAdmin() {
                                     size={14}
                                     className="text-[#008BE3] shrink-0 mt-0.5"
                                   />
-                                  <span className="text-slate-700 font-semibold break-words leading-snug">
-                                    {batch.tuk}
+                                  <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
+                                    {batch.tipeTuk}
                                   </span>
                                 </>
                               )}
@@ -1521,7 +1521,7 @@ export default function RiwayatAsesmenAdmin() {
                     berstatus Selesai
                   </p>
                 </div>
-                <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3 h-[42px] w-full sm:w-72 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3 h-10.5 w-full sm:w-72 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
                   <Search className="text-gray-400 shrink-0" size={16} />
                   <input
                     type="text"
@@ -1534,7 +1534,7 @@ export default function RiwayatAsesmenAdmin() {
               </div>
 
               <div className="overflow-x-auto relative">
-                <table className="w-full text-left border-collapse min-w-[900px]">
+                <table className="w-full text-left border-collapse min-w-225">
                   <thead>
                     <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                       <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -1581,7 +1581,7 @@ export default function RiwayatAsesmenAdmin() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="font-mono font-bold text-slate-700 bg-sky-50 text-[#008BE3] border border-sky-100 px-2.5 py-1 rounded-md">
+                            <span className="font-mono font-bold text-slate-700 bg-sky-50 ] border border-sky-100 px-2.5 py-1 rounded-md">
                               {item.noSK}
                             </span>
                           </td>
@@ -1597,8 +1597,8 @@ export default function RiwayatAsesmenAdmin() {
                                 size={13}
                                 className="text-[#008BE3] shrink-0"
                               />
-                              <span className="truncate max-w-[200px]">
-                                {item.lokasi}
+                              <span className="truncate max-w-50">
+                                {item.alamat}
                               </span>
                             </div>
                           </td>
@@ -1614,10 +1614,7 @@ export default function RiwayatAsesmenAdmin() {
                           <td className="px-6 py-4 text-center whitespace-nowrap">
                             <span className="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-full font-bold text-[11px] inline-flex items-center gap-1">
                               <Users size={12} className="text-[#008BE3]" />
-                              {item.asesiList?.length ||
-                                item.jumlahAsesi ||
-                                0}{" "}
-                              Asesi
+                              {item.asesiList?.length || 0} Asesi
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -1731,10 +1728,10 @@ export default function RiwayatAsesmenAdmin() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">
-                      TUK
+                      tipeTuk
                     </label>
                     <div className="font-bold text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5">
-                      {selectedPleno.lokasi || "-"}
+                      {selectedPleno.alamat || "-"}
                     </div>
                   </div>
                 </div>
@@ -1744,7 +1741,7 @@ export default function RiwayatAsesmenAdmin() {
                   <label className="block text-xs font-bold text-slate-500 mb-1">
                     Peserta Sidang (Direktur, Pengarah &amp; Komite)
                   </label>
-                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl min-h-[44px] flex flex-wrap gap-2 items-center">
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl min-h-11 flex flex-wrap gap-2 items-center">
                     {(() => {
                       const attendees =
                         selectedPleno.plenoAttendees &&
@@ -1760,12 +1757,7 @@ export default function RiwayatAsesmenAdmin() {
                                 role: "Dewan Pengarah",
                                 nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
                               },
-                              {
-                                role: "Notulis",
-                                nama:
-                                  selectedPleno.notulis ||
-                                  "Siti Rahmawati, S.T.",
-                              },
+
                               {
                                 role: "Komite Skema",
                                 nama: "Asep Abdul Sahid, M.T.",
@@ -1911,14 +1903,14 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
+                  <table className="w-full text-left border-collapse min-w-175 ">
                     <thead>
                       <tr className="bg-slate-100 text-slate-700 border-y border-slate-200">
                         <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
                           No
                         </th>
                         <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
-                          NIM / ID
+                          nik / ID
                         </th>
                         <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
                           Nama Asesi
@@ -1945,7 +1937,7 @@ export default function RiwayatAsesmenAdmin() {
                             typeof asesiItem === "number"
                               ? {
                                   id: `asesi-${idx}`,
-                                  nim: `121705${1000 + idx}`,
+                                  nik: `121705${1000 + idx}`,
                                   nama: String(asesiItem),
                                   skema: selectedPleno.skema,
                                   asesor: "Asesor LSP",
@@ -1963,7 +1955,7 @@ export default function RiwayatAsesmenAdmin() {
                                 {idx + 1}
                               </td>
                               <td className="px-4 py-3 font-mono font-bold text-slate-700">
-                                {asesi.nim}
+                                {asesi.nik}
                               </td>
                               <td className="px-4 py-3 font-bold text-slate-900">
                                 {asesi.nama}
@@ -2047,8 +2039,8 @@ export default function RiwayatAsesmenAdmin() {
                   </p>
                   <p>
                     Pada hari ini <strong>{previewPlenoDoc.tanggal}</strong>{" "}
-                    bertempat di {previewPlenoDoc.lokasi}, Komite Sidang Pleno
-                    LSP telah melakukan peninjauan rekam jejak asesmen untuk
+                    bertempat di {previewPlenoDoc.alamat}, Komite Sidang Pleno
+                    LSP telah melakukan peninjauan rekam jejak asesmen untipeTuk
                     skema:
                   </p>
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg font-bold text-[#008BE3]">
@@ -2056,21 +2048,13 @@ export default function RiwayatAsesmenAdmin() {
                   </div>
                   <p>
                     Dengan total peserta sebanyak{" "}
-                    <strong>{previewPlenoDoc.jumlahAsesi} Asesi</strong>.
+                    <strong>{previewPlenoDoc.asesiList.length} Asesi</strong>.
                     Seluruh proses asesmen dinyatakan sah dan memenuhi standar
                     mutu sertifikasi BNSP.
                   </p>
                 </div>
 
                 <div className="border-t pt-4 border-slate-200 flex justify-between items-end text-xs">
-                  <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase">
-                      Notulis Sidang
-                    </p>
-                    <p className="font-bold text-slate-900 mt-6">
-                      {previewPlenoDoc.notulis || "Siti Rahmawati, S.T."}
-                    </p>
-                  </div>
                   <div className="text-right">
                     <p className="text-slate-400 text-[10px] font-bold uppercase">
                       Status Pengesahan

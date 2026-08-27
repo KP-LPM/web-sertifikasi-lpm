@@ -102,7 +102,7 @@ export default function AdminOverview() {
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
             Dashboard Admin
           </h2>
-          <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-[16px] max-w-sm">
+          <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 max-w-sm">
             Sistem Administrasi dan Pengelolaan Sertifikasi Kompetensi
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function AdminOverview() {
           </div>
         </div>
         {/* Decorative circle graphic similar to Asesi overview */}
-        <div className="absolute right-0 top-0 w-64 h-64 bg-gradient-to-bl from-sky-200/50 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 opacity-70"></div>
+        <div className="absolute right-0 top-0 w-64 h-64 bg-linear-to-bl from-sky-200/50 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 opacity-70"></div>
       </div>
 
       {/* 3 Solid, Compact Metric Cards */}
