@@ -6,14 +6,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Ambil data sesi (token) user yang lagi login
     const token = await getToken({ req: request });
     
     if (!token) {
       return NextResponse.json({ message: 'Akses ditolak, silakan login.' }, { status: 401 });
     }
 
-    // Ambil ID dari token. 
     const userId = Number(token.id || token.sub);
 
     const profil = await prisma.profilPengguna.findUnique({
@@ -37,7 +35,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Cek token lagi biar aman dari penyusup
     const token = await getToken({ req: request });
     if (!token) {
       return NextResponse.json({ message: 'Akses ditolak, silakan login.' }, { status: 401 });
@@ -47,7 +44,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Mapping data dari form frontend ke schema Prisma database
-const dataProfil = {
+    const dataProfil = {
         namaLengkap: body.nama_lengkap,
         tempatLahir: body.tempat_lahir,
         tanggalLahir: body.tanggal_lahir ? new Date(body.tanggal_lahir) : null,

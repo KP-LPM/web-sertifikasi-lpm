@@ -250,6 +250,7 @@ export default function PengajuanSkemaPage() {
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
+  // FETCH PROFIL USER
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {

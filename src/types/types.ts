@@ -740,3 +740,62 @@ export interface SignatureValue {
   type: "auto" | "upload" | "draw" | "manual";
   data?: string | null;
 }
+
+export interface DokumenPengajuan {
+  namaDokumen: string;
+  fileUrl: string;
+}
+
+export interface PengajuanPayload {
+  userId?: string; 
+  code: string;    
+  tuk: string;
+  
+  nik: string;
+  namaLengkap: string;
+  tempatLahir: string;
+  tanggalLahir: string;
+  jenisKelamin: string;
+  alamat: string;
+  provinsi: string;
+  kota: string;
+  kodePos: string;
+  kebangsaan: string; 
+  noTelp: string;
+  pendidikanTerakhir: string;
+  pekerjaan: string;
+  tandaTangan?: string;
+
+  institusiPerusahaan: string;
+  jabatan: string;
+  emailInstitusi: string;
+  kodePosInstitusi: string;
+  telpInstitusi: string;
+  alamatInstitusi: string;
+  faxInstitusi: string;
+  
+  penyesuaianWajar: boolean;
+  berpengalaman: boolean;
+  
+  dataAsesmen?: Array<{ unitId: number; penilaianAsesi: string }>;
+  dokumen?: DokumenPengajuan[];
+}
+
+export interface RegisterPayload {
+  username?: string;
+  email?: string;
+  password?: string;
+  role?: string;
+  nik?: string;
+  nama_lengkap?: string;
+  tempat_lahir?: string;
+  tanggal_lahir?: string;
+  jenis_kelamin?: string;
+  no_hp?: string;
+  pekerjaan?: string;
+  kewarganegaraan?: string;
+  nomor_registrasi_met?: string;
+  pendidikan_terakhir?: string;
+  alamat_wilayah?: string;
+  tanda_tangan?: string;
+}
