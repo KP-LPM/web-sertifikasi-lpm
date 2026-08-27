@@ -252,7 +252,7 @@ export default function PengajuanSkemaPage() {
   const [searchScheme, setSearchScheme] = useState("");
   const [schemePage, setSchemePage] = useState(1);
 
-  const [namaLengkap, setNamaLengkap] = useState(user?.name || "");
+  const [namaLengkap, setNamaLengkap] = useState(user?.username || "");
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [jenisKelamin, setJenisKelamin] = useState("");

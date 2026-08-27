@@ -26,13 +26,14 @@ import {
   Eye,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
-import { AsesiPlenoRecord } from "@/types/types";
+import { AsesiPlenoRecord, PlenoGroup } from "@/types/types";
 
-export type { AsesiPlenoRecord  };
+export type { AsesiPlenoRecord };
 
 export default function UploadSertifikat() {
-  const { plenoSessions, user } = useAppContext();
+  const { user } = useAppContext();
   const readOnly = user?.role !== "admin";
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleDownloadSertifikat = async () => {
     try {
       setIsLoading(true);
@@ -141,7 +142,7 @@ export default function UploadSertifikat() {
   };
 
   // State for Pleno Sessions and their Asesi lists
-  const [plenoGroups, setPlenoGroups] = useState<PlenoGroupRecord[]>([
+  const [plenoGroups, setPlenoGroups] = useState<PlenoGroup[]>([
     {
       plenoId: "PLENO-2026-001",
       plenoTitle: "Sidang Pleno Hasil Asesmen Batch 1",
@@ -157,10 +158,10 @@ export default function UploadSertifikat() {
       asesiList: [
         {
           id: "AS-001",
-          asesiName: "Ahmad Rizki",
-          nimNik: "1197050001",
-          scheme: "Pemrogram Mobil Pertama (Mobile Developer)",
-          certificateNo: "50012/LSP-SGD/VIII/2026",
+          nama: "Ahmad Rizki",
+          nik: "1197050001",
+          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
+          noSertifikat: "50012/LSP-SGD/VIII/2026",
           issueDate: "2026-08-16",
           gdriveUrl:
             "https://drive.google.com/file/d/1A2b3C4d5E6f7G8h9I0j_Cert1/view",
@@ -169,10 +170,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-002",
-          asesiName: "Siti Nurhaliza",
-          nimNik: "1197050012",
-          scheme: "Junior Web Developer",
-          certificateNo: "50013/LSP-SGD/VIII/2026",
+          nama: "Siti Nurhaliza",
+          nik: "1197050012",
+          skema: "Junior Web Developer",
+          noSertifikat: "50013/LSP-SGD/VIII/2026",
           issueDate: "2026-08-16",
           gdriveUrl:
             "https://drive.google.com/file/d/2B3c4D5e6F7g8H9i0J1k_Cert2/view",
@@ -181,10 +182,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-003",
-          asesiName: "Budi Santoso",
-          nimNik: "1197050025",
-          scheme: "Pemrogram Mobil Pertama (Mobile Developer)",
-          certificateNo: "",
+          nama: "Budi Santoso",
+          nik: "1197050025",
+          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -192,10 +193,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-004",
-          asesiName: "Dewi Anggraini",
-          nimNik: "1197050031",
-          scheme: "Junior Web Developer",
-          certificateNo: "50014/LSP-SGD/VIII/2026",
+          nama: "Dewi Anggraini",
+          nik: "1197050031",
+          skema: "Junior Web Developer",
+          noSertifikat: "50014/LSP-SGD/VIII/2026",
           issueDate: "2026-08-16",
           gdriveUrl:
             "https://drive.google.com/file/d/3C4d5E6f7G8h9I0j1K2l_Cert3/view",
@@ -204,10 +205,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-005",
-          asesiName: "Muhammad Farhan",
-          nimNik: "1197050042",
-          scheme: "Pemrogram Mobil Pertama (Mobile Developer)",
-          certificateNo: "",
+          nama: "Muhammad Farhan",
+          nik: "1197050042",
+          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -227,10 +228,10 @@ export default function UploadSertifikat() {
       asesiList: [
         {
           id: "AS-006",
-          asesiName: "Dewi Lestari",
-          nimNik: "1197050044",
-          scheme: "Junior Web Developer",
-          certificateNo: "50020/LSP-SGD/VIII/2026",
+          nama: "Dewi Lestari",
+          nik: "1197050044",
+          skema: "Junior Web Developer",
+          noSertifikat: "50020/LSP-SGD/VIII/2026",
           issueDate: "2026-08-18",
           gdriveUrl:
             "https://drive.google.com/file/d/4D5e6F7g8H9i0J1k2L3m_Cert4/view",
@@ -239,10 +240,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-007",
-          asesiName: "Eko Prasetyo",
-          nimNik: "1197050058",
-          scheme: "Auditor Halal",
-          certificateNo: "",
+          nama: "Eko Prasetyo",
+          nik: "1197050058",
+          skema: "Auditor Halal",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -250,10 +251,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-008",
-          asesiName: "Rina Marlina",
-          nimNik: "1197050063",
-          scheme: "Junior Web Developer",
-          certificateNo: "",
+          nama: "Rina Marlina",
+          nik: "1197050063",
+          skema: "Junior Web Developer",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -261,10 +262,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-009",
-          asesiName: "Hendra Wijaya",
-          nimNik: "1197050070",
-          scheme: "Auditor Halal",
-          certificateNo: "50021/LSP-SGD/VIII/2026",
+          nama: "Hendra Wijaya",
+          nik: "1197050070",
+          skema: "Auditor Halal",
+          noSertifikat: "50021/LSP-SGD/VIII/2026",
           issueDate: "2026-08-18",
           gdriveUrl:
             "https://drive.google.com/file/d/5E6f7G8h9I0j1K2l3M4n_Cert5/view",
@@ -289,10 +290,10 @@ export default function UploadSertifikat() {
       asesiList: [
         {
           id: "AS-010",
-          asesiName: "Bambang Hermanto",
-          nimNik: "1197050081",
-          scheme: "Auditor Halal",
-          certificateNo: "",
+          nama: "Bambang Hermanto",
+          nik: "1197050081",
+          skema: "Auditor Halal",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -300,10 +301,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-011",
-          asesiName: "Nina Zatulini",
-          nimNik: "1197050095",
-          scheme: "Pemrogram Mobil Pertama (Mobile Developer)",
-          certificateNo: "",
+          nama: "Nina Zatulini",
+          nik: "1197050095",
+          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -311,10 +312,10 @@ export default function UploadSertifikat() {
         },
         {
           id: "AS-012",
-          asesiName: "Dian Sastrowardoyo",
-          nimNik: "1197050102",
-          scheme: "Network Administrator",
-          certificateNo: "",
+          nama: "Dian Sastrowardoyo",
+          nik: "1197050102",
+          skema: "Network Administrator",
+          noSertifikat: "",
           issueDate: "",
           gdriveUrl: "",
           status: "Belum Upload",
@@ -347,7 +348,7 @@ export default function UploadSertifikat() {
     asesi: AsesiPlenoRecord;
   } | null>(null);
   const [inputForm, setInputForm] = useState({
-    certificateNo: "",
+    n: "",
     issueDate: "",
     gdriveUrl: "",
     notes: "",
@@ -365,39 +366,18 @@ export default function UploadSertifikat() {
   const handleOpenInputModal = (plenoId: string, asesi: AsesiPlenoRecord) => {
     setEditingAsesi({ plenoId, asesi });
     const defaultCertNo =
-      asesi.certificateNo ||
+      asesi.noSertifikat ||
       `50${Math.floor(100 + Math.random() * 900)}/LSP-SGD/VIII/2026`;
     const defaultDate =
       asesi.issueDate || new Date().toISOString().split("T")[0];
 
     setInputForm({
-      certificateNo: defaultCertNo,
+      n: defaultCertNo,
       issueDate: defaultDate,
       gdriveUrl: asesi.gdriveUrl || "",
       notes: asesi.notes || "",
     });
     setIsModalOpen(true);
-  };
-
-  // Generate automatic certificate link & cert number
-  const handleGenerateCertificate = () => {
-    if (!editingAsesi) return;
-    const certId = editingAsesi.asesi.id || "AS-001";
-    const randomHash = Math.random()
-      .toString(36)
-      .substring(2, 10)
-      .toUpperCase();
-    const generatedUrl = `https://drive.google.com/file/d/CERT-BNSP-${certId}-${randomHash}/view?usp=sharing`;
-
-    const defaultCertNo =
-      inputForm.certificateNo ||
-      `50${Math.floor(100 + Math.random() * 900)}/LSP-SGD/VIII/2026`;
-
-    setInputForm((prev) => ({
-      ...prev,
-      gdriveUrl: generatedUrl,
-      certificateNo: defaultCertNo,
-    }));
   };
 
   // Save GDrive link and info for asesi
@@ -417,11 +397,12 @@ export default function UploadSertifikat() {
         if (group.plenoId === plenoId) {
           return {
             ...group,
+            // Hapus .length, langsung gunakan .map() pada array
             asesiList: group.asesiList.map((item) => {
               if (item.id === asesi.id) {
                 return {
                   ...item,
-                  certificateNo: inputForm.certificateNo,
+                  n: inputForm.n, // Catatan: Pastikan 'n' memang ada di interface AsesiPlenoRecord Anda (atau gunakan noSertifikat)
                   issueDate: inputForm.issueDate,
                   gdriveUrl: inputForm.gdriveUrl.trim(),
                   status: "Terbit",
@@ -451,14 +432,17 @@ export default function UploadSertifikat() {
       const q = plenoSearchTerm.toLowerCase();
       const matchId = group.plenoId.toLowerCase().includes(q);
       const matchTitle = group.plenoTitle.toLowerCase().includes(q);
+
+      // skemaList berisi string[], bukan objek — langsung compare string
       const matchSkema = group.skemaList.some((s) =>
         s.toLowerCase().includes(q),
       );
+
       const matchAsesi = group.asesiList.some(
         (a) =>
-          a.asesiName.toLowerCase().includes(q) ||
-          a.nimNik.toLowerCase().includes(q),
+          a.nama?.toLowerCase().includes(q) || a.nik?.toLowerCase().includes(q),
       );
+
       if (!matchId && !matchTitle && !matchSkema && !matchAsesi) return false;
     }
 
@@ -483,10 +467,9 @@ export default function UploadSertifikat() {
 
         if (candidateSearchTerm.trim()) {
           const q = candidateSearchTerm.toLowerCase();
-          const matchName = candidate.asesiName.toLowerCase().includes(q);
-          const matchNim = candidate.nimNik.toLowerCase().includes(q);
-          const matchCert = candidate.certificateNo.toLowerCase().includes(q);
-          if (!matchName && !matchNim && !matchCert) return false;
+          const matchName = candidate.nama.toLowerCase().includes(q);
+          const matchNim = candidate.nik.toLowerCase().includes(q);
+          if (!matchName && !matchNim) return false;
         }
 
         return true;
@@ -920,22 +903,22 @@ export default function UploadSertifikat() {
                         {/* Nama Asesi */}
                         <td className="px-4 py-4 align-middle whitespace-nowrap">
                           <p className="font-bold text-slate-900 text-sm whitespace-nowrap">
-                            {candidate.asesiName}
+                            {candidate.nama}
                           </p>
                         </td>
 
                         {/* Skema Sertifikasi */}
                         <td className="px-4 py-4 align-middle whitespace-nowrap">
                           <span className="inline-block px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold border border-slate-200 whitespace-nowrap">
-                            {candidate.scheme}
+                            {candidate.skema}
                           </span>
                         </td>
 
                         {/* Nomor Sertifikat */}
                         <td className="px-4 py-4 align-middle whitespace-nowrap">
-                          {candidate.certificateNo ? (
+                          {candidate.noSertifikat ? (
                             <p className="font-mono font-bold text-slate-800 text-xs whitespace-nowrap">
-                              {candidate.certificateNo}
+                              {candidate.noSertifikat}
                             </p>
                           ) : (
                             <span className="text-slate-400 italic text-xs whitespace-nowrap">
@@ -1088,7 +1071,7 @@ export default function UploadSertifikat() {
                   {readOnly
                     ? "Detail Sertifikat Asesi"
                     : "Input Link Sertifikat (GDrive)"}{" "}
-                  - {editingAsesi.asesi.asesiName}
+                  - {editingAsesi.asesi.nama}
                 </h3>
               </div>
               <button
@@ -1120,10 +1103,10 @@ export default function UploadSertifikat() {
                   Asesi Disidangkan
                 </p>
                 <p className="font-black text-slate-900 text-sm">
-                  {editingAsesi.asesi.asesiName}
+                  {editingAsesi.asesi.nama}
                 </p>
                 <p className="text-xs text-slate-600 font-medium">
-                  Skema: {editingAsesi.asesi.scheme}
+                  Skema: {editingAsesi.asesi.skema}
                 </p>
               </div>
 
@@ -1138,11 +1121,11 @@ export default function UploadSertifikat() {
                     required={!readOnly}
                     readOnly={readOnly}
                     placeholder={readOnly ? "-" : "50012/LSP-SGD/VIII/2026"}
-                    value={inputForm.certificateNo}
+                    value={inputForm.n}
                     onChange={(e) =>
                       setInputForm({
                         ...inputForm,
-                        certificateNo: e.target.value,
+                        n: e.target.value,
                       })
                     }
                     className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${

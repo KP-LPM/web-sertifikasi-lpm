@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
-import { supabase } from '@/lib/supabase';
+import { supabase } from "@/lib/supabase";
 
 type SessionUser = {
   id?: string | number;
@@ -17,7 +17,7 @@ type SessionUser = {
 
 export default function Profile() {
   const { user, registeredProfile, updateUser } = useAppContext();
-  
+
   // State untuk modal tanda tangan
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const signatureRef = useRef<SignatureCanvas>(null);
@@ -30,31 +30,35 @@ export default function Profile() {
   const fileAvatarRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-      peran:
-        (user as SessionUser)?.role === "asesor"
-          ? "Asesor"
-          : (user as SessionUser)?.role === "admin"
-            ? "Admin"
-            : "Asesi",
-      username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : ""),
-      email: user?.email || "",
-      namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
-      tempatLahir: (registeredProfile?.tempatLahir as string) || "",
-      tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
-      jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
-      alamat: (registeredProfile?.alamatRumah as string) || "",
-      alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
-      kodePos: (registeredProfile?.kodePos as string) || "",
-      nik: (registeredProfile?.nik as string) || "",
-      noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
-      noTelp: (registeredProfile?.noTelp as string) || "",
-      pekerjaan: (registeredProfile?.pekerjaan as string) || "",
-      pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
-      tandaTangan: (registeredProfile?.tandaTangan as string) || "",
-    });
+    peran:
+      (user as SessionUser)?.role === "asesor"
+        ? "Asesor"
+        : (user as SessionUser)?.role === "admin"
+          ? "Admin"
+          : "Asesi",
+    username:
+      (user as SessionUser)?.username ||
+      (user?.email ? user.email.split("@")[0] : ""),
+    email: user?.email || "",
+    namaLengkap: (registeredProfile?.nama as string) || user?.nama || "",
+    tempatLahir: (registeredProfile?.tempatLahir as string) || "",
+    tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
+    jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
+    alamat: (registeredProfile?.alamatRumah as string) || "",
+    alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
+    kodePos: (registeredProfile?.kodePos as string) || "",
+    nik: (registeredProfile?.nik as string) || "",
+    noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
+    noTelp: (registeredProfile?.noTelp as string) || "",
+    pekerjaan: (registeredProfile?.pekerjaan as string) || "",
+    pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
+    tandaTangan: (registeredProfile?.tandaTangan as string) || "",
+  });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
@@ -72,16 +76,21 @@ export default function Profile() {
         const img = new Image();
         img.src = event.target?.result as string;
         img.onload = () => {
-          const canvas = document.createElement('canvas');
+          const canvas = document.createElement("canvas");
           const MAX_WIDTH = 500;
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob((blob) => {
-            if (blob) resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-          }, 'image/jpeg', 0.8);
+          canvas.toBlob(
+            (blob) => {
+              if (blob)
+                resolve(new File([blob], file.name, { type: "image/jpeg" }));
+            },
+            "image/jpeg",
+            0.8,
+          );
         };
       };
     });
@@ -131,12 +140,18 @@ export default function Profile() {
 
   React.useEffect(() => {
     if (registeredProfile) {
-      const data = registeredProfile as unknown as Record<string, string | undefined>; 
-      const namaAsli = data.nama_lengkap || data.nama || user?.name || "";
+      const data = registeredProfile as unknown as Record<
+        string,
+        string | undefined
+      >;
+      const namaAsli = data.nama_lengkap || data.nama || user?.nama || "";
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        username: (user as SessionUser)?.username || (user?.email ? user.email.split('@')[0] : "") || prev.username,
+        username:
+          (user as SessionUser)?.username ||
+          (user?.email ? user.email.split("@")[0] : "") ||
+          prev.username,
         email: data.email || user?.email || prev.email,
         namaLengkap: namaAsli,
         tempatLahir: data.tempat_lahir || data.tempatLahir || "",
@@ -149,7 +164,8 @@ export default function Profile() {
         noRegistrasi: data.no_registrasi || data.noRegistrasi || "",
         noTelp: data.no_telp || data.noTelp || "",
         pekerjaan: data.pekerjaan || "",
-        pendidikanTerakhir: data.pendidikan_terakhir || data.pendidikanTerakhir || "",
+        pendidikanTerakhir:
+          data.pendidikan_terakhir || data.pendidikanTerakhir || "",
         tandaTangan: data.tanda_tangan || data.tandaTangan || "",
       }));
     }
@@ -158,21 +174,21 @@ export default function Profile() {
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
-        const response = await fetch('/api/profil');
+        const response = await fetch("/api/profil");
         if (response.ok) {
           const data = await response.json();
-        if (data.avatar) {
+          if (data.avatar) {
             setAvatarPreview(data.avatar);
           }
-          setFormData(prev => {
+          setFormData((prev) => {
             return {
               ...prev,
               namaLengkap: data.namaLengkap || prev.namaLengkap,
               username: (user as SessionUser)?.username || prev.username,
               email: (user as SessionUser)?.email || prev.email,
               tempatLahir: data.tempatLahir || prev.tempatLahir,
-              tanggalLahir: data.tanggalLahir 
-                ? new Date(data.tanggalLahir).toISOString().split('T')[0] 
+              tanggalLahir: data.tanggalLahir
+                ? new Date(data.tanggalLahir).toISOString().split("T")[0]
                 : prev.tanggalLahir,
               jenisKelamin: data.jenisKelamin || prev.jenisKelamin,
               alamat: data.alamat || prev.alamat,
@@ -180,7 +196,8 @@ export default function Profile() {
               nik: data.nik || prev.nik,
               noTelp: data.noHp || prev.noTelp,
               pekerjaan: data.pekerjaan || prev.pekerjaan,
-              pendidikanTerakhir: data.pendidikanTerakhir || prev.pendidikanTerakhir,
+              pendidikanTerakhir:
+                data.pendidikanTerakhir || prev.pendidikanTerakhir,
               tandaTangan: data.tandaTangan || prev.tandaTangan,
               noRegistrasi: data.nomorRegistrasiMet || prev.noRegistrasi,
             };
@@ -192,7 +209,7 @@ export default function Profile() {
     };
     fetchProfil();
   }, [user]);
-  
+
   // 3. Fungsi Utama Simpan Perubahan (Termasuk Upload Foto)
   const handleSave = async () => {
     setIsSaving(true);
@@ -205,19 +222,22 @@ export default function Profile() {
         const fileName = `avatar-${(user as SessionUser)?.id || Date.now()}-${Date.now()}.jpg`;
 
         const { error: uploadError } = await supabase.storage
-          .from('avatars')
+          .from("avatars")
           .upload(fileName, compressedFile, { upsert: true });
 
-        if (uploadError) throw new Error("Gagal upload foto: " + uploadError.message);
+        if (uploadError)
+          throw new Error("Gagal upload foto: " + uploadError.message);
 
-        const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+        const { data: publicUrlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(fileName);
         finalAvatarUrl = publicUrlData.publicUrl;
       }
 
       const payload = {
-        name: formData.namaLengkap, 
+        name: formData.namaLengkap,
         email: formData.email,
-        nama_lengkap: formData.namaLengkap, 
+        nama_lengkap: formData.namaLengkap,
         tempat_lahir: formData.tempatLahir,
         tanggal_lahir: formData.tanggalLahir,
         jenis_kelamin: formData.jenisKelamin,
@@ -230,13 +250,13 @@ export default function Profile() {
         pekerjaan: formData.pekerjaan,
         pendidikan_terakhir: formData.pendidikanTerakhir,
         tanda_tangan: formData.tandaTangan,
-        avatar: finalAvatarUrl, 
+        avatar: finalAvatarUrl,
       };
 
       // Kirim data lengkap ke API profil
-      const response = await fetch('/api/profil', {
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/profil", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -244,7 +264,6 @@ export default function Profile() {
 
       updateUser(payload as unknown as Record<string, string | undefined>);
       alert("Profil berhasil disimpan!");
-      
     } catch (error) {
       // Kita cek dulu apakah error-nya benar-benar sebuah "Error" bawaan sistem
       if (error instanceof Error) {
@@ -281,7 +300,7 @@ export default function Profile() {
             {/* Avatar Section */}
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm shrink-0">
-                {(avatarPreview || user?.avatar) ? (
+                {avatarPreview || user?.avatar ? (
                   <img
                     src={avatarPreview || (user?.avatar as string)}
                     alt="Profile"
@@ -443,7 +462,8 @@ export default function Profile() {
 
                 <div className="md:col-span-2 lg:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="text-red-500">*</span> Alamat Wilayah/Kelurahan
+                    <span className="text-red-500">*</span> Alamat
+                    Wilayah/Kelurahan
                   </label>
                   <input
                     type="text"
@@ -481,7 +501,8 @@ export default function Profile() {
                 {formData.peran === "Asesor" && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Nomor Registrasi/MET
+                      <span className="text-red-500">*</span> Nomor
+                      Registrasi/MET
                     </label>
                     <input
                       type="text"
@@ -515,7 +536,9 @@ export default function Profile() {
                     onChange={handleChange}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   >
-                    <option value="" disabled>Pilih Pekerjaan</option>
+                    <option value="" disabled>
+                      Pilih Pekerjaan
+                    </option>
                     <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
                     <option value="Karyawan Swasta">Karyawan Swasta</option>
                     <option value="PNS">PNS</option>
@@ -532,7 +555,9 @@ export default function Profile() {
                     onChange={handleChange}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   >
-                    <option value="" disabled>Pilih Pendidikan</option>
+                    <option value="" disabled>
+                      Pilih Pendidikan
+                    </option>
                     <option value="SMA">SMA/SMK</option>
                     <option value="D3">D3</option>
                     <option value="S1">S1/D4</option>
@@ -595,7 +620,7 @@ export default function Profile() {
                 disabled={isSaving}
                 className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-lg text-sm font-bold shadow-xs transition-colors w-full md:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save size={18} className="stroke-[2.5]" /> 
+                <Save size={18} className="stroke-[2.5]" />
                 {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>

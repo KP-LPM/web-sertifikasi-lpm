@@ -21,11 +21,12 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
 import {
-  PlenoSession,
   ScheduleItem,
-  Candidate,
   AsesiPlenoItem,
   PlenoDetailData,
+  PlenoAttendee,
+  Role,
+  PlenoSchedule,
 } from "@/types/types";
 
 const TUK_LIST = [
@@ -148,18 +149,18 @@ export default function AssessmentSchedule() {
     user,
     plenoSessions,
     addPlenoSession,
-    assessments,
+    AssessmentItems,
     updatePlenoSession,
     deletePlenoSession,
   } = useAppContext();
   const isPlenoOnlyRole =
     user?.role === "direktur" ||
     user?.role === "manajer" ||
-    user?.role === "dewan_pengarah" ||
-    user?.role === "komite_skema";
+    user?.role === "dewan pengarah" ||
+    user?.role === "komite skema";
   const readOnly = user?.role !== "admin";
 
-  const [confirmAsesmenId, setConfirmAsesmenId] = useState<number | null>(null);
+  const [confirmAsesmenId, setConfirmAsesmenId] = useState<string | null>(null);
   const [confirmPlenoId, setConfirmPlenoId] = useState<string | null>(null);
 
   // Pleno State
@@ -177,25 +178,27 @@ export default function AssessmentSchedule() {
     setIsPreviewMode(true);
     setEditId(item.id);
     const start =
-      item.startTime ||
+      item.waktuMulai ||
       (item.jam ? item.jam.split(" - ")[0].replace(" WIB", "") : "08:00");
     setFormData({
-      batchName: item.batchName || "",
+      namaBatch: item.namaBatch || "",
       nomorSurat: item.nomorSurat || "",
-      scheme: item.scheme || "",
-      method: item.method || item.metode || "Offline",
-      tukType: item.tukType || "Sewaktu",
+      skema: item.skema || "",
+      metode: item.metode || "Luring",
+      tipeTuk: item.tipeTuk,
+      tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
-      date: item.date || "",
-      startTime: start,
-      endTime: "",
+      tanggal: item.tanggal || "",
+      waktuMulai: start,
+      waktuAkhir: item.waktuAkhir || "",
       jam: item.jam || `${start} WIB`,
-      tuk: item.tuk || "",
-      assessorName: item.assessorName || "",
+      namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
       suratPenugasanName: item.suratPenugasanName || "",
-      candidatesCount: item.candidatesCount || 0,
+      totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
       status: item.status || "Terjadwal",
     });
+
+    setSelectedAsesiForJadwal(item.asesiList || []);
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
@@ -221,7 +224,7 @@ export default function AssessmentSchedule() {
         namaDirektur: "Prof. Dr. Ija Suntana, M.Ag",
       };
 
-      const res = await fetch("/api/surat/penugasanassessor", {
+      const res = await fetch("/api/surat/penugasanasesor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -247,46 +250,46 @@ export default function AssessmentSchedule() {
     setIsEditMode(true);
     setEditId(item.id);
     const start =
-      item.startTime ||
+      item.waktuMulai ||
       (item.jam ? item.jam.split(" - ")[0].replace(" WIB", "") : "08:00");
     setFormData({
-      batchName: item.batchName || "",
+      namaBatch: item.namaBatch || "",
       nomorSurat: item.nomorSurat || "",
-      scheme: item.scheme || "",
-      method: item.method || item.metode || "Offline",
-      tukType: item.tukType || "Sewaktu",
+      skema: item.skema || "",
+      metode: item.metode || "Luring",
+      tipeTuk: item.tipeTuk,
+      tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
-      date: item.date || "",
-      startTime: start,
-      endTime: "",
+      tanggal: item.tanggal || "",
+      waktuMulai: start,
+      waktuAkhir: item.waktuAkhir || "",
       jam: item.jam || `${start} WIB`,
-      tuk: item.tuk || "",
-      assessorName: item.assessorName || "",
+      namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
       suratPenugasanName: item.suratPenugasanName || "",
-      candidatesCount: item.candidatesCount || 0,
+      totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
       status: item.status || "Terjadwal",
     });
 
     setSelectedAsesiForJadwal(item.asesiList || []);
+
+    setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
-  const handlePreviewPleno = (item: PlenoSession) => {
+  const handlePreviewPleno = (item: PlenoDetailData) => {
     setIsPreviewMode(true);
     setEditId(item.id);
     setPlenoForm({
       id: String(item.id),
       tanggal: item.tanggal,
-      waktuMulai: item.waktu?.split(" s.d ")[0] || "",
-      waktuSelesai: item.waktu?.split(" s.d ")[1] || "",
+      waktu: item.waktu?.split(" s.d ")[0] || "",
       skema: item.skema,
-      lokasi: item.lokasi,
-      detailLokasi: item.detailLokasi || "",
+      alamat: item.alamat,
       deskripsi: item.deskripsi || "",
       plenoAttendees: item.plenoAttendees || [],
       suratPlenoName: item.suratPlenoName || "",
       suratPlenoUrl: item.suratPlenoUrl || "",
     });
-    setSelectedAsesiForPleno(item.asesiList || []);
+    setSelectedAsesiForPleno(item.asesiList as AsesiPlenoItem[]);
     setIsPlenoModalOpen(true);
   };
 
@@ -294,7 +297,7 @@ export default function AssessmentSchedule() {
     deletePlenoSession(id);
   };
 
-  const handleDeleteSchedule = (id: number | string) => {
+  const handleDeleteSchedule = (id: string) => {
     setSchedules(schedules.filter((s) => s.id !== id));
   };
 
@@ -327,11 +330,11 @@ export default function AssessmentSchedule() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "-";
+  const formattanggal = (tanggalStr: string) => {
+    if (!tanggalStr) return "-";
     try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return dateStr;
+      const date = new Date(tanggalStr); // Gunakan D kapital
+      if (isNaN(date.getTime())) return tanggalStr;
       return new Intl.DateTimeFormat("id-ID", {
         weekday: "long",
         day: "numeric",
@@ -339,45 +342,43 @@ export default function AssessmentSchedule() {
         year: "numeric",
       }).format(date);
     } catch {
-      return dateStr;
+      return tanggalStr;
     }
   };
 
   // Asesmen State
   const [schedules, setSchedules] = useState<ScheduleItem[]>([
     {
-      id: 1,
-      batchName: "BATCH-IT-2026-001",
+      id: "1",
+      namaBatch: "BATCH-IT-2026-001",
       nomorSurat: "ST/LSP-P1/BATCH-001/2026",
-      scheme: "Auditor Halal",
-      method: "Offline",
-      date: "15 Okt 2026",
-      startTime: "08:00",
-      endTime: "",
-      tuk: "GD-001",
-      tukType: "Sewaktu",
-      candidatesCount: 20,
-      assessorName: "Dr. Aris Thorne",
-      assessorInitial: "AT",
+      skema: "Auditor Halal",
+      metode: "Offline",
+      tanggal: "15 Okt 2026",
+      waktuMulai: "08:00",
+      waktuAkhir: "",
+      tipeTuk: "Sewaktu",
+      totalKandidat: 20,
+      namaAsesor: "Dr. Aris Thorne",
+      inisialAsesor: "AT",
       suratPenugasanName:
         "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J/view",
       status: "Dikonfirmasi",
       asesiList: [1, 5],
     },
     {
-      id: 2,
-      batchName: "BATCH-NET-2026-002",
+      id: "2",
+      namaBatch: "BATCH-NET-2026-002",
       nomorSurat: "ST/LSP-P1/BATCH-002/2026",
-      scheme: "Jenjang 5 Bidang Kewirausahaan Industri",
-      method: "Online",
-      date: "18 Okt 2026",
-      startTime: "13:00",
-      endTime: "",
-      tuk: "GD-004",
-      tukType: "Mandiri",
-      candidatesCount: 15,
-      assessorName: "Budi Santoso, M.Kom",
-      assessorInitial: "BS",
+      skema: "Jenjang 5 Bidang Kewirausahaan Industri",
+      metode: "Online",
+      tanggal: "18 Okt 2026",
+      waktuMulai: "13:00",
+      waktuAkhir: "",
+      tipeTuk: "Mandiri",
+      totalKandidat: 15,
+      namaAsesor: "Budi Santoso, M.Kom",
+      inisialAsesor: "BS",
       suratPenugasanName:
         "https://drive.google.com/file/d/0J9I8H7G6F5E4D3C2B1A/view",
       status: "Terjadwal",
@@ -390,34 +391,35 @@ export default function AssessmentSchedule() {
     (string | number)[]
   >([]);
   const [formData, setFormData] = useState({
-    batchName: "",
+    namaBatch: "",
     nomorSurat: "",
-    scheme: "",
-    method: "Offline",
-    tukType: "Sewaktu",
+    skema: "",
+    metode: "Offline",
+    tipeTuk: "Sewaktu",
     alamat: "UIN Sunan Gunung Djati Bandung",
-    date: "",
-    startTime: "08:00",
-    endTime: "",
+    tanggal: "",
+    waktuMulai: "08:00",
+    waktuAkhir: "",
     jam: "08:00 WIB",
     tuk: "",
-    assessorName: "",
+    namaAsesor: "",
     suratPenugasanName: "",
-    candidatesCount: 0,
+    totalKandidat: 0,
     status: "Terjadwal",
   });
 
   const handleAddSchedule = () => {
     if (
-      !formData.batchName ||
-      !formData.scheme ||
-      !formData.date ||
-      !formData.assessorName ||
+      !formData.namaBatch ||
+      !formData.skema ||
+      !formData.tanggal ||
+      !formData.namaAsesor ||
       !formData.tuk ||
-      !formData.tukType ||
+      !formData.tipeTuk ||
       selectedAsesiForJadwal.length === 0
     )
       return;
+
     if (isEditMode) {
       setSchedules(
         schedules.map((s) =>
@@ -425,13 +427,13 @@ export default function AssessmentSchedule() {
             ? {
                 ...s,
                 ...formData,
-                assessorInitial: formData.assessorName
+                inisialAsesor: formData.namaAsesor
                   .split(" ")
                   .map((n) => n[0])
                   .join("")
                   .substring(0, 2)
                   .toUpperCase(),
-                candidatesCount: selectedAsesiForJadwal.length,
+                totalKandidat: selectedAsesiForJadwal.length,
                 asesiList: selectedAsesiForJadwal,
               }
             : s,
@@ -439,34 +441,35 @@ export default function AssessmentSchedule() {
       );
     } else {
       const newSchedule = {
-        id: schedules.length + 1,
+        id: String(schedules.length + 1), // <-- Konversi ke string di sini
         ...formData,
-        assessorInitial: formData.assessorName
+        inisialAsesor: formData.namaAsesor
           .split(" ")
           .map((n) => n[0])
           .join("")
           .substring(0, 2)
           .toUpperCase(),
-        candidatesCount: selectedAsesiForJadwal.length,
+        totalKandidat: selectedAsesiForJadwal.length,
         asesiList: selectedAsesiForJadwal,
       };
-      setSchedules([newSchedule, ...schedules]);
+      // Tambahkan as ScheduleItem agar TypeScript tidak ragu dengan objek baru ini
+      setSchedules([newSchedule as ScheduleItem, ...schedules]);
     }
     setIsModalOpen(false);
     setFormData({
-      batchName: "",
+      namaBatch: "",
       nomorSurat: "",
-      scheme: "",
-      method: "Offline",
-      tukType: "Sewaktu",
+      skema: "",
+      metode: "Offline",
+      tipeTuk: "Sewaktu",
       alamat: "UIN Sunan Gunung Djati Bandung",
-      date: "",
-      startTime: "08:00",
-      endTime: "",
+      tanggal: "",
+      waktuMulai: "08:00",
+      waktuAkhir: "",
       jam: "08:00 WIB",
       tuk: "",
-      candidatesCount: 0,
-      assessorName: "",
+      totalKandidat: 0,
+      namaAsesor: "",
       suratPenugasanName: "",
       status: "Terjadwal",
     });
@@ -475,20 +478,18 @@ export default function AssessmentSchedule() {
 
   const filteredSchedules = schedules.filter(
     (item) =>
-      (String(item.batchName)
+      (String(item.namaBatch)
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-        String(item.scheme)
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())) &&
+        String(item.skema).toLowerCase().includes(searchQuery.toLowerCase())) &&
       (filterStatus === "Semua" || item.status === filterStatus),
   );
 
-  // Get unique schemes from completed assessments
-  const completedAssessments = assessments.filter(
+  // Get unique skemas from completed assessments
+  const completedAssessments = AssessmentItems.filter(
     (a) => a.status === "Selesai",
   );
-  const uniqueSchemes = [
+  const uniqueskemas = [
     "Auditor Halal",
     "Jenjang 5 Bidang Kewirausahaan Industri",
     "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -505,36 +506,32 @@ export default function AssessmentSchedule() {
   const [plenoForm, setPlenoForm] = useState<{
     id: string;
     tanggal: string;
-    waktuMulai: string;
-    waktuSelesai: string;
+    waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
     skema: string;
-    lokasi: string;
-    detailLokasi: string;
+    alamat: string;
     deskripsi: string;
-    plenoAttendees: { role: string; nama: string }[];
+    plenoAttendees: PlenoAttendee[]; // pakai interface yang sudah ada, bukan inline type
     suratPlenoName?: string;
     suratPlenoUrl?: string;
   }>({
     id: "",
     tanggal: "",
-    waktuMulai: "",
-    waktuSelesai: "",
+    waktu: "",
     skema: "",
-    lokasi: "Ruang Rapat Utama (Offline)",
-    detailLokasi: "",
+    alamat: "Ruang Rapat Utama (Offline)",
     deskripsi: "",
     plenoAttendees: [],
     suratPlenoName: "",
     suratPlenoUrl: "",
   });
 
-  const isAttendeeSelected = (nama: string, role: string) => {
+  const isAttendeeSelected = (nama: string, role: Role) => {
     return plenoForm.plenoAttendees.some(
       (a) => a.nama === nama && a.role === role,
     );
   };
 
-  const toggleAttendeeSelection = (userObj: { nama: string; role: string }) => {
+  const toggleAttendeeSelection = (userObj: { nama: string; role: Role }) => {
     if (isPreviewMode) return;
     const isSelected = isAttendeeSelected(userObj.nama, userObj.role);
     if (isSelected) {
@@ -559,32 +556,35 @@ export default function AssessmentSchedule() {
     AsesiPlenoItem[]
   >([]);
 
-  // Available candidates for plenary session (all completed assessments awaiting decision)
+  // Available Candidates for plenary session (all completed assessments awaiting decision)
   const availableAsesiForPleno = completedAssessments;
 
   const handleAddPleno = () => {
     if (!plenoForm.tanggal || selectedAsesiForPleno.length === 0) return;
 
-    const selectedAsesiObjects = completedAssessments.filter(
-      (a) =>
-        selectedAsesiForPleno.includes(a.id) ||
-        selectedAsesiForPleno.includes(a.nama),
+    // Gunakan .some() untuk mencocokkan id atau nama dari array objek AsesiPlenoItem[]
+    const selectedAsesiObjects = completedAssessments.filter((a) =>
+      selectedAsesiForPleno.some(
+        (item) => item.id === a.id || item.nama === a.nama,
+      ),
     );
-    const selectedSchemes = Array.from(
+
+    const selectedskemas = Array.from(
       new Set(selectedAsesiObjects.map((a) => a.skema).filter(Boolean)),
     );
+
     const skemaLabel =
-      selectedSchemes.length > 0
-        ? selectedSchemes.join(", ")
+      selectedskemas.length > 0
+        ? selectedskemas.join(", ")
         : plenoForm.skema || "Multi Skema";
 
-    const { waktuMulai, waktuSelesai, ...restPlenoForm } = plenoForm;
-    const newPleno: PlenoSession = {
+    const { ...restPlenoForm } = plenoForm;
+
+    const newPleno: PlenoDetailData = {
       ...restPlenoForm,
-      id: String(restPlenoForm.id || editId || Date.now()),
+      id: String(restPlenoForm.id || editId || Date.now()), // Gunakan Date.now()
       skema: skemaLabel,
-      waktu: `${waktuMulai || "-"} s.d ${waktuSelesai || "-"}`,
-      jumlahAsesi: selectedAsesiForPleno.length,
+      waktu: plenoForm.waktu,
       status: "Terjadwal",
       asesiList: selectedAsesiForPleno,
       plenoAttendees: plenoForm.plenoAttendees.filter(
@@ -592,20 +592,36 @@ export default function AssessmentSchedule() {
       ),
     };
 
+    // ... simpan newPleno ke state / API
+
+    // Buat payload yang sesuai dengan format PlenoSchedule
+    const schedulePayload: PlenoSchedule = {
+      id: newPleno.id,
+      tanggal: newPleno.tanggal,
+      waktu: newPleno.waktu,
+      skema: newPleno.skema,
+      jumlahAsesi: newPleno.asesiList.length, // Dapatkan jumlah dari panjang array
+      status: newPleno.status,
+      alamat: newPleno.alamat,
+      detailAlamat: newPleno.detailAlamat || "",
+      deskripsi: newPleno.deskripsi || "",
+      // Ekstrak hanya nama asesi untuk memenuhi syarat string[]
+      asesiList: newPleno.asesiList.map((a) => a.nama),
+    };
+
     if (isEditMode && editId) {
-      updatePlenoSession(String(editId), newPleno as PlenoDetailData);
+      updatePlenoSession(String(editId), schedulePayload);
     } else {
-      addPlenoSession(newPleno as PlenoDetailData);
+      addPlenoSession(schedulePayload);
     }
+
     setIsPlenoModalOpen(false);
     setPlenoForm({
-      id: "", // Will be updated on next open
+      id: "", // Will be uptanggald on next open
       tanggal: "",
-      waktuMulai: "",
-      waktuSelesai: "",
+      waktu: "",
       skema: "",
-      lokasi: "Ruang Rapat Utama (Offline)",
-      detailLokasi: "",
+      alamat: "Ruang Rapat Utama (Offline)",
       deskripsi: "",
       plenoAttendees: [],
       suratPlenoName: "",
@@ -622,16 +638,14 @@ export default function AssessmentSchedule() {
   );
 
   if (isModalOpen) {
-    const availableAsesi = assessments
-      .filter((a: Candidate) => {
-        const matchScheme = !formData.scheme || a.skema === formData.scheme;
-        const candidateMethod = a.metode || "Offline";
-        const matchMethod =
-          !formData.method ||
-          candidateMethod.toLowerCase() === formData.method.toLowerCase();
-        return matchScheme && matchMethod;
-      })
-      .sort((a: Candidate, b: Candidate) => a.nama.localeCompare(b.nama));
+    const availableAsesi = AssessmentItems.filter((a) => {
+      const matchskema = !formData.skema || a.skema === formData.skema;
+      const CandidateMethod = a.metode || "Offline";
+      const matchMethod =
+        !formData.metode ||
+        CandidateMethod.toLowerCase() === formData.metode.toLowerCase();
+      return matchskema && matchMethod;
+    }).sort((a, b) => a.nama.localeCompare(b.nama));
     const selectedTuk = TUK_LIST.find((t) => t.id === formData.tuk);
     const kapasitas = selectedTuk ? selectedTuk.kapasitas : 0;
 
@@ -672,9 +686,9 @@ export default function AssessmentSchedule() {
                 <input
                   type="text"
                   placeholder="Contoh: BATCH-IT-2026-005"
-                  value={formData.batchName}
+                  value={formData.namaBatch}
                   onChange={(e) =>
-                    setFormData({ ...formData, batchName: e.target.value })
+                    setFormData({ ...formData, namaBatch: e.target.value })
                   }
                   disabled={isPreviewMode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
@@ -685,16 +699,16 @@ export default function AssessmentSchedule() {
                   2. Skema Sertifikasi
                 </label>
                 <select
-                  value={formData.scheme}
+                  value={formData.skema}
                   disabled={isPreviewMode}
                   onChange={(e) => {
-                    setFormData({ ...formData, scheme: e.target.value });
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on scheme change
+                    setFormData({ ...formData, skema: e.target.value });
+                    setSelectedAsesiForJadwal([]); // Reset selected asesi on skema change
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
                   <option value="">Pilih Skema</option>
-                  {uniqueSchemes.map((skema: string) => (
+                  {uniqueskemas.map((skema: string) => (
                     <option key={skema} value={skema}>
                       {skema}
                     </option>
@@ -706,11 +720,11 @@ export default function AssessmentSchedule() {
                   3. Metode Pelaksanaan
                 </label>
                 <select
-                  value={formData.method || "Offline"}
+                  value={formData.metode || "Offline"}
                   disabled={isPreviewMode}
                   onChange={(e) => {
-                    setFormData({ ...formData, method: e.target.value });
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on method change
+                    setFormData({ ...formData, metode: e.target.value });
+                    setSelectedAsesiForJadwal([]); // Reset selected asesi on metode change
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-bold text-[#008BE3]"
                 >
@@ -727,10 +741,10 @@ export default function AssessmentSchedule() {
                   4. Jenis TUK
                 </label>
                 <select
-                  value={formData.tukType}
+                  value={formData.tipeTuk}
                   disabled={isPreviewMode}
                   onChange={(e) =>
-                    setFormData({ ...formData, tukType: e.target.value })
+                    setFormData({ ...formData, tipeTuk: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
@@ -764,10 +778,10 @@ export default function AssessmentSchedule() {
                   6. Tanggal Uji
                 </label>
                 <input
-                  type="date"
-                  value={formData.date}
+                  type="tanggal"
+                  value={formData.tanggal}
                   onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
+                    setFormData({ ...formData, tanggal: e.target.value })
                   }
                   disabled={isPreviewMode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
@@ -779,12 +793,12 @@ export default function AssessmentSchedule() {
                 </label>
                 <input
                   type="time"
-                  value={formData.startTime || "08:00"}
+                  value={formData.waktuMulai || "08:00"}
                   onChange={(e) => {
                     const newStart = e.target.value;
                     setFormData({
                       ...formData,
-                      startTime: newStart,
+                      waktuMulai: newStart,
                       jam: `${newStart} WIB`,
                     });
                   }}
@@ -821,10 +835,10 @@ export default function AssessmentSchedule() {
                   9. Asesor Ditugaskan
                 </label>
                 <select
-                  value={formData.assessorName}
+                  value={formData.namaAsesor}
                   disabled={isPreviewMode}
                   onChange={(e) =>
-                    setFormData({ ...formData, assessorName: e.target.value })
+                    setFormData({ ...formData, namaAsesor: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
@@ -901,11 +915,11 @@ export default function AssessmentSchedule() {
                   <p className="text-xs text-slate-500 mt-0.5">
                     Menampilkan asesi untuk skema{" "}
                     <span className="font-bold text-slate-900">
-                      {formData.scheme || "-"}
+                      {formData.skema || "-"}
                     </span>{" "}
                     dengan metode{" "}
                     <span className="font-bold text-[#008BE3]">
-                      {formData.method || "Offline"}
+                      {formData.metode || "Offline"}
                     </span>
                   </p>
                   {formData.tuk && (
@@ -928,9 +942,7 @@ export default function AssessmentSchedule() {
                           kapasitas,
                         );
                         setSelectedAsesiForJadwal(
-                          availableAsesi
-                            .slice(0, maxAllowed)
-                            .map((a: Candidate) => a.id),
+                          availableAsesi.slice(0, maxAllowed).map((a) => a.id),
                         );
                       }
                     }}
@@ -950,8 +962,8 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
-                {!formData.scheme ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+                {!formData.skema ? (
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Pilih skema sertifikasi terlebih dahulu.
                   </div>
@@ -959,16 +971,16 @@ export default function AssessmentSchedule() {
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi yang tersedia untuk skema{" "}
                     <span className="font-bold text-slate-800">
-                      {formData.scheme}
+                      {formData.skema}
                     </span>{" "}
                     dengan metode{" "}
                     <span className="font-bold text-[#008BE3]">
-                      {formData.method || "Offline"}
+                      {formData.metode || "Offline"}
                     </span>
                     .
                   </div>
                 ) : (
-                  availableAsesi.map((asesi: Candidate) => {
+                  availableAsesi.map((asesi) => {
                     const isSelected = selectedAsesiForJadwal.some(
                       (id) => String(id) === String(asesi.id),
                     );
@@ -976,10 +988,7 @@ export default function AssessmentSchedule() {
                       !isSelected &&
                       selectedAsesiForJadwal.length >= kapasitas &&
                       kapasitas > 0;
-                    const asesiMethod =
-                      asesi.metode_pelaksanaan ||
-                      asesi.jenis_asesmen ||
-                      "Offline";
+                    const asesiMethod = asesi.metode || "Offline";
 
                     return (
                       <div
@@ -1016,7 +1025,7 @@ export default function AssessmentSchedule() {
                           }`}
                         >
                           {isSelected && (
-                            <CheckSquare size={14} className="stroke-[3]" />
+                            <CheckSquare size={14} className="stroke-3" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1058,10 +1067,10 @@ export default function AssessmentSchedule() {
               <button
                 onClick={handleAddSchedule}
                 disabled={
-                  !formData.batchName ||
-                  !formData.scheme ||
-                  !formData.date ||
-                  !formData.assessorName ||
+                  !formData.namaBatch ||
+                  !formData.skema ||
+                  !formData.tanggal ||
+                  !formData.namaAsesor ||
                   !formData.tuk ||
                   selectedAsesiForJadwal.length === 0
                 }
@@ -1137,9 +1146,9 @@ export default function AssessmentSchedule() {
                 <input
                   type="text"
                   placeholder="Contoh: Gedung Al-Jamiah / Lab Komputer / Online"
-                  value={plenoForm.lokasi}
+                  value={plenoForm.alamat}
                   onChange={(e) =>
-                    setPlenoForm({ ...plenoForm, lokasi: e.target.value })
+                    setPlenoForm({ ...plenoForm, alamat: e.target.value })
                   }
                   disabled={isPreviewMode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
@@ -1163,7 +1172,7 @@ export default function AssessmentSchedule() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {availableAsesiForPleno.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi yang selesai dinilai dan siap untuk
@@ -1171,20 +1180,47 @@ export default function AssessmentSchedule() {
                   </div>
                 ) : (
                   availableAsesiForPleno.map((asesi) => {
-                    const isSelected =
-                      selectedAsesiForPleno.includes(asesi.id) ||
-                      selectedAsesiForPleno.includes(asesi.nama);
+                    const isSelected = selectedAsesiForPleno.some(
+                      (a) => a.id === asesi.id || a.nama === asesi.nama,
+                    );
                     return (
                       <div
                         key={asesi.id}
                         onClick={() => {
                           if (isPreviewMode) return;
-                          const newIds = isSelected
+
+                          const newItems: AsesiPlenoItem[] = isSelected
                             ? selectedAsesiForPleno.filter(
-                                (id) => id !== asesi.id && id !== asesi.nama,
+                                (item) =>
+                                  item.id !== asesi.id &&
+                                  item.nama !== asesi.nama,
                               )
-                            : [...selectedAsesiForPleno, asesi.id];
-                          setSelectedAsesiForPleno(newIds);
+                            : [
+                                ...selectedAsesiForPleno,
+                                {
+                                  id: asesi.id,
+                                  nik:
+                                    (asesi as { nik?: string }).nik ||
+                                    asesi.nik ||
+                                    "-",
+                                  nama: asesi.nama,
+                                  skema: asesi.skema,
+                                  asesor:
+                                    typeof asesi.asesor === "string"
+                                      ? asesi.asesor
+                                      : (
+                                          asesi.asesor as unknown as {
+                                            nama?: string;
+                                          }
+                                        )?.nama || "Asesor LSP",
+                                  rekomendasiAsesor:
+                                    asesi.hasil === "Kompeten" ? "K" : "BK",
+                                  statusPleno:
+                                    asesi.hasil === "Kompeten" ? "K" : "BK",
+                                },
+                              ];
+
+                          setSelectedAsesiForPleno(newItems);
                         }}
                         className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3.5 ${
                           isSelected
@@ -1200,7 +1236,7 @@ export default function AssessmentSchedule() {
                           }`}
                         >
                           {isSelected && (
-                            <CheckSquare size={14} className="stroke-[3]" />
+                            <CheckSquare size={14} className="stroke-3" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1330,8 +1366,8 @@ export default function AssessmentSchedule() {
                 </div>
               )}
 
-              {/* Checkbox grid of user candidates */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
+              {/* Checkbox grid of user Candidates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
                 {(() => {
                   const mergedUsers = [...ALL_PLENO_USERS];
                   plenoForm.plenoAttendees.forEach((att) => {
@@ -1344,7 +1380,7 @@ export default function AssessmentSchedule() {
                       mergedUsers.push({
                         id: `custom-${att.role}-${att.nama}`,
                         nama: att.nama,
-                        role: att.role,
+                        role: att.role as Role,
                       });
                     }
                   });
@@ -1364,7 +1400,10 @@ export default function AssessmentSchedule() {
                   }
 
                   return filtered.map((usr) => {
-                    const selected = isAttendeeSelected(usr.nama, usr.role);
+                    const selected = isAttendeeSelected(
+                      usr.nama,
+                      usr.role as Role,
+                    );
                     return (
                       <div
                         key={usr.id}
@@ -1383,7 +1422,7 @@ export default function AssessmentSchedule() {
                           }`}
                         >
                           {selected && (
-                            <CheckSquare size={14} className="stroke-[3]" />
+                            <CheckSquare size={14} className="stroke-3" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1437,7 +1476,7 @@ export default function AssessmentSchedule() {
             <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               {isPlenoOnlyRole ? "Jadwal Sidang Pleno" : "Jadwal & Penugasan"}
             </h1>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
               {isPlenoOnlyRole
                 ? "Melihat jadwal sidang pleno penetapan kelulusan yang dijadwalkan oleh admin"
                 : "Kelola jadwal asesmen dan sidang pleno penetapan kelulusan"}
@@ -1466,7 +1505,7 @@ export default function AssessmentSchedule() {
       <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
         <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           <div className="flex-1 min-w-0 order-1">
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-2 sm:px-3 h-[42px] w-full border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-2 sm:px-3 h-10.5 w-full border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search size={16} className="text-gray-400 shrink-0" />
               <input
                 type="text"
@@ -1529,19 +1568,19 @@ export default function AssessmentSchedule() {
                   setIsPreviewMode(false);
                   setIsEditMode(false);
                   setFormData({
-                    batchName: "",
+                    namaBatch: "",
                     nomorSurat: "",
-                    scheme: "",
-                    method: "Offline",
-                    tukType: "Sewaktu",
+                    skema: "",
+                    metode: "Offline",
+                    tipeTuk: "Sewaktu",
                     alamat: "UIN Sunan Gunung Djati Bandung",
-                    date: "",
-                    startTime: "08:00",
-                    endTime: "",
+                    tanggal: "",
+                    waktuMulai: "08:00",
+                    waktuAkhir: "",
                     jam: "08:00 WIB",
                     tuk: "",
-                    candidatesCount: 0,
-                    assessorName: "",
+                    totalKandidat: 0,
+                    namaAsesor: "",
                     suratPenugasanName: "",
                     status: "Terjadwal",
                   });
@@ -1563,11 +1602,9 @@ export default function AssessmentSchedule() {
                   setPlenoForm({
                     id: "",
                     tanggal: "",
-                    waktuMulai: "",
-                    waktuSelesai: "",
+                    waktu: "",
                     skema: "",
-                    lokasi: "Ruang Rapat Utama (Offline)",
-                    detailLokasi: "",
+                    alamat: "Ruang Rapat Utama (Offline)",
                     deskripsi: "",
                     plenoAttendees: [{ role: "", nama: "" }],
                     suratPlenoName: "",
@@ -1636,30 +1673,30 @@ export default function AssessmentSchedule() {
                       {/* 1. Nama Batch */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-bold text-slate-900">
-                          {item.batchName}
+                          {item.namaBatch}
                         </div>
                       </td>
 
                       {/* 2. Skema Sertifikasi */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-xs font-semibold text-slate-700 whitespace-nowrap">
-                          {item.scheme || "-"}
+                          {item.skema || "-"}
                         </div>
                         <span
                           className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mt-1 border ${
-                            (item.method || item.metode) === "Online"
+                            (item.metode || item.metode) === "Online"
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : "bg-sky-50 text-[#008BE3] border-sky-200"
                           }`}
                         >
-                          {item.method || item.metode || "Offline"}
+                          {item.metode || item.metode || "Offline"}
                         </span>
                       </td>
 
                       {/* 3. Jenis TUK */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
-                          {item.tukType || "Sewaktu"}
+                          {item.tipeTuk || "Sewaktu"}
                         </span>
                       </td>
 
@@ -1683,7 +1720,7 @@ export default function AssessmentSchedule() {
                             size={13}
                             className="text-slate-400 shrink-0"
                           />
-                          {formatDate(item.date)}
+                          {formattanggal(item.tanggal)}
                         </span>
                       </td>
 
@@ -1694,8 +1731,8 @@ export default function AssessmentSchedule() {
                             size={13}
                             className="text-slate-400 shrink-0"
                           />
-                          {item.startTime
-                            ? `${item.startTime} WIB`
+                          {item.waktuMulai
+                            ? `${item.waktuMulai} WIB`
                             : item.jam || "08:00 WIB"}
                         </span>
                       </td>
@@ -1703,7 +1740,7 @@ export default function AssessmentSchedule() {
                       {/* 7. Spesifikasi Ruang TUK */}
                       <td className="px-6 py-4 whitespace-nowrap text-xs font-medium text-slate-700">
                         <span className="whitespace-nowrap">
-                          {getTukRuangSpec(item.tuk)}
+                          {getTukRuangSpec(item.alamat)}
                         </span>
                       </td>
 
@@ -1711,9 +1748,9 @@ export default function AssessmentSchedule() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 whitespace-nowrap">
                           <div className="w-6 h-6 rounded bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center text-[10px] font-bold border border-[#BCE0FD] shrink-0">
-                            {item.assessorInitial ||
-                              (item.assessorName
-                                ? item.assessorName
+                            {item.inisialAsesor ||
+                              (item.namaAsesor
+                                ? item.namaAsesor
                                     .split(" ")
                                     .map((n: string) => n[0])
                                     .join("")
@@ -1722,7 +1759,7 @@ export default function AssessmentSchedule() {
                                 : "AS")}
                           </div>
                           <span className="text-xs font-bold text-slate-800 whitespace-nowrap">
-                            {item.assessorName || "-"}
+                            {item.namaAsesor || "-"}
                           </span>
                         </div>
                       </td>
@@ -1764,7 +1801,7 @@ export default function AssessmentSchedule() {
                       {/* 10. Total Asesi */}
                       <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-bold text-slate-700">
                         <span className="whitespace-nowrap">
-                          {item.candidatesCount || item.asesiList?.length || 0}{" "}
+                          {item.totalKandidat || item.asesiList?.length || 0}{" "}
                           Asesi
                         </span>
                       </td>
@@ -1823,22 +1860,22 @@ export default function AssessmentSchedule() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-50">
                     Nama Sidang Pleno
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-45">
                     Tanggal Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-45">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[120px]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-30">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[140px]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-35">
                     Status Sidang
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[140px] text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-35 text-left sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
                     Aksi
                   </th>
                 </tr>
@@ -1899,7 +1936,7 @@ export default function AssessmentSchedule() {
                             size={14}
                             className="text-gray-400 shrink-0"
                           />
-                          {item.lokasi}
+                          {item.alamat}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700">
@@ -1922,7 +1959,11 @@ export default function AssessmentSchedule() {
                       <td className="px-6 py-4 sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.02)]">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handlePreviewPleno(item)}
+                            onClick={() =>
+                              handlePreviewPleno(
+                                item as unknown as PlenoDetailData,
+                              )
+                            }
                             className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                             title="Detail"
                           >
@@ -2083,7 +2124,7 @@ export default function AssessmentSchedule() {
               </div>
 
               {/* Body */}
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-[300px]">
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-75">
                 {previewDocModal.url.startsWith("data:image") ||
                 previewDocModal.url.startsWith("http") ? (
                   <img
@@ -2102,7 +2143,7 @@ export default function AssessmentSchedule() {
 
               {/* Footer */}
               <div className="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
-                <span className="text-xs text-slate-500 font-medium truncate max-w-[250px]">
+                <span className="text-xs text-slate-500 font-medium truncate max-w-62.5">
                   {previewDocModal.name}
                 </span>
                 <div className="flex items-center gap-2">
@@ -2189,7 +2230,7 @@ export default function AssessmentSchedule() {
                       SURAT TUGAS ASESOR KOMPETENSI
                     </h3>
                     <p className="text-xs font-bold text-slate-700 font-mono">
-                      Nomor: ST/LSP-P1/{formData.batchName || "BATCH-01"}/2026
+                      Nomor: ST/LSP-P1/{formData.namaBatch || "BATCH-01"}/2026
                     </p>
                   </div>
 
@@ -2207,7 +2248,7 @@ export default function AssessmentSchedule() {
                           Nama Asesor
                         </span>
                         <span className="col-span-2 font-black text-slate-900">
-                          {formData.assessorName || "Ichsan Taufik"}
+                          {formData.namaAsesor || "Ichsan Taufik"}
                         </span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
@@ -2215,7 +2256,7 @@ export default function AssessmentSchedule() {
                           Skema Sertifikasi
                         </span>
                         <span className="col-span-2 font-bold text-slate-800">
-                          {formData.scheme || "Skema Sertifikasi"}
+                          {formData.skema || "Skema Sertifikasi"}
                         </span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
@@ -2223,7 +2264,7 @@ export default function AssessmentSchedule() {
                           Nama Batch / Asesmen
                         </span>
                         <span className="col-span-2 font-bold text-slate-800">
-                          {formData.batchName || "-"}
+                          {formData.namaBatch || "-"}
                         </span>
                       </div>
                     </div>
@@ -2240,7 +2281,7 @@ export default function AssessmentSchedule() {
                           Tanggal Pelaksanaan
                         </span>
                         <span className="col-span-2 font-bold text-slate-800">
-                          {formData.date || "-"}
+                          {formData.tanggal || "-"}
                         </span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
@@ -2248,7 +2289,7 @@ export default function AssessmentSchedule() {
                           Waktu Asesmen
                         </span>
                         <span className="col-span-2 font-bold text-slate-800">
-                          Pukul {formData.startTime || "08:00"} WIB
+                          Pukul {formData.waktuMulai || "08:00"} WIB
                         </span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
@@ -2264,7 +2305,7 @@ export default function AssessmentSchedule() {
                           Jumlah Asesi
                         </span>
                         <span className="col-span-2 font-bold text-slate-800">
-                          {formData.candidatesCount || 0} Orang Asesi
+                          {formData.totalKandidat || 0} Orang Asesi
                         </span>
                       </div>
                     </div>
@@ -2285,7 +2326,7 @@ export default function AssessmentSchedule() {
                         [ TTD Digital Asesor ]
                       </div>
                       <p className="font-bold underline text-slate-900">
-                        {formData.assessorName || "Ichsan Taufik"}
+                        {formData.namaAsesor || "Ichsan Taufik"}
                       </p>
                     </div>
                     <div>

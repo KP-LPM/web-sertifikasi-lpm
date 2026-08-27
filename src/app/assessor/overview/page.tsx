@@ -18,7 +18,7 @@ import {
   Assessment,
   BatchGroup,
   JenisMetode,
-  JenisTUK,
+  TipeTuk,
   StatCardProps,
 } from "@/types/types";
 
@@ -46,7 +46,7 @@ export default function AssessorOverview() {
         batchName: name,
         skema: skemaVal, // Pastikan tipe data string aman
         metode: item.metode as JenisMetode,
-        tuk: item.tuk as JenisTUK,
+        tuk: item.tuk as TipeTuk,
         alamat: item.alamat || "Gedung UIN SGD",
         tglAsesmen: item.tglAsesmen || "05 Okt 2023",
         waktu: item.waktu || "08:00 - 12:00 WIB",

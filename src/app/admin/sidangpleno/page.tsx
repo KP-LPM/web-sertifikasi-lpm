@@ -34,10 +34,10 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     title: "Sidang Pleno Penetapan Uji Kompetensi Batch 1 Auditor Halal",
     skema: "Auditor Halal",
     noSK: "SK/LSP-UIN/PLN/2026/001",
-    notulis: "Siti Rahmawati, S.T.",
     tanggal: "16-18 Oktober 2026",
     waktu: "09:00 - 11:00 WIB",
-    lokasi: "Ruang Rapat Utama Gedung A, Lantai 2",
+    alamat: "Ruang Rapat Utama (Offline)",
+    detailAlamat: "Ruang Rapat Utama Gedung A, Lantai 2",
     linkSuratBeritaPleno:
       "https://drive.google.com/file/d/berita-pleno-001/view?usp=sharing",
     linkSuratKeputusanDirektur:
@@ -48,15 +48,14 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       "https://drive.google.com/file/d/sk-direktur-001/view?usp=sharing",
     status: "Belum Ditetapkan",
     plenoAttendees: [
-      { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "Dewan Pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
-      { role: "Notulis", nama: "Siti Rahmawati, S.T." },
-      { role: "Komite Skema", nama: "Asep Abdul Sahid, M.T." },
+      { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
+      { role: "dewan pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
+      { role: "komite skema", nama: "Asep Abdul Sahid, M.T." },
     ],
     asesiList: [
       {
         id: "1",
-        nim: "1217050001",
+        nik: "1217050001",
         nama: "Ahmad Hidayat",
         skema: "Auditor Halal",
         asesor: "Ichsan Taufik, M.T.",
@@ -66,7 +65,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "2",
-        nim: "1217050002",
+        nik: "1217050002",
         nama: "Budi Pratama",
         skema: "Auditor Halal",
         asesor: "Aceng Abdul Kodir, M.Kom.",
@@ -76,7 +75,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "3",
-        nim: "1217050003",
+        nik: "1217050003",
         nama: "Dina Larasati",
         skema: "Auditor Halal",
         asesor: "Susanti Ainul Fitri, M.T.",
@@ -86,7 +85,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "4",
-        nim: "1217050004",
+        nik: "1217050004",
         nama: "Eko Prasetyo",
         skema: "Auditor Halal",
         asesor: "M Sandi Marta, M.T.",
@@ -96,7 +95,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "5",
-        nim: "1217050005",
+        nik: "1217050005",
         nama: "Fitri Handayani",
         skema: "Auditor Halal",
         asesor: "Gina Sakinah, M.T.",
@@ -106,7 +105,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "6",
-        nim: "1217050006",
+        nik: "1217050006",
         nama: "Gitarja Nugraha",
         skema: "Auditor Halal",
         asesor: "Elis Ratna Wulan, M.Si.",
@@ -122,22 +121,22 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     title: "Sidang Pleno Penetapan Hasil Kewirausahaan Industri Gelombang 2",
     skema: "Jenjang 5 Bidang Kewirausahaan Industri",
     noSK: "SK/LSP-UIN/PLN/2026/002",
-    notulis: "Ahmad Syahputra, S.E., M.M.",
     tanggal: "21-23 Oktober 2026",
     waktu: "13:00 - 15:00 WIB",
-    lokasi: "Zoom Meeting Room 1 (Online)",
+    alamat: "Zoom Meeting Room 1 (Online)",
+    detailAlamat: "https://zoom.us/j/123456789",
+
     linkSuratBeritaPleno: "",
     linkSuratHasil: "",
     status: "Belum Ditetapkan",
     plenoAttendees: [
-      { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "Notulis", nama: "Ahmad Syahputra, S.E., M.M." },
-      { role: "Komite Skema", nama: "Siti Alia, M.T." },
+      { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
+      { role: "komite skema", nama: "Siti Alia, M.T." },
     ],
     asesiList: [
       {
         id: "7",
-        nim: "1217050007",
+        nik: "1217050007",
         nama: "Hendra Setiawan",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
         asesor: "Asep Abdul Sahid, M.T.",
@@ -146,7 +145,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "8",
-        nim: "1217050008",
+        nik: "1217050008",
         nama: "Indah Permata",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
         asesor: "Siti Alia, M.T.",
@@ -155,7 +154,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "9",
-        nim: "1217050009",
+        nik: "1217050009",
         nama: "Joko Susilo",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
         asesor: "Azmi Fasa, M.Kom.",
@@ -164,7 +163,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "10",
-        nim: "1217050010",
+        nik: "1217050010",
         nama: "Kurnia Putri",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
         asesor: "Cucu Susilawati, M.Pd.",
@@ -179,23 +178,23 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
     skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     noSK: "SK/LSP-UIN/PLN/2026/003",
-    notulis: "Rina Fitriani, S.Kom., M.T.",
     tanggal: "25-27 Oktober 2026",
     waktu: "10:00 - 12:00 WIB",
-    lokasi: "Ruang Sidang Lt. 3 Gedung Rektorat",
+    alamat: "Ruang Rapat Utama (Offline)",
+
+    detailAlamat: "Ruang Sidang Lt. 3 Gedung Rektorat",
     linkSuratBeritaPleno:
       "https://drive.google.com/file/d/berita-pleno-003/view",
     linkSuratHasil: "https://drive.google.com/file/d/3x4y5z/view",
     status: "Selesai",
     plenoAttendees: [
-      { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "Notulis", nama: "Rina Fitriani, S.Kom., M.T." },
-      { role: "Dewan Pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
+      { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
+      { role: "dewan pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
     ],
     asesiList: [
       {
         id: "11",
-        nim: "1217050011",
+        nik: "1217050011",
         nama: "Lani Wijaya",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
         asesor: "Fitri Pebriani Wahyu, M.T.",
@@ -204,7 +203,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
       },
       {
         id: "12",
-        nim: "1217050012",
+        nik: "1217050012",
         nama: "Muhammad Rizky",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
         asesor: "Tina Dewi Rosahdi, M.T.",
@@ -700,7 +699,7 @@ export default function SidangPleno() {
           }
           return {
             id: String(item),
-            nim: `121705${1000 + idx}`,
+            nik: `121705${1000 + idx}`,
             nama: `Asesi ${idx + 1}`,
             skema: prev.skema || "",
             asesor: "Asesor LSP",
@@ -773,7 +772,7 @@ export default function SidangPleno() {
       }
       return {
         id: String(item),
-        nim: `121705${1000 + idx}`,
+        nik: `121705${1000 + idx}`,
         nama: `Asesi ${idx + 1}`,
         skema: formData?.skema || "",
         asesor: "Asesor LSP",
@@ -815,7 +814,7 @@ export default function SidangPleno() {
                 <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
                   Sidang Pleno
                 </h2>
-                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
                   Pelaksanaan & Hasil Sidang Pleno Komite Teknis
                 </p>
               </div>
@@ -859,25 +858,25 @@ export default function SidangPleno() {
           {/* Tabel Sidang Pleno */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[900px]">
+              <table className="w-full text-left border-collapse min-w-225">
                 <thead>
                   <tr className="bg-slate-900 text-white whitespace-nowrap">
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-50">
                       Nama Sidang Pleno
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-45">
                       Tanggal Pelaksanaan
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[180px]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-45">
                       TUK
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[120px]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-30">
                       Total Asesi
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[140px]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-35">
                       Status Sidang
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-[160px] sticky right-0 bg-slate-900">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-40 sticky right-0 bg-slate-900">
                       Aksi
                     </th>
                   </tr>
@@ -930,7 +929,7 @@ export default function SidangPleno() {
                               size={14}
                               className="text-slate-400 shrink-0"
                             />
-                            <span>{item.lokasi}</span>
+                            <span>{item.alamat}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-bold text-slate-700">
@@ -1056,7 +1055,7 @@ export default function SidangPleno() {
                 </label>
                 <input
                   type="text"
-                  value={formData.lokasi}
+                  value={formData.alamat}
                   readOnly
                   disabled
                   className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 bg-slate-100/80 cursor-not-allowed outline-none select-none"
@@ -1069,28 +1068,22 @@ export default function SidangPleno() {
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Peserta Sidang (Direktur, Pengarah &amp; Komite)
               </label>
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl min-h-[44px] flex flex-wrap gap-2 items-center">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl min-h-11 flex flex-wrap gap-2 items-center">
                 {(() => {
                   const attendees =
                     formData.plenoAttendees &&
                     formData.plenoAttendees.length > 0
                       ? formData.plenoAttendees.filter(
-                          (a) =>
-                            a.nama.trim() !== "" &&
-                            a.role !== "Pimpinan Sidang",
+                          (a) => a.nama.trim() !== "" && a.role !== "direktur",
                         )
                       : [
-                          { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
+                          { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
                           {
-                            role: "Dewan Pengarah",
+                            role: "dewan pengarah",
                             nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
                           },
                           {
-                            role: "Notulis",
-                            nama: formData.notulis || "Siti Rahmawati, S.T.",
-                          },
-                          {
-                            role: "Komite Skema",
+                            role: "komite skema",
                             nama: "Asep Abdul Sahid, M.T.",
                           },
                         ];
@@ -1402,14 +1395,14 @@ export default function SidangPleno() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[700px]">
+              <table className="w-full text-left border-collapse min-w-175">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 border-y border-slate-200">
                     <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
                       No
                     </th>
                     <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
-                      NIM / ID
+                      nik / ID
                     </th>
                     <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
                       Nama Asesi
@@ -1435,7 +1428,7 @@ export default function SidangPleno() {
                         {idx + 1}
                       </td>
                       <td className="px-4 py-3 font-mono font-bold text-slate-700">
-                        {asesi.nim}
+                        {asesi.nik}
                       </td>
                       <td className="px-4 py-3 font-bold text-slate-900">
                         {asesi.nama}
@@ -1917,11 +1910,8 @@ export default function SidangPleno() {
                         <strong>Skema Sertifikasi:</strong> {formData.skema}
                       </div>
                       <div>
-                        <strong>Notulis Sidang:</strong> {formData.notulis}
-                      </div>
-                      <div>
                         <strong>Waktu & Tempat:</strong> {formData.waktu},{" "}
-                        {formData.lokasi}
+                        {formData.alamat}
                       </div>
                       <div className="col-span-2">
                         <strong>Link Dokumen:</strong>{" "}
@@ -1947,7 +1937,7 @@ export default function SidangPleno() {
                       <thead>
                         <tr className="bg-slate-100 text-slate-800 border-b border-slate-300">
                           <th className="p-2 border-r border-slate-300">No</th>
-                          <th className="p-2 border-r border-slate-300">NIM</th>
+                          <th className="p-2 border-r border-slate-300">nik</th>
                           <th className="p-2 border-r border-slate-300">
                             Nama Asesi
                           </th>
@@ -1971,7 +1961,7 @@ export default function SidangPleno() {
                               {i + 1}
                             </td>
                             <td className="p-2 border-r border-slate-300 font-mono">
-                              {a.nim}
+                              {a.nik}
                             </td>
                             <td className="p-2 border-r border-slate-300 font-bold">
                               {a.nama}
@@ -2029,9 +2019,6 @@ export default function SidangPleno() {
                           <div className="h-16 flex items-center justify-center italic text-slate-400">
                             [ Tanda Tangan Digital ]
                           </div>
-                          <p className="font-bold underline">
-                            {formData.notulis}
-                          </p>
                         </div>
                         <div>
                           <p className="font-bold">

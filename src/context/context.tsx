@@ -1,46 +1,43 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
-  PlenoSession,
-  Role,
-  User,
+  UserItem,
   AssessmentItem,
   JenisMetode,
-  JenisTUK,
+  TipeTuk,
   HasilAsesmen,
   StatusAsesmen,
   PertanyaanAsesmenItem,
   KonfigurasiPertanyaanItem,
   CrumbItem,
+  User,
+  PlenoSchedule,
 } from "@/types/types";
-import { currentUser as mockAdmin } from "../app/data";
 
 interface AppContextType {
   extraCrumbs: CrumbItem[];
   setExtraCrumbs: (crumbs: CrumbItem[]) => void;
-  plenoSessions: PlenoSession[];
-  addPlenoSession: (session: PlenoSession) => void;
-  updatePlenoSession: (id: string, data: Partial<PlenoSession>) => void;
+  plenoSessions: PlenoSchedule[];
+  addPlenoSession: (session: PlenoSchedule) => void;
+  updatePlenoSession: (id: string, data: Partial<PlenoSchedule>) => void;
   deletePlenoSession: (id: string) => void;
   user: User | null;
-  login: (role: Role) => void;
   logout: () => void;
   isLoggingOut: boolean;
-  updateUser: (data: Partial<User>) => void;
-  currentView: string;
-  setCurrentView: (view: string) => void;
+  updateUser: (data: Partial<UserItem>) => void;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
   pertanyaanAsesmen: PertanyaanAsesmenItem[];
   addPertanyaanAsesmen: (item: Omit<PertanyaanAsesmenItem, "id">) => void;
   updatePertanyaanAsesmen: (
-    id: number,
+    id: string,
     item: Omit<PertanyaanAsesmenItem, "id">,
   ) => void;
-  deletePertanyaanAsesmen: (id: number) => void;
-  selectedPertanyaanId: number | null;
-  setSelectedPertanyaanId: (id: number | null) => void;
+  deletePertanyaanAsesmen: (id: string) => void;
+  selectedPertanyaanId: string | null;
+  setSelectedPertanyaanId: (id: string | null) => void;
   konfigurasiPertanyaan: KonfigurasiPertanyaanItem[];
   addKonfigurasiPertanyaan: (
     item: Omit<KonfigurasiPertanyaanItem, "id">,
@@ -57,7 +54,7 @@ interface AppContextType {
   selectedAsesmen: AssessmentItem | null;
   setSelectedAsesmen: (val: AssessmentItem | null) => void;
   AssessmentItems: AssessmentItem[];
-  updateAssessmentItem: (id: number, data: Partial<AssessmentItem>) => void;
+  updateAssessmentItem: (id: string, data: Partial<AssessmentItem>) => void;
   completedBatchCodes: string[];
   deleteBatchAssessmentItems: (batchCode: string) => void;
   // Fitur Konfirmasi Navigasi Form
@@ -77,17 +74,17 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   // --- NEXTAUTH SESSION INTEGRATION ---
+  const router = useRouter();
   const { data: session } = useSession();
 
   // --- STATES ---
   const [extraCrumbs, setExtraCrumbs] = useState<CrumbItem[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<string>("login");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
     typeof window !== "undefined" ? window.innerWidth < 1024 : false,
   );
   const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<
-    number | null
+    string | null
   >(null);
   const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<
     string | null
@@ -100,21 +97,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     null,
   );
 
-  const [prevSession, setPrevSession] = useState(session);
-
-  // Sinkronisasi state saat render jika session berubah
-  if (session !== prevSession) {
-    setPrevSession(session);
+  useEffect(() => {
     if (session?.user) {
       setUser({
-        id: session.user.name || "u1",
-        name: session.user.name || "",
+        id: session.user.id || "",
+        username: session.user.username,
         email: session.user.email || "",
-        role: session.user.role as Role,
-        avatar: session.user.image || "",
+        role: session.user.role,
+        avatar: session.user.image || undefined,
       });
     }
-  }
+  }, [session]);
 
   // State Konfirmasi Navigasi
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false);
@@ -132,7 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       if (typeof target === "string") {
-        setCurrentView(target);
+        router.push(target);
       } else {
         target();
       }
@@ -152,7 +145,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const [plenoSessions, setPlenoSessions] = useState<PlenoSession[]>([
+  const [plenoSessions, setPlenoSessions] = useState<PlenoSchedule[]>([
     {
       id: "PLN-001",
       tanggal: "2026-10-15",
@@ -160,8 +153,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       skema: "Pemrograman Web",
       jumlahAsesi: 24,
       status: "Terjadwal",
-      lokasi: "Ruang Rapat Utama (Offline)",
-      detailLokasi: "Gedung A, Lantai 2",
+      alamat: "Ruang Rapat Utama (Offline)",
+      detailAlamat: "Gedung A, Lantai 2",
       deskripsi:
         "Sidang pleno penetapan kelulusan uji kompetensi skema Pemrograman Web gelombang 1.",
       asesiList: ["Ahmad Fauzi", "Budi Santoso", "Citra Kirana"],
@@ -173,15 +166,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       skema: "Desain Grafis",
       jumlahAsesi: 15,
       status: "Menunggu Persetujuan",
-      lokasi: "Zoom Meeting (Online)",
-      detailLokasi: "https://zoom.us/j/123456789",
+      alamat: "Zoom Meeting (Online)",
+      detailAlamat: "https://zoom.us/j/123456789",
       deskripsi:
         "Sidang pleno penetapan kelulusan uji kompetensi skema Desain Grafis gelombang 2.",
       asesiList: ["Dewi Lestari", "Eko Prasetyo"],
     },
   ]);
 
-  const addPlenoSession = (session: PlenoSession) => {
+  const addPlenoSession = (session: PlenoSchedule) => {
     setPlenoSessions((prev) => [session, ...prev]);
   };
 
@@ -189,7 +182,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPlenoSessions((prev) => prev.filter((session) => session.id !== id));
   };
 
-  const updatePlenoSession = (id: string, data: Partial<PlenoSession>) => {
+  const updatePlenoSession = (id: string, data: Partial<PlenoSchedule>) => {
     setPlenoSessions((prev) =>
       prev.map((p) => (p.id === id ? { ...p, ...data } : p)),
     );
@@ -290,18 +283,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const linkVideo = batch.linkVideo;
 
         return {
-          id: idx + 1,
+          id: String(idx + 1), // 1. Konversi number ke string
           nama: `Kandidat ${idx + 1}`,
           nik: `32730128${(1000 + idx).toString()}0001`,
           aplStatus:
             idx % 4 === 3 ? "APL-01 Valid" : "APL-01 & APL-02 Terverifikasi",
-
-          // 3. Perbaiki nama properti batch yang dipanggil
           batchCode: batch.batchCode,
           batchName: batch.batchName,
-
           asesmen: `Asesmen Reguler - ${idx + 1}`,
-          tuk: batch.tuk as JenisTUK,
+
+          tipeTuk: batch.tuk as TipeTuk, // 2. Ganti 'tuk' menjadi 'tipeTuk'
+
           metode: metode,
           hasil: (idx % 2 === 0
             ? "Kompeten"
@@ -314,22 +306,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           skema: batch.skema,
           alamat: batch.alamat,
           tglPra: `${(idx % 28) + 1} Okt 2023`,
-
-          // 4. Perbaiki nama properti tanggal yang dipanggil
           tglAsesmen: batch.tglAsesmen,
-
           waktu: batch.waktu,
           linkVideo: linkVideo,
           status: status,
           riwayat: idx % 3 === 0 ? "Belum ada" : "Tinjauan Awal",
-        };
+        } as AssessmentItem; // 3. Tambahkan as AssessmentItem agar properti berlebih (seperti tglPra, riwayat) tidak memicu error strict mode
       });
     },
   );
 
   const [completedBatchCodes, setCompletedBatchCodes] = useState<string[]>([]);
 
-  const updateAssessmentItem = (id: number, data: Partial<AssessmentItem>) => {
+  const updateAssessmentItem = (id: string, data: Partial<AssessmentItem>) => {
     setAssessmentItems((prev) =>
       prev.map((a) => (a.id === id ? { ...a, ...data } : a)),
     );
@@ -396,7 +385,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     PertanyaanAsesmenItem[]
   >([
     {
-      id: 1,
+      id: "1",
       nama: "wadw",
       skema: "Pembukuan",
       tipeForm: "FR.IA-01",
@@ -410,7 +399,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ],
     },
     {
-      id: 2,
+      id: "2",
       nama: "adwdasd",
       skema: "Pembukuan",
       tipeForm: "FR.IA-05A_MERGE",
@@ -443,12 +432,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addPertanyaanAsesmen = (item: Omit<PertanyaanAsesmenItem, "id">) => {
     setPertanyaanAsesmen((prev) => [
       ...prev,
-      { ...item, id: prev.length > 0 ? prev[prev.length - 1].id + 1 : 1 },
+      { ...item, id: Date.now().toString() },
     ]);
   };
 
   const updatePertanyaanAsesmen = (
-    id: number,
+    id: string,
     item: Omit<PertanyaanAsesmenItem, "id">,
   ) => {
     setPertanyaanAsesmen((prev) =>
@@ -456,7 +445,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deletePertanyaanAsesmen = (id: number) => {
+  const deletePertanyaanAsesmen = (id: string) => {
     setPertanyaanAsesmen((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -488,46 +477,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => (prev ? { ...prev, ...data } : null));
   };
 
-  const login = (role: Role) => {
-    let mockUser: User;
-    if (role === "admin") {
-      mockUser = mockAdmin;
-    } else if (role === "asesor") {
-      mockUser = {
-        id: "u2",
-        name: "Dr. Aris Thorne",
-        email: "aris@uin.ac.id",
-        role: "asesor",
-        avatar: "AT",
-      };
-    } else if (role === "direktur") {
-      mockUser = {
-        id: "u4",
-        name: "Prof. Direktur",
-        email: "direktur@lsp.com",
-        role: "direktur",
-        avatar: "DR",
-      };
-    } else if (role === "manajer") {
-      mockUser = {
-        id: "u5",
-        name: "Bapak Manajer",
-        email: "manajer@lsp.com",
-        role: "manajer",
-        avatar: "MN",
-      };
-    } else {
-      mockUser = {
-        id: "u3",
-        name: "Ahmad Fauzi",
-        email: "ahmad.fauzi@uin-suka.ac.id",
-        role: "asesi",
-        avatar: "AF",
-      };
-    }
-    setUser(mockUser);
-    setCurrentView("dashboard");
-  };
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const logout = async () => {
     setIsLoggingOut(true);
@@ -544,12 +493,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addPlenoSession,
         updatePlenoSession,
         deletePlenoSession,
-        login,
         logout,
         isLoggingOut,
         updateUser,
-        currentView,
-        setCurrentView,
         sidebarCollapsed,
         setSidebarCollapsed,
         pertanyaanAsesmen,
