@@ -12,7 +12,7 @@ import { useAppContext } from "@/context/context";
 
 export default function JadwalkanOnline() {
   const router = useRouter();
-  const { selectedAsesmen, updateAssessment } = useAppContext();
+  const { selectedAsesmen, updateAssessmentItem } = useAppContext();
   const [tanggal, setTanggal] = useState("");
   const [waktu, setWaktu] = useState("");
   const [linkMeet, setLinkMeet] = useState("");
@@ -48,9 +48,9 @@ export default function JadwalkanOnline() {
         formattedDate = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
       }
 
-      updateAssessment(selectedAsesmen.id, {
+      updateAssessmentItem(selectedAsesmen.id, {
         waktu: formattedTime,
-        linkVideo: linkMeet,
+        alamat: linkMeet,
         tglAsesmen: formattedDate,
       });
     }

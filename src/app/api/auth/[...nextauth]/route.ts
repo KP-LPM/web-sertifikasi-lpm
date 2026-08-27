@@ -3,6 +3,34 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+// ==============================================================================
+// MODULE AUGMENTATION:
+// ==============================================================================
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      username: string;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    id: string;
+    role: string;
+    username: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    id: string;
+    role: string;
+    username: string;
+  }
+}
+// ==============================================================================
+
 export const runtime = "nodejs";
 
 const handler = NextAuth({
@@ -10,8 +38,8 @@ const handler = NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username atau Email", type: "text" }, 
-        password: { label: "Password", type: "password" }
+        username: { label: "Username atau Email", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
@@ -22,16 +50,22 @@ const handler = NextAuth({
           where: {
             OR: [
               { username: credentials.username },
-              { email: credentials.username }
-            ]
-          }
+              { email: credentials.username },
+            ],
+          },
         });
 
         if (!user) {
-          throw new Error("Akun tidak ditemukan. Periksa kembali username atau email Anda.");
+          throw new Error(
+            "Akun tidak ditemukan. Periksa kembali username atau email Anda.",
+          );
         }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        // Cek kecocokan password dengan bcrypt
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
 
         if (!isPasswordValid) {
           throw new Error("Password salah.");
@@ -41,10 +75,10 @@ const handler = NextAuth({
           id: user.id.toString(),
           username: user.username,
           email: user.email,
-          role: user.role, 
+          role: user.role,
         };
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -52,20 +86,22 @@ const handler = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
+        token.email = user.email; // tambahkan ini untuk eksplisit
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id;
+        session.user.id = token.id as string;
         session.user.role = token.role;
-        session.user.username = token.username;
+        session.user.username = token.username as string;
+        session.user.email = token.email as string; // tambahkan ini
       }
       return session;
-    }
+    },
   },
   pages: {
-    signIn: '/login', 
+    signIn: "/login",
   },
   session: {
     strategy: "jwt",

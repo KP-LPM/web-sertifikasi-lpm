@@ -31,6 +31,13 @@ import type {
   SchemeElemen, 
   RequirementType,
   SchemeDetailInfo
+// IMPORT SEMUA INTERFACE DARI TYPES.TS BUATAN TEMANMU
+import type {
+  SchemeItem,
+  Profile,
+  UnitKompetensiItem,
+  ElemenKompetensiItem,
+  SchemeDetailInfo,
 } from "@/types/types";
 
 import {
@@ -95,6 +102,7 @@ export default function PengajuanSkemaPage() {
   const [schemesData, setSchemesData] = useState<SchemeItem[]>([]);
   const [isLoadingSchemes, setIsLoadingSchemes] = useState(true);
 
+
   const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
 
   const [showExitWarning, setShowExitWarning] = useState(false);
@@ -115,7 +123,7 @@ export default function PengajuanSkemaPage() {
   );
 
   const [selectedDetailSubmission, setSelectedDetailSubmission] =
-    useState<Submission | null>(null);
+    useState<Profile | null>(null);
 
   React.useEffect(() => {
     const handleReset = () => setSubView("list");
@@ -193,13 +201,13 @@ export default function PengajuanSkemaPage() {
 
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
-  const [submissions] = useState<Submission[]>(() => {
+  const [submissions] = useState<Profile[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lsp_submissions");
       if (saved) {
-        const parsed = JSON.parse(saved) as Submission[];
+        const parsed = JSON.parse(saved) as Profile[];
         const filtered = parsed.filter(
-          (p: Submission) => p.name !== "Pelayanan Pelanggan",
+          (p: Profile) => p.name !== "Pelayanan Pelanggan",
         );
         if (filtered.length !== parsed.length) {
           localStorage.setItem("lsp_submissions", JSON.stringify(filtered));
@@ -219,7 +227,7 @@ export default function PengajuanSkemaPage() {
   const [searchScheme, setSearchScheme] = useState("");
   const [schemePage, setSchemePage] = useState(1);
 
-  const [namaLengkap, setNamaLengkap] = useState(user?.name || "");
+  const [namaLengkap, setNamaLengkap] = useState(user?.username || "");
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [jenisKelamin, setJenisKelamin] = useState("");
@@ -232,7 +240,7 @@ export default function PengajuanSkemaPage() {
   const alamatWilayah = [namaKota, namaProvinsi].filter(Boolean).join(", ");
 
   const [nik, setNik] = useState("");
-  const [kewarganegaraan, setKewarganegaraan] = useState("WNI");  
+  const [kewarganegaraan, setKewarganegaraan] = useState("WNI");
   const [kodePos, setKodePos] = useState("");
   const [noTelp, setNoTelp] = useState("");
 
@@ -269,8 +277,9 @@ export default function PengajuanSkemaPage() {
           }
 
           if (dataProfil.jenisKelamin) setJenisKelamin(dataProfil.jenisKelamin);
-          if (dataProfil.kewarganegaraan) setKewarganegaraan(dataProfil.kewarganegaraan);
-          
+          if (dataProfil.kewarganegaraan)
+            setKewarganegaraan(dataProfil.kewarganegaraan);
+
           if (dataProfil.noHp) setNoTelp(dataProfil.noHp);
           if (dataProfil.alamat) setAlamat(dataProfil.alamat);
           if (dataProfil.kodeProvinsi) setProvinsi(dataProfil.kodeProvinsi);
@@ -421,8 +430,8 @@ export default function PengajuanSkemaPage() {
         scrollToTopMobile();
       }
     } else if (step === 2) {
-      const reqs = selectedScheme?.persyaratan_dasar || [];
-      const valid = reqs.every((req: RequirementType) => {
+      const reqs = selectedScheme?.persyaratanDasar || [];
+      const valid = reqs.every((req) => {
         const key = typeof req === "string" ? req : req.namaDokumen;
         return Boolean(key && eFormData[key]);
       });
@@ -434,8 +443,8 @@ export default function PengajuanSkemaPage() {
         scrollToTopMobile();
       }
     } else if (step === 3) {
-      const reqs = selectedScheme?.persyaratan_administrasi || [];
-      const valid = reqs.every((req: RequirementType) => {
+      const reqs = selectedScheme?.persyaratanAdministrasi || [];
+      const valid = reqs.every((req) => {
         const key = typeof req === "string" ? req : req.namaDokumen;
         return Boolean(key && eFormData[key]);
       });
@@ -457,67 +466,96 @@ export default function PengajuanSkemaPage() {
   const handleSubmitForm = async () => {
     try {
       showAlert("Mengunggah dokumen dan memproses pengajuan...");
-      
-      const uploadedDokumen: Array<{namaDokumen: string; fileUrl: string}> = [];
+
+      // Tipe eksplisit agar bebas dari omelan implicit any
+      const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> =
+        [];
 
       for (const [namaDokumen, value] of Object.entries(eFormData)) {
         const files: unknown[] = Array.isArray(value) ? value : [value];
-        
+
         for (const file of files) {
           if (file instanceof File) {
-            const fileExt = file.name.split('.').pop() || 'pdf';
+            const fileExt = file.name.split(".").pop() || "pdf";
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
-              .from('dokumen-pengajuan')
+              .from("dokumen-pengajuan")
               .upload(fileName, file);
 
             if (uploadError) {
-              throw new Error(`Gagal mengunggah ${namaDokumen}: ${uploadError.message}`);
+              throw new Error(
+                `Gagal mengunggah ${namaDokumen}: ${uploadError.message}`,
+              );
             }
 
             const { data: urlData } = supabase.storage
-              .from('dokumen-pengajuan')
+              .from("dokumen-pengajuan")
               .getPublicUrl(fileName);
 
             uploadedDokumen.push({
               namaDokumen: namaDokumen,
-              fileUrl: urlData.publicUrl
+              fileUrl: urlData.publicUrl,
             });
           }
         }
       }
 
       const payloadData = {
-        userId: user?.id, // Jangan lupa kirim userId!
-        name: selectedScheme?.name || "Uji Kompetensi Mandiri",
-        code: selectedScheme?.code || "001/SKM/LSP-KJN/II/2023",
-        namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, alamat,
-        provinsi, kota, nik, kewarganegaraan, kodePos, noTelp,
-        pendidikanTerakhir, pekerjaan, institusiPerusahaan, jabatan,
-        emailInstitusi, kodePosInstitusi, alamatInstitusi, telpInstitusi,
-        faxInstitusi, tuk, metode, penyesuaianWajar, berpengalaman,
-        dokumen: uploadedDokumen, 
+        name: selectedScheme?.nama || "Uji Kompetensi Mandiri",
+        kode: selectedScheme?.kode || "001/SKM/LSP-KJN/II/2023",
+        namaLengkap,
+        tempatLahir,
+        tanggalLahir,
+        jenisKelamin,
+        alamat,
+        provinsi,
+        kota,
+        nik,
+        kewarganegaraan,
+        kodePos,
+        noTelp,
+        pendidikanTerakhir,
+        pekerjaan,
+        institusiPerusahaan,
+        jabatan,
+        emailInstitusi,
+        kodePosInstitusi,
+        alamatInstitusi,
+        telpInstitusi,
+        faxInstitusi,
+        tuk,
+        metode,
+        penyesuaianWajar,
+        berpengalaman,
+        dokumen: uploadedDokumen,
       };
 
-      const response = await fetch('/api/pengajuan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pengajuan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payloadData),
       });
 
       if (!response.ok) {
         const errData = (await response.json()) as { message?: string };
-        throw new Error(errData.message || "Gagal ngirim data ke server database");
+        throw new Error(
+          errData.message || "Gagal ngirim data ke server database",
+        );
       }
 
       showAlert(`Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`);
-      
-      setTempatLahir(""); setAlamat(""); setNik(""); setKodePos("");
-      setTuk(""); setMetode(""); setBerpengalaman(false);
-      setStep(1); setSubView("list");
-      
-    } catch (error: unknown) { 
+
+      setTempatLahir("");
+      setAlamat("");
+      setNik("");
+      setKodePos("");
+      setTuk("");
+      setMetode("");
+      setBerpengalaman(false);
+      setStep(1);
+      setSubView("list");
+    } catch (error: unknown) {
       console.error(error);
       if (error instanceof Error) {
         showAlert(error.message);
@@ -530,7 +568,7 @@ export default function PengajuanSkemaPage() {
   const filteredSubmissions = submissions.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchSub.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchSub.toLowerCase());
+      item.kode.toLowerCase().includes(searchSub.toLowerCase());
     const matchesStatus =
       statusSubFilter === "Semua" || item.status === statusSubFilter;
     const matchesDate =
@@ -579,15 +617,16 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
-  // MENGGUNAKAN DATA API SCHEMES DATA
-  const filteredSchemes = schemesData.filter((item) => {
-    const name = item.name?.toLowerCase() ?? "";
-    const code = item.code?.toLowerCase() ?? "";
-    return (
-      name.includes(searchScheme.toLowerCase()) ||
-      code.includes(searchScheme.toLowerCase())
-    );
-  });
+  const filteredSchemes = (AVAILABLE_SCHEMES as unknown as SchemeItem[]).filter(
+    (item) => {
+      const name = item.nama?.toLowerCase() ?? "";
+      const kode = item.kode?.toLowerCase() ?? "";
+      return (
+        name.includes(searchScheme.toLowerCase()) ||
+        kode.includes(searchScheme.toLowerCase())
+      );
+    },
+  );
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const paginatedSubmissions = filteredSubmissions.slice(
@@ -604,13 +643,16 @@ export default function PengajuanSkemaPage() {
   const totalSchemePages =
     Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
 
-  const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme ? {
-    ...selectedScheme,
-    nama: selectedScheme.name,
-    units: selectedScheme.unitKompetensi,
-    persyaratanDasar: selectedScheme.persyaratan_dasar,
-    buktiAdministratif: selectedScheme.persyaratan_administrasi,
-  } : undefined;
+  // Pemetaan yang rapi dan Type-Safe tanpa 'any'
+  const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme
+    ? {
+        ...selectedScheme,
+        nama: selectedScheme.nama,
+        units: selectedScheme.unitKompetensi,
+        persyaratanDasar: selectedScheme.persyaratanDasar,
+        buktiAdministratif: selectedScheme.persyaratanAdministrasi,
+      }
+    : undefined;
 
   return (
     <>
@@ -756,7 +798,7 @@ export default function PengajuanSkemaPage() {
                                     {item.name}
                                   </div>
                                   <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
-                                    {item.code}
+                                    {item.kode}
                                   </div>
                                 </div>
                               </div>
@@ -966,7 +1008,12 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="p-3">
                               {/* Menggabungkan kota dan provinsi secara dinamis */}
-                              {[selectedDetailSubmission.kota, selectedDetailSubmission.provinsi].filter(Boolean).join(", ") || "-"}
+                              {[
+                                selectedDetailSubmission.kota,
+                                selectedDetailSubmission.provinsi,
+                              ]
+                                .filter(Boolean)
+                                .join(", ") || "-"}
                             </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
@@ -1053,7 +1100,7 @@ export default function PengajuanSkemaPage() {
                               Kode Skema
                             </td>
                             <td className="p-3 font-mono break-all font-semibold text-slate-600">
-                              {selectedDetailSubmission.code}
+                              {selectedDetailSubmission.kode}
                             </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
@@ -1069,7 +1116,7 @@ export default function PengajuanSkemaPage() {
                               TUK
                             </td>
                             <td className="p-3">
-                              {selectedDetailSubmission.tuk ||
+                              {selectedDetailSubmission.tipeTuk ||
                                 "Mandiri (Online)"}
                             </td>
                           </tr>
@@ -1237,7 +1284,7 @@ export default function PengajuanSkemaPage() {
                     </tr>
                   ) : paginatedSchemes.length > 0 ? (
                     paginatedSchemes.map((scheme, idx) => {
-                      const schemeKey = scheme.code ?? `scheme-${idx}`;
+                      const schemeKey = scheme.kode ?? `scheme-${idx}`;
                       return (
                         <React.Fragment key={schemeKey}>
                           <tr
@@ -1280,11 +1327,11 @@ export default function PengajuanSkemaPage() {
                                 </svg>
                               </button>
                               <span className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
-                                {scheme.name}
+                                {scheme.nama}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-gray-400 font-mono text-xs">
-                              {scheme.code}
+                              {scheme.kode}
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
                               <button
@@ -1309,14 +1356,14 @@ export default function PengajuanSkemaPage() {
                                       {(scheme.unitKompetensi ?? []).map(
                                         (unit, unitIdx) => (
                                           <tr
-                                            key={`${unit.kode}-${unitIdx}`}
+                                            key={`${unit.kodeUnit}-${unitIdx}`}
                                             className="border-b border-slate-100 last:border-0"
                                           >
                                             <td className="py-2 font-mono text-slate-500 w-32">
-                                              {unit.kode}
+                                              {unit.kodeUnit}
                                             </td>
                                             <td className="py-2">
-                                              {unit.judul}
+                                              {unit.judulUnit}
                                             </td>
                                           </tr>
                                         ),
@@ -1418,11 +1465,11 @@ export default function PengajuanSkemaPage() {
                 </button>
                 <div className="flex flex-col gap-1.5">
                   <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none">
-                    {selectedScheme?.name}
+                    {selectedScheme?.nama}
                   </h2>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400 font-mono uppercase tracking-wider font-bold leading-none">
-                      {selectedScheme?.code}
+                      {selectedScheme?.kode}
                     </span>
                   </div>
                 </div>
@@ -1495,14 +1542,12 @@ export default function PengajuanSkemaPage() {
                               window.scrollTo({ top: 0, behavior: "smooth" });
                           }
                         } else if (step === 2 && tabStep > 2) {
-                          const reqs =
-                            selectedScheme?.persyaratan_dasar || [];
-                          const valid = reqs.every(
-                            (req: RequirementType) => {
-                              const key = typeof req === "string" ? req : req.namaDokumen;
-                              return Boolean(key && eFormData[key]);
-                            }
-                          );
+                          const reqs = selectedScheme?.persyaratanDasar || [];
+                          const valid = reqs.every((req) => {
+                            const key =
+                              typeof req === "string" ? req : req.namaDokumen;
+                            return Boolean(key && eFormData[key]);
+                          });
                           if (!valid) setShowStep2Errors(true);
                           else {
                             setShowStep2Errors(false);
@@ -1510,14 +1555,12 @@ export default function PengajuanSkemaPage() {
                           }
                         } else if (step === 3 && tabStep > 3) {
                           const reqs =
-                            selectedScheme?.persyaratan_administrasi ||
-                            [];
-                          const valid = reqs.every(
-                            (req: RequirementType) => {
-                              const key = typeof req === "string" ? req : req.namaDokumen;
-                              return Boolean(key && eFormData[key]);
-                            }
-                          );
+                            selectedScheme?.persyaratanAdministrasi || [];
+                          const valid = reqs.every((req) => {
+                            const key =
+                              typeof req === "string" ? req : req.namaDokumen;
+                            return Boolean(key && eFormData[key]);
+                          });
                           if (!valid) setShowStep3Errors(true);
                           else {
                             setShowStep3Errors(false);
@@ -1705,7 +1748,7 @@ export default function PengajuanSkemaPage() {
                   </div>
                 </div>
 
-              <div className="col-span-full">
+                <div className="col-span-full">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     <span className="text-red-500">*</span> Alamat Lengkap Rumah
                     (Jalan, RT/RW, Kel/Desa, Kec)
@@ -2147,19 +2190,19 @@ export default function PengajuanSkemaPage() {
                 }}
                 title="Persyaratan Dasar"
                 infoText="File Persyaratan Dasar akan ditampilkan pada Form APL - 01"
-                documents={(
-                  selectedScheme?.persyaratan_dasar || []
-                ).map((req: RequirementType) => ({
-                  required: true,
-                  name: typeof req === "string" ? req : req.namaDokumen,
-                  description:
-                    typeof req === "string"
-                      ? ""
-                      : "deskripsi" in req
-                        ? req.deskripsi
-                        : "",
-                  type: "File Upload",
-                }))}
+                documents={(selectedScheme?.persyaratanDasar || []).map(
+                  (req) => ({
+                    required: true,
+                    name: typeof req === "string" ? req : req.namaDokumen,
+                    description:
+                      typeof req === "string"
+                        ? ""
+                        : "deskripsi" in req
+                          ? req.deskripsi
+                          : "",
+                    type: "File Upload",
+                  }),
+                )}
                 eFormData={eFormData}
                 showErrors={showStep2Errors}
               />
@@ -2178,13 +2221,13 @@ export default function PengajuanSkemaPage() {
                 }}
                 title="Bukti Administratif"
                 infoText="File Bukti Administratif akan ditampilkan pada Form APL - 01"
-                documents={(
-                  selectedScheme?.persyaratan_administrasi || []
-                ).map((req: RequirementType) => ({
-                  required: true,
-                  name: typeof req === "string" ? req : req.namaDokumen,
-                  type: "File Upload",
-                }))}
+                documents={(selectedScheme?.persyaratanAdministrasi || []).map(
+                  (req) => ({
+                    required: true,
+                    name: typeof req === "string" ? req : req.namaDokumen,
+                    type: "File Upload",
+                  }),
+                )}
                 eFormData={eFormData}
                 showErrors={showStep3Errors}
               />
@@ -2204,19 +2247,18 @@ export default function PengajuanSkemaPage() {
                 eFormData={eFormData}
                 title="Bukti Kompetensi"
                 infoText="File Bukti Kompetensi akan ditampilkan pada Form APL - 02"
-                kompetensiList={(
-                  selectedScheme?.unitKompetensi || []
-                ).flatMap((unit: SchemeUnit, uIdx: number) =>
-                  (unit.elemen || []).map(
-                    (el: SchemeElemen, eIdx: number) => ({
-                      id: `u${uIdx}e${eIdx}`,
-                      unitTitle: unit.judul || "",
-                      unitCode: unit.kode || "",
-                      elemen: el.judul || el.nama || "",
-                      kuk: el.kuk || [],
-                      idx: eIdx + 1,
-                    }),
-                  ),
+                kompetensiList={(selectedScheme?.unitKompetensi || []).flatMap(
+                  (unit: UnitKompetensiItem, uIdx: number) =>
+                    (unit.elemen || []).map(
+                      (el: ElemenKompetensiItem, eIdx: number) => ({
+                        id: `u${uIdx}e${eIdx}`,
+                        unitTitle: unit.judulUnit || "",
+                        unitCode: unit.kodeUnit || "",
+                        elemen: el.namaElemen || "",
+                        kuk: el.kriteriaUnjukKerja || [],
+                        idx: eIdx + 1,
+                      }),
+                    ),
                 )}
               />
             )}
@@ -2324,8 +2366,8 @@ export default function PengajuanSkemaPage() {
                     pendidikanTerakhir,
                     institusiPerusahaan,
                     jabatan,
-                    skema: selectedScheme?.name || "",
-                    nomorSkema: selectedScheme?.code || "",
+                    skema: selectedScheme?.nama || "",
+                    nomorSkema: selectedScheme?.kode || "",
                     schemeDetail: currentSchemeDetail,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
@@ -2338,8 +2380,8 @@ export default function PengajuanSkemaPage() {
                   allData={eFormData as Record<string, File | string>}
                   formData={{
                     namaLengkap,
-                    skema: selectedScheme?.name || "",
-                    nomorSkema: selectedScheme?.code || "",
+                    skema: selectedScheme?.nama || "",
+                    nomorSkema: selectedScheme?.kode || "",
                     schemeDetail: currentSchemeDetail,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
@@ -2398,12 +2440,9 @@ export default function PengajuanSkemaPage() {
                       let firstUnfilled: string | null = null;
                       const elements: string[] =
                         selectedScheme?.unitKompetensi?.flatMap(
-                          (u: SchemeUnit, uIdx: number) =>
+                          (u: UnitKompetensiItem, uIdx: number) =>
                             (u.elemen || []).map(
-                              (
-                                e: SchemeElemen,
-                                eIdx: number,
-                              ) => {
+                              (e: ElemenKompetensiItem, eIdx: number) => {
                                 const key = `u${uIdx}e${eIdx}`;
                                 if (
                                   !(
@@ -2526,7 +2565,7 @@ export default function PengajuanSkemaPage() {
                       <p className="text-sm font-bold text-slate-800 mb-2">
                         Pilih dari Dokumen Persyaratan Dasar:
                       </p>
-                    <select
+                      <select
                         className="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white text-slate-700 cursor-pointer"
                         onChange={(e) => {
                           if (e.target.value) {
@@ -2541,24 +2580,30 @@ export default function PengajuanSkemaPage() {
                         }}
                       >
                         <option value="">-- Pilih Dokumen --</option>
-                        {([
-                          ...(selectedScheme?.persyaratan_dasar || []).map((req: RequirementType) =>
-                            typeof req === "string" ? req : req.namaDokumen
-                          ),
-                          ...(selectedScheme?.persyaratan_administrasi || []).map((req: RequirementType) =>
-                            typeof req === "string" ? req : req.namaDokumen
-                          ),
-                        ].filter(Boolean) as string[]) 
-                          .filter((docName: string) =>
+                        {(
+                          [
+                            ...(selectedScheme?.persyaratanDasar || []).map(
+                              (req) =>
+                                typeof req === "string" ? req : req.namaDokumen,
+                            ),
+                            ...(
+                              selectedScheme?.persyaratanAdministrasi || []
+                            ).map((req) =>
+                              typeof req === "string" ? req : req.namaDokumen,
+                            ),
+                          ].filter(Boolean) as string[]
+                        )
+                          .filter(
+                            (docName: string) =>
                               (eFormData[docName] as File[]) &&
-                              (eFormData[docName] as File[]).length > 0
+                              (eFormData[docName] as File[]).length > 0,
                           )
                           .map((docName: string, idx: number) => (
                             <option key={idx} value={docName}>
                               {docName}
                             </option>
                           ))}
-                      </select>                      
+                      </select>
                       <div className="flex items-center gap-3 my-4">
                         <div className="h-px bg-slate-200 flex-1"></div>
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">

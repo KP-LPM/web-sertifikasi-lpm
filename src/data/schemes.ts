@@ -261,8 +261,8 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
-    name: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-    code: "09/LSPUINBdg/XI/2023",
+    nama: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+    kode: "09/LSPUINBdg/XI/2023",
     units: [
       {
         code: "M.70HMS00.031.3",
@@ -609,8 +609,8 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
-    name: "Penerjemah Teks Umum",
-    code: "05/LSPUINBdg/XI/2023",
+    nama: "Penerjemah Teks Umum",
+    kode: "05/LSPUINBdg/XI/2023",
     units: [
       {
         code: "M.74PEN01.001.1",
@@ -1038,8 +1038,8 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
-    name: "Auditor Halal",
-    code: "03/LSPUINBdg/XI/2023",
+    nama: "Auditor Halal",
+    kode: "03/LSPUINBdg/XI/2023",
     units: [
       {
         code: "M.74AHI00.001.1",
@@ -1197,8 +1197,8 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
-    name: "Penyelia Halal",
-    code: "02/LSPUINBdg/XI/2023",
+    nama: "Penyelia Halal",
+    kode: "02/LSPUINBdg/XI/2023",
     units: [
       {
         code: "M.74PHI00.001.2",

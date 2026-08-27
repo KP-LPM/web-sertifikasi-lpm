@@ -34,31 +34,31 @@ export default function Profile() {
       (user as SessionUser)?.role === "asesor"
         ? "Asesor"
         : (user as SessionUser)?.role === "admin"
-        ? "Admin"
-        : "Asesi",
+          ? "Admin"
+          : "Asesi",
     username:
       (user as SessionUser)?.username ||
       (user?.email ? user.email.split("@")[0] : ""),
     email: user?.email || "",
-    namaLengkap: (registeredProfile?.nama as string) || user?.name || "",
+    namaLengkap: (registeredProfile?.nama as string) || user?.username || "",
     tempatLahir: (registeredProfile?.tempatLahir as string) || "",
     tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
     jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
     alamat: (registeredProfile?.alamatRumah as string) || "",
+    alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
     kodePos: (registeredProfile?.kodePos as string) || "",
     nik: (registeredProfile?.nik as string) || "",
     noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
     noTelp: (registeredProfile?.noTelp as string) || "",
     pekerjaan: (registeredProfile?.pekerjaan as string) || "",
-    pendidikanTerakhir:
-      (registeredProfile?.pendidikanTerakhir as string) || "",
+    pendidikanTerakhir: (registeredProfile?.pendidikanTerakhir as string) || "",
     tandaTangan: (registeredProfile?.tandaTangan as string) || "",
   });
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
@@ -89,7 +89,8 @@ export default function Profile() {
                 resolve(new File([blob], file.name, { type: "image/jpeg" }));
             },
             "image/jpeg",
-            0.8
+
+            0.8,
           );
         };
       };
@@ -144,8 +145,7 @@ export default function Profile() {
         string,
         string | undefined
       >;
-      const namaAsli = data.nama_lengkap || data.nama || user?.name || "";
-
+      const namaAsli = data.nama_lengkap || data.nama || user?.username || "";
       setFormData((prev) => ({
         ...prev,
         username:
@@ -209,7 +209,8 @@ export default function Profile() {
     fetchProfil();
   }, [user]);
 
-  // 3. Fungsi Utama Simpan Perubahan
+  // 3. Fungsi Utama Simpan Perubahan (Termasuk Upload Foto)
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -252,14 +253,15 @@ export default function Profile() {
         avatar: finalAvatarUrl,
       };
 
+      // Kirim data lengkap ke API profil
+
       const response = await fetch("/api/profil", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok)
-        throw new Error("Gagal menyimpan profil ke database");
+      if (!response.ok) throw new Error("Gagal menyimpan profil ke database");
 
       updateUser(payload as unknown as Record<string, string | undefined>);
       alert("Profil berhasil disimpan!");
@@ -457,7 +459,19 @@ export default function Profile() {
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
                   ></textarea>
                 </div>
-
+                <div className="md:col-span-2 lg:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Alamat
+                    Wilayah/Kelurahan
+                  </label>
+                  <input
+                    type="text"
+                    name="alamatWilayah"
+                    value={formData.alamatWilayah}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     <span className="text-red-500">*</span> NIK
@@ -485,7 +499,8 @@ export default function Profile() {
                 {formData.peran === "Asesor" && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      <span className="text-red-500">*</span> Nomor Registrasi/MET
+                      <span className="text-red-500">*</span> Nomor
+                      Registrasi/MET
                     </label>
                     <input
                       type="text"

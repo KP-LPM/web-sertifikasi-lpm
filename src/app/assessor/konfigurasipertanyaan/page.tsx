@@ -11,7 +11,6 @@ import {
   Trash2,
   Calendar,
 } from "lucide-react";
-import { PersonItem } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -144,11 +143,7 @@ export default function KonfigurasiPertanyaan() {
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
                         {item.penyusun
                           ?.map((p) =>
-                            typeof p === "string"
-                              ? p
-                              : (p as PersonItem).label ||
-                                (p as PersonItem).nama ||
-                                "",
+                            typeof p === "string" ? p : p.value || "",
                           )
                           .filter(Boolean)
                           .join(", ") || "-"}
@@ -156,11 +151,7 @@ export default function KonfigurasiPertanyaan() {
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
                         {item.validator
                           ?.map((v) =>
-                            typeof v === "string"
-                              ? v
-                              : (v as PersonItem).label ||
-                                (v as PersonItem).nama ||
-                                "",
+                            typeof v === "string" ? v : v.value || "",
                           )
                           .filter(Boolean)
                           .join(", ") || "-"}

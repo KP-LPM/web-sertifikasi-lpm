@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useMemo } from "react";
 import {
   BarChart2,
@@ -830,7 +830,7 @@ export default function Reports() {
             </p>
           </div>
 
-          <div className="my-4 h-[380px] w-full flex items-center justify-center relative">
+          <div className="my-4 h-95 w-full flex items-center justify-center relative">
             {statsSummary.totalAsesi > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -945,7 +945,7 @@ export default function Reports() {
             </p>
           </div>
 
-          <div className="my-4 h-[420px] w-full">
+          <div className="my-4 h-105 w-full">
             {barData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart

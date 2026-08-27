@@ -24,8 +24,8 @@ import {
   MasterSkemaUnitPayload,
   MasterSkemaElemenPayload,
   MasterSkemaFormState,
-  SchemeElemen,
-  SchemeUnit,
+  ElemenKompetensiItem,
+  UnitKompetensiItem,
   SchemeItem,
   StatCardProps,
   SchemeCardProps,
@@ -43,44 +43,62 @@ export default function ManageSchemes() {
       .filter((s) => s.status !== "Draft")
       .map((s) => {
         const detail = AVAILABLE_SCHEMES.find((d) => d.name === s.name);
-        let mappedUnits: SchemeUnit[] = detail?.units?.map((u) => ({
-          unitCode: u.kode || "",
-          unitTitle: u.title || "",
-          unitDesc: "",
-          elemen: u.elemen
-            ? u.elemen.map((e) => ({
-                title: e.title || "",
-                kuk: Array.isArray(e.kuk) ? e.kuk : [e.kuk],
-              }))
-            : [{ title: "", kuk: [""] }],
-        })) || [
+        let mappedUnits: UnitKompetensiItem[] = detail?.units?.map(
+          (u, idx) => ({
+            kodeUnit: u.code || "",
+            judulUnit: u.title || "",
+            urutan: idx + 1, // Tambahkan urutan untuk UnitKompetensiItem
+            elemen: u.elemen
+              ? u.elemen.map((e, eIdx) => ({
+                  namaElemen: e.title || "", // Ubah title menjadi namaElemen
+                  kriteriaUnjukKerja: Array.isArray(e.kuk) ? e.kuk : [e.kuk], // Ubah kuk menjadi kriteriaUnjukKerja
+                  urutan: eIdx + 1, // Tambahkan urutan untuk ElemenKompetensiItem
+                  isWajib: true, // Tambahkan isWajib
+                }))
+              : [
+                  {
+                    namaElemen: "",
+                    kriteriaUnjukKerja: [""],
+                    urutan: 1,
+                    isWajib: true,
+                  },
+                ],
+          }),
+        ) || [
           {
-            unitCode: "",
-            unitTitle: "",
-            unitDesc: "",
-            elemen: [{ title: "", kuk: [""] }],
+            kodeUnit: "", // Ubah kode menjadi kodeUnit
+            judulUnit: "", // Ubah judul menjadi judulUnit
+            urutan: 1, // Tambahkan urutan
+            elemen: [
+              {
+                namaElemen: "",
+                kriteriaUnjukKerja: [""],
+                urutan: 1,
+                isWajib: true,
+              },
+            ],
           },
         ];
 
         if (s.name === "Penyelia Halal" && mappedUnits.length > 0) {
           mappedUnits = mappedUnits.map((u) => {
             let desc = "";
-            if (u.kode === "M.74PHI00.001.2")
+            if (u.kodeUnit === "M.74PHI00.001.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam menyusun dokumen SJPH sesuai persyaratan standar.";
-            else if (u.kode === "M.74PHI00.002.2")
+            else if (u.kodeUnit === "M.74PHI00.002.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang berkaitan dengan penyiapan daftar bahan halal dan dokumen pendukungnya.";
-            else if (u.kode === "M.74PHI00.003.2")
+            else if (u.kodeUnit === "M.74PHI00.003.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam mengawasi bahan, proses, dan produk halal sesuai persyaratan standar.";
-            else if (u.kode === "M.74PHI00.004.2")
+            else if (u.kodeUnit === "M.74PHI00.004.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan penanganan produk yang tidak memenuhi kriteria halal sesuai persyaratan standar.";
-            else if (u.kode === "M.74PHI00.005.2")
+            else if (u.kodeUnit === "M.74PHI00.005.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan, dan sikap kerja yang dibutuhkan dalam melakukan audit internal penerapan Sistem Jaminan Produk Halal (SJPH).";
-            else if (u.kode === "M.74PHI00.006.2")
+            else if (u.kodeUnit === "M.74PHI00.006.2")
               desc =
                 "Unit kompetensi ini berhubungan dengan pengetahuan, keterampilan dan sikap kerja yang dibutuhkan dalam melakukan evaluasi tindak lanjut hasil audit internal Sistem Jaminan Produk Halal (SJPH).";
 
@@ -90,7 +108,11 @@ export default function ManageSchemes() {
 
         return {
           ...s,
-          units: mappedUnits,
+          nama: s.nama ?? s.name,
+          kode: s.kode ?? s.code,
+          kategori: s.kategori ?? "IT & Software",
+          totalPendaftar: s.totalPendaftar ?? 0,
+          unitKompetensi: mappedUnits,
         };
       });
   });
@@ -141,28 +163,33 @@ export default function ManageSchemes() {
 
   // Form State
   const [formData, setFormData] = useState({
-    name: "",
+    nama: "",
     kode: "KKNI",
-    nomor_sertifikat: "",
-    nomor_registrasi: "",
-    category: "IT & Software",
+    nomorSertifikat: "",
+    nomorRegistrasi: "",
+    kategori: "IT & Software",
     status: "Active",
   });
-  const [units, setUnits] = useState<SchemeUnit[]>([
+  const [units, setUnits] = useState<UnitKompetensiItem[]>([
     {
-      kode: "",
-      judul: "",
-      unitDesc: "",
-      elemen: [{ judul: "", kuk: [""] }],
+      kodeUnit: "",
+      judulUnit: "",
+      urutan: 1,
+      elemen: [
+        { namaElemen: "", kriteriaUnjukKerja: [""], urutan: 1, isWajib: true },
+      ],
     },
   ]);
 
   const filteredSchemes = schemes.filter((scheme) => {
+    // Tambahkan fallback string kosong (|| "") untuk mencegah undefined
     const matchesSearch =
-      scheme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      scheme.code.toLowerCase().includes(searchTerm.toLowerCase());
+      (scheme.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (scheme.kode || "").toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus =
       statusFilter === "Semua Status" || scheme.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -172,20 +199,27 @@ export default function ManageSchemes() {
   const openPreviewModal = (scheme: SchemeItem) => {
     setSelectedScheme(scheme);
     setFormData({
-      name: scheme.name,
-      code: scheme.code,
-      nomor_sertifikat: scheme.nomor_sertifikat || "",
-      nomor_registrasi: scheme.nomor_registrasi || "",
-      category: scheme.category,
+      nama: scheme.nama,
+      kode: scheme.kode,
+      nomorSertifikat: scheme.nomorSertifikat || "",
+      nomorRegistrasi: scheme.nomorRegistrasi || "",
+      kategori: scheme.kategori,
       status: scheme.status,
     });
     setUnits(
-      scheme.units || [
+      scheme.unitKompetensi || [
         {
-          unitCode: "",
-          unitTitle: "",
-          unitDesc: "",
-          elemen: [{ judul: "", kuk: [""] }],
+          kodeUnit: "",
+          judulUnit: "",
+          urutan: 1,
+          elemen: [
+            {
+              namaElemen: "",
+              kriteriaUnjukKerja: [""],
+              urutan: 1,
+              isWajib: true,
+            },
+          ],
         },
       ],
     );
@@ -195,20 +229,27 @@ export default function ManageSchemes() {
   const openEditModal = (scheme: SchemeItem) => {
     setSelectedScheme(scheme);
     setFormData({
-      name: scheme.name,
-      code: scheme.code,
-      nomor_sertifikat: scheme.nomor_sertifikat || "",
-      nomor_registrasi: scheme.nomor_registrasi || "",
-      category: scheme.category,
+      nama: scheme.nama,
+      kode: scheme.kode,
+      nomorSertifikat: scheme.nomorSertifikat || "",
+      nomorRegistrasi: scheme.nomorRegistrasi || "",
+      kategori: scheme.kategori,
       status: scheme.status,
     });
     setUnits(
-      scheme.units || [
+      scheme.unitKompetensi || [
         {
-          unitCode: "",
-          unitTitle: "",
-          unitDesc: "",
-          elemen: [{ judul: "", kuk: [""] }],
+          kodeUnit: "",
+          judulUnit: "",
+          urutan: 1,
+          elemen: [
+            {
+              namaElemen: "",
+              kriteriaUnjukKerja: [""],
+              urutan: 1,
+              isWajib: true,
+            },
+          ],
         },
       ],
     );
@@ -235,7 +276,7 @@ export default function ManageSchemes() {
   const categoryModalNode = (
     <AnimatePresence>
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -280,7 +321,7 @@ export default function ManageSchemes() {
                 </button>
               </div>
 
-              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+              <div className="space-y-2 max-h-75 overflow-y-auto pr-2">
                 {categories.map((cat, idx) => (
                   <div
                     key={idx}
@@ -349,30 +390,34 @@ export default function ManageSchemes() {
         onSaveSuccess={(payload: MasterSkemaPayload) => {
           const newScheme: SchemeItem = {
             id: Date.now().toString(),
-            name: payload.nama_skema,
-            code: payload.kode_skema,
-            nomor_sertifikat: payload.nomor_sertifikat,
-            nomor_registrasi: payload.nomor_registrasi,
-            category: "IT & Software",
-            status: payload.status_aktif ? "Active" : "Draft",
-            applicantsCount: 0,
-            unitKompetensi: payload.unit_kompetensi?.map(
-              (u: MasterSkemaUnitPayload) => ({
-                unitCode: u.kode_unit,
-                unitTitle: u.judul_unit,
-                unitDesc: "",
+            nama: payload.namaSkema,
+            kode: payload.kodeSkema,
+            nomorSertifikat: payload.nomorSertifikat,
+            nomorRegistrasi: payload.nomorRegistrasi,
+            kategori: "IT & Software",
+            status: payload.statusAktif ? "Active" : "Draft",
+            totalPendaftar: 0,
+            unitKompetensi: payload.unitKompetensi?.map(
+              (u: MasterSkemaUnitPayload, uIdx: number) => ({
+                kodeUnit: u.kodeUnit,
+                judulUnit: u.judulUnit,
+                urutan: u.urutan || uIdx + 1, // Berikan nilai urutan
                 elemen:
-                  u.elemen?.map((e: MasterSkemaElemenPayload) => ({
-                    judul: e.nama_elemen,
-                    kuk: Array.isArray(e.kriteria_unjuk_kerja)
-                      ? e.kriteria_unjuk_kerja
-                      : e.kriteria_unjuk_kerja
-                        ? e.kriteria_unjuk_kerja.split("\n")
-                        : e.kuk || [],
-                  })) || [],
+                  u.elemen?.map(
+                    (e: MasterSkemaElemenPayload, eIdx: number) => ({
+                      namaElemen: e.namaElemen, // Sesuaikan dengan interface ElemenKompetensiItem
+                      kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja) // Sesuaikan nama properti
+                        ? e.kriteriaUnjukKerja
+                        : e.kriteriaUnjukKerja
+                          ? (e.kriteriaUnjukKerja as string).split("\n")
+                          : e.kuk || [""],
+                      urutan: e.urutan || eIdx + 1, // Wajib disertakan
+                      isWajib: e.is_wajib ?? true, // Wajib disertakan
+                    }),
+                  ) || [],
               }),
             ),
-            persyaratan_dasar: payload.persyaratan_dasar,
+            persyaratanDasar: payload.persyaratanDasar,
           };
           setSchemes((prev) => [newScheme, ...prev]);
           setIsModalOpen(false);
@@ -383,51 +428,48 @@ export default function ManageSchemes() {
 
   if (isEditModalOpen && selectedScheme) {
     const initialData: Partial<MasterSkemaFormState> = {
-      kode_skema: selectedScheme.code || "",
-      nama_skema: selectedScheme.name || "",
-      nomor_sertifikat: selectedScheme.nomor_sertifikat || "",
-      nomor_registrasi: selectedScheme.nomor_registrasi || "",
-      status_aktif: selectedScheme.status === "Active",
-      persyaratan_dasar: selectedScheme.persyaratan_dasar || [
+      kodeSkema: selectedScheme.kode || "",
+      namaSkema: selectedScheme.nama || "",
+      nomorSertifikat: selectedScheme.nomorSertifikat || "",
+      nomorRegistrasi: selectedScheme.nomorRegistrasi || "",
+      statusAktif: selectedScheme.status === "Active",
+      persyaratanDasar: selectedScheme.persyaratanDasar || [
         {
-          nama_dokumen: "Transkrip Nilai Semester 5",
+          namaDokumen: "Transkrip Nilai Semester 5",
           deskripsi:
             "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
           urutan: 1,
           is_wajib: true,
         },
       ],
-      persyaratan_administrasi: selectedScheme.persyaratan_administrasi || [
+      persyaratanAdministrasi: selectedScheme.persyaratanAdministrasi || [
         {
-          nama_dokumen: "Kartu Tanda Penduduk (KTP)",
+          id: selectedScheme.id,
+          namaDokumen: "Kartu Tadnda Penduduk (KTP)",
           deskripsi: "Scan KTP asli atau identitas resmi yang masih berlaku.",
-          urutan: 1,
-          is_wajib: true,
+          isWajib: true,
+          isAktif: true,
         },
       ],
-      unit_kompetensi:
-        selectedScheme.units?.map((u: SchemeUnit, idx: number) => ({
-          kode_unit: u.unitCode || "",
-          judul_unit: u.unitTitle || "",
-          urutan: idx + 1,
-          elemen: u.elemen?.map((e: SchemeElemen, eIdx: number) => ({
-            nama_elemen: e.title || "",
-            kriteria_unjuk_kerja: Array.isArray(e.kuk)
-              ? e.kuk
-              : e.kuk
-                ? [e.kuk]
-                : [""],
-            urutan: eIdx + 1,
-            is_wajib: true,
-          })) || [
-            {
-              nama_elemen: "",
-              kriteria_unjuk_kerja: [""],
-              urutan: 1,
-              is_wajib: true,
-            },
-          ],
-        })) || [],
+      unitKompetensi:
+        selectedScheme.unitKompetensi?.map(
+          (u: UnitKompetensiItem, idx: number) => ({
+            kodeUnit: u.kodeUnit || "", // Gunakan kodeUnit (bukan kode)
+            judulUnit: u.judulUnit || "", // Gunakan judulUnit (bukan judul)
+            urutan: idx + 1,
+            elemen:
+              u.elemen?.map((e: ElemenKompetensiItem, eIdx: number) => ({
+                namaElemen: e.namaElemen || "", // Gunakan namaElemen (bukan nama_elemen / judul)
+                kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
+                  ? e.kriteriaUnjukKerja
+                  : e.kriteriaUnjukKerja
+                    ? [e.kriteriaUnjukKerja as unknown as string]
+                    : [""],
+                urutan: eIdx + 1,
+                isWajib: true, // Gunakan isWajib (bukan is_wajib)
+              })) || [],
+          }),
+        ) || [],
     };
 
     return (
@@ -443,25 +485,25 @@ export default function ManageSchemes() {
               s.id === selectedScheme.id
                 ? {
                     ...s,
-                    name: payload.nama_skema,
-                    code: payload.kode_skema,
-                    nomor_sertifikat: payload.nomor_sertifikat,
-                    nomor_registrasi: payload.nomor_registrasi,
-                    status: payload.status_aktif ? "Active" : "Draft",
-                    persyaratan_dasar: payload.persyaratan_dasar,
-                    persyaratan_administrasi: payload.persyaratan_administrasi,
-                    units: payload.unit_kompetensi?.map(
+                    nama: payload.namaSkema,
+                    code: payload.kodeSkema,
+                    nomorSertifikat: payload.nomorSertifikat,
+                    nomorRegistrasi: payload.nomorRegistrasi,
+                    status: payload.statusAktif ? "Active" : "Draft",
+                    persyaratanDasar: payload.persyaratanDasar,
+                    persyaratanAdministrasi: payload.persyaratanAdministrasi,
+                    units: payload.unitKompetensi?.map(
                       (u: MasterSkemaUnitPayload) => ({
-                        unitCode: u.kode_unit,
-                        unitTitle: u.judul_unit,
+                        kode: u.kodeUnit,
+                        judul: u.judulUnit,
                         unitDesc: "",
                         elemen: u.elemen?.map(
                           (e: MasterSkemaElemenPayload) => ({
-                            title: e.nama_elemen,
-                            kuk: Array.isArray(e.kriteria_unjuk_kerja)
-                              ? e.kriteria_unjuk_kerja
-                              : e.kriteria_unjuk_kerja
-                                ? e.kriteria_unjuk_kerja.split("\n")
+                            title: e.namaElemen,
+                            kuk: Array.isArray(e.kriteriaUnjukKerja)
+                              ? e.kriteriaUnjukKerja
+                              : e.kriteriaUnjukKerja
+                                ? e.kriteriaUnjukKerja.split("\n")
                                 : e.kuk || [],
                           }),
                         ),
@@ -495,7 +537,7 @@ export default function ManageSchemes() {
                 <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
                   Detail Skema Sertifikasi
                 </h2>
-                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
                   Preview Informasi Utama, Persyaratan & Unit Kompetensi
                 </p>
               </div>
@@ -526,7 +568,7 @@ export default function ManageSchemes() {
                   <input
                     type="text"
                     disabled
-                    value={formData.code}
+                    value={formData.kode}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
@@ -537,7 +579,7 @@ export default function ManageSchemes() {
                   <input
                     type="text"
                     disabled
-                    value={formData.name}
+                    value={formData.nama}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
@@ -550,7 +592,7 @@ export default function ManageSchemes() {
                   <input
                     type="text"
                     disabled
-                    value={formData.nomor_sertifikat || "-"}
+                    value={formData.nomorSertifikat || "-"}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
@@ -561,7 +603,7 @@ export default function ManageSchemes() {
                   <input
                     type="text"
                     disabled
-                    value={formData.nomor_registrasi || "-"}
+                    value={formData.nomorRegistrasi || "-"}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold"
                   />
                 </div>
@@ -605,8 +647,8 @@ export default function ManageSchemes() {
                         <input
                           type="text"
                           disabled
-                          value={unit.unitCode || ""}
-                          className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-[42px]"
+                          value={unit.kodeUnit || ""}
+                          className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-10.5"
                         />
                       </div>
                       <div className="min-w-0">
@@ -616,8 +658,8 @@ export default function ManageSchemes() {
                         <input
                           type="text"
                           disabled
-                          value={unit.unitTitle}
-                          className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-[42px]"
+                          value={unit.judulUnit}
+                          className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-10.5"
                         />
                       </div>
                     </div>
@@ -636,7 +678,7 @@ export default function ManageSchemes() {
                           <input
                             type="text"
                             disabled
-                            value={el.title}
+                            value={el.namaElemen}
                             className="w-full text-sm border-b-2 border-slate-200 bg-transparent px-0 py-1.5 font-semibold text-slate-800"
                           />
                         </div>
@@ -646,7 +688,7 @@ export default function ManageSchemes() {
                             Kriteria untuk Kerja
                           </label>
                           <div className="space-y-2">
-                            {el.kuk.map((kukStr, kIdx) => (
+                            {el.kriteriaUnjukKerja.map((kukStr, kIdx) => (
                               <div
                                 key={kIdx}
                                 className="flex gap-2 items-start"
@@ -657,7 +699,7 @@ export default function ManageSchemes() {
                                 <textarea
                                   disabled
                                   value={kukStr}
-                                  className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 resize-none min-h-[44px]"
+                                  className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 resize-none min-h-11"
                                   rows={1}
                                 />
                               </div>
@@ -688,7 +730,7 @@ export default function ManageSchemes() {
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Skema Sertifikasi
             </h2>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
               Konfigurasi dan pantau daftar skema kompetensi BNSP.
             </p>
           </div>
@@ -697,11 +739,11 @@ export default function ManageSchemes() {
           <button
             onClick={() => {
               setFormData({
-                name: "",
-                code: "KKNI",
-                nomor_sertifikat: "",
-                nomor_registrasi: "",
-                category: "IT & Software",
+                nama: "",
+                kode: "KKNI",
+                nomorSertifikat: "",
+                nomorRegistrasi: "",
+                kategori: "IT & Software",
                 status: "Active",
               });
               setIsModalOpen(true);
@@ -796,7 +838,7 @@ export default function ManageSchemes() {
                 </h3>
                 <p className="text-sm text-gray-500">
                   Apakah Anda yakin ingin mengarsipkan skema{" "}
-                  {selectedScheme?.name}?
+                  {selectedScheme?.nama}?
                 </p>
               </div>
               <div className="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
@@ -847,13 +889,13 @@ function SchemeCard({
     "Creative Design": PenTool,
   };
 
-  const Icon = icons[scheme.category] || Code;
+  const Icon = icons[scheme.kategori] || Code;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: (index as number) * 0.05 }}
       className="bg-white p-5 rounded-lg shadow-xs border border-gray-100 flex flex-col md:flex-row md:items-center justify-between hover:border-[#008BE3]/30 transition-colors group"
     >
       <div className="flex items-center gap-4">
@@ -862,7 +904,7 @@ function SchemeCard({
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-bold text-slate-900">{scheme.name}</h3>
+            <h3 className="font-bold text-slate-900">{scheme.nama}</h3>
             <span
               className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border ${
                 scheme.status === "Active"
@@ -875,10 +917,10 @@ function SchemeCard({
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
             <span className="bg-gray-100 px-2 py-0.5 rounded">
-              {scheme.code}
+              {scheme.kode}
             </span>
-            <span>•</span>
-            <span>{scheme.category}</span>
+            <span>{scheme.nama}</span>
+            <span>{scheme.kategori}</span>
           </div>
         </div>
       </div>
@@ -886,7 +928,7 @@ function SchemeCard({
       <div className="mt-4 md:mt-0 flex items-center gap-6">
         <div className="text-center md:text-right">
           <p className="text-xl font-black text-slate-900 leading-none">
-            {scheme.applicantsCount}
+            {scheme.totalPendaftar}
           </p>
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
             Total Asesi

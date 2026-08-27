@@ -21,7 +21,7 @@ import { useRef } from "react";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
 import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { useAppContext } from "@/context/context";
-import { UserItem, Apl01FormData, Apl02FormData } from "@/types/types";
+import { UserItem, Apl01FormData, Apl02FormData, Role } from "@/types/types";
 
 export default function UsersManagement() {
   const { user } = useAppContext();
@@ -33,9 +33,9 @@ export default function UsersManagement() {
     {
       id: "1",
       inisial: "AH",
-      nama: "Ahmad Hidayat",
+      namaLengkap: "Ahmad Hidayat",
       email: "ahmad.h@student.uin.ac.id",
-      role: "Asesi",
+      role: "asesi",
       status: "Menunggu Verifikasi",
       verificationData: {
         rekomendasi: "Diterima",
@@ -47,9 +47,9 @@ export default function UsersManagement() {
     {
       id: "2",
       inisial: "BP",
-      nama: "Budi Pratama",
+      namaLengkap: "Budi Pratama",
       email: "budi.p@student.uin.ac.id",
-      role: "Asesi",
+      role: "asesi",
       status: "Menunggu Verifikasi",
       verificationData: {
         rekomendasi: "Diterima",
@@ -61,9 +61,9 @@ export default function UsersManagement() {
     {
       id: "3",
       inisial: "DL",
-      nama: "Dewi Lestari",
+      namaLengkap: "Dewi Lestari",
       email: "dewi.l@student.uin.ac.id",
-      role: "Asesi",
+      role: "asesi",
       status: "Terverifikasi",
       verificationData: {
         rekomendasi: "Diterima",
@@ -75,9 +75,9 @@ export default function UsersManagement() {
     {
       id: "4",
       inisial: "RH",
-      nama: "Rahmat Hidayat",
+      namaLengkap: "Rahmat Hidayat",
       email: "rahmat.h@student.uin.ac.id",
-      role: "Asesi",
+      role: "asesi",
       status: "Terverifikasi",
       verificationData: {
         rekomendasi: "Diterima",
@@ -89,201 +89,201 @@ export default function UsersManagement() {
     {
       id: "5",
       inisial: "SR",
-      nama: "Dr. Siti Rohmah",
+      namaLengkap: "Dr. Siti Rohmah",
       email: "siti.r@lecturer.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-1",
       inisial: "IT",
-      nama: "Ichsan Taufik",
+      namaLengkap: "Ichsan Taufik",
       email: "ichsan.taufik@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-2",
       inisial: "AK",
-      nama: "Aceng Abdul Kodir",
+      namaLengkap: "Aceng Abdul Kodir",
       email: "aceng.kodir@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-3",
       inisial: "SF",
-      nama: "Susanti Ainul Fitri",
+      namaLengkap: "Susanti Ainul Fitri",
       email: "susanti.fitri@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-4",
       inisial: "SM",
-      nama: "M Sandi Marta",
+      namaLengkap: "M Sandi Marta",
       email: "sandi.marta@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-5",
       inisial: "GS",
-      nama: "Gina Sakinah",
+      namaLengkap: "Gina Sakinah",
       email: "gina.sakinah@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-6",
       inisial: "EW",
-      nama: "Elis Ratna Wulan",
+      namaLengkap: "Elis Ratna Wulan",
       email: "elis.wulan@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-7",
       inisial: "AS",
-      nama: "Asep Abdul Sahid",
+      namaLengkap: "Asep Abdul Sahid",
       email: "asep.sahid@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-8",
       inisial: "SA",
-      nama: "Siti Alia",
+      namaLengkap: "Siti Alia",
       email: "siti.alia@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-9",
       inisial: "AF",
-      nama: "Azmi Fasa",
+      namaLengkap: "Azmi Fasa",
       email: "azmi.fasa@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-10",
       inisial: "CS",
-      nama: "Cucu Susilawati",
+      namaLengkap: "Cucu Susilawati",
       email: "cucu.susilawati@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-11",
       inisial: "FW",
-      nama: "Fitri Pebriani Wahyu",
+      namaLengkap: "Fitri Pebriani Wahyu",
       email: "fitri.wahyu@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-12",
       inisial: "TR",
-      nama: "Tina Dewi Rosahdi",
+      namaLengkap: "Tina Dewi Rosahdi",
       email: "tina.rosahdi@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-13",
       inisial: "UJ",
-      nama: "Ucu Julita",
+      namaLengkap: "Ucu Julita",
       email: "ucu.julita@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-14",
       inisial: "AM",
-      nama: "Acep Muslim",
+      namaLengkap: "Acep Muslim",
       email: "acep.muslim@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-15",
       inisial: "IK",
-      nama: "Izzah Faizah Siti Rusydati Khaerani",
+      namaLengkap: "Izzah Faizah Siti Rusydati Khaerani",
       email: "izzah.faizah@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-16",
       inisial: "MA",
-      nama: "Muhammad Alfan",
+      namaLengkap: "Muhammad Alfan",
       email: "muhammad.alfan@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-17",
       inisial: "EA",
-      nama: "Erlan Aditya Ardiansyah",
+      namaLengkap: "Erlan Aditya Ardiansyah",
       email: "erlan.ardiansyah@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-18",
       inisial: "DG",
-      nama: "Dian Rachmat Gumelar",
+      namaLengkap: "Dian Rachmat Gumelar",
       email: "dian.gumelar@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-19",
       inisial: "RN",
-      nama: "Reza Fauzi Nazar",
+      namaLengkap: "Reza Fauzi Nazar",
       email: "reza.nazar@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-20",
       inisial: "RS",
-      nama: "Rini Sulastri",
+      namaLengkap: "Rini Sulastri",
       email: "rini.sulastri@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-21",
       inisial: "YM",
-      nama: "Yadi Mardiansyah",
+      namaLengkap: "Yadi Mardiansyah",
       email: "yadi.mardiansyah@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-22",
       inisial: "DY",
-      nama: "Dayudin",
+      namaLengkap: "Dayudin",
       email: "dayudin@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-23",
       inisial: "WU",
-      nama: "Wisnu Uriawan",
+      namaLengkap: "Wisnu Uriawan",
       email: "wisnu.uriawan@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
     {
       id: "asr-24",
       inisial: "MR",
-      nama: "M. Ridha Taufiq Rahman",
+      namaLengkap: "M. Ridha Taufiq Rahman",
       email: "ridha.rahman@lsp.uin.ac.id",
-      role: "Asesor",
+      role: "asesor",
       status: "Terverifikasi",
     },
   ]);
@@ -371,37 +371,37 @@ export default function UsersManagement() {
   };
 
   // Form State
-  const [formData, setFormData] = useState({
-    nama: "",
+  const [formData, setFormData] = useState<Partial<UserItem>>({
+    namaLengkap: "",
     email: "",
-    role: "Asesor",
+    role: "", // atau bisa dikosongkan/di-cast jika menggunakan nilai default string
   });
 
-  // Filtered Lists for Asesi vs Asesor
-  const asesiUsers = users.filter((user) => user.role === "Asesi");
-  const asesorUsers = users.filter((user) => user.role === "Asesor");
+  // Filtered Lists for asesi vs Asesor
+  const asesiUsers = users.filter((user) => user.role === "asesi");
+  const asesorUsers = users.filter((user) => user.role === "asesor");
 
   const currentList = mainTab === "asesi" ? asesiUsers : asesorUsers;
 
   const filteredUsers = currentList.filter(
     (user) =>
-      user.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.namaLengkap.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase()),
+      user.role?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleAddUser = () => {
     const newUser: UserItem = {
       id: Date.now().toString(),
-      inisial: formData.nama.substring(0, 2).toUpperCase() || "U",
-      nama: formData.nama || "User Baru",
+      inisial: formData.namaLengkap?.substring(0, 2).toUpperCase() || "U",
+      namaLengkap: formData.namaLengkap || "User Baru",
       email: formData.email || "user@example.com",
-      role: formData.role,
+      role: formData.role as Role,
       status: "Terverifikasi",
     };
     setUsers([...users, newUser]);
     setIsModalOpen(false);
-    setFormData({ nama: "", email: "", role: "Asesor" });
+    setFormData({ namaLengkap: "", email: "", role: "asesor" });
   };
 
   const handleEditUser = () => {
@@ -411,10 +411,16 @@ export default function UsersManagement() {
           u.id === selectedUser.id
             ? {
                 ...u,
-                nama: formData.nama,
-                email: formData.email,
-                role: formData.role,
-                inisial: formData.nama.substring(0, 2).toUpperCase() || "U",
+                namaLengkap: formData.namaLengkap || u.namaLengkap,
+                email: formData.email || u.email,
+                role: formData.role || u.role,
+                inisial:
+                  formData.namaLengkap?.substring(0, 2).toUpperCase() ||
+                  u.inisial,
+                status: formData.status || u.status,
+                nik: formData.nik,
+                tempPassword: formData.tempPassword,
+                verificationData: formData.verificationData,
               }
             : u,
         ),
@@ -486,11 +492,11 @@ export default function UsersManagement() {
       setUsers(
         users.map((u) =>
           u.id === userToVerify.id
-            ? {
+            ? ({
                 ...u,
-                status: "Siap Ujian Sertifikasi",
+                status: "Terverifikasi",
                 verificationData: newVerificationData,
-              }
+              } as UserItem) // <-- Tambahkan penegasan tipe di sini
             : u,
         ),
       );
@@ -544,7 +550,7 @@ export default function UsersManagement() {
         u.id === userToVerify.id
           ? {
               ...u,
-              status: "Menunggu Penilaian Asesor",
+              status: "Terverifikasi", // Ubah ke status yang diizinkan
               verificationData: newVerificationData,
             }
           : u,
@@ -561,7 +567,7 @@ export default function UsersManagement() {
     setSelectedAsesorId(user.verificationData?.assignedAsesorId || "");
     setApl01FormData({
       isAdmin: true,
-      namaLengkap: user.nama,
+      namaLengkap: user.namaLengkap,
       rekomendasi: user.verificationData?.rekomendasi || "Diterima",
       catatan: user.verificationData?.catatan || "",
       statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
@@ -591,7 +597,7 @@ export default function UsersManagement() {
     });
     setApl02FormData({
       isAdmin: true,
-      namaLengkap: user.nama,
+      namaLengkap: user.namaLengkap,
       rekomendasiApl02:
         user.verificationData?.rekomendasiApl02 || "Dapat dilanjutkan",
       ttdAsesi: { type: "auto" },
@@ -697,7 +703,11 @@ export default function UsersManagement() {
       verificationData: newVerificationData,
     };
 
-    setUsers(users.map((u) => (u.id === userToVerify.id ? updatedUser : u)));
+    setUsers(
+      users.map((u) =>
+        u.id === userToVerify.id ? (updatedUser as UserItem) : u,
+      ),
+    );
     setIsVerifyModalOpen(false);
     setUserToVerify(null);
   };
@@ -732,13 +742,14 @@ export default function UsersManagement() {
                 Tinjauan Verifikasi Berkas
               </h2>
               <p className="text-xs text-gray-500 font-medium mt-1">
-                Periksa detail dokumen {userToVerify.nama} sebelum menyetujui.
+                Periksa detail dokumen {userToVerify.namaLengkap} sebelum
+                menyetujui.
               </p>
             </div>
           </div>
 
           <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden flex flex-col">
-            {userToVerify.role === "Asesi" && (
+            {userToVerify.role === "asesi" && (
               <div className="border-b border-gray-100 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
@@ -747,7 +758,7 @@ export default function UsersManagement() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-slate-900">
-                        {userToVerify.nama}
+                        {userToVerify.namaLengkap}
                       </p>
                       <p className="text-xs text-gray-500 font-medium">
                         {userToVerify.email}
@@ -782,7 +793,7 @@ export default function UsersManagement() {
             )}
 
             <div className="p-6 space-y-4">
-              {userToVerify.role === "Asesi" ? (
+              {userToVerify.role === "asesi" ? (
                 <>
                   {activeVerifyTab === "apl01" ? (
                     <div className="space-y-6">
@@ -859,7 +870,7 @@ export default function UsersManagement() {
                 Simpan Draft
               </button>
 
-              {userToVerify.role === "Asesi" && activeVerifyTab === "apl01" ? (
+              {userToVerify.role === "asesi" && activeVerifyTab === "apl01" ? (
                 <button
                   onClick={() => setActiveVerifyTab("apl02")}
                   disabled={!isApl01Valid}
@@ -869,7 +880,7 @@ export default function UsersManagement() {
                 </button>
               ) : (
                 <>
-                  {!apl02FormData.ttdAsesor && userToVerify.role === "Asesi" ? (
+                  {!apl02FormData.ttdAsesor && userToVerify.role === "asesi" ? (
                     <div className="flex items-center gap-3 min-w-0">
                       <select
                         value={selectedAsesorId}
@@ -878,10 +889,10 @@ export default function UsersManagement() {
                       >
                         <option value="">Pilih Asesor...</option>
                         {users
-                          .filter((u) => u.role === "Asesor")
+                          .filter((u) => u.role === "asesor")
                           .map((asesor) => (
                             <option key={asesor.id} value={asesor.id}>
-                              {asesor.nama}
+                              {asesor.namaLengkap}
                             </option>
                           ))}
                       </select>
@@ -897,11 +908,11 @@ export default function UsersManagement() {
                     <button
                       onClick={confirmVerify}
                       disabled={
-                        userToVerify?.role === "Asesi" &&
+                        userToVerify?.role === "asesi" &&
                         activeVerifyTab === "apl02" &&
                         (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor)
                       }
-                      className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${userToVerify?.role === "Asesi" && activeVerifyTab === "apl02" && (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
+                      className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${userToVerify?.role === "asesi" && activeVerifyTab === "apl02" && (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
                     >
                       Verifikasi Akun (Siap Ujian)
                     </button>
@@ -1098,7 +1109,7 @@ export default function UsersManagement() {
                           {user.inisial}
                         </div>
                         <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
-                          {user.nama}
+                          {user.namaLengkap}
                         </span>
                       </div>
                     </td>
@@ -1114,7 +1125,7 @@ export default function UsersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`border px-2.5 py-1 rounded text-xs font-bold inline-block whitespace-nowrap ${
-                          user.role === "Asesor"
+                          user.role === "asesor"
                             ? "bg-[#E6F4FF] text-[#008BE3] border-[#BCE0FD]"
                             : "bg-slate-50 text-slate-700 border-slate-200 font-medium"
                         }`}
@@ -1127,14 +1138,12 @@ export default function UsersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border whitespace-nowrap ${
-                          user.status === "Terverifikasi" ||
-                          user.status === "Siap Ujian Sertifikasi"
+                          user.status === "Terverifikasi"
                             ? "bg-green-50 text-green-700 border-green-200"
                             : "bg-amber-50 text-amber-700 border-amber-200"
                         }`}
                       >
-                        {user.status === "Terverifikasi" ||
-                        user.status === "Siap Ujian Sertifikasi" ? (
+                        {user.status === "Terverifikasi" ? (
                           <CheckCircle
                             size={12}
                             className="stroke-[2.5] shrink-0"
@@ -1255,9 +1264,9 @@ export default function UsersManagement() {
                   <input
                     type="text"
                     placeholder="Masukkan nama lengkap"
-                    value={formData.nama}
+                    value={formData.namaLengkap}
                     onChange={(e) =>
-                      setFormData({ ...formData, nama: e.target.value })
+                      setFormData({ ...formData, namaLengkap: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                   />
@@ -1283,7 +1292,7 @@ export default function UsersManagement() {
                   <select
                     value={formData.role}
                     onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
+                      setFormData({ ...formData, role: e.target.value as Role })
                     }
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                   >
@@ -1377,7 +1386,7 @@ export default function UsersManagement() {
                   Hapus Pengguna
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Apakah Anda yakin ingin menghapus {selectedUser?.nama}?
+                  Apakah Anda yakin ingin menghapus {selectedUser?.namaLengkap}?
                   Tindakan ini tidak dapat dibatalkan.
                 </p>
               </div>
@@ -1428,7 +1437,7 @@ export default function UsersManagement() {
                       Ubah Status Pembayaran
                     </h3>
                     <p className="text-xs text-slate-500 font-medium">
-                      Asesi: {userToEditPayment.nama}
+                      Asesi: {userToEditPayment.namaLengkap}
                     </p>
                   </div>
                 </div>
