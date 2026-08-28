@@ -199,10 +199,10 @@ function getNavItems(role: string | null | undefined) {
           path: "/admin/kelolapengguna",
         },
         {
-          id: "users",
+          id: "verifikasiberkas",
           label: "Verifikasi Berkas",
           icon: FolderCheck,
-          path: "/admin/users",
+          path: "/admin/verifikasiberkas",
         },
         {
           id: "schemes",

@@ -81,7 +81,7 @@ export interface User {
 
 export interface UserItem {
   id: string;
-  inisial: string; // computed di backend dari namaLengkap
+  username: string; 
   namaLengkap: string | ""; // dari ProfilPengguna.namaLengkap
   email: string; // dari User.email
   role: Role;
