@@ -492,15 +492,12 @@ export default function UsersManagement() {
               <div className="border-b border-gray-100 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-sm border border-sky-100">
-                      {userToVerify.namaLengkap.substring(0, 2).toUpperCase()}
-                    </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm md:text-base font-bold text-slate-900">
                         {userToVerify.namaLengkap}
                       </p>
-                      <p className="text-xs text-gray-500 font-medium">
-                        {userToVerify.email}
+                      <p className="text-[11px] md:text-xs text-gray-500 font-medium mt-0.5">
+                        <span className="text-[#008BE3]">@{userToVerify.username}</span> • {userToVerify.email}
                       </p>
                     </div>
                   </div>
@@ -834,12 +831,12 @@ export default function UsersManagement() {
                     </td>
 
                     <td className="px-6 py-4 align-middle whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold text-xs border border-sky-100 shrink-0 shadow-xs">
-                          {user.namaLengkap.substring(0, 2).toUpperCase()}
-                        </div>
+                      <div className="flex flex-col">
                         <span className="text-xs md:text-sm font-bold text-slate-900 whitespace-nowrap">
                           {user.namaLengkap}
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap mt-0.5">
+                          @{user.username}
                         </span>
                       </div>
                     </td>
