@@ -71,6 +71,53 @@ export interface KonfigurasiPertanyaanItem {
 // 1. ADMIN TYPES & INTERFACES
 // ----------------------------------------------------------------------------
 
+export type KategoriSurat = "surat_masuk" | "surat_keluar" | "sertifikat";
+
+export type SubJenisSurat =
+  | "berita_acara_pleno"
+  | "keputusan_pleno"
+  | "blanko_bnsp"
+  | "penugasan_asesor"
+  | "peminjaman_asesor"
+  | "sertifikat_kompetensi";
+
+export interface SuratItem {
+  id: string;
+  nomorSurat: string;
+  judul: string;
+  kategori: KategoriSurat;
+  jenisSurat: SubJenisSurat;
+  namaJenisSurat: string;
+  tanggalDibuat: string;
+  tanggalTerbit?: string;
+  penerbit: string;
+  penerima: string;
+  skemaSertifikasi?: string;
+  jumlahAsesi?: number;
+  status: "Terbit" | "Draft" | "Disetujui" | "Arsip" | string;
+  urlDokumen?: string;
+  urlGdrive?: string;
+  catatan?: string;
+  noSK?: string;
+  pimpinanSidang?: string;
+  notulis?: string;
+  namaAsesor?: string;
+  noMetAsesor?: string;
+  lokasi?: string;
+  detailPayload?: Record<string, unknown>;
+
+  // Compatibility Aliases
+  documentNumber?: string;
+  title?: string;
+  category?: KategoriSurat;
+  letterType?: SubJenisSurat;
+  createdDate?: string;
+  issueDate?: string;
+  publisher?: string;
+  recipient?: string;
+  scheme?: string;
+}
+
 export interface User {
   id: string; // NextAuth selalu string, walau Prisma Int — dikonversi saat sign-in callback
   username: string;
@@ -81,7 +128,7 @@ export interface User {
 
 export interface UserItem {
   id: string;
-  username: string; 
+  username: string;
   namaLengkap: string | ""; // dari ProfilPengguna.namaLengkap
   email: string; // dari User.email
   role: Role;
@@ -137,9 +184,9 @@ export interface PlenoSchedule {
   alamat: string;
   detailAlamat: string;
   deskripsi: string;
-  asesiList: string[]; // cuma nama, sesuai kebutuhan tahap ini
-  suratPlenoName?: string; // Tambahkan ini
-  suratPlenoUrl?: string; // Tambahkan ini
+  asesiList: string[];
+  suratPlenoName?: string;
+  suratPlenoUrl?: string;
 }
 
 // ============================================================
@@ -176,7 +223,7 @@ export interface PlenoDetailData {
   linkSuratBlankoBNSP?: string;
   status: "Draft" | "Belum Ditetapkan" | "Selesai" | string;
   asesiList: AsesiPlenoItem[];
-  plenoAttendees?: PlenoAttendee[]; // opsional, tidak semua sesi lama punya data ini
+  plenoAttendees?: PlenoAttendee[];
   deskripsi?: string;
   suratPlenoName?: string;
 }
@@ -274,16 +321,16 @@ export interface MasterSkemaPayload {
 
 export interface ScheduleItem {
   id: string;
+  kodeBatch?: string; // tambahkan, disamakan dari BatchGroup
   namaBatch?: string;
   nomorSurat?: string;
   skema?: string;
   metode?: string;
   tanggal: string;
   waktuMulai?: string;
-  waktuAkhir?: string;
-  jam?: string;
   tipeTuk: TipeTuk;
   alamat?: string;
+  linkVideo?: string; // tambahkan, supaya field ini tidak hilang saat dipakai lintas konteks
   totalKandidat?: number;
   namaAsesor?: string;
   inisialAsesor?: string;
@@ -291,7 +338,7 @@ export interface ScheduleItem {
   suratTugasName?: string;
   suratTugasUrl?: string;
   status: string;
-  asesiList?: (number | string)[];
+  asesiList?: (number | string)[]; // tetap ringkas di sini
 }
 
 export interface TukInventarisItem {
@@ -548,16 +595,8 @@ export interface Candidate {
   linkVideo?: string;
 }
 
-export interface BatchGroup {
-  kodaBatch: string;
-  namaBatch: string;
-  skema: string;
-  metode: string;
-  tglAsesmen: string;
-  waktu: string;
-  tipeTuk: TipeTuk;
-  linkVideo: string;
-  candidates: Candidate[];
+export interface BatchDetail extends Omit<ScheduleItem, "asesiList"> {
+  candidates: Candidate[]; // versi detail, hasil fetch berdasarkan asesiList dari ScheduleItem
 }
 
 export interface ConfigurationMetadata {
@@ -664,6 +703,7 @@ export interface AssessmentItem {
   tipeTuk: TipeTuk;
   hasil: "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | string;
   status?: string;
+  statusApl?: string;
   alamat?: string;
   asesor?: string;
   metode?: JenisMetode;
@@ -672,6 +712,9 @@ export interface AssessmentItem {
   alasanBanding?: string;
   statusBanding?: "Menunggu" | "Disetujui" | "Ditolak" | string;
   catatanBanding?: string;
+  kodeBatch?: string;
+  namaBatch?: string;
+  linkVideo?: string;
 }
 
 // ----------------------------------------------------------------------------
@@ -809,10 +852,10 @@ export interface DokumenPengajuan {
 }
 
 export interface PengajuanPayload {
-  userId?: string; 
-  code: string;    
+  userId?: string;
+  code: string;
   tuk: string;
-  
+
   nik: string;
   namaLengkap: string;
   tempatLahir: string;
@@ -822,7 +865,7 @@ export interface PengajuanPayload {
   provinsi: string;
   kota: string;
   kodePos: string;
-  kebangsaan: string; 
+  kebangsaan: string;
   noTelp: string;
   pendidikanTerakhir: string;
   pekerjaan: string;
@@ -835,10 +878,10 @@ export interface PengajuanPayload {
   telpInstitusi: string;
   alamatInstitusi: string;
   faxInstitusi: string;
-  
+
   penyesuaianWajar: boolean;
   berpengalaman: boolean;
-  
+
   dataAsesmen?: Array<{ unitId: number; penilaianAsesi: string }>;
   dokumen?: DokumenPengajuan[];
 }

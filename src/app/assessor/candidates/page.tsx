@@ -24,7 +24,7 @@ import {
   Mail,
   X,
 } from "lucide-react";
-import { Assessment, BatchGroup, JenisMetode } from "@/types/types";
+import { AssessmentItem, BatchDetail, JenisMetode } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
 export default function AsesiList() {
@@ -32,8 +32,8 @@ export default function AsesiList() {
   const {
     setSelectedAsesmen,
     selectedAsesmen,
-    assessments,
-    deleteBatchAssessments,
+    AssessmentItems,
+    deleteBatchAssessmentItems,
     completedBatchCodes,
   } = useAppContext();
 
@@ -44,7 +44,7 @@ export default function AsesiList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBatchCode, setSelectedBatchCode] = useState<string | null>(
     () => {
-      return selectedAsesmen?.batchCode || null;
+      return selectedAsesmen?.kodeBatch || null;
     },
   );
   const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
@@ -54,58 +54,54 @@ export default function AsesiList() {
   );
 
   // 1. Group assessments into Batches
-  const batchMap = new Map<string, BatchGroup>();
-  assessments.forEach((item: Assessment) => {
-    // Safe fallback untuk skema
+  const batchMap = new Map<string, BatchDetail>();
+  AssessmentItems.forEach((item: AssessmentItem) => {
     const skemaNama = item.skema || "Skema Asesmen";
+    const batchKey = `${item.kodeBatch || skemaNama}-${item.tglAsesmen}`;
 
-    // Determine batch key
-    const code =
-      item.batchCode ||
-      `BATCH-${skemaNama.substring(0, 3).toUpperCase()}-${item.id}`;
-    const name = item.batchName || `Batch Asesmen ${skemaNama}`;
-
-    if (!batchMap.has(code)) {
-      batchMap.set(code, {
-        batchCode: code,
-        batchName: name,
+    if (!batchMap.has(batchKey)) {
+      batchMap.set(batchKey, {
+        id: item.kodeBatch || batchKey, // tambahkan — bisa pakai kodeBatch item, atau batchKey itu sendiri
+        status: item.status || "Terjadwal", // tambahkan — sesuaikan default/sumbernya
+        kodeBatch: item.kodeBatch,
+        namaBatch: skemaNama,
         skema: skemaNama,
-        tuk: item.tuk || "-",
+        tipeTuk: item.tipeTuk || "-",
         metode: (item.metode || "") as JenisMetode,
-        tglAsesmen: item.tglAsesmen || "05 Okt 2026",
-        waktu: item.waktu || "09:00 WIB",
+        tanggal: item.tglAsesmen || "05 Okt 2026",
+        waktuMulai: item.waktu || "09:00 WIB",
         alamat: (item.alamat || "-") as string,
-        linkVideo: item.linkVideo || "-",
+        linkVideo: item.linkVideo,
         candidates: [],
       });
     }
-    const batch = batchMap.get(code)!;
+    const batch = batchMap.get(batchKey)!;
     batch.candidates.push({
       ...item,
       nik: item.nik || `32730128${(1000 + Number(item.id)).toString()}0001`,
-      aplStatus: item.aplStatus || "APL-01 & APL-02 Terverifikasi",
+      statusAPL02: item.statusApl || "APL-01 & APL-02 Terverifikasi",
     });
   });
 
   const allBatches = Array.from(batchMap.values()).filter(
-    (b) => !completedBatchCodes.includes(b.batchCode),
+    (b) => !completedBatchCodes.includes((b.kodeBatch) as string),
   );
 
   // 2. Filter batches according to active tab and search query
   const filteredBatches = allBatches.filter((batch) => {
     // Tab filter
-    if (activeTab === "Offline" && batch.metode.toLowerCase() !== "offline")
+    if (activeTab === "Offline" && batch.metode?.toLowerCase() !== "offline")
       return false;
-    if (activeTab === "Online" && batch.metode.toLowerCase() !== "online")
+    if (activeTab === "Online" && batch.metode?.toLowerCase() !== "online")
       return false;
 
     // Search query matches Batch Code, Batch Name, Scheme Name, or Candidate Name
     if (!searchTerm.trim()) return true;
 
     const query = searchTerm.toLowerCase();
-    const matchBatchCode = batch.batchCode.toLowerCase().includes(query);
-    const matchBatchName = batch.batchName.toLowerCase().includes(query);
-    const matchSkema = batch.skema.toLowerCase().includes(query);
+    const matchBatchCode = batch.kodeBatch?.toLowerCase().includes(query);
+    const matchBatchName = batch.namaBatch?.toLowerCase().includes(query);
+    const matchSkema = batch.skema?.toLowerCase().includes(query);
     const matchCandidateName = batch.candidates.some((c) =>
       c.nama?.toLowerCase().includes(query),
     );
@@ -115,7 +111,7 @@ export default function AsesiList() {
 
   // Selected Batch for Level 2 View
   const currentSelectedBatch = allBatches.find(
-    (b) => b.batchCode === selectedBatchCode,
+    (b) => b.kodeBatch === selectedBatchCode,
   );
 
   const isAllCandidatesFinished = currentSelectedBatch
@@ -167,7 +163,7 @@ export default function AsesiList() {
             </span>
             <span className="text-xs sm:text-sm font-black text-emerald-800">
               {
-                allBatches.filter((b) => b.metode.toLowerCase() === "offline")
+                allBatches.filter((b) => b.metode?.toLowerCase() === "offline")
                   .length
               }
             </span>
@@ -178,7 +174,7 @@ export default function AsesiList() {
             </span>
             <span className="text-xs sm:text-sm font-black text-purple-800">
               {
-                allBatches.filter((b) => b.metode.toLowerCase() === "online")
+                allBatches.filter((b) => b.metode?.toLowerCase() === "online")
                   .length
               }
             </span>
@@ -229,7 +225,7 @@ export default function AsesiList() {
                   Offline Batch (
                   {
                     allBatches.filter(
-                      (b) => b.metode.toLowerCase() === "offline",
+                      (b) => b.metode?.toLowerCase() === "offline",
                     ).length
                   }
                   )
@@ -239,7 +235,7 @@ export default function AsesiList() {
                   Online Batch (
                   {
                     allBatches.filter(
-                      (b) => b.metode.toLowerCase() === "online",
+                      (b) => b.metode?.toLowerCase() === "online",
                     ).length
                   }
                   )
@@ -268,7 +264,7 @@ export default function AsesiList() {
           {filteredBatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBatches.map((batch) => {
-                const isOnline = batch.metode.toLowerCase() === "online";
+                const isOnline = batch.metode?.toLowerCase() === "online";
                 const completedCount = batch.candidates.filter(
                   (c) => c.status === "Selesai",
                 ).length;
@@ -279,7 +275,7 @@ export default function AsesiList() {
 
                 return (
                   <div
-                    key={batch.batchCode}
+                    key={batch.kodeBatch}
                     className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#008BE3]/50 transition-all flex flex-col justify-between overflow-hidden group"
                   >
                     {/* Card Top Header */}
@@ -288,10 +284,10 @@ export default function AsesiList() {
                         {/* Batch Code Badge */}
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-black tracking-wide border border-slate-200">
                           <Layers size={13} className="text-slate-500" />
-                          {batch.batchCode}
+                          {batch.kodeBatch}
                         </div>
 
-                        {/* Assessment Type Badge */}
+                        {/* AssessmentItem Type Badge */}
                         {isOnline ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
                             <Video size={12} className="stroke-[2.5]" />
@@ -308,7 +304,7 @@ export default function AsesiList() {
                       {/* Batch Name & Scheme */}
                       <div className="min-w-0">
                         <h3 className="text-base font-black text-slate-900 group-hover:text-[#008BE3] transition-colors leading-snug">
-                          {batch.batchName}
+                          {batch.namaBatch}
                         </h3>
                         <p className="text-xs font-semibold text-slate-500 mt-0.5 leading-snug">
                           {batch.skema}
@@ -324,7 +320,7 @@ export default function AsesiList() {
                               size={14}
                               className="text-slate-400 shrink-0"
                             />
-                            <span>{batch.tglAsesmen}</span>
+                            <span>{batch.tanggal}</span>
                           </div>
                           <span className="text-slate-300">•</span>
                           <div className="flex items-center gap-1.5">
@@ -333,7 +329,7 @@ export default function AsesiList() {
                               className="text-slate-400 shrink-0"
                             />
                             <span className="font-semibold text-slate-700">
-                              {batch.waktu}
+                              {batch.waktuMulai}
                             </span>
                           </div>
                         </div>
@@ -395,7 +391,7 @@ export default function AsesiList() {
                     {/* Card Footer Action */}
                     <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
                       <button
-                        onClick={() => setSelectedBatchCode(batch.batchCode)}
+                        onClick={() => setSelectedBatchCode((batch.kodeBatch as string))}
                         className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 ml-auto cursor-pointer"
                       >
                         Lihat Detail
@@ -447,9 +443,9 @@ export default function AsesiList() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <h3 className="text-lg md:text-xl font-black text-slate-900">
-                        {currentSelectedBatch.batchName}
+                        {currentSelectedBatch.namaBatch}
                       </h3>
-                      {currentSelectedBatch.metode.toLowerCase() ===
+                      {currentSelectedBatch.metode?.toLowerCase() ===
                       "online" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                           <Video size={13} /> Online
@@ -467,7 +463,7 @@ export default function AsesiList() {
                 </div>
 
                 {/* Direct "Buka Link Meeting" Quick Button for Online Batches */}
-                {currentSelectedBatch.metode.toLowerCase() === "online" && (
+                {currentSelectedBatch.metode?.toLowerCase() === "online" && (
                   <div className="shrink-0">
                     {currentSelectedBatch.linkVideo !== "-" ? (
                       <a
@@ -498,8 +494,8 @@ export default function AsesiList() {
                       Tanggal & Waktu
                     </span>
                     <span className="font-bold text-slate-900">
-                      {currentSelectedBatch.tglAsesmen} (
-                      {currentSelectedBatch.waktu})
+                      {currentSelectedBatch.tanggal} (
+                      {currentSelectedBatch.waktuMulai})
                     </span>
                   </div>
                 </div>
@@ -511,7 +507,8 @@ export default function AsesiList() {
                       Alamat & TUK
                     </span>
                     <span className="font-bold text-slate-900 wrap-break-word leading-snug block">
-                      {currentSelectedBatch.alamat} ({currentSelectedBatch.tuk})
+                      {currentSelectedBatch.alamat} (
+                      {currentSelectedBatch.tipeTuk})
                     </span>
                   </div>
                 </div>
@@ -669,7 +666,7 @@ export default function AsesiList() {
                           {candidate.nama}
                         </td>
 
-                        {/* Assessment Status */}
+                        {/* AssessmentItem Status */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
@@ -772,7 +769,7 @@ export default function AsesiList() {
                 </strong>{" "}
                 pada batch{" "}
                 <span className="font-bold text-slate-900">
-                  {currentSelectedBatch.batchName}
+                  {currentSelectedBatch.namaBatch}
                 </span>{" "}
                 telah selesai dinilai.
                 <br />
@@ -791,8 +788,8 @@ export default function AsesiList() {
               </button>
               <button
                 onClick={() => {
-                  const name = currentSelectedBatch.batchName;
-                  deleteBatchAssessments(currentSelectedBatch.batchCode);
+                  const name = currentSelectedBatch.namaBatch;
+                  deleteBatchAssessmentItems((currentSelectedBatch.kodeBatch) as string);
                   setSelectedBatchCode(null);
                   setSelectedAsesmen(null);
                   setShowCompleteModal(false);

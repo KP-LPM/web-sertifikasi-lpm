@@ -21,6 +21,7 @@ import {
   Building2,
   ClipboardList,
   FolderCheck,
+  FileCheck2,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -124,7 +125,7 @@ export function Sidebar() {
                     }
                   />
                   {!sidebarCollapsed && (
-                    <span className="text-sm font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
+                    <span className="text-[12px] font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
                       {item.label}
                     </span>
                   )}
@@ -142,7 +143,7 @@ export function Sidebar() {
             >
               <LogOut size={18} />
               {!sidebarCollapsed && (
-                <span className="text-sm font-bold">Logout</span>
+                <span className="text-[12px] font-bold">Logout</span>
               )}
             </button>
           </div>
@@ -197,6 +198,12 @@ function getNavItems(role: string | null | undefined) {
           label: "Kelola Pengguna",
           icon: Users,
           path: "/admin/kelolapengguna",
+        },
+        {
+          id: "kelolasurat",
+          label: "Kelola Surat",
+          icon: FileCheck2,
+          path: "/admin/kelolasurat",
         },
         {
           id: "verifikasiberkas",

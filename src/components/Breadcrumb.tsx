@@ -124,6 +124,10 @@ const ROUTE_CRUMBS: Record<string, Crumb[]> = {
     { label: "Dashboard", path: "/admin/overview" },
     { label: "Kelola Pengguna" },
   ],
+  "/admin/kelolasurat": [
+    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Kelola Surat" },
+  ],
   "/admin/schemes": [
     { label: "Dashboard", path: "/admin/overview" },
     { label: "Skema Sertifikasi" },

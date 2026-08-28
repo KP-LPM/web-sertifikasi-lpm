@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 import {
   AssessmentItem,
-  BatchGroup,
+  BatchDetail,
   JenisMetode,
   TipeTuk,
   StatCardProps,
@@ -29,7 +29,7 @@ export default function AssessorOverview() {
   // Tambahkan state ini jika belum ada untuk menghindari error "completedBatchCodes is not defined"
   const completedBatchCodes: string[] = [];
 
-  const batchMap = new Map<string, BatchGroup>();
+  const batchMap = new Map<string, BatchDetail>();
 
   (assessments || []).forEach((item: AssessmentItem) => {
     // Berikan fallback string kosong '' untuk mencegah error undefined pada substring
@@ -152,7 +152,7 @@ export default function AssessorOverview() {
 
           <div className="p-4 space-y-3 flex-1">
             {availableBatches.length > 0 ? (
-              availableBatches.slice(0, 2).map((batch: BatchGroup) => {
+              availableBatches.slice(0, 2).map((batch: BatchDetail) => {
                 const completedCount = batch.candidates.filter(
                   (c: AssessmentItem) => c.status === "Selesai",
                 ).length;
