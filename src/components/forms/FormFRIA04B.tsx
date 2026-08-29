@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
-import { Assessment, PenyusunValidator } from "@/types/types";
+import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
 
 export const DEFAULT_STEP3_QUESTIONS = [
   {
@@ -40,7 +40,7 @@ export const DEFAULT_STEP3_QUESTIONS = [
 ];
 
 export interface FormFRIA04BProps {
-  asesmenData?: Assessment;
+  asesmenData?: Apl02FormData;
   questions?: typeof DEFAULT_STEP3_QUESTIONS;
   step3Questions?: typeof DEFAULT_STEP3_QUESTIONS;
   answers?: Record<string, { answer: string; achievement: boolean | null }>;
@@ -90,22 +90,14 @@ export interface FormFRIA04BProps {
   asesorDateStep3?: string;
   onAsesorDateChange?: (val: string) => void;
   onAsesorDateStep3Change?: (val: string) => void;
-  penyusun?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  penyusunStep3?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  onPenyusunChange?: (
-    penyusun: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
-  onPenyusunStep3Change?: (
-    penyusun: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
-  validator?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  validatorStep3?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  onValidatorChange?: (
-    validator: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
-  onValidatorStep3Change?: (
-    validator: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
+  penyusun?: PenyusunValidatorItem[];
+  penyusunStep3?: PenyusunValidatorItem[];
+  onPenyusunChange?: (penyusun: PenyusunValidatorItem[]) => void;
+  onPenyusunStep3Change?: (penyusun: PenyusunValidatorItem[]) => void;
+  validator?: PenyusunValidatorItem[];
+  validatorStep3?: PenyusunValidatorItem[];
+  onValidatorChange?: (validator: PenyusunValidatorItem[]) => void;
+  onValidatorStep3Change?: (validator: PenyusunValidatorItem[]) => void;
   readOnly?: boolean;
   isAsesi?: boolean;
   showHeader?: boolean;
@@ -136,21 +128,12 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
   const [localAsesorSig, setLocalAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState("");
 
-  const defaultPenyusun = [
-    {
-      nama: props.asesmenData?.asesor || "Ichsan Taufik",
-      noMet: "",
-      ttdTanggal: props.asesmenData?.tanggal || "11 Oktober 2024",
-    },
-    { nama: "", noMet: "", ttdTanggal: "" },
-  ];
-  const defaultValidator = [
-    { nama: "", noMet: "", ttdTanggal: "" },
-    { nama: "", noMet: "", ttdTanggal: "" },
-  ];
-
-  const [localPenyusun, setLocalPenyusun] = useState(defaultPenyusun);
-  const [localValidator, setLocalValidator] = useState(defaultValidator);
+  const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
+    [],
+  );
+  const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
+    [],
+  );
 
   const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
@@ -283,7 +266,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
     field: string,
     val: string,
   ) => {
-    const updated = [...(penyusun as PenyusunValidator[])];
+    const updated = [...penyusun];
     updated[idx] = { ...updated[idx], [field]: val };
     if (props.onPenyusunStep3Change) props.onPenyusunStep3Change(updated);
     if (props.onPenyusunChange) props.onPenyusunChange(updated);
@@ -535,7 +518,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                   type="text"
                   disabled={props.readOnly}
                   className="w-full outline-none bg-transparent"
-                  value={asesiName}
+                  value={asesiName as string}
                   onChange={(e) => handleAsesiNameChange(e.target.value)}
                 />
               </td>

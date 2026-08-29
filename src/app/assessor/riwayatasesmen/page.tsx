@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export default function RiwayatAsesmen() {
   const router = useRouter();
-  const { setSelectedAsesmen, assessments } = useAppContext();
+  const { setSelectedAsesmen, AssessmentItems } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [hasilFilter, setHasilFilter] = useState("");
   const [tanggalFilter, setTanggalFilter] = useState("");
@@ -62,7 +62,7 @@ export default function RiwayatAsesmen() {
     return "";
   };
 
-  const filteredAssessments = assessments.filter((item) => {
+  const filteredAssessments = AssessmentItems.filter((item) => {
     if (item.status !== "Selesai") return false;
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (
@@ -195,14 +195,14 @@ export default function RiwayatAsesmen() {
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
-                            item.tuk === "Sewaktu"
+                            item.tipeTuk === "Sewaktu"
                               ? "bg-blue-50 text-blue-700 border-blue-200"
-                              : item.tuk === "Tempat Kerja"
+                              : item.tipeTuk === "Tempat Kerja"
                                 ? "bg-purple-50 text-purple-700 border-purple-200"
                                 : "bg-orange-50 text-orange-700 border-orange-200"
                           }`}
                         >
-                          {item.tuk}
+                          {item.tipeTuk}
                         </span>
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">

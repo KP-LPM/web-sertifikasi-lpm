@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import {
-  FileText,
   Search,
   Plus,
-  Download,
   ExternalLink,
   CheckCircle2,
   Award,
@@ -12,7 +10,6 @@ import {
   Inbox,
   Send,
   X,
-  Printer,
   Copy,
   Calendar,
   FileSpreadsheet,
@@ -254,8 +251,6 @@ export default function KelolaSurat() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Modal States
-  const [selectedDocForPreview, setSelectedDocForPreview] =
-    useState<SuratItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -404,9 +399,6 @@ export default function KelolaSurat() {
     showNotification(`Tautan GDrive (${nomor}) berhasil disalin.`);
   };
 
-  const handleSimulateDownload = (doc: SuratItem) => {
-    showNotification(`Mengunduh file PDF untuk ${doc.nomorSurat}...`);
-  };
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
@@ -718,7 +710,6 @@ export default function KelolaSurat() {
                 <th className="py-3 px-4">Perihal</th>
                 <th className="py-3 px-4">Ditujukan Kepada</th>
                 <th className="py-3 px-4 text-center">Link Gdrive Surat</th>
-                <th className="py-3 px-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs font-medium text-slate-800">
@@ -780,19 +771,7 @@ export default function KelolaSurat() {
                         </span>
                       )}
                     </td>
-
-                    {/* Aksi Tambahan (Unduh PDF) */}
-                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center">
-                        <button
-                          onClick={() => handleSimulateDownload(doc)}
-                          title="Unduh PDF"
-                          className="p-1.5 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                        >
-                          <Download size={16} />
-                        </button>
-                      </div>
-                    </td>
+                  
                   </tr>
                 ))
               ) : (
@@ -810,21 +789,6 @@ export default function KelolaSurat() {
           </table>
         </div>
       </div>
-
-      {/* DOCUMENT PREVIEW MODAL */}
-      {selectedDocForPreview && (
-        <DocumentPreviewModal
-          doc={selectedDocForPreview}
-          onClose={() => setSelectedDocForPreview(null)}
-          onDownload={() => handleSimulateDownload(selectedDocForPreview)}
-          onCopyLink={() =>
-            handleCopyLink(
-              selectedDocForPreview.urlGdrive,
-              selectedDocForPreview.nomorSurat,
-            )
-          }
-        />
-      )}
 
       {/* CREATE NEW DOCUMENT MODAL */}
       {isCreateModalOpen && (
@@ -1034,286 +998,6 @@ export default function KelolaSurat() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// ============================================================================
-// DOCUMENT PREVIEW MODAL COMPONENT
-// ============================================================================
-interface DocumentPreviewModalProps {
-  doc: SuratItem;
-  onClose: () => void;
-  onDownload: () => void;
-  onCopyLink: () => void;
-}
-
-function DocumentPreviewModal({
-  doc,
-  onClose,
-  onDownload,
-}: DocumentPreviewModalProps) {
-  const handlePrint = () => {
-    window.print();
-  };
-
-  return (
-    <div className="fixed inset-0 z-160 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-2 md:p-6 overflow-y-auto">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-4xl overflow-hidden my-auto flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95">
-        {/* Modal Bar */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <FileText className="text-[#008BE3]" size={20} />
-            <div>
-              <h3 className="font-bold text-base leading-tight">
-                Pratinjau Dokumen Resmi
-              </h3>
-              <p className="text-xs text-slate-400 font-normal">
-                {doc.nomorSurat}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {doc.urlGdrive && (
-              <a
-                href={doc.urlGdrive}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-sky-400 hover:text-sky-300 hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
-                title="Buka Link GDrive"
-              >
-                <ExternalLink size={15} />
-                <span className="hidden sm:inline">GDrive</span>
-              </a>
-            )}
-            <button
-              onClick={handlePrint}
-              className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
-              title="Cetak Dokumen"
-            >
-              <Printer size={15} />
-              <span className="hidden sm:inline">Cetak</span>
-            </button>
-            <button
-              onClick={onDownload}
-              className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
-              title="Unduh PDF"
-            >
-              <Download size={15} />
-              <span className="hidden sm:inline">Unduh PDF</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-2"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Printable View Container */}
-        <div className="p-4 md:p-8 overflow-y-auto bg-slate-100/70 flex justify-center">
-          <div className="bg-white p-6 md:p-10 rounded-xl shadow-lg border border-slate-200 text-slate-900 w-full max-w-3xl font-serif leading-relaxed">
-            {/* Format Renderer depends on doc.jenisSurat */}
-            {doc.jenisSurat === "sertifikat_kompetensi" ? (
-              /* SERTIFIKAT KOMPETENSI FORMAT */
-              <div className="border-8 border-double border-amber-600/60 p-6 md:p-8 text-center bg-linear-to-b from-amber-50/20 to-white relative">
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-2xl shadow-md">
-                    BNSP
-                  </div>
-                </div>
-                <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-amber-800 mb-1">
-                  BADAN NASIONAL SERTIFIKASI PROFESI (BNSP)
-                </h4>
-                <h2 className="text-2xl md:text-3xl font-black font-sans text-slate-900 tracking-tight uppercase mb-2">
-                  SERTIFIKAT KOMPETENSI
-                </h2>
-                <p className="text-xs font-mono text-slate-500 mb-6">
-                  No. Sertifikat:{" "}
-                  <span className="font-bold text-slate-800">
-                    {doc.nomorSurat}
-                  </span>
-                </p>
-
-                <p className="text-sm font-sans text-slate-700 italic mb-4">
-                  Dengan ini menyatakan bahwa:
-                </p>
-
-                <div className="text-2xl md:text-3xl font-bold font-sans text-amber-900 border-b-2 border-amber-500/40 inline-block px-8 py-1 mb-4">
-                  {doc.penerima.replace(/ \(.*?\)/, "")}
-                </div>
-
-                <p className="text-sm font-sans text-slate-700 mb-2">
-                  Telah Kompeten pada Skema Sertifikasi Profesi:
-                </p>
-
-                <div className="text-lg md:text-xl font-bold font-sans text-slate-900 bg-amber-100/60 py-2.5 px-4 rounded-xl mb-6 inline-block max-w-xl">
-                  {doc.skemaSertifikasi}
-                </div>
-
-                <p className="text-xs font-sans text-slate-600 max-w-md mx-auto mb-8">
-                  Sertifikat ini diterbitkan oleh Lembaga Sertifikasi Profesi
-                  UIN Sunan Gunung Djati Bandung berdasarkan Sidang Pleno
-                  Penetapan dan berlaku selama 3 (tiga) tahun.
-                </p>
-
-                {/* Signatures */}
-                <div className="grid grid-cols-2 gap-8 pt-6 border-t border-amber-200 text-xs font-sans">
-                  <div>
-                    <p className="text-slate-500 mb-8">Ketua LSP UIN SGD</p>
-                    <p className="font-bold text-slate-900 underline">
-                      Dr. H. Ahmad Fauzi, M.Kom.
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 mb-8">
-                      Bandung, {doc.tanggalTerbit}
-                    </p>
-                    <p className="font-bold text-slate-900 underline">
-                      Ketua Komite Sertifikasi
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* REGULAR SURAT FORMAT (Berita Acara, SK Keputusan, Surat Tugas, Blanko) */
-              <div className="font-sans text-slate-800 text-sm space-y-6">
-                {/* Kop Surat Header */}
-                <div className="flex items-center gap-4 pb-4 border-b-4 border-double border-slate-900">
-                  <div className="w-16 h-16 bg-[#008BE3] rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0">
-                    LSP
-                  </div>
-                  <div className="text-center flex-1 space-y-0.5">
-                    <h3 className="font-extrabold text-base md:text-lg text-slate-900 uppercase tracking-wide">
-                      LEMBAGA SERTIFIKASI PROFESI (LSP) UIN SUNAN GUNUNG DJATI
-                    </h3>
-                    <p className="text-xs font-medium text-slate-600">
-                      Jl. A.H. Nasution No. 105, Cipadung, Cibiru, Kota Bandung,
-                      Jawa Barat 40614
-                    </p>
-                    <p className="text-[11px] text-slate-500 font-mono">
-                      Website: lsp.uin.ac.id | Email: lsp@uin.ac.id
-                    </p>
-                  </div>
-                </div>
-
-                {/* Judul & Nomor Surat */}
-                <div className="text-center space-y-1 pt-2">
-                  <h2 className="text-lg font-bold text-slate-900 uppercase underline tracking-wide">
-                    {doc.namaJenisSurat}
-                  </h2>
-                  <p className="text-xs font-mono font-semibold text-slate-600">
-                    Nomor: {doc.nomorSurat}
-                  </p>
-                </div>
-
-                {/* Detail Informasi Surat */}
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs space-y-2">
-                  <div className="grid grid-cols-3">
-                    <span className="font-bold text-slate-600">
-                      Perihal / Judul:
-                    </span>
-                    <span className="col-span-2 font-medium text-slate-900">
-                      {doc.judul}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3">
-                    <span className="font-bold text-slate-600">
-                      Tanggal Dibuat:
-                    </span>
-                    <span className="col-span-2 font-medium text-slate-900">
-                      {doc.tanggalDibuat}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3">
-                    <span className="font-bold text-slate-600">
-                      Ditujukan Kepada:
-                    </span>
-                    <span className="col-span-2 font-medium text-slate-900">
-                      {doc.penerima}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3">
-                    <span className="font-bold text-slate-600">
-                      Instansi / Penerbit:
-                    </span>
-                    <span className="col-span-2 font-medium text-slate-900">
-                      {doc.penerbit}
-                    </span>
-                  </div>
-                  {doc.skemaSertifikasi && (
-                    <div className="grid grid-cols-3">
-                      <span className="font-bold text-slate-600">
-                        Skema Sertifikasi:
-                      </span>
-                      <span className="col-span-2 font-medium text-slate-900">
-                        {doc.skemaSertifikasi}
-                      </span>
-                    </div>
-                  )}
-                  {doc.urlGdrive && (
-                    <div className="grid grid-cols-3">
-                      <span className="font-bold text-slate-600">
-                        Link File GDrive:
-                      </span>
-                      <a
-                        href={doc.urlGdrive}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="col-span-2 font-semibold text-[#008BE3] hover:underline flex items-center gap-1"
-                      >
-                        <ExternalLink size={12} />
-                        {doc.urlGdrive}
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                {/* Body Content Paragraf */}
-                <div className="space-y-3 text-xs text-slate-700 leading-relaxed pt-2">
-                  <p>
-                    Menindaklanjuti pelaksanaan asesmen uji kompetensi yang
-                    diselenggarakan oleh LSP UIN Sunan Gunung Djati Bandung,
-                    bersama ini disampaikan dokumen resmi{" "}
-                    <span className="font-bold">{doc.judul}</span> untuk dapat
-                    dipergunakan sebagaimana mestinya.
-                  </p>
-                  <p>
-                    Seluruh penetapan keputusan dan verifikasi berkas pendukung
-                    telah ditinjau dan dinyatakan sah oleh Pengurus dan Komite
-                    Sertifikasi LSP UIN Sunan Gunung Djati Bandung.
-                  </p>
-                </div>
-
-                {/* Tanda Tangan */}
-                <div className="pt-8 flex justify-between items-end text-xs">
-                  <div className="space-y-1">
-                    <p className="text-slate-500">Stempel Sah LSP:</p>
-                    <div className="w-20 h-20 border-2 border-dashed border-[#008BE3] rounded-full flex items-center justify-center text-[#008BE3] font-bold text-[10px] uppercase text-center p-1">
-                      LSP UIN SGD BANDUNG
-                    </div>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-slate-600">
-                      Bandung, {doc.tanggalTerbit || doc.tanggalDibuat}
-                    </p>
-                    <p className="font-bold text-slate-900 pb-12">
-                      Ketua LSP UIN Sunan Gunung Djati
-                    </p>
-                    <p className="font-bold text-slate-900 underline">
-                      Dr. H. Ahmad Fauzi, M.Kom.
-                    </p>
-                    <p className="text-[10px] text-slate-500">
-                      NIP. 197804122005011003
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

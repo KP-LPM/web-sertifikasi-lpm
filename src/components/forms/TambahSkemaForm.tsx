@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
-  ChevronRight,
   AlertCircle,
   CheckCircle2,
   FileText,
@@ -15,14 +14,13 @@ import {
   Briefcase,
   ClipboardCheck,
   HelpCircle,
-  Settings,
 } from "lucide-react";
 import {
   MasterSkemaFormState,
   MasterSkemaPayload,
   PersyaratanDasar,
-  UnitKompetensiItem,
   ElemenKompetensiItem,
+  PersyaratanAdministrasi,
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { FormFRAK07 } from "../forms/FormFRAK07";
@@ -45,65 +43,66 @@ export function TambahSkemaForm({
 
   useEffect(() => {
     setExtraCrumbs([
-      { label: initialData?.kode_skema ? "EDIT SKEMA" : "TAMBAH SKEMA BARU" },
+      { label: initialData?.kodeSkema ? "EDIT SKEMA" : "TAMBAH SKEMA BARU" },
     ]);
     return () => {
       setExtraCrumbs([]);
     };
-  }, [initialData, setExtraCrumbs]);
+  }, [initialData?.kodeSkema, setExtraCrumbs]);
 
   // Form State initialized from props or default initial state
   const [formState, setFormState] = useState<MasterSkemaFormState>({
-    kode_skema: initialData?.kode_skema || "",
-    nama_skema: initialData?.nama_skema || "",
-    nomor_sertifikat: initialData?.nomor_sertifikat || "",
-    nomor_registrasi: initialData?.nomor_registrasi || "",
-    status_aktif: initialData?.status_aktif ?? false, // Default false / Draft
-    konfigurasi_soal_id:
-      initialData?.konfigurasi_soal_id ||
+    kodeSkema: initialData?.kodeSkema || "",
+    namaSkema: initialData?.namaSkema || "",
+    nomorSertifikat: initialData?.nomorSertifikat || "",
+    nomorRegistrasi: initialData?.nomorRegistrasi || "",
+    statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
+    konfigurasiSoalId:
+      initialData?.konfigurasiSoalId ||
       (konfigurasiPertanyaan.length > 0 ? konfigurasiPertanyaan[0].id : ""),
-    persyaratan_dasar:
-      initialData?.persyaratan_dasar && initialData.persyaratan_dasar.length > 0
-        ? initialData.persyaratan_dasar
+    persyaratanDasar:
+      initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
+        ? initialData.persyaratanDasar
         : [
             {
-              nama_dokumen: "Transkrip Nilai Semester 5",
+              namaDokumen: "Transkrip Nilai Semester 5",
               deskripsi:
                 "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
               urutan: 1,
               is_wajib: true,
             },
           ],
-    persyaratan_administrasi:
-      initialData?.persyaratan_administrasi &&
-      initialData.persyaratan_administrasi.length > 0
-        ? initialData.persyaratan_administrasi
+    persyaratanAdministrasi:
+      initialData?.persyaratanAdministrasi &&
+      initialData.persyaratanAdministrasi.length > 0
+        ? initialData.persyaratanAdministrasi
         : [
             {
-              nama_dokumen: "Kartu Tanda Penduduk (KTP)",
+              id: crypto.randomUUID(),
+              namaDokumen: "Kartu Tanda Penduduk (KTP)",
               deskripsi:
                 "Scan KTP asli atau identitas resmi yang masih berlaku.",
-              urutan: 1,
-              is_wajib: true,
+              isWajib: true,
+              isAktif: true,
             },
           ],
-    unit_kompetensi:
-      initialData?.unit_kompetensi && initialData.unit_kompetensi.length > 0
-        ? initialData.unit_kompetensi
+    unitKompetensi:
+      initialData?.unitKompetensi && initialData.unitKompetensi.length > 0
+        ? initialData.unitKompetensi
         : [
             {
-              kode_unit: "J.611000.001.01",
-              judul_unit: "Merancang Topologi Jaringan",
+              kodeUnit: "J.611000.001.01",
+              judulUnit: "Merancang Topologi Jaringan",
               urutan: 1,
               elemen: [
                 {
-                  nama_elemen: "Menyiapkan perancangan topologi",
-                  kriteria_unjuk_kerja: [
+                  namaElemen: "Menyiapkan perancangan topologi",
+                  kriteriaUnjukKerja: [
                     "1.1 Kebutuhan pengguna diidentifikasi.",
                     "1.2 Perangkat jaringan ditentukan.",
                   ],
                   urutan: 1,
-                  is_wajib: true,
+                  isWajib: true,
                 },
               ],
             },
@@ -120,36 +119,31 @@ export function TambahSkemaForm({
   const [copiedPayload, setCopiedPayload] = useState(false);
 
   const selectedConfig = konfigurasiPertanyaan.find(
-    (k) => k.id === formState.konfigurasi_soal_id,
+    (k) => k.id === formState.konfigurasiSoalId,
   );
 
   // --- Handlers: Card 1 (Informasi Utama) ---
   const handleMainInfoChange = (
-    field:
-      | "kode_skema"
-      | "nama_skema"
-      | "nomor_sertifikat"
-      | "nomor_registrasi",
+    field: "kodeSkema" | "namaSkema" | "nomorSertifikat" | "nomorRegistrasi",
     value: string,
   ) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
     if (validationError) setValidationError(null);
   };
 
-  const handleStatusChange = (status_aktif: boolean) => {
-    setFormState((prev) => ({ ...prev, status_aktif }));
+  const handleStatusChange = (statusAktif: boolean) => {
+    setFormState((prev) => ({ ...prev, statusAktif }));
   };
-
   // --- Handlers: Card 2 (Persyaratan Dasar) ---
   const handleAddPersyaratan = () => {
     setFormState((prev) => ({
       ...prev,
-      persyaratan_dasar: [
-        ...prev.persyaratan_dasar,
+      persyaratanDasar: [
+        ...prev.persyaratanDasar,
         {
-          nama_dokumen: "",
+          namaDokumen: "",
           deskripsi: "",
-          urutan: prev.persyaratan_dasar.length + 1,
+          urutan: prev.persyaratanDasar.length + 1,
           is_wajib: true,
         },
       ],
@@ -159,22 +153,22 @@ export function TambahSkemaForm({
   const handleUpdatePersyaratan = (
     index: number,
     field: keyof PersyaratanDasar,
-    value: any,
+    value: string | number | boolean,
   ) => {
     setFormState((prev) => {
-      const updated = [...prev.persyaratan_dasar];
+      const updated = [...prev.persyaratanDasar];
       updated[index] = { ...updated[index], [field]: value };
-      return { ...prev, persyaratan_dasar: updated };
+      return { ...prev, persyaratanDasar: updated };
     });
     if (validationError) setValidationError(null);
   };
 
   const handleRemovePersyaratan = (index: number) => {
     setFormState((prev) => {
-      const updated = prev.persyaratan_dasar
+      const updated = prev.persyaratanDasar
         .filter((_, i) => i !== index)
         .map((item, idx) => ({ ...item, urutan: idx + 1 }));
-      return { ...prev, persyaratan_dasar: updated };
+      return { ...prev, persyaratanDasar: updated };
     });
   };
 
@@ -182,13 +176,14 @@ export function TambahSkemaForm({
   const handleAddPersyaratanAdministrasi = () => {
     setFormState((prev) => ({
       ...prev,
-      persyaratan_administrasi: [
-        ...prev.persyaratan_administrasi,
+      persyaratanAdministrasi: [
+        ...prev.persyaratanAdministrasi,
         {
-          nama_dokumen: "",
+          id: crypto.randomUUID(),
+          namaDokumen: "",
           deskripsi: "",
-          urutan: prev.persyaratan_administrasi.length + 1,
-          is_wajib: true,
+          isWajib: true,
+          isAktif: true,
         },
       ],
     }));
@@ -196,23 +191,23 @@ export function TambahSkemaForm({
 
   const handleUpdatePersyaratanAdministrasi = (
     index: number,
-    field: keyof PersyaratanDasar,
-    value: any,
+    field: keyof PersyaratanAdministrasi,
+    value: string | number | boolean,
   ) => {
     setFormState((prev) => {
-      const updated = [...prev.persyaratan_administrasi];
+      const updated = [...prev.persyaratanAdministrasi];
       updated[index] = { ...updated[index], [field]: value };
-      return { ...prev, persyaratan_administrasi: updated };
+      return { ...prev, persyaratanAdministrasi: updated };
     });
     if (validationError) setValidationError(null);
   };
 
   const handleRemovePersyaratanAdministrasi = (index: number) => {
     setFormState((prev) => {
-      const updated = prev.persyaratan_administrasi
+      const updated = prev.persyaratanAdministrasi
         .filter((_, i) => i !== index)
         .map((item, idx) => ({ ...item, urutan: idx + 1 }));
-      return { ...prev, persyaratan_administrasi: updated };
+      return { ...prev, persyaratanAdministrasi: updated };
     });
   };
 
@@ -220,18 +215,18 @@ export function TambahSkemaForm({
   const handleAddUnit = () => {
     setFormState((prev) => ({
       ...prev,
-      unit_kompetensi: [
-        ...prev.unit_kompetensi,
+      unitKompetensi: [
+        ...prev.unitKompetensi,
         {
-          kode_unit: "",
-          judul_unit: "",
-          urutan: prev.unit_kompetensi.length + 1,
+          kodeUnit: "",
+          judulUnit: "",
+          urutan: prev.unitKompetensi.length + 1,
           elemen: [
             {
-              nama_elemen: "",
-              kriteria_unjuk_kerja: [""],
+              namaElemen: "",
+              kriteriaUnjukKerja: [""],
               urutan: 1,
-              is_wajib: true,
+              isWajib: true,
             },
           ],
         },
@@ -241,45 +236,45 @@ export function TambahSkemaForm({
 
   const handleUpdateUnit = (
     unitIndex: number,
-    field: "kode_unit" | "judul_unit",
+    field: "kodeUnit" | "judulUnit",
     value: string,
   ) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       updatedUnits[unitIndex] = { ...updatedUnits[unitIndex], [field]: value };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
     if (validationError) setValidationError(null);
   };
 
   const handleRemoveUnit = (unitIndex: number) => {
     setFormState((prev) => {
-      if (prev.unit_kompetensi.length <= 1) {
+      if (prev.unitKompetensi.length <= 1) {
         setValidationError("Minimal 1 Unit Kompetensi harus tetap ada.");
         return prev;
       }
-      const updatedUnits = prev.unit_kompetensi
+      const updatedUnits = prev.unitKompetensi
         .filter((_, i) => i !== unitIndex)
         .map((u, idx) => ({ ...u, urutan: idx + 1 }));
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
   };
 
   const handleAddElemen = (unitIndex: number) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       const targetUnit = updatedUnits[unitIndex];
       const newElemenList = [
         ...targetUnit.elemen,
         {
-          nama_elemen: "",
-          kriteria_unjuk_kerja: [""],
+          namaElemen: "",
+          kriteriaUnjukKerja: [""],
           urutan: targetUnit.elemen.length + 1,
-          is_wajib: true,
+          isWajib: true,
         },
       ];
       updatedUnits[unitIndex] = { ...targetUnit, elemen: newElemenList };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
   };
 
@@ -287,10 +282,10 @@ export function TambahSkemaForm({
     unitIndex: number,
     elemenIndex: number,
     field: keyof ElemenKompetensiItem,
-    value: any,
+    value: string | number | boolean,
   ) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       const targetUnit = updatedUnits[unitIndex];
       const updatedElemen = [...targetUnit.elemen];
       updatedElemen[elemenIndex] = {
@@ -298,18 +293,18 @@ export function TambahSkemaForm({
         [field]: value,
       };
       updatedUnits[unitIndex] = { ...targetUnit, elemen: updatedElemen };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
     if (validationError) setValidationError(null);
   };
 
   const handleRemoveElemen = (unitIndex: number, elemenIndex: number) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       const targetUnit = updatedUnits[unitIndex];
       if (targetUnit.elemen.length <= 1) {
         setValidationError(
-          `Unit "${targetUnit.kode_unit || unitIndex + 1}" harus memiliki minimal 1 Elemen Kompetensi.`,
+          `Unit "${targetUnit.kodeUnit || unitIndex + 1}" harus memiliki minimal 1 Elemen Kompetensi.`,
         );
         return prev;
       }
@@ -317,25 +312,25 @@ export function TambahSkemaForm({
         .filter((_, i) => i !== elemenIndex)
         .map((el, idx) => ({ ...el, urutan: idx + 1 }));
       updatedUnits[unitIndex] = { ...targetUnit, elemen: updatedElemen };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
   };
 
   // --- Handlers: KUK (Kriteria Unjuk Kerja) ---
   const handleAddKUK = (unitIndex: number, elemenIndex: number) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       const targetUnit = updatedUnits[unitIndex];
       const targetElemen = targetUnit.elemen[elemenIndex];
-      const newKUKList = [...targetElemen.kriteria_unjuk_kerja, ""];
+      const newKUKList = [...targetElemen.kriteriaUnjukKerja, ""];
 
       const updatedElemenList = [...targetUnit.elemen];
       updatedElemenList[elemenIndex] = {
         ...targetElemen,
-        kriteria_unjuk_kerja: newKUKList,
+        kriteriaUnjukKerja: newKUKList,
       };
       updatedUnits[unitIndex] = { ...targetUnit, elemen: updatedElemenList };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
   };
 
@@ -346,19 +341,19 @@ export function TambahSkemaForm({
     value: string,
   ) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       const targetUnit = updatedUnits[unitIndex];
       const targetElemen = targetUnit.elemen[elemenIndex];
-      const newKUKList = [...targetElemen.kriteria_unjuk_kerja];
+      const newKUKList = [...targetElemen.kriteriaUnjukKerja];
       newKUKList[kukIndex] = value;
 
       const updatedElemenList = [...targetUnit.elemen];
       updatedElemenList[elemenIndex] = {
         ...targetElemen,
-        kriteria_unjuk_kerja: newKUKList,
+        kriteriaUnjukKerja: newKUKList,
       };
       updatedUnits[unitIndex] = { ...targetUnit, elemen: updatedElemenList };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
     if (validationError) setValidationError(null);
   };
@@ -369,11 +364,11 @@ export function TambahSkemaForm({
     kukIndex: number,
   ) => {
     setFormState((prev) => {
-      const updatedUnits = [...prev.unit_kompetensi];
+      const updatedUnits = [...prev.unitKompetensi];
       const targetUnit = updatedUnits[unitIndex];
       const targetElemen = targetUnit.elemen[elemenIndex];
 
-      let newKUKList = targetElemen.kriteria_unjuk_kerja.filter(
+      let newKUKList = targetElemen.kriteriaUnjukKerja.filter(
         (_, i) => i !== kukIndex,
       );
       if (newKUKList.length === 0) {
@@ -383,10 +378,10 @@ export function TambahSkemaForm({
       const updatedElemenList = [...targetUnit.elemen];
       updatedElemenList[elemenIndex] = {
         ...targetElemen,
-        kriteria_unjuk_kerja: newKUKList,
+        kriteriaUnjukKerja: newKUKList,
       };
       updatedUnits[unitIndex] = { ...targetUnit, elemen: updatedElemenList };
-      return { ...prev, unit_kompetensi: updatedUnits };
+      return { ...prev, unitKompetensi: updatedUnits };
     });
   };
 
@@ -396,7 +391,7 @@ export function TambahSkemaForm({
     setValidationError(null);
 
     // 1. Kode Skema validation
-    if (!formState.kode_skema.trim()) {
+    if (!formState.kodeSkema.trim()) {
       setValidationError(
         'Kode Skema wajib diisi (Contoh: "06/LSPUINBdg/XI/2023").',
       );
@@ -405,7 +400,7 @@ export function TambahSkemaForm({
     }
 
     // 2. Nama Skema validation
-    if (!formState.nama_skema.trim()) {
+    if (!formState.namaSkema.trim()) {
       setValidationError(
         'Nama Skema wajib diisi (Contoh: "Network Administrator").',
       );
@@ -414,16 +409,16 @@ export function TambahSkemaForm({
     }
 
     // 3. Unit Kompetensi validation
-    if (formState.unit_kompetensi.length === 0) {
+    if (formState.unitKompetensi.length === 0) {
       setValidationError(
         "Minimal 1 Unit Kompetensi harus ditambahkan ke skema.",
       );
       return;
     }
 
-    for (let uIdx = 0; uIdx < formState.unit_kompetensi.length; uIdx++) {
-      const unit = formState.unit_kompetensi[uIdx];
-      if (!unit.kode_unit.trim() || !unit.judul_unit.trim()) {
+    for (let uIdx = 0; uIdx < formState.unitKompetensi.length; uIdx++) {
+      const unit = formState.unitKompetensi[uIdx];
+      if (!unit.kodeUnit.trim() || !unit.judulUnit.trim()) {
         setValidationError(
           `Unit Kompetensi #${uIdx + 1}: Kode Unit dan Judul Unit wajib diisi.`,
         );
@@ -432,16 +427,16 @@ export function TambahSkemaForm({
 
       if (unit.elemen.length === 0) {
         setValidationError(
-          `Unit Kompetensi #${uIdx + 1} (${unit.kode_unit}): Minimal harus memiliki 1 Elemen Kompetensi.`,
+          `Unit Kompetensi #${uIdx + 1} (${unit.kodeUnit}): Minimal harus memiliki 1 Elemen Kompetensi.`,
         );
         return;
       }
 
       for (let eIdx = 0; eIdx < unit.elemen.length; eIdx++) {
         const el = unit.elemen[eIdx];
-        if (!el.nama_elemen.trim()) {
+        if (!el.namaElemen.trim()) {
           setValidationError(
-            `Unit ${unit.kode_unit} - Elemen #${eIdx + 1}: Nama Elemen Kompetensi wajib diisi.`,
+            `Unit ${unit.kodeUnit} - Elemen #${eIdx + 1}: Nama Elemen Kompetensi wajib diisi.`,
           );
           return;
         }
@@ -450,39 +445,41 @@ export function TambahSkemaForm({
 
     // Construct Supabase-ready JSON payload
     const payload: MasterSkemaPayload = {
-      kode_skema: formState.kode_skema.trim(),
-      nama_skema: formState.nama_skema.trim(),
-      nomor_sertifikat: formState.nomor_sertifikat?.trim() || undefined,
-      nomor_registrasi: formState.nomor_registrasi?.trim() || undefined,
-      status_aktif: formState.status_aktif,
-      konfigurasi_soal_id: formState.konfigurasi_soal_id || undefined,
-      persyaratan_dasar: formState.persyaratan_dasar
-        .filter((p) => p.nama_dokumen.trim() !== "")
+      kodeSkema: formState.kodeSkema.trim(),
+      namaSkema: formState.namaSkema.trim(),
+      nomorSertifikat: formState.nomorSertifikat?.trim() || undefined,
+      nomorRegistrasi: formState.nomorRegistrasi?.trim() || undefined,
+      statusAktif: formState.statusAktif,
+      konfigurasiSoalId: formState.konfigurasiSoalId || undefined,
+      persyaratanDasar: formState.persyaratanDasar
+        .filter((p) => p.namaDokumen.trim() !== "")
         .map((p, idx) => ({
-          nama_dokumen: p.nama_dokumen.trim(),
-          deskripsi: p.deskripsi.trim(),
+          namaDokumen: p.namaDokumen.trim(),
+          deskripsi: p.deskripsi?.trim(),
           urutan: idx + 1,
           is_wajib: p.is_wajib,
         })),
-      persyaratan_administrasi: formState.persyaratan_administrasi
-        .filter((p) => p.nama_dokumen.trim() !== "")
+      persyaratanAdministrasi: formState.persyaratanAdministrasi
+        .filter((p) => p.namaDokumen.trim() !== "")
         .map((p, idx) => ({
-          nama_dokumen: p.nama_dokumen.trim(),
-          deskripsi: p.deskripsi.trim(),
+          id: p.id,
+          namaDokumen: p.namaDokumen.trim(),
+          deskripsi: p.deskripsi?.trim(),
           urutan: idx + 1,
-          is_wajib: p.is_wajib,
+          isAktif: p.isAktif,
+          isWajib: p.isWajib,
         })),
-      unit_kompetensi: formState.unit_kompetensi.map((u, uIdx) => ({
-        kode_unit: u.kode_unit.trim(),
-        judul_unit: u.judul_unit.trim(),
+      unitKompetensi: formState.unitKompetensi.map((u, uIdx) => ({
+        kodeUnit: u.kodeUnit.trim(),
+        judulUnit: u.judulUnit.trim(),
         urutan: uIdx + 1,
         elemen: u.elemen.map((e, eIdx) => ({
-          nama_elemen: e.nama_elemen.trim(),
-          kriteria_unjuk_kerja: e.kriteria_unjuk_kerja
+          namaElemen: e.namaElemen.trim(),
+          kriteriaUnjukKerja: e.kriteriaUnjukKerja
             .filter((k) => k.trim() !== "")
             .join("\n"),
           urutan: eIdx + 1,
-          is_wajib: e.is_wajib ?? true,
+          is_wajib: e.isWajib ?? true,
         })),
       })),
     };
@@ -518,7 +515,7 @@ export function TambahSkemaForm({
             </button>
             <div className="min-w-0">
               <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-                {initialData?.kode_skema
+                {initialData?.kodeSkema
                   ? "Edit Skema Sertifikasi"
                   : "Formulir Skema Sertifikasi Baru"}
               </h2>
@@ -587,9 +584,9 @@ export function TambahSkemaForm({
                 <input
                   type="text"
                   placeholder="06/LSPUINBdg/XI/2023"
-                  value={formState.kode_skema}
+                  value={formState.kodeSkema}
                   onChange={(e) =>
-                    handleMainInfoChange("kode_skema", e.target.value)
+                    handleMainInfoChange("kodeSkema", e.target.value)
                   }
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
                 />
@@ -607,9 +604,9 @@ export function TambahSkemaForm({
                 <input
                   type="text"
                   placeholder="Masukkan nama skema"
-                  value={formState.nama_skema}
+                  value={formState.namaSkema}
                   onChange={(e) =>
-                    handleMainInfoChange("nama_skema", e.target.value)
+                    handleMainInfoChange("namaSkema", e.target.value)
                   }
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
                 />
@@ -629,9 +626,9 @@ export function TambahSkemaForm({
                 <input
                   type="text"
                   placeholder="Contoh: 00000 2431 0 0000000 2023"
-                  value={formState.nomor_sertifikat || ""}
+                  value={formState.nomorSertifikat || ""}
                   onChange={(e) =>
-                    handleMainInfoChange("nomor_sertifikat", e.target.value)
+                    handleMainInfoChange("nomorSertifikat", e.target.value)
                   }
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
                 />
@@ -648,9 +645,9 @@ export function TambahSkemaForm({
                 <input
                   type="text"
                   placeholder="Contoh: MET.000.000000 2023"
-                  value={formState.nomor_registrasi || ""}
+                  value={formState.nomorRegistrasi || ""}
                   onChange={(e) =>
-                    handleMainInfoChange("nomor_registrasi", e.target.value)
+                    handleMainInfoChange("nomorRegistrasi", e.target.value)
                   }
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
                 />
@@ -670,13 +667,13 @@ export function TambahSkemaForm({
                   type="button"
                   onClick={() => handleStatusChange(false)}
                   className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    !formState.status_aktif
+                    !formState.statusAktif
                       ? "bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs"
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full ${!formState.status_aktif ? "bg-amber-500" : "bg-slate-300"}`}
+                    className={`w-2 h-2 rounded-full ${!formState.statusAktif ? "bg-amber-500" : "bg-slate-300"}`}
                   />
                   Draft (Nonaktif)
                 </button>
@@ -684,13 +681,13 @@ export function TambahSkemaForm({
                   type="button"
                   onClick={() => handleStatusChange(true)}
                   className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    formState.status_aktif
+                    formState.statusAktif
                       ? "bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs"
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full ${formState.status_aktif ? "bg-emerald-500" : "bg-slate-300"}`}
+                    className={`w-2 h-2 rounded-full ${formState.statusAktif ? "bg-emerald-500" : "bg-slate-300"}`}
                   />
                   Aktif
                 </button>
@@ -715,7 +712,7 @@ export function TambahSkemaForm({
           </p>
 
           <div className="space-y-4">
-            {formState.persyaratan_dasar.map((item, index) => (
+            {formState.persyaratanDasar.map((item, index) => (
               <div
                 key={index}
                 className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 sm:p-5 relative group transition-all hover:border-slate-300"
@@ -727,7 +724,7 @@ export function TambahSkemaForm({
                       Dokumen Persyaratan #{index + 1}
                     </span>
                   </div>
-                  {formState.persyaratan_dasar.length > 1 && (
+                  {formState.persyaratanDasar.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemovePersyaratan(index)}
@@ -749,11 +746,11 @@ export function TambahSkemaForm({
                     <input
                       type="text"
                       placeholder="Contoh: Transkrip Nilai Semester 5"
-                      value={item.nama_dokumen}
+                      value={item.namaDokumen}
                       onChange={(e) =>
                         handleUpdatePersyaratan(
                           index,
-                          "nama_dokumen",
+                          "namaDokumen",
                           e.target.value,
                         )
                       }
@@ -831,7 +828,7 @@ export function TambahSkemaForm({
           </p>
 
           <div className="space-y-4">
-            {formState.persyaratan_administrasi.map((item, index) => (
+            {formState.persyaratanAdministrasi.map((item, index) => (
               <div
                 key={index}
                 className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 sm:p-5 relative group transition-all hover:border-slate-300"
@@ -843,7 +840,7 @@ export function TambahSkemaForm({
                       Dokumen Administrasi #{index + 1}
                     </span>
                   </div>
-                  {formState.persyaratan_administrasi.length > 1 && (
+                  {formState.persyaratanAdministrasi.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemovePersyaratanAdministrasi(index)}
@@ -865,11 +862,11 @@ export function TambahSkemaForm({
                     <input
                       type="text"
                       placeholder="Contoh: Kartu Tanda Penduduk (KTP)"
-                      value={item.nama_dokumen}
+                      value={item.namaDokumen}
                       onChange={(e) =>
                         handleUpdatePersyaratanAdministrasi(
                           index,
-                          "nama_dokumen",
+                          "namaDokumen",
                           e.target.value,
                         )
                       }
@@ -902,11 +899,11 @@ export function TambahSkemaForm({
                     <label className="flex items-center gap-2 cursor-pointer select-none bg-white p-2.5 rounded-lg border border-slate-200 w-full hover:bg-slate-50">
                       <input
                         type="checkbox"
-                        checked={item.is_wajib}
+                        checked={item.isWajib}
                         onChange={(e) =>
                           handleUpdatePersyaratanAdministrasi(
                             index,
-                            "is_wajib",
+                            "isWajib",
                             e.target.checked,
                           )
                         }
@@ -947,7 +944,7 @@ export function TambahSkemaForm({
           </p>
 
           <div className="space-y-8">
-            {formState.unit_kompetensi.map((unit, uIdx) => (
+            {formState.unitKompetensi.map((unit, uIdx) => (
               <div
                 key={uIdx}
                 className="border-2 border-slate-200 rounded-2xl overflow-hidden shadow-xs bg-white"
@@ -963,9 +960,9 @@ export function TambahSkemaForm({
                       <input
                         type="text"
                         placeholder="Contoh: J.611000.001.01"
-                        value={unit.kode_unit}
+                        value={unit.kodeUnit}
                         onChange={(e) =>
-                          handleUpdateUnit(uIdx, "kode_unit", e.target.value)
+                          handleUpdateUnit(uIdx, "kodeUnit", e.target.value)
                         }
                         className="w-full font-bold text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
                       />
@@ -980,9 +977,9 @@ export function TambahSkemaForm({
                       <input
                         type="text"
                         placeholder="Contoh: Merancang Topologi Jaringan"
-                        value={unit.judul_unit}
+                        value={unit.judulUnit}
                         onChange={(e) =>
-                          handleUpdateUnit(uIdx, "judul_unit", e.target.value)
+                          handleUpdateUnit(uIdx, "judulUnit", e.target.value)
                         }
                         className="w-full font-bold text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
                       />
@@ -1034,12 +1031,12 @@ export function TambahSkemaForm({
                           <input
                             type="text"
                             placeholder="Contoh: Menyiapkan perancangan topologi"
-                            value={el.nama_elemen}
+                            value={el.namaElemen}
                             onChange={(e) =>
                               handleUpdateElemen(
                                 uIdx,
                                 eIdx,
-                                "nama_elemen",
+                                "namaElemen",
                                 e.target.value,
                               )
                             }
@@ -1051,12 +1048,12 @@ export function TambahSkemaForm({
                           <label className="flex items-center gap-2 cursor-pointer select-none pb-1">
                             <input
                               type="checkbox"
-                              checked={el.is_wajib}
+                              checked={el.isWajib}
                               onChange={(e) =>
                                 handleUpdateElemen(
                                   uIdx,
                                   eIdx,
-                                  "is_wajib",
+                                  "isWajib",
                                   e.target.checked,
                                 )
                               }
@@ -1076,7 +1073,7 @@ export function TambahSkemaForm({
                         </label>
 
                         <div className="space-y-2">
-                          {el.kriteria_unjuk_kerja.map((kukStr, kIdx) => (
+                          {el.kriteriaUnjukKerja.map((kukStr, kIdx) => (
                             <div key={kIdx} className="flex gap-2 items-center">
                               <span className="text-xs font-bold text-slate-400 w-6 shrink-0 text-right">
                                 {kIdx + 1}.
@@ -1158,7 +1155,7 @@ export function TambahSkemaForm({
                 </p>
               </div>
             </div>
-            {formState.konfigurasi_soal_id && (
+            {formState.konfigurasiSoalId && (
               <span className="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full flex items-center gap-1.5">
                 <CheckCircle2 size={13} />
                 Konfigurasi Terhubung
@@ -1172,11 +1169,11 @@ export function TambahSkemaForm({
               Pilih Paket Konfigurasi Soal Asesor
             </label>
             <select
-              value={formState.konfigurasi_soal_id || ""}
+              value={formState.konfigurasiSoalId || ""}
               onChange={(e) =>
                 setFormState((prev) => ({
                   ...prev,
-                  konfigurasi_soal_id: e.target.value,
+                  konfigurasiSoalId: e.target.value,
                 }))
               }
               className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold bg-white text-slate-800 outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20 transition-all cursor-pointer"

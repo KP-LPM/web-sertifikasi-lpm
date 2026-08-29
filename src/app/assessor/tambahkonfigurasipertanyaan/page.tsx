@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import {
-  PersonItem,
+  PenyusunOption,
   ConfigurationMetadata,
   Step1Question,
   Step2BlokA,
@@ -32,7 +32,7 @@ import {
 } from "@/types/types";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Options for Dropdowns
 const skemaOptions = [
@@ -241,7 +241,6 @@ const initialWizardState: WizardFormState = {
 
 export default function TambahKonfigurasiPertanyaan() {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const {
     addKonfigurasiPertanyaan,
@@ -277,7 +276,7 @@ export default function TambahKonfigurasiPertanyaan() {
           } else {
             // Helper khusus untuk mengonversi ke tipe strict { value: string; label: string }[]
             const formatPersonList = (
-              list?: PersonItem[] | string[],
+              list?: PenyusunOption[] | string[],
             ): Array<{ value: string; label: string }> => {
               if (!list) return [];
               return list.map((item) => {
@@ -285,8 +284,8 @@ export default function TambahKonfigurasiPertanyaan() {
                   return { value: item, label: item };
                 }
                 return {
-                  value: String(item.value || item.id || item.nama || ""),
-                  label: String(item.label || item.nama || item.value || ""),
+                  value: String(item.value || ""),
+                  label: String(item.label || ""),
                 };
               });
             };

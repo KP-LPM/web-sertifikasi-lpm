@@ -20,13 +20,13 @@ import {
   Building2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
-import { Assessment, HasilAsesmen } from "@/types/types";
+import { AssessmentItem, HasilAsesmen } from "@/types/types";
 
 export default function VerifikasiBanding() {
   const [mode, setMode] = useState<"list" | "detail">("list");
   const { setSelectedAsesmen, selectedAsesmen } = useAppContext();
 
-  const handleVerify = (item: Assessment) => {
+  const handleVerify = (item: AssessmentItem) => {
     setSelectedAsesmen(item);
     setMode("detail");
   };
@@ -46,14 +46,14 @@ export default function VerifikasiBanding() {
 function VerifikasiBandingList({
   onVerify,
 }: {
-  onVerify: (item: Assessment) => void;
+  onVerify: (item: AssessmentItem) => void;
 }) {
-  const { assessments } = useAppContext();
+  const { AssessmentItems } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [displayedCount, setDisplayedCount] = useState(10);
 
-  // Filter only assessments that are 'Belum Kompeten' and have been appealed by Asesi
-  const filteredAssessments = assessments.filter((item) => {
+  // Filter only AssessmentItems that are 'Belum Kompeten' and have been appealed by Asesi
+  const filteredAssessments = AssessmentItems.filter((item) => {
     if (item.hasil !== "Belum Kompeten" || !item.isBanding) return false;
 
     const matchesSearch =
@@ -137,14 +137,14 @@ function VerifikasiBandingList({
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
-                          item.tuk === "Sewaktu"
+                          item.tipeTuk === "Sewaktu"
                             ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : item.tuk === "Tempat Kerja"
+                            : item.tipeTuk === "Tempat Kerja"
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : "bg-orange-50 text-orange-700 border-orange-200"
                         }`}
                       >
-                        {item.tuk}
+                        {item.tipeTuk}
                       </span>
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
@@ -201,7 +201,7 @@ function VerifikasiBandingList({
 }
 
 function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
-  const { selectedAsesmen, setSelectedAsesmen, updateAssessment } =
+  const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem } =
     useAppContext();
   const [modalAction, setModalAction] = useState<"approve" | "reject" | null>(
     null,
@@ -213,7 +213,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   if (!selectedAsesmen) return null;
 
   const previousNote =
-    selectedAsesmen.catatanAsesor ||
+    selectedAsesmen.catatan ||
     "asesi masih perlu pendalaman pada aspek praktik lanjutan";
 
   const openModal = (action: "approve" | "reject") => {
@@ -245,7 +245,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
               catatanAsesor: catatanBaru.trim(),
             };
 
-      updateAssessment(selectedAsesmen.id, updatedData);
+      updateAssessmentItem(selectedAsesmen.id, updatedData);
       setSelectedAsesmen({ ...selectedAsesmen, ...updatedData });
       setLoadingSubmit(false);
       setModalAction(null);
@@ -290,7 +290,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   <h3 className="text-lg md:text-xl font-black text-slate-900">
                     {selectedAsesmen.nama}
                   </h3>
-                  {selectedAsesmen.metode.toLowerCase() === "online" ? (
+                  {selectedAsesmen.metode?.toLowerCase() === "online" ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                       <Video size={13} /> Online
                     </span>
@@ -336,7 +336,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                 <Building size={14} className="text-[#008BE3] shrink-0" />
-                {selectedAsesmen.tuk}
+                {selectedAsesmen.tipeTuk}
               </div>
             </div>
             <div className="min-w-0">
@@ -518,7 +518,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
             <div className="border border-slate-200 rounded-lg overflow-hidden">
               <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
                 <span>Rekomendasi / Catatan Asesor</span>
-                {Boolean(selectedAsesmen.catatanAsesor) && (
+                {Boolean(selectedAsesmen.catatan) && (
                   <span className="text-xs bg-sky-100 text-sky-800 font-bold px-2.5 py-0.5 rounded-full">
                     Diperbarui
                   </span>
@@ -531,7 +531,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   </p>
                   <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-slate-800 text-sm font-medium min-h-15 leading-relaxed">
                     {String(
-                      selectedAsesmen.catatanAsesor ||
+                      selectedAsesmen.catatan ||
                         "asesi masih perlu pendalaman pada aspek praktik lanjutan",
                     )}
                   </div>

@@ -24,24 +24,36 @@ type ProfileDataType = {
 };
 
 export function Header() {
-  const { user, sidebarCollapsed, setSidebarCollapsed, logout, requestNavigation, registeredProfile } = useAppContext();
+  const {
+    user,
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    logout,
+    requestNavigation,
+    registeredProfile,
+  } = useAppContext();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const [dbProfile, setDbProfile] = useState<{name?: string; avatar?: string} | null>(null);
+  const [dbProfile, setDbProfile] = useState<{
+    name?: string;
+    avatar?: string;
+  } | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchHeaderProfile = async () => {
       try {
-        const res = await fetch('/api/profil');
+        const res = await fetch("/api/profil");
         if (res.ok) {
           const data = (await res.json()) as ProfileDataType;
           setDbProfile({
-            name: (data.namaLengkap || data.nama_lengkap || data.nama) as string | undefined,
-            avatar: data.avatar as string | undefined
+            name: (data.namaLengkap || data.nama_lengkap || data.nama) as
+              | string
+              | undefined,
+            avatar: data.avatar as string | undefined,
           });
         }
       } catch (error) {
@@ -53,10 +65,16 @@ useEffect(() => {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target as Node)
+      ) {
         setIsNotifOpen(false);
       }
     }
@@ -77,20 +95,20 @@ useEffect(() => {
 
   const typedRegisteredProfile = registeredProfile as ProfileDataType | null;
 
-  const displayName = 
-    typedRegisteredProfile?.nama || 
-    typedRegisteredProfile?.nama_lengkap || 
-    dbProfile?.name || 
-    user.name || 
+  const displayName =
+    typedRegisteredProfile?.nama ||
+    typedRegisteredProfile?.nama_lengkap ||
+    dbProfile?.name ||
+    user.username ||
     "Pengguna";
 
-  const displayAvatar = 
-    typedRegisteredProfile?.avatar || 
-    dbProfile?.avatar || 
-    user.avatar;
+  const displayAvatar =
+    typedRegisteredProfile?.avatar || dbProfile?.avatar || user.avatar;
 
   return (
-    <header className={`sticky top-0 z-40 h-20 bg-[#F8F9FC]/95 backdrop-blur-md border-b border-slate-200 px-6 flex justify-between items-center w-full transition-all duration-300 md:pl-24 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-76"}`}>
+    <header
+      className={`sticky top-0 z-40 h-20 bg-[#F8F9FC]/95 backdrop-blur-md border-b border-slate-200 px-6 flex justify-between items-center w-full transition-all duration-300 md:pl-24 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-76"}`}
+    >
       {/* Left: Hamburger menu for mobile */}
       <div className="flex items-center gap-4">
         <button
@@ -157,7 +175,9 @@ useEffect(() => {
                 {user.role}
               </span>
             </div>
-            <div className={`text-slate-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}>
+            <div
+              className={`text-slate-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+            >
               <ChevronDown size={14} />
             </div>
           </button>

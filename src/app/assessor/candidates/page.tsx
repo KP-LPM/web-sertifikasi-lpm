@@ -84,7 +84,7 @@ export default function AsesiList() {
   });
 
   const allBatches = Array.from(batchMap.values()).filter(
-    (b) => !completedBatchCodes.includes((b.kodeBatch) as string),
+    (b) => !completedBatchCodes.includes(b.kodeBatch as string),
   );
 
   // 2. Filter batches according to active tab and search query
@@ -391,7 +391,9 @@ export default function AsesiList() {
                     {/* Card Footer Action */}
                     <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
                       <button
-                        onClick={() => setSelectedBatchCode((batch.kodeBatch as string))}
+                        onClick={() =>
+                          setSelectedBatchCode(batch.kodeBatch as string)
+                        }
                         className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 ml-auto cursor-pointer"
                       >
                         Lihat Detail
@@ -698,7 +700,17 @@ export default function AsesiList() {
                           ) : (
                             <button
                               onClick={() => {
-                                setSelectedAsesmen(candidate);
+                                setSelectedAsesmen({
+                                  id: candidate.id,
+                                  nik: candidate.nik ?? "",
+                                  nama: candidate.nama,
+                                  skema: candidate.skema,
+                                  tglAsesmen: candidate.tglAsesmen ?? "",
+                                  waktu: candidate.waktu ?? "",
+                                  tipeTuk: candidate.tipeTuk ?? "",
+                                  hasil:
+                                    candidate.statusAsesmen ?? "Belum Dinilai",
+                                });
                                 router.push("/assessor/assessmentform");
                               }}
                               className="bg-slate-900 text-white hover:bg-slate-800 px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
@@ -789,7 +801,9 @@ export default function AsesiList() {
               <button
                 onClick={() => {
                   const name = currentSelectedBatch.namaBatch;
-                  deleteBatchAssessmentItems((currentSelectedBatch.kodeBatch) as string);
+                  deleteBatchAssessmentItems(
+                    currentSelectedBatch.kodeBatch as string,
+                  );
                   setSelectedBatchCode(null);
                   setSelectedAsesmen(null);
                   setShowCompleteModal(false);

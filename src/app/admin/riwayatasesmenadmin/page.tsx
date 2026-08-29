@@ -770,9 +770,8 @@ export default function RiwayatAsesmenAdmin() {
                     asesmenData={{
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
-                      noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
                       tipeTuk: selectedAsesmen.tipeTuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
+                      t: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                       asesorReg: "MET.000.001234 2021",
                     }}

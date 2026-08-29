@@ -499,7 +499,7 @@ export default function UploadSertifikat() {
             <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Upload Sertifikat (Link GDrive)
             </h2>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
               Pengelolaan & pengunggahan tautan sertifikat per Sidang Pleno
             </p>
           </div>
@@ -570,7 +570,7 @@ export default function UploadSertifikat() {
             </div>
 
             {/* Search Input */}
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3.5 h-[42px] w-full md:w-80 border border-gray-200 focus-within:border-[#008BE3] focus-within:ring-1 focus-within:ring-[#008BE3]/30 transition-all">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3.5 h-10.5 w-full md:w-80 border border-gray-200 focus-within:border-[#008BE3] focus-within:ring-1 focus-within:ring-[#008BE3]/30 transition-all">
               <Search className="text-gray-400 shrink-0" size={18} />
               <input
                 type="text"
@@ -665,7 +665,7 @@ export default function UploadSertifikat() {
                               className="text-[#008BE3] shrink-0 mt-0.5"
                             />
                           )}
-                          <span className="text-slate-700 font-semibold break-words leading-snug">
+                          <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
                             {pleno.lokasi}
                           </span>
                         </div>
@@ -827,7 +827,7 @@ export default function UploadSertifikat() {
 
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 {/* Search Input */}
-                <div className="flex items-center gap-2 bg-white rounded-xl px-3 h-[38px] w-full sm:w-64 border border-slate-200 focus-within:border-[#008BE3] transition-colors shadow-2xs">
+                <div className="flex items-center gap-2 bg-white rounded-xl px-3 h-9.25 w-full sm:w-64 border border-slate-200 focus-within:border-[#008BE3] transition-colors shadow-2xs">
                   <Search className="text-slate-400 shrink-0" size={15} />
                   <input
                     type="text"
@@ -846,7 +846,7 @@ export default function UploadSertifikat() {
                       e.target.value as "Semua" | "Terbit" | "Belum Upload",
                     )
                   }
-                  className="bg-white border border-slate-200 text-xs rounded-xl px-3 h-[38px] outline-none font-bold text-slate-700 cursor-pointer shadow-2xs"
+                  className="bg-white border border-slate-200 text-xs rounded-xl px-3 h-9.25 outline-none font-bold text-slate-700 cursor-pointer shadow-2xs"
                 >
                   <option value="Semua">Semua Status Link</option>
                   <option value="Terbit">Sudah Ada Link GDrive</option>
@@ -1112,29 +1112,6 @@ export default function UploadSertifikat() {
 
               {/* Cert Number & Issue Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Nomor Sertifikat {!readOnly && "*"}
-                  </label>
-                  <input
-                    type="text"
-                    required={!readOnly}
-                    readOnly={readOnly}
-                    placeholder={readOnly ? "-" : "50012/LSP-SGD/VIII/2026"}
-                    value={inputForm.n}
-                    onChange={(e) =>
-                      setInputForm({
-                        ...inputForm,
-                        n: e.target.value,
-                      })
-                    }
-                    className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${
-                      readOnly
-                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                        : "bg-slate-50 focus:border-[#008BE3] focus:bg-white"
-                    }`}
-                  />
-                </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Tanggal Terbit {!readOnly && "*"}

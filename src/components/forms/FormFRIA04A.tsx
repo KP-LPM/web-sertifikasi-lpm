@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
-import { Assessment, PenyusunValidator } from "@/types/types";
+import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
 
 export interface FormFRIA04AProps {
-  asesmenData?: Assessment;
+  asesmenData?: Apl02FormData;
   umpanBalik?: string;
   onUmpanBalikChange?: (val: string) => void;
   asesiSignature?: string;
@@ -16,14 +16,10 @@ export interface FormFRIA04AProps {
   onSupervisorNameChange?: (val: string) => void;
   supervisorSignature?: string;
   onSupervisorSignatureChange?: (val: string) => void;
-  penyusun?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  onPenyusunChange?: (
-    penyusun: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
-  validator?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  onValidatorChange?: (
-    validator: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
+  penyusun?: PenyusunValidatorItem[];
+  onPenyusunChange?: (penyusun: PenyusunValidatorItem[]) => void;
+  validator?: PenyusunValidatorItem[];
+  onValidatorChange?: (validator: PenyusunValidatorItem[]) => void;
   readOnly?: boolean;
   isAsesi?: boolean;
   showHeader?: boolean;
@@ -39,22 +35,12 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
   const [localSupervisorName, setLocalSupervisorName] = useState("");
   const [localSupervisorSig, setLocalSupervisorSig] = useState("");
 
-  const defaultPenyusun = [
-    {
-      nama: props.asesmenData?.asesor || "Ichsan Taufik",
-      noMet: "",
-      ttdTanggal: props.asesmenData?.tanggal || "11 Oktober 2024",
-    },
-    { nama: "", noMet: "", ttdTanggal: "" },
-  ];
-  const defaultValidator = [
-    { nama: "", noMet: "", ttdTanggal: "" },
-    { nama: "", noMet: "", ttdTanggal: "" },
-  ];
-
-  const [localPenyusun, setLocalPenyusun] = useState(defaultPenyusun);
-  const [localValidator, setLocalValidator] = useState(defaultValidator);
-
+  const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
+    [],
+  );
+  const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
+    [],
+  );
   const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
   const [isSupervisorSigModalOpen, setIsSupervisorSigModalOpen] =
@@ -84,7 +70,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
     field: string,
     val: string,
   ) => {
-    const updated = [...(penyusun as PenyusunValidator[])];
+    const updated = [...penyusun];
     updated[idx] = { ...updated[idx], [field]: val };
     if (props.onPenyusunChange) {
       props.onPenyusunChange(updated);

@@ -3,7 +3,11 @@ import { Eye, CheckCircle, AlertTriangle, FastForward } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
-import { Assessment, EvidenceFileItem, PenyusunValidator } from "@/types/types";
+import {
+  Apl02FormData,
+  EvidenceFileItem,
+  PenyusunValidatorItem,
+} from "@/types/types";
 
 export const DEFAULT_APL02_UNITS = [
   {
@@ -42,7 +46,7 @@ export const DEFAULT_APL02_UNITS = [
 ];
 
 export interface FormFRAPL02Props {
-  asesmenData?: Assessment;
+  asesmenData?: Apl02FormData;
   units?: Array<{
     code: string;
     title: string;
@@ -73,14 +77,10 @@ export interface FormFRAPL02Props {
   onAsesorSignatureChange?: (val: string) => void;
   asesorDate?: string;
   onAsesorDateChange?: (val: string) => void;
-  penyusun?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  onPenyusunChange?: (
-    penyusun: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
-  validator?: Array<{ nama: string; noMet: string; ttdTanggal: string }>;
-  onValidatorChange?: (
-    validator: Array<{ nama: string; noMet: string; ttdTanggal: string }>,
-  ) => void;
+  penyusun?: PenyusunValidatorItem[];
+  onPenyusunChange?: (penyusun: PenyusunValidatorItem[]) => void;
+  validator?: PenyusunValidatorItem[];
+  onValidatorChange?: (validator: PenyusunValidatorItem[]) => void;
   readOnly?: boolean;
   showHeader?: boolean;
   onNext?: () => void;
@@ -109,13 +109,15 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     AVAILABLE_SCHEMES.find(
       (s) =>
         s.name === props.asesmenData?.skema ||
-        s.code === props.asesmenData?.noSkema ||
+        s.code === props.asesmenData?.id ||
         (props.asesmenData?.skema &&
           s.name
-            .toLowerCase()
+            ?.toLowerCase()
             .includes(props.asesmenData.skema.toLowerCase())) ||
         (props.asesmenData?.skema &&
-          props.asesmenData.skema.toLowerCase().includes(s.name.toLowerCase())),
+          props.asesmenData.skema
+            .toLowerCase()
+            .includes((s.name as string).toLowerCase())),
     ) || AVAILABLE_SCHEMES[0];
   const units =
     props.units ||
@@ -134,7 +136,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   );
   const [localAsesiSig, setLocalAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState(
-    props.asesmenData?.tanggal ||
+    props.asesmenData?.tglAsesmen ||
       new Date().toLocaleDateString("id-ID", {
         day: "numeric",
         month: "long",
@@ -150,7 +152,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   );
   const [localAsesorSig, setLocalAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState(
-    props.asesmenData?.tanggal ||
+    props.asesmenData?.tglAsesmen ||
       new Date().toLocaleDateString("id-ID", {
         day: "numeric",
         month: "long",
@@ -158,21 +160,12 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
       }),
   );
 
-  const defaultPenyusun = [
-    {
-      nama: props.asesmenData?.asesor || "",
-      noMet: props.asesmenData?.asesorReg || "",
-      ttdTanggal: props.asesmenData?.tanggal || "",
-    },
-    { nama: "", noMet: "", ttdTanggal: "" },
-  ];
-  const defaultValidator = [
-    { nama: "", noMet: "", ttdTanggal: "" },
-    { nama: "", noMet: "", ttdTanggal: "" },
-  ];
-
-  const [localPenyusun, setLocalPenyusun] = useState(defaultPenyusun);
-  const [localValidator, setLocalValidator] = useState(defaultValidator);
+  const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
+    [],
+  );
+  const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
+    [],
+  );
 
   const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
@@ -236,7 +229,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     field: "nama" | "noMet" | "ttdTanggal",
     value: string,
   ) => {
-    const updated = [...(penyusun as PenyusunValidator[])];
+    const updated = [...penyusun];
     updated[index] = { ...updated[index], [field]: value };
     if (props.onPenyusunChange) {
       props.onPenyusunChange(updated);
@@ -586,7 +579,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
               <span className="font-bold text-sm">Nama Asesi:</span>
               <input
                 type="text"
-                value={asesiName}
+                value={asesiName as string}
                 disabled={props.readOnly}
                 onChange={(e) =>
                   props.onAsesiNameChange

@@ -127,7 +127,7 @@ export interface User {
 }
 
 export interface UserItem {
-  id: string;
+  id?: string;
   username: string;
   namaLengkap: string | ""; // dari ProfilPengguna.namaLengkap
   email: string; // dari User.email
@@ -139,9 +139,9 @@ export interface UserItem {
 }
 
 export interface PenyusunValidatorItem {
-  nama?: string;
-  noMet?: string;
-  ttdTanggal?: string;
+  nama: string;
+  noMet: string;
+  ttdTanggal: string;
   [key: string]: unknown;
 }
 
@@ -497,7 +497,9 @@ export interface StatCardProps {
   value: string | number;
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   color?: "blue" | "indigo" | "emerald" | "amber" | string;
+  theme?: "sky" | "amber" | "emerald" | "indigo" | string; // tambahkan
   subtext?: string;
+  onClick?: () => void; // tambahkan
 }
 
 export interface SchemeCardProps {
@@ -603,8 +605,8 @@ export interface ConfigurationMetadata {
   namaKonfigurasi: string;
   skemaSertifikasi: string;
   versi: string;
-  penyusun: User;
-  validator: User;
+  penyusun: PenyusunOption[];
+  validator: PenyusunOption[];
   isDefault: boolean;
 }
 

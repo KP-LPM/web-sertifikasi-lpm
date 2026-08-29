@@ -177,9 +177,6 @@ export default function AssessmentSchedule() {
   const handlePreviewAsesmen = (item: ScheduleItem) => {
     setIsPreviewMode(true);
     setEditId(item.id);
-    const start =
-      item.waktuMulai ||
-      (item.jam ? item.jam.split(" - ")[0].replace(" WIB", "") : "08:00");
     setFormData({
       namaBatch: item.namaBatch || "",
       nomorSurat: item.nomorSurat || "",
@@ -189,8 +186,7 @@ export default function AssessmentSchedule() {
       tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
-      waktuMulai: start,
-      jam: item.jam || `${start} WIB`,
+      waktuMulai: item.waktuMulai || "",
       namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
       suratPenugasanName: item.suratPenugasanName || "",
       totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
@@ -212,7 +208,7 @@ export default function AssessmentSchedule() {
         namaTuk: "TUK Sewaktu",
         alamatTuk: "UIN Sunan Gunung Djati Bandung",
         hariTanggal: "Minggu, 06 Juli 2025",
-        jam: "08.00 WIB",
+        waktuMulai: "08.00 WIB",
         jumlahPeserta: 1,
         jumlahSkema: 1,
         namaAsesi: "Ach.Angga prasetya Harisman",
@@ -248,9 +244,6 @@ export default function AssessmentSchedule() {
   const handleEditAsesmen = (item: ScheduleItem) => {
     setIsEditMode(true);
     setEditId(item.id);
-    const start =
-      item.waktuMulai ||
-      (item.jam ? item.jam.split(" - ")[0].replace(" WIB", "") : "08:00");
     setFormData({
       namaBatch: item.namaBatch || "",
       nomorSurat: item.nomorSurat || "",
@@ -260,8 +253,7 @@ export default function AssessmentSchedule() {
       tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
-      waktuMulai: start,
-      jam: item.jam || `${start} WIB`,
+      waktuMulai: item.waktuMulai || "",
       namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
       suratPenugasanName: item.suratPenugasanName || "",
       totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
@@ -395,7 +387,6 @@ export default function AssessmentSchedule() {
     alamat: "UIN Sunan Gunung Djati Bandung",
     tanggal: "",
     waktuMulai: "08:00",
-    jam: "08:00 WIB",
     tuk: "",
     namaAsesor: "",
     suratPenugasanName: "",
@@ -460,7 +451,6 @@ export default function AssessmentSchedule() {
       alamat: "UIN Sunan Gunung Djati Bandung",
       tanggal: "",
       waktuMulai: "08:00",
-      jam: "08:00 WIB",
       tuk: "",
       totalKandidat: 0,
       namaAsesor: "",
@@ -793,7 +783,6 @@ export default function AssessmentSchedule() {
                     setFormData({
                       ...formData,
                       waktuMulai: newStart,
-                      jam: `${newStart} WIB`,
                     });
                   }}
                   disabled={isPreviewMode}
@@ -1570,7 +1559,6 @@ export default function AssessmentSchedule() {
                     alamat: "UIN Sunan Gunung Djati Bandung",
                     tanggal: "",
                     waktuMulai: "08:00",
-                    jam: "08:00 WIB",
                     tuk: "",
                     totalKandidat: 0,
                     namaAsesor: "",
@@ -1726,7 +1714,7 @@ export default function AssessmentSchedule() {
                           />
                           {item.waktuMulai
                             ? `${item.waktuMulai} WIB`
-                            : item.jam || "08:00 WIB"}
+                            : item.waktuMulai || "08:00 WIB"}
                         </span>
                       </td>
 

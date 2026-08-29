@@ -20,36 +20,39 @@ import {
   JenisMetode,
   TipeTuk,
   StatCardProps,
+  Candidate,
 } from "@/types/types";
 
 export default function AssessorOverview() {
   const router = useRouter(); // Gunakan router jika nanti untuk navigasi, atau hapus jika benar-benar tidak dipakai
-  const { assessments, setSelectedAsesmen } = useAppContext();
+  const { AssessmentItems, setSelectedAsesmen } = useAppContext();
 
   // Tambahkan state ini jika belum ada untuk menghindari error "completedBatchCodes is not defined"
   const completedBatchCodes: string[] = [];
 
   const batchMap = new Map<string, BatchDetail>();
 
-  (assessments || []).forEach((item: AssessmentItem) => {
+  (AssessmentItems || []).forEach((item: AssessmentItem) => {
     // Berikan fallback string kosong '' untuk mencegah error undefined pada substring
     const skemaVal = item.skema || "Umum";
     const code =
-      item.batchCode ||
+      item.kodeBatch ||
       `BATCH-${skemaVal.substring(0, 3).toUpperCase()}-${item.id}`;
 
-    const name = item.batchName || `Batch Asesmen ${skemaVal}`;
+    const name = item.namaBatch || `Batch Asesmen ${skemaVal}`;
 
     if (!batchMap.has(code)) {
       batchMap.set(code, {
-        batchCode: code,
-        batchName: name,
+        id: item.id,
+        status: item.status || "",
+        kodeBatch: code,
+        namaBatch: name,
         skema: skemaVal, // Pastikan tipe data string aman
         metode: item.metode as JenisMetode,
-        tuk: item.tuk as TipeTuk,
+        tipeTuk: item.tipeTuk as TipeTuk,
         alamat: item.alamat || "Gedung UIN SGD",
-        tglAsesmen: item.tglAsesmen || "05 Okt 2023",
-        waktu: item.waktu || "08:00 - 12:00 WIB",
+        tanggal: item.tglAsesmen || "05 Okt 2023",
+        waktuMulai: item.waktu || "08:00 - 12:00 WIB",
         linkVideo: item.linkVideo || "-",
         candidates: [],
       });
@@ -59,11 +62,11 @@ export default function AssessorOverview() {
   });
 
   const availableBatches = Array.from(batchMap.values()).filter(
-    (b) => !completedBatchCodes.includes(b.batchCode),
+    (b) => !completedBatchCodes.includes(b.kodeBatch as string),
   );
 
   // 2. Perbaiki tipe 'any' menjadi 'AssessmentItem'
-  const bandingItems = (assessments || []).filter(
+  const bandingItems = (AssessmentItems || []).filter(
     (item: AssessmentItem) => item.hasil === "Belum Kompeten" && item.isBanding,
   );
 
@@ -154,23 +157,23 @@ export default function AssessorOverview() {
             {availableBatches.length > 0 ? (
               availableBatches.slice(0, 2).map((batch: BatchDetail) => {
                 const completedCount = batch.candidates.filter(
-                  (c: AssessmentItem) => c.status === "Selesai",
+                  (c: Candidate) => c.statusAsesmen === "Selesai",
                 ).length;
                 const totalCount = batch.candidates.length;
                 return (
                   <div
-                    key={batch.batchCode}
+                    key={batch.kodeBatch}
                     onClick={() => router.push("/assessor/candidates")}
                     className="p-3.5 border border-gray-100 rounded-lg hover:border-sky-200 hover:bg-sky-50/40 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md uppercase">
-                          {batch.batchCode}
+                          {batch.kodeBatch}
                         </span>
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${
-                            batch.metode.toLowerCase() === "online"
+                            batch.metode?.toLowerCase() === "online"
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : "bg-emerald-50 text-emerald-700 border-emerald-200"
                           }`}
@@ -179,14 +182,14 @@ export default function AssessorOverview() {
                         </span>
                       </div>
                       <h4 className="font-bold text-slate-900 text-sm group-hover:text-[#008BE3] transition-colors truncate">
-                        {batch.batchName}
+                        {batch.namaBatch}
                       </h4>
                       <p className="text-xs text-slate-500 font-medium truncate">
                         {batch.skema}
                       </p>
                       <div className="flex items-center gap-3 text-[11px] text-gray-400 pt-1">
                         <span className="flex items-center gap-1">
-                          <Calendar size={12} /> {batch.tglAsesmen}
+                          <Calendar size={12} /> {batch.tanggal}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
@@ -267,7 +270,7 @@ export default function AssessorOverview() {
                     <p className="text-[11px] text-gray-400">
                       TUK:{" "}
                       <span className="font-semibold text-slate-700">
-                        {item.tuk}
+                        {item.tipeTuk}
                       </span>
                     </p>
                   </div>
@@ -293,14 +296,7 @@ export default function AssessorOverview() {
   );
 }
 
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  theme,
-  subtext,
-  onClick,
-}: StatCardProps) {
+function StatCard({ title, value, theme, subtext, onClick }: StatCardProps) {
   let containerClass = "";
   let titleClass = "";
   let subtextClass = "";
@@ -347,9 +343,7 @@ function StatCard({
       </div>
       <div
         className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs ${iconClass}`}
-      >
-        <Icon size={18} />
-      </div>
+      ></div>
     </div>
   );
 }

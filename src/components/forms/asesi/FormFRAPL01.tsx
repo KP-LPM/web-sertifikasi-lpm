@@ -1,7 +1,7 @@
 import { SignatureField } from "@/components/forms/asesi/SignatureField";
 import React from "react";
 import { Eye } from "lucide-react";
-import { FormDataType, RequirementType } from "@/types/types";
+import { FormDataType, PersyaratanAdministrasi, PersyaratanDasar, RequirementType } from "@/types/types";
 
 type SignatureValue = {
   type: "auto" | "upload" | "draw";
@@ -318,12 +318,12 @@ export function EFormApl01({
             </thead>
             <tbody>
               {(formData.schemeDetail?.persyaratanDasar || []).map(
-                (req: RequirementType, idx: number) => (
+                (req: PersyaratanDasar, idx: number) => (
                   <tr key={`dasar-${idx}`}>
                     <td className="border border-slate-300 p-2 whitespace-nowrap">
                       <div className="flex items-center justify-between gap-4">
                         <span className="whitespace-nowrap">
-                          {typeof req === "string" ? req : req.nama_dokumen}
+                          {typeof req === "string" ? req : req.namaDokumen}
                         </span>
                         {formData.onPreview && (
                           <button
@@ -332,7 +332,7 @@ export function EFormApl01({
                               formData.onPreview?.(
                                 typeof req === "string"
                                   ? req
-                                  : req.nama_dokumen || "",
+                                  : req.namaDokumen || "",
                               )
                             }
                             className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
@@ -349,14 +349,14 @@ export function EFormApl01({
                           formData?.checklist?.[
                             typeof req === "string"
                               ? req
-                              : req.nama_dokumen || ""
+                              : req.namaDokumen || ""
                           ] === "memenuhi"
                         }
                         onChange={() =>
                           handleCheck(
                             typeof req === "string"
                               ? req
-                              : req.nama_dokumen || "",
+                              : req.namaDokumen || "",
                             "memenuhi",
                           )
                         }
@@ -371,14 +371,14 @@ export function EFormApl01({
                           formData?.checklist?.[
                             typeof req === "string"
                               ? req
-                              : req.nama_dokumen || ""
+                              : req.namaDokumen || ""
                           ] === "tidak memenuhi"
                         }
                         onChange={() =>
                           handleCheck(
                             typeof req === "string"
                               ? req
-                              : req.nama_dokumen || "",
+                              : req.namaDokumen || "",
                             "tidak memenuhi",
                           )
                         }
@@ -390,9 +390,9 @@ export function EFormApl01({
                 ),
               )}
               {(formData.schemeDetail?.buktiAdministratif || []).map(
-                (req: RequirementType, idx: number) => {
+                (req: PersyaratanAdministrasi, idx: number) => {
                   const label =
-                    typeof req === "string" ? req : (req.nama_dokumen ?? "");
+                    typeof req === "string" ? req : (req.namaDokumen ?? "");
                   return (
                     <tr key={`admin-${idx}`}>
                       <td className="border border-slate-300 p-2 whitespace-nowrap">
@@ -436,7 +436,7 @@ export function EFormApl01({
               {(formData.schemeDetail?.buktiKompetensi || []).map(
                 (req: RequirementType, idx: number) => {
                   const label =
-                    typeof req === "string" ? req : (req.nama_dokumen ?? "");
+                    typeof req === "string" ? req : (req.namaDokumen ?? "");
                   return (
                     <tr key={`kompetensi-${idx}`}>
                       <td className="border border-slate-300 p-2 whitespace-nowrap">
