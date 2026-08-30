@@ -1,24 +1,30 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  username   String   @unique @db.VarChar(100)
-  email      String   @unique @db.VarChar(255)
-  password   String   @db.VarChar(255)
-  role       Role
-  isVerified Boolean  @default(false) @map("is_verified")
-  createdAt  DateTime @default(now()) @map("created_at")
-  resetToken         String?  @map("reset_token") @db.VarChar(255)
-  resetTokenExpiry   DateTime? @map("reset_token_expiry")
-
-  profil     ProfilPengguna?
-  pengajuanSkema   PengajuanSkema[]
+  id                              Int                               @id @default(autoincrement())
+  username                        String                            @unique @db.VarChar(100)
+  email                           String                            @unique @db.VarChar(255)
+  password                        String                            @db.VarChar(255)
+  role                            Role
+  isVerified                      Boolean                           @default(false) @map("is_verified")
+  createdAt                       DateTime                          @default(now()) @map("created_at")
+  resetToken                      String?                           @map("reset_token") @db.VarChar(255)
+  resetTokenExpiry                DateTime?                         @map("reset_token_expiry")
+  jadwal_asesmen                  jadwal_asesmen[]
+  konfigurasi_pertanyaan_penyusun konfigurasi_pertanyaan_penyusun[]
+  pengajuanSkema                  PengajuanSkema[]
+  pleno_asesi                     pleno_asesi[]
+  pleno_attendee                  pleno_attendee[]
+  portfolio_asesor                portfolio_asesor[]
+  profil                          ProfilPengguna?
+  verifikasi_pengajuan            verifikasi_pengajuan[]
 
   @@map("users")
 }
@@ -26,8 +32,6 @@ model User {
 model ProfilPengguna {
   id                 Int           @id @default(autoincrement())
   userId             Int           @unique @map("user_id")
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Data Umum
   nik                String        @unique @db.VarChar(16)
   namaLengkap        String        @map("nama_lengkap") @db.VarChar(255)
   tempatLahir        String?       @map("tempat_lahir") @db.VarChar(100)
@@ -37,28 +41,619 @@ model ProfilPengguna {
   noHp               String?       @map("no_hp") @db.VarChar(20)
   pendidikanTerakhir String?       @map("pendidikan_terakhir") @db.VarChar(100)
   pekerjaan          String?       @db.VarChar(100)
-  alamat             String?       
-
-  kodeProvinsi       String?       @map("kode_provinsi") @db.VarChar(10)
-  kodeKota           String?       @map("kode_kota") @db.VarChar(10)
-  
+  alamat             String?
   kodePos            String?       @map("kode_pos") @db.VarChar(10)
-  tandaTangan        String?       @map("tanda_tangan") 
-  avatar             String?       @db.Text
-  
-  // Khusus Asesor
+  tandaTangan        String?       @map("tanda_tangan")
   nomorRegistrasiMet String?       @map("nomor_registrasi_met") @db.VarChar(100)
-  
-  // Khusus Asesi
   namaInstitusi      String?       @map("nama_institusi") @db.VarChar(255)
   jabatan            String?       @db.VarChar(255)
   emailInstitusi     String?       @map("email_institusi") @db.VarChar(255)
   kodePosInstitusi   String?       @map("kode_pos_institusi") @db.VarChar(10)
   noHpInstitusi      String?       @map("no_hp_institusi") @db.VarChar(20)
-  alamatInstitusi    String?       @map("alamat_institusi") 
+  alamatInstitusi    String?       @map("alamat_institusi")
   noFaxInstitusi     String?       @map("no_fax_institusi") @db.VarChar(20)
+  kodeKota           String?       @map("kode_kota") @db.VarChar(10)
+  kodeProvinsi       String?       @map("kode_provinsi") @db.VarChar(10)
+  avatar             String?
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId], map: "idx_profil_pengguna_user_id")
   @@map("profil_pengguna")
+}
+
+model MasterSkema {
+  id                                                                              Int                        @id @default(autoincrement())
+  kodeSkema                                                                       String                     @unique @map("kode_skema")
+  namaSkema                                                                       String                     @map("nama_skema")
+  statusAktif                                                                     Boolean                    @map("status_aktif")
+  nomor_sertifikat                                                                String?                    @db.VarChar
+  nomor_registrasi                                                                String?                    @db.VarChar
+  kategori                                                                        String?                    @db.VarChar
+  deskripsi                                                                       String?
+  konfigurasi_soal_id                                                             Int?
+  created_at                                                                      DateTime                   @default(now()) @db.Timestamp(6)
+  updated_at                                                                      DateTime                   @default(now()) @db.Timestamp(6)
+  jadwal_asesmen                                                                  jadwal_asesmen[]
+  konfigurasi_pertanyaan_konfigurasi_pertanyaan_skema_idTomaster_skema            konfigurasi_pertanyaan[]   @relation("konfigurasi_pertanyaan_skema_idTomaster_skema")
+  master_bukti_administratif                                                      MasterBuktiAdministratif[]
+  persyaratanDasar                                                                MasterPersyaratanDasar[]
+  konfigurasi_pertanyaan_master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan konfigurasi_pertanyaan?    @relation("master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan", fields: [konfigurasi_soal_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  unitKompetensi                                                                  MasterUnitKompetensi[]
+  pengajuanSkema                                                                  PengajuanSkema[]
+  pleno_batch_skema                                                               pleno_batch_skema[]
+  portfolio_asesor                                                                portfolio_asesor[]
+  surat                                                                           surat[]
+
+  @@index([konfigurasi_soal_id], map: "idx_master_skema_konfigurasi_soal_id")
+  @@map("master_skema")
+}
+
+model MasterPersyaratanDasar {
+  id          Int         @id @default(autoincrement())
+  skemaId     Int         @map("skema_id")
+  namaDokumen String      @map("nama_dokumen")
+  deskripsi   String?
+  urutan      Int
+  isWajib     Boolean     @default(true) @map("is_wajib")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  skema       MasterSkema @relation(fields: [skemaId], references: [id])
+
+  @@index([skemaId], map: "idx_master_persyaratan_dasar_skema_id")
+  @@map("master_persyaratan_dasar")
+}
+
+model MasterBuktiAdministratif {
+  id           Int          @id @default(autoincrement())
+  namaDokumen  String       @map("nama_dokumen")
+  isWajib      Boolean      @default(true) @map("is_wajib")
+  isAktif      Boolean      @default(true) @map("is_aktif")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  skema_id     Int?
+  deskripsi    String?
+  urutan       Int          @default(1)
+  master_skema MasterSkema? @relation(fields: [skema_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([skema_id], map: "idx_master_bukti_administratif_skema_id")
+  @@map("master_bukti_administratif")
+}
+
+model MasterUnitKompetensi {
+  id               Int                      @id @default(autoincrement())
+  skemaId          Int                      @map("skema_id")
+  kodeUnit         String                   @map("kode_unit")
+  judulUnit        String                   @map("judul_unit")
+  urutan           Int
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  asesmenMandiri   AsesmenMandiri[]
+  elemenKompetensi MasterElemenKompetensi[]
+  skema            MasterSkema              @relation(fields: [skemaId], references: [id])
+
+  @@index([skemaId], map: "idx_master_unit_kompetensi_skema_id")
+  @@map("master_unit_kompetensi")
+}
+
+model MasterElemenKompetensi {
+  id                 Int                  @id @default(autoincrement())
+  unitId             Int                  @map("unit_id")
+  namaElemen         String               @map("nama_elemen")
+  kriteriaUnjukKerja String               @map("kriteria_unjuk_kerja")
+  urutan             Int
+  isWajib            Boolean              @default(true) @map("is_wajib")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  unit               MasterUnitKompetensi @relation(fields: [unitId], references: [id])
+
+  @@index([unitId], map: "idx_master_elemen_kompetensi_unit_id")
+  @@map("master_elemen_kompetensi")
+}
+
+model PengajuanSkema {
+  id                     Int                      @id @default(autoincrement())
+  nomorPengajuan         String                   @unique @map("nomor_pengajuan")
+  userId                 Int                      @map("user_id")
+  skemaId                Int                      @map("skema_id")
+  tuk                    String                   @map("tuk") @db.VarChar(100)
+  jenisAsesmen           String                   @map("jenis_asesmen") @db.VarChar(100)
+  status                 String                   @db.VarChar(50)
+  tglPengajuan           DateTime                 @default(now()) @map("tgl_pengajuan")
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
+  tuk_id                 Int?
+  apl02_penilaian        apl02_penilaian?
+  asesmenMandiri         AsesmenMandiri[]
+  dokumen                DokumenPengajuan[]
+  hasil_asesmen          hasil_asesmen?
+  jadwal_asesmen_peserta jadwal_asesmen_peserta[]
+  dataPribadi            PendaftaranDataPribadi?
+  skema                  MasterSkema              @relation(fields: [skemaId], references: [id])
+  master_tuk             master_tuk?              @relation(fields: [tuk_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                   User                     @relation(fields: [userId], references: [id])
+  pleno_asesi            pleno_asesi[]
+  verifikasi_pengajuan   verifikasi_pengajuan?
+
+  @@index([skemaId], map: "idx_pengajuan_skema_skema_id")
+  @@index([skemaId, status], map: "idx_pengajuan_skema_skema_id_status")
+  @@index([tuk_id], map: "idx_pengajuan_skema_tuk_id")
+  @@index([userId], map: "idx_pengajuan_skema_user_id")
+  @@map("pengajuan_skema")
+}
+
+model PendaftaranDataPribadi {
+  id                         Int            @id @default(autoincrement())
+  pengajuanId                Int            @unique @map("pengajuan_id")
+  nik                        String         @db.VarChar(16)
+  namaLengkap                String         @map("nama_lengkap")
+  tempatLahir                String         @map("tempat_lahir")
+  tanggalLahir               DateTime       @map("tanggal_lahir") @db.Date
+  jenisKelamin               JenisKelamin   @map("jenis_kelamin")
+  alamat                     String
+  kodeProvinsi               String         @map("kode_provinsi") @db.VarChar(10)
+  kodeKota                   String         @map("kode_kota") @db.VarChar(10)
+  kodePosAsesi               String         @map("kode_pos_asesi") @db.VarChar(10)
+  noHp                       String         @map("no_hp")
+  pendidikanTerakhir         String         @map("pendidikan_terakhir")
+  pekerjaan                  String
+  tandaTangan                String         @map("tanda_tangan")
+  memerlukanPenyesuaianWajar Boolean        @default(false) @map("memerlukan_penyesuaian_wajar")
+  isBerpengalaman            Boolean        @default(false) @map("is_berpengalaman")
+  createdAt                  DateTime       @default(now()) @map("created_at")
+  updatedAt                  DateTime       @updatedAt @map("updated_at")
+  alamatInstitusi            String?        @map("alamat_institusi")
+  emailInstitusi             String?        @map("email_institusi")
+  faxInstitusi               String?        @map("fax_institusi")
+  jabatan                    String?
+  kewarganegaraan            String
+  kodePosInstitusi           String?        @map("kode_pos_institusi")
+  namaInstitusi              String?        @map("nama_institusi")
+  telpInstitusi              String?        @map("telp_institusi")
+  pengajuan                  PengajuanSkema @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+
+  @@index([pengajuanId], map: "idx_pendaftaran_data_pribadi_pengajuan_id")
+  @@map("pendaftaran_data_pribadi")
+}
+
+model AsesmenMandiri {
+  id              Int                  @id @default(autoincrement())
+  pengajuanId     Int                  @map("pengajuan_id")
+  unitId          Int                  @map("unit_id")
+  penilaianAsesi  String               @map("penilaian_asesi") @db.VarChar(5)
+  penilaianAsesor String?              @map("penilaian_asesor") @db.VarChar(5)
+  catatanAsesor   String?              @map("catatan_asesor")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  pengajuan       PengajuanSkema       @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+  unitKompetensi  MasterUnitKompetensi @relation(fields: [unitId], references: [id])
+
+  @@index([pengajuanId], map: "idx_asesmen_mandiri_pengajuan_id")
+  @@index([unitId], map: "idx_asesmen_mandiri_unit_id")
+  @@map("asesmen_mandiri")
+}
+
+model DokumenPengajuan {
+  id          Int            @id @default(autoincrement())
+  pengajuanId Int            @map("pengajuan_id")
+  namaDokumen String         @map("nama_dokumen")
+  fileUrl     String         @map("file_url")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  pengajuan   PengajuanSkema @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+
+  @@index([pengajuanId], map: "idx_dokumen_pengajuan_pengajuan_id")
+  @@map("dokumen_pengajuan")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model apl02_penilaian {
+  id                       Int                        @id @default(autoincrement())
+  pengajuan_id             Int                        @unique
+  rekomendasi_apl02        String?                    @db.VarChar
+  ttd_asesor               String?
+  ttd_asesi                String?
+  nama_asesor              String?
+  asesor_reg               String?                    @db.VarChar
+  tanggal                  DateTime?                  @db.Date
+  created_at               DateTime                   @default(now()) @db.Timestamp(6)
+  updated_at               DateTime                   @default(now()) @db.Timestamp(6)
+  pengajuan_skema          PengajuanSkema             @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  apl02_penyusun_validator apl02_penyusun_validator[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model apl02_penyusun_validator {
+  id              Int             @id @default(autoincrement())
+  apl02_id        Int
+  peran           String          @db.VarChar
+  nama            String
+  no_met          String?         @db.VarChar
+  ttd_tanggal     DateTime?       @db.Date
+  apl02_penilaian apl02_penilaian @relation(fields: [apl02_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([apl02_id], map: "idx_apl02_penyusun_validator_apl02_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model hasil_asesmen {
+  id                Int                 @id @default(autoincrement())
+  pengajuan_id      Int                 @unique
+  jadwal_id         Int?
+  hasil             String              @default("Belum Dinilai") @db.VarChar
+  status            String?             @db.VarChar
+  catatan           String?
+  link_video        String?
+  created_at        DateTime            @default(now()) @db.Timestamp(6)
+  updated_at        DateTime            @default(now()) @db.Timestamp(6)
+  jadwal_asesmen    jadwal_asesmen?     @relation(fields: [jadwal_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pengajuan_skema   PengajuanSkema      @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  pengajuan_banding pengajuan_banding[]
+
+  @@index([jadwal_id], map: "idx_hasil_asesmen_jadwal_id")
+  @@index([pengajuan_id], map: "idx_hasil_asesmen_pengajuan_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model jadwal_asesmen {
+  id                     Int                      @id @default(autoincrement())
+  kode_batch             String?                  @unique @db.VarChar
+  nama_batch             String?
+  nomor_surat            String?                  @db.VarChar
+  skema_id               Int?
+  metode                 String?                  @db.VarChar
+  tanggal                DateTime                 @db.Date
+  waktu_mulai            DateTime?                @db.Time(6)
+  tipe_tuk               String?                  @db.VarChar
+  tuk_id                 Int?
+  alamat                 String?
+  link_video             String?
+  asesor_id              Int?
+  surat_tugas_name       String?
+  surat_tugas_url        String?
+  status                 String                   @default("Terjadwal") @db.VarChar
+  created_at             DateTime                 @default(now()) @db.Timestamp(6)
+  updated_at             DateTime                 @default(now()) @db.Timestamp(6)
+  hasil_asesmen          hasil_asesmen[]
+  users                  User?                    @relation(fields: [asesor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  master_skema           MasterSkema?             @relation(fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  master_tuk             master_tuk?              @relation(fields: [tuk_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  jadwal_asesmen_peserta jadwal_asesmen_peserta[]
+
+  @@index([asesor_id], map: "idx_jadwal_asesmen_asesor_id")
+  @@index([asesor_id, tanggal], map: "idx_jadwal_asesmen_asesor_id_tanggal")
+  @@index([skema_id], map: "idx_jadwal_asesmen_skema_id")
+  @@index([tanggal], map: "idx_jadwal_asesmen_tanggal")
+  @@index([tuk_id], map: "idx_jadwal_asesmen_tuk_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model jadwal_asesmen_peserta {
+  id              Int            @id @default(autoincrement())
+  jadwal_id       Int
+  pengajuan_id    Int
+  jadwal_asesmen  jadwal_asesmen @relation(fields: [jadwal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  pengajuan_skema PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([jadwal_id, pengajuan_id])
+  @@index([jadwal_id], map: "idx_jadwal_asesmen_peserta_jadwal_id")
+  @@index([pengajuan_id], map: "idx_jadwal_asesmen_peserta_pengajuan_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_pertanyaan {
+  id                                                                    Int                               @id @default(autoincrement())
+  nama                                                                  String
+  skema_id                                                              Int?
+  tipe_form                                                             String?                           @db.VarChar
+  versi                                                                 String                            @default("1.0") @db.VarChar
+  is_default                                                            Boolean                           @default(false)
+  status                                                                String                            @default("Draft") @db.VarChar
+  created_at                                                            DateTime                          @default(now()) @db.Timestamp(6)
+  updated_at                                                            DateTime                          @default(now()) @db.Timestamp(6)
+  master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema            MasterSkema?                      @relation("konfigurasi_pertanyaan_skema_idTomaster_skema", fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  konfigurasi_pertanyaan_penyusun                                       konfigurasi_pertanyaan_penyusun[]
+  konfigurasi_step1_pertanyaan                                          konfigurasi_step1_pertanyaan[]
+  konfigurasi_step2_skenario                                            konfigurasi_step2_skenario?
+  konfigurasi_step3_lingkup                                             konfigurasi_step3_lingkup[]
+  konfigurasi_step4_pertanyaan                                          konfigurasi_step4_pertanyaan[]
+  master_skema_master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan MasterSkema[]                     @relation("master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan")
+
+  @@index([skema_id], map: "idx_konfigurasi_pertanyaan_published", where: raw("((status)::text = 'published'::text)"))
+  @@index([skema_id], map: "idx_konfigurasi_pertanyaan_skema_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_pertanyaan_penyusun {
+  id                     Int                    @id @default(autoincrement())
+  konfigurasi_id         Int
+  peran                  String                 @db.VarChar
+  user_id                Int?
+  nama                   String
+  urutan                 Int                    @default(1)
+  konfigurasi_pertanyaan konfigurasi_pertanyaan @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                  User?                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([konfigurasi_id], map: "idx_konfigurasi_pertanyaan_penyusun_konfigurasi_id")
+  @@index([user_id], map: "idx_konfigurasi_pertanyaan_penyusun_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_step1_opsi {
+  id                           Int                          @id @default(autoincrement())
+  pertanyaan_id                Int
+  opsi_text                    String
+  is_valid                     Boolean                      @default(false)
+  urutan                       Int                          @default(1)
+  konfigurasi_step1_pertanyaan konfigurasi_step1_pertanyaan @relation(fields: [pertanyaan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([pertanyaan_id], map: "idx_konfigurasi_step1_opsi_pertanyaan_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_step1_pertanyaan {
+  id                     Int                      @id @default(autoincrement())
+  konfigurasi_id         Int
+  pertanyaan_text        String
+  urutan                 Int                      @default(1)
+  konfigurasi_step1_opsi konfigurasi_step1_opsi[]
+  konfigurasi_pertanyaan konfigurasi_pertanyaan   @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([konfigurasi_id], map: "idx_konfigurasi_step1_pertanyaan_konfigurasi_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_step2_skenario {
+  id                          Int                    @id @default(autoincrement())
+  konfigurasi_id              Int                    @unique
+  skenario_studi_kasus        String?
+  informasi_yang_diberikan    Json                   @default("[]")
+  lingkup_bahasan_studi_kasus Json                   @default("[]")
+  perlengkapan_dan_bahan      String?
+  fokus_presentasi            Json                   @default("[]")
+  ketentuan_alokasi_waktu     String?
+  kriteria_evaluasi_asesor    Json                   @default("[]")
+  konfigurasi_pertanyaan      konfigurasi_pertanyaan @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_step3_lingkup {
+  id                               Int                                @id @default(autoincrement())
+  konfigurasi_id                   Int
+  nama_lingkup                     String
+  urutan                           Int                                @default(1)
+  konfigurasi_pertanyaan           konfigurasi_pertanyaan             @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  konfigurasi_step3_sub_pertanyaan konfigurasi_step3_sub_pertanyaan[]
+
+  @@index([konfigurasi_id], map: "idx_konfigurasi_step3_lingkup_konfigurasi_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_step3_sub_pertanyaan {
+  id                        Int                       @id @default(autoincrement())
+  lingkup_id                Int
+  skenario_pertanyaan       String
+  kode_kuk                  Json                      @default("[]")
+  ekspektasi_tanggapan      String?
+  urutan                    Int                       @default(1)
+  konfigurasi_step3_lingkup konfigurasi_step3_lingkup @relation(fields: [lingkup_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([lingkup_id], map: "idx_konfigurasi_step3_sub_pertanyaan_lingkup_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model konfigurasi_step4_pertanyaan {
+  id                     Int                    @id @default(autoincrement())
+  konfigurasi_id         Int
+  kode_kuk_ref           String?                @db.VarChar
+  pertanyaan_lisan       String
+  kunci_jawaban          String?
+  urutan                 Int                    @default(1)
+  konfigurasi_pertanyaan konfigurasi_pertanyaan @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([konfigurasi_id], map: "idx_konfigurasi_step4_pertanyaan_konfigurasi_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model master_tuk {
+  id                    Int                     @id @default(autoincrement())
+  nama                  String
+  keterangan            String?
+  tipe                  String?                 @db.VarChar
+  alamat                String?
+  kapasitas             Int?
+  penanggung_jawab      String?
+  status                String                  @default("Aktif") @db.VarChar
+  created_at            DateTime                @default(now()) @db.Timestamp(6)
+  jadwal_asesmen        jadwal_asesmen[]
+  master_tuk_inventaris master_tuk_inventaris[]
+  pengajuan_skema       PengajuanSkema[]
+
+  @@index([id], map: "idx_master_tuk_aktif", where: raw("((status)::text = 'Aktif'::text)"))
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model master_tuk_inventaris {
+  id         Int        @id @default(autoincrement())
+  tuk_id     Int
+  nama       String
+  jumlah     Int        @default(0)
+  master_tuk master_tuk @relation(fields: [tuk_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([tuk_id], map: "idx_master_tuk_inventaris_tuk_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pengajuan_banding {
+  id                    Int           @id @default(autoincrement())
+  hasil_asesmen_id      Int
+  tanggal_pengajuan     DateTime      @default(now()) @db.Timestamp(6)
+  alasan                String
+  penjelasan            String?
+  status                String        @default("Menunggu Verifikasi") @db.VarChar
+  keputusan_admin       String?
+  dijelaskan            Boolean       @default(false)
+  didiskusikan          Boolean       @default(false)
+  melibatkan_orang_lain Boolean       @default(false)
+  ttd_asesi             Boolean       @default(false)
+  created_at            DateTime      @default(now()) @db.Timestamp(6)
+  hasil_asesmen         hasil_asesmen @relation(fields: [hasil_asesmen_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([hasil_asesmen_id], map: "idx_pengajuan_banding_hasil_asesmen_id")
+  @@index([hasil_asesmen_id], map: "idx_pengajuan_banding_menunggu", where: raw("((status)::text = 'Menunggu Verifikasi'::text)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pleno_asesi {
+  id                 Int            @id @default(autoincrement())
+  pleno_batch_id     Int
+  pengajuan_id       Int
+  asesor_id          Int?
+  rekomendasi_asesor String?        @db.VarChar
+  status_pleno       String?        @db.VarChar
+  catatan            String?
+  no_sertifikat      String?        @db.VarChar
+  issue_date         DateTime?      @db.Date
+  gdrive_url         String?
+  status             String         @default("Belum Upload") @db.VarChar
+  users              User?          @relation(fields: [asesor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pengajuan_skema    PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  pleno_batch        pleno_batch    @relation(fields: [pleno_batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([pleno_batch_id, pengajuan_id])
+  @@index([asesor_id], map: "idx_pleno_asesi_asesor_id")
+  @@index([pengajuan_id], map: "idx_pleno_asesi_pengajuan_id")
+  @@index([pleno_batch_id], map: "idx_pleno_asesi_pleno_batch_id")
+  @@index([pleno_batch_id, status_pleno], map: "idx_pleno_asesi_pleno_batch_id_status_pleno")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pleno_attendee {
+  id             Int         @id @default(autoincrement())
+  pleno_batch_id Int
+  user_id        Int?
+  role           String      @db.VarChar
+  nama           String
+  pleno_batch    pleno_batch @relation(fields: [pleno_batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          User?       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([pleno_batch_id], map: "idx_pleno_attendee_pleno_batch_id")
+  @@index([user_id], map: "idx_pleno_attendee_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pleno_batch {
+  id                            Int                 @id @default(autoincrement())
+  batch_code                    String?             @unique @db.VarChar
+  title                         String?
+  no_sk                         String?             @db.VarChar
+  tanggal                       DateTime?           @db.Date
+  waktu                         DateTime?           @db.Time(6)
+  alamat                        String?
+  detail_alamat                 String?
+  deskripsi                     String?
+  status                        String              @default("Draft") @db.VarChar
+  surat_pleno_name              String?
+  surat_pleno_url               String?
+  link_surat_hasil              String?
+  link_surat_berita_pleno       String?
+  link_surat_keputusan_direktur String?
+  link_surat_blanko_bnsp        String?
+  created_at                    DateTime            @default(now()) @db.Timestamp(6)
+  pleno_asesi                   pleno_asesi[]
+  pleno_attendee                pleno_attendee[]
+  pleno_batch_skema             pleno_batch_skema[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pleno_batch_skema {
+  id             Int         @id @default(autoincrement())
+  pleno_batch_id Int
+  skema_id       Int
+  pleno_batch    pleno_batch @relation(fields: [pleno_batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  master_skema   MasterSkema @relation(fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([pleno_batch_id, skema_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model portfolio_asesor {
+  id                   Int          @id @default(autoincrement())
+  asesor_id            Int
+  skema_id             Int?
+  nama_dokumen         String
+  status_asesor        String?      @db.VarChar
+  alamat_lsp           String?
+  deskripsi            String?
+  tanggal              DateTime?    @db.Date
+  file_name            String?
+  file_peminjaman_name String?
+  file_jawaban_name    String?
+  file_size            String?      @db.VarChar
+  file_type            String?      @db.VarChar
+  status               String       @default("Menunggu Verifikasi") @db.VarChar
+  catatan_admin        String?
+  created_at           DateTime     @default(now()) @db.Timestamp(6)
+  users                User         @relation(fields: [asesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  master_skema         MasterSkema? @relation(fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([asesor_id], map: "idx_portfolio_asesor_asesor_id")
+  @@index([skema_id], map: "idx_portfolio_asesor_skema_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model surat {
+  id               Int          @id @default(autoincrement())
+  nomor_surat      String       @unique @db.VarChar
+  judul            String
+  kategori         String       @db.VarChar
+  jenis_surat      String       @db.VarChar
+  nama_jenis_surat String?
+  tanggal_dibuat   DateTime     @default(dbgenerated("CURRENT_DATE")) @db.Date
+  tanggal_terbit   DateTime?    @db.Date
+  penerbit         String?
+  penerima         String?
+  skema_id         Int?
+  jumlah_asesi     Int?
+  status           String       @default("Draft") @db.VarChar
+  url_dokumen      String?
+  url_gdrive       String?
+  catatan          String?
+  no_sk            String?      @db.VarChar
+  pimpinan_sidang  String?
+  notulis          String?
+  nama_asesor      String?
+  no_met_asesor    String?      @db.VarChar
+  lokasi           String?
+  detail_payload   Json?
+  created_at       DateTime     @default(now()) @db.Timestamp(6)
+  master_skema     MasterSkema? @relation(fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([skema_id], map: "idx_surat_skema_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model verifikasi_pengajuan {
+  id                  Int            @id @default(autoincrement())
+  pengajuan_id        Int            @unique
+  rekomendasi         String?
+  catatan             String?
+  admin_signature_url String?
+  lsp_signature_url   String?
+  status_pembayaran   String?        @db.VarChar
+  sumber_anggaran     String?
+  assigned_asesor_id  Int?
+  created_at          DateTime       @default(now()) @db.Timestamp(6)
+  updated_at          DateTime       @default(now()) @db.Timestamp(6)
+  users               User?          @relation(fields: [assigned_asesor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pengajuan_skema     PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([assigned_asesor_id], map: "idx_verifikasi_pengajuan_assigned_asesor_id")
 }
 
 enum Role {
@@ -70,159 +665,4 @@ enum Role {
 enum JenisKelamin {
   Perempuan
   Laki_laki @map("Laki-laki")
-}
-
-model MasterSkema {
-  id             Int      @id @default(autoincrement())
-  kodeSkema      String   @unique @map("kode_skema")
-  namaSkema      String   @map("nama_skema")
-  statusAktif    Boolean  @map("status_aktif")
-
-  persyaratanDasar  MasterPersyaratanDasar[]
-  unitKompetensi    MasterUnitKompetensi[]
-  pengajuanSkema    PengajuanSkema[]
-
-  @@map("master_skema")
-}
-
-model MasterPersyaratanDasar {
-  id          Int         @id @default(autoincrement())
-  skemaId     Int         @map("skema_id")
-  skema       MasterSkema @relation(fields: [skemaId], references: [id])
-  namaDokumen String      @map("nama_dokumen")
-  deskripsi   String
-  urutan      Int
-  isWajib     Boolean     @default(true) @map("is_wajib")
-  createdAt   DateTime    @default(now()) @map("created_at")
-
-  @@map("master_persyaratan_dasar")
-}
-
-model MasterBuktiAdministratif {
-  id          Int      @id @default(autoincrement())
-  namaDokumen String   @map("nama_dokumen")
-  isWajib     Boolean  @default(true) @map("is_wajib")
-  isAktif     Boolean  @default(true) @map("is_aktif")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // pendaftaranBuktiAdministratif PendaftaranBuktiAdministratif[]
-
-  @@map("master_bukti_administratif")
-}
-
-model MasterUnitKompetensi {
-  id         Int         @id @default(autoincrement())
-  skemaId    Int         @map("skema_id")
-  skema      MasterSkema @relation(fields: [skemaId], references: [id])
-  kodeUnit   String      @map("kode_unit")
-  judulUnit  String      @map("judul_unit")
-  urutan     Int
-  createdAt  DateTime    @default(now()) @map("created_at")
-
-  elemenKompetensi MasterElemenKompetensi[]
-  asesmenMandiri   AsesmenMandiri[]
-
-  @@map("master_unit_kompetensi")
-}
-
-model MasterElemenKompetensi {
-  id                 Int                  @id @default(autoincrement())
-  unitId             Int                  @map("unit_id")
-  unit               MasterUnitKompetensi @relation(fields: [unitId], references: [id])
-  namaElemen         String               @map("nama_elemen")
-  kriteriaUnjukKerja String               @map("kriteria_unjuk_kerja")
-  urutan             Int
-  isWajib            Boolean              @default(true) @map("is_wajib")
-  createdAt          DateTime             @default(now()) @map("created_at")
-
-  @@map("master_elemen_kompetensi")
-}
-
-model PengajuanSkema {
-  id             Int           @id @default(autoincrement())
-  nomorPengajuan String        @unique @map("nomor_pengajuan")
-  userId         Int           @map("user_id")
-  user           User          @relation(fields: [userId], references: [id])
-  skemaId        Int           @map("skema_id")
-  skema          MasterSkema   @relation(fields: [skemaId], references: [id])
-  tuk            String        @map("tuk") @db.VarChar(100)
-  jenisAsesmen   String        @map("jenis_asesmen") @db.VarChar(100)
-  status         String        @db.VarChar(50)
-  tglPengajuan   DateTime      @default(now()) @map("tgl_pengajuan")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-
-  dataPribadi    PendaftaranDataPribadi?
-  asesmenMandiri AsesmenMandiri[]
-  dokumen        DokumenPengajuan[]
-
-  @@map("pengajuan_skema")
-}
-
-model PendaftaranDataPribadi {
-  id                        Int             @id @default(autoincrement())
-  pengajuanId               Int             @unique @map("pengajuan_id")
-  pengajuan                 PengajuanSkema  @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
-  
-  // Snapshot Data Saat Mendaftar
-  nik                       String          @db.VarChar(16)
-  namaLengkap               String          @map("nama_lengkap")
-  tempatLahir               String          @map("tempat_lahir")
-  tanggalLahir              DateTime        @db.Date @map("tanggal_lahir")
-  jenisKelamin              JenisKelamin    @map("jenis_kelamin")
-  alamat                    String          
-  kodeProvinsi              String          @map("kode_provinsi") @db.VarChar(10)
-  kodeKota                  String          @map("kode_kota") @db.VarChar(10)
-  kodePosAsesi              String          @map("kode_pos_asesi") @db.VarChar(10)
-  kewarganegaraan           String
-  noHp                      String          @map("no_hp")
-  pendidikanTerakhir        String          @map("pendidikan_terakhir")
-  pekerjaan                 String
-  tandaTangan               String          @map("tanda_tangan")
-  
-  // Detail Pekerjaan 
-  namaInstitusi            String?         @map("nama_institusi")
-  jabatan                  String?
-  emailInstitusi           String?         @map("email_institusi")
-  kodePosInstitusi         String?         @map("kode_pos_institusi")
-  telpInstitusi            String?         @map("telp_institusi")
-  alamatInstitusi          String?         @map("alamat_institusi")
-  faxInstitusi             String?         @map("fax_institusi")
-  
-  memerlukanPenyesuaianWajar Boolean       @default(false) @map("memerlukan_penyesuaian_wajar")
-  isBerpengalaman            Boolean       @default(false) @map("is_berpengalaman")
-  
-  createdAt                 DateTime        @default(now()) @map("created_at")
-  updatedAt                 DateTime        @updatedAt @map("updated_at")
-
-  @@map("pendaftaran_data_pribadi")
-}
-
-// INI TABEL UNTUK FORM APL 02
-model AsesmenMandiri {
-  id              Int                  @id @default(autoincrement())
-  pengajuanId     Int                  @map("pengajuan_id")
-  pengajuan       PengajuanSkema       @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
-  unitId          Int                  @map("unit_id")
-  unitKompetensi  MasterUnitKompetensi @relation(fields: [unitId], references: [id])
-  
-  penilaianAsesi  String               @map("penilaian_asesi") @db.VarChar(5) // K atau BK
-  penilaianAsesor String?              @map("penilaian_asesor") @db.VarChar(5) // MS atau BMS
-  catatanAsesor   String?              @map("catatan_asesor")
-  
-  createdAt       DateTime             @default(now()) @map("created_at")
-  updatedAt       DateTime             @updatedAt @map("updated_at")
-
-  @@map("asesmen_mandiri")
-}
-
-model DokumenPengajuan {
-  id             Int            @id @default(autoincrement())
-  pengajuanId    Int            @map("pengajuan_id")
-  pengajuan      PengajuanSkema @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
-  namaDokumen    String         @map("nama_dokumen")
-  fileUrl        String         @map("file_url") @db.Text
-  createdAt      DateTime       @default(now()) @map("created_at")
-
-  @@map("dokumen_pengajuan")
 }
