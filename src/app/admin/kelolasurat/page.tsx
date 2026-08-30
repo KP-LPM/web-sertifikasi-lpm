@@ -399,9 +399,8 @@ export default function KelolaSurat() {
     showNotification(`Tautan GDrive (${nomor}) berhasil disalin.`);
   };
 
-
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-200 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-in fade-in slide-in-from-top-3">
@@ -410,17 +409,17 @@ export default function KelolaSurat() {
         </div>
       )}
 
-      {/* Page Title Section matching Admin Overview & Manage pages */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Page Title Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
             <FileCheck2 size={20} className="stroke-[2.5]" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
               Kelola Surat & Sertifikat
-            </h1>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
+            </h2>
+            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
               Arsip Terpusat Surat Masuk, Surat Keluar, dan Sertifikat LSP
             </p>
           </div>
@@ -429,149 +428,154 @@ export default function KelolaSurat() {
         {!readOnly && (
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm w-full sm:w-auto justify-center"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
           >
-            <Plus size={18} />
-            Buat / Register Surat Baru
+            <Plus size={16} className="stroke-3" />
+            <span>Buat / Register Surat Baru</span>
           </button>
         )}
       </div>
 
-      {/* Overview Stat Cards matching Admin Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div
-          onClick={() => {
-            setActiveCategory("all");
-            setSelectedSubJenis("all");
-          }}
-          className={`p-5 rounded-xl border transition-all cursor-pointer ${
-            activeCategory === "all"
-              ? "bg-linear-to-br from-slate-900 to-slate-800 text-white border-slate-900 shadow-sm scale-[1.01]"
-              : "bg-white border-gray-100 text-slate-900 hover:border-gray-200 shadow-xs"
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span
-              className={`text-xs font-bold uppercase tracking-wider ${activeCategory === "all" ? "text-slate-300" : "text-slate-500"}`}
-            >
-              Total Dokumen
-            </span>
-            <div
-              className={`p-2 rounded-lg ${activeCategory === "all" ? "bg-white/10 text-white" : "bg-slate-100 text-slate-700"}`}
-            >
-              <FileSpreadsheet size={18} />
+      {/* Overview Stat Cards Section */}
+      <div className="space-y-2">
+        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">
+          Overview
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            onClick={() => {
+              setActiveCategory("all");
+              setSelectedSubJenis("all");
+            }}
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
+              activeCategory === "all"
+                ? "bg-[#E6F4FF] border-[#008BE3] ring-2 ring-offset-1 ring-[#008BE3]/30"
+                : "bg-[#E6F4FF] border-[#BCE0FD]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black text-sky-800 uppercase tracking-wider block">
+                Total Dokumen
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-[#008BE3] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <FileSpreadsheet size={18} />
+              </div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-black text-slate-900 tracking-tight">
+                  {stats.total}
+                </span>
+              </div>
+              <p className="text-[11px] font-bold text-sky-600">
+                Arsip terpusat disistem
+              </p>
             </div>
           </div>
-          <div className="text-2xl font-black mb-0.5">{stats.total}</div>
-          <p
-            className={`text-[11px] font-medium ${activeCategory === "all" ? "text-slate-300" : "text-slate-400"}`}
-          >
-            Arsip terpusat disistem
-          </p>
-        </div>
 
-        <div
-          onClick={() => {
-            setActiveCategory("surat_masuk");
-            setSelectedSubJenis("all");
-          }}
-          className={`p-5 rounded-xl border transition-all cursor-pointer ${
-            activeCategory === "surat_masuk"
-              ? "bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.01]"
-              : "bg-white border-gray-100 text-slate-900 hover:border-emerald-200 shadow-xs"
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span
-              className={`text-xs font-bold uppercase tracking-wider ${activeCategory === "surat_masuk" ? "text-emerald-100" : "text-emerald-600"}`}
-            >
-              Surat Masuk
-            </span>
-            <div
-              className={`p-2 rounded-lg ${activeCategory === "surat_masuk" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-600"}`}
-            >
-              <Inbox size={18} />
+          <div
+            onClick={() => {
+              setActiveCategory("surat_masuk");
+              setSelectedSubJenis("all");
+            }}
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
+              activeCategory === "surat_masuk"
+                ? "bg-[#F4FBF7] border-[#84CC16] ring-2 ring-offset-1 ring-[#84CC16]/30"
+                : "bg-[#F4FBF7] border-[#A7F3D0]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">
+                Surat Masuk
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-[#84CC16] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Inbox size={18} />
+              </div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-black text-slate-900 tracking-tight">
+                  {stats.suratMasuk}
+                </span>
+              </div>
+              <p className="text-[11px] font-bold text-emerald-600">
+                Berita Acara & SK Pleno
+              </p>
             </div>
           </div>
-          <div className="text-2xl font-black mb-0.5">{stats.suratMasuk}</div>
-          <p
-            className={`text-[11px] font-medium ${activeCategory === "surat_masuk" ? "text-emerald-100" : "text-slate-400"}`}
-          >
-            Berita Acara & SK Pleno
-          </p>
-        </div>
 
-        <div
-          onClick={() => {
-            setActiveCategory("surat_keluar");
-            setSelectedSubJenis("all");
-          }}
-          className={`p-5 rounded-xl border transition-all cursor-pointer ${
-            activeCategory === "surat_keluar"
-              ? "bg-sky-600 text-white border-sky-600 shadow-sm scale-[1.01]"
-              : "bg-white border-gray-100 text-slate-900 hover:border-sky-200 shadow-xs"
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span
-              className={`text-xs font-bold uppercase tracking-wider ${activeCategory === "surat_keluar" ? "text-sky-100" : "text-sky-600"}`}
-            >
-              Surat Keluar
-            </span>
-            <div
-              className={`p-2 rounded-lg ${activeCategory === "surat_keluar" ? "bg-white/20 text-white" : "bg-sky-50 text-sky-600"}`}
-            >
-              <Send size={18} />
+          <div
+            onClick={() => {
+              setActiveCategory("surat_keluar");
+              setSelectedSubJenis("all");
+            }}
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
+              activeCategory === "surat_keluar"
+                ? "bg-[#F1F5F9] border-slate-500 ring-2 ring-offset-1 ring-slate-500/30"
+                : "bg-[#F1F5F9] border-[#CBD5E1]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider block">
+                Surat Keluar
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-slate-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Send size={18} />
+              </div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-black text-slate-900 tracking-tight">
+                  {stats.suratKeluar}
+                </span>
+              </div>
+              <p className="text-[11px] font-bold text-slate-500">
+                Surat BNSP & Tugas Asesor
+              </p>
             </div>
           </div>
-          <div className="text-2xl font-black mb-0.5">{stats.suratKeluar}</div>
-          <p
-            className={`text-[11px] font-medium ${activeCategory === "surat_keluar" ? "text-sky-100" : "text-slate-400"}`}
-          >
-            Surat BNSP & Tugas Asesor
-          </p>
-        </div>
 
-        <div
-          onClick={() => {
-            setActiveCategory("sertifikat");
-            setSelectedSubJenis("all");
-          }}
-          className={`p-5 rounded-xl border transition-all cursor-pointer ${
-            activeCategory === "sertifikat"
-              ? "bg-amber-600 text-white border-amber-600 shadow-sm scale-[1.01]"
-              : "bg-white border-gray-100 text-slate-900 hover:border-amber-200 shadow-xs"
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span
-              className={`text-xs font-bold uppercase tracking-wider ${activeCategory === "sertifikat" ? "text-amber-100" : "text-amber-600"}`}
-            >
-              Sertifikat
-            </span>
-            <div
-              className={`p-2 rounded-lg ${activeCategory === "sertifikat" ? "bg-white/20 text-white" : "bg-amber-50 text-amber-600"}`}
-            >
-              <Award size={18} />
+          <div
+            onClick={() => {
+              setActiveCategory("sertifikat");
+              setSelectedSubJenis("all");
+            }}
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
+              activeCategory === "sertifikat"
+                ? "bg-[#FFFBEB] border-amber-500 ring-2 ring-offset-1 ring-amber-500/30"
+                : "bg-[#FFFBEB] border-[#FDE68A]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">
+                Sertifikat
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Award size={18} />
+              </div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-black text-slate-900 tracking-tight">
+                  {stats.sertifikat}
+                </span>
+              </div>
+              <p className="text-[11px] font-bold text-amber-600">
+                Sertifikat BNSP Terbit
+              </p>
             </div>
           </div>
-          <div className="text-2xl font-black mb-0.5">{stats.sertifikat}</div>
-          <p
-            className={`text-[11px] font-medium ${activeCategory === "sertifikat" ? "text-amber-100" : "text-slate-400"}`}
-          >
-            Sertifikat BNSP Terbit
-          </p>
         </div>
       </div>
 
-      {/* Navigation Tabs: Category Pill Switcher */}
+      {/* Navigation Tabs Container - Styled inline with the cards above */}
       <div className="bg-white p-1.5 rounded-xl shadow-xs border border-gray-100 flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => {
             setActiveCategory("all");
             setSelectedSubJenis("all");
           }}
-          className={`py-2.5 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
             activeCategory === "all"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -586,7 +590,7 @@ export default function KelolaSurat() {
             setActiveCategory("surat_masuk");
             setSelectedSubJenis("all");
           }}
-          className={`py-2.5 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
             activeCategory === "surat_masuk"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -601,7 +605,7 @@ export default function KelolaSurat() {
             setActiveCategory("surat_keluar");
             setSelectedSubJenis("all");
           }}
-          className={`py-2.5 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
             activeCategory === "surat_keluar"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -616,7 +620,7 @@ export default function KelolaSurat() {
             setActiveCategory("sertifikat");
             setSelectedSubJenis("all");
           }}
-          className={`py-2.5 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
             activeCategory === "sertifikat"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -628,69 +632,65 @@ export default function KelolaSurat() {
       </div>
 
       {/* Filter and Table Section */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-xs overflow-hidden">
-        {/* Filter Inputs Bar */}
-        <div className="p-4 border-b border-gray-100 bg-white grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-          <div className="md:col-span-6 relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Cari tanggal, nomor surat / sertifikat, perihal, atau ditujukan..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-            />
+      <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="min-w-0">
+            <h3 className="text-base font-black text-slate-900">
+              Daftar Dokumen
+            </h3>
           </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+              <Search className="text-gray-400 shrink-0" size={16} />
+              <input
+                type="text"
+                placeholder="Cari surat atau sertifikat..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+              />
+            </div>
 
-          <div className="md:col-span-3">
             <select
               value={selectedSubJenis}
               onChange={(e) => setSelectedSubJenis(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold w-full sm:w-auto"
             >
               <option value="all">Semua Jenis Surat</option>
               {(activeCategory === "all" ||
                 activeCategory === "surat_masuk") && (
                 <>
                   <option value="berita_acara_pleno">
-                    Surat Berita Acara Pleno (Masuk)
+                    Surat Berita Acara Pleno
                   </option>
                   <option value="keputusan_pleno">
-                    Surat Hasil Keputusan Pleno (Masuk)
+                    Surat Hasil Keputusan Pleno
                   </option>
                 </>
               )}
               {(activeCategory === "all" ||
                 activeCategory === "surat_keluar") && (
                 <>
-                  <option value="blanko_bnsp">
-                    Surat Blanko BNSP (Keluar)
-                  </option>
+                  <option value="blanko_bnsp">Surat Blanko BNSP</option>
                   <option value="penugasan_asesor">
-                    Surat Penugasan Asesor (Keluar)
+                    Surat Penugasan Asesor
                   </option>
                   <option value="peminjaman_asesor">
-                    Surat Peminjaman Asesor (Keluar)
+                    Surat Peminjaman Asesor
                   </option>
                 </>
               )}
-              {(activeCategory === "all" ||
-                activeCategory === "sertifikat") && (
+              {(activeCategory === "all" || activeCategory === "sertifikat") && (
                 <option value="sertifikat_kompetensi">
                   Sertifikat Kompetensi BNSP
                 </option>
               )}
             </select>
-          </div>
 
-          <div className="md:col-span-3">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold w-full sm:w-auto"
             >
               <option value="all">Semua Status</option>
               <option value="Terbit">Terbit</option>
@@ -700,110 +700,111 @@ export default function KelolaSurat() {
           </div>
         </div>
 
-        {/* Tabel Data (Tanggal, Nomor Surat, Perihal, Ditujukan Kepada, Link GDrive Suratnya) */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Tanggal</th>
-                <th className="py-3 px-4">Nomor Surat / Sertifikat</th>
-                <th className="py-3 px-4">Perihal</th>
-                <th className="py-3 px-4">Ditujukan Kepada</th>
-                <th className="py-3 px-4 text-center">Link Gdrive Surat</th>
+              <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-35">
+                  Tanggal
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-50">
+                  Nomor Surat / Sertifikat
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-50">
+                  Perihal
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-50">
+                  Ditujukan Kepada
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] min-w-37.5 top-0">
+                  Link GDrive
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-xs font-medium text-slate-800">
+            <tbody className="divide-y divide-gray-100/60">
               {filteredDocuments.length > 0 ? (
                 filteredDocuments.map((doc) => (
                   <tr
                     key={doc.id}
-                    className="hover:bg-slate-50/70 transition-colors whitespace-nowrap"
+                    className="group/row hover:bg-[#F9FAFC] transition-colors"
                   >
-                    {/* 1. Tanggal (Tanggal Dibuat / Terbit) */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 font-semibold text-slate-700">
-                        <Calendar size={13} className="text-[#008BE3]" />
-                        <span>{doc.tanggalDibuat || doc.tanggalTerbit}</span>
-                      </div>
+                    <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Calendar size={14} className="text-[#008BE3]" />
+                        {doc.tanggalDibuat || doc.tanggalTerbit}
+                      </span>
                     </td>
-
-                    {/* 2. Nomor Surat / Nomor Sertifikat */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 font-mono text-[11px] whitespace-nowrap">
+                    <td className="px-6 py-4 text-xs md:text-sm font-bold text-slate-900 font-mono tracking-tight whitespace-nowrap">
                       {doc.nomorSurat}
                     </td>
-
-                    {/* 3. Perihal (Diambil dari jenis suratnya saja) */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                    <td className="px-6 py-4 text-xs md:text-sm font-bold text-slate-800 whitespace-nowrap">
                       {doc.namaJenisSurat}
                     </td>
-
-                    {/* 4. Ditujukan Kepada */}
-                    <td className="py-3.5 px-4 font-bold text-slate-800 whitespace-nowrap">
+                    <td className="px-6 py-4 text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                       {doc.penerima}
                     </td>
-
-                    {/* 5. Link GDrive Surat */}
-                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      {doc.urlGdrive ? (
-                        <div className="inline-flex items-center gap-1.5">
-                          <a
-                            href={doc.urlGdrive}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 font-bold text-[11px] border border-sky-200/80 transition-colors"
-                          >
-                            <ExternalLink size={13} />
-                            <span>Buka GDrive</span>
-                          </a>
-                          <button
-                            onClick={() =>
-                              handleCopyLink(doc.urlGdrive, doc.nomorSurat)
-                            }
-                            title="Salin Tautan GDrive"
-                            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                          >
-                            <Copy size={13} />
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-[11px] italic">
-                          Tautan belum tersedia
-                        </span>
-                      )}
+                    <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                      <div className="flex items-center justify-center gap-2">
+                        {doc.urlGdrive ? (
+                          <>
+                            <a
+                              href={doc.urlGdrive}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
+                            >
+                              <ExternalLink size={14} />
+                              <span>Buka GDrive</span>
+                            </a>
+                            <button
+                              onClick={() =>
+                                handleCopyLink(doc.urlGdrive, doc.nomorSurat)
+                              }
+                              title="Salin Tautan GDrive"
+                              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-gray-400 text-xs font-semibold px-2">
+                            -
+                          </span>
+                        )}
+                      </div>
                     </td>
-                  
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={6}
-                    className="py-12 px-6 text-center text-gray-400 font-medium"
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                   >
                     Tidak ditemukan surat atau sertifikat yang cocok dengan
-                    pencarian.
+                    pencarian Anda.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
       {/* CREATE NEW DOCUMENT MODAL */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-150 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl w-full max-w-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95">
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden my-8 flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2">
                 <FileCheck2 className="text-[#008BE3]" size={20} />
-                <h3 className="font-bold text-base">
+                <h3 className="font-black text-slate-800 text-lg">
                   Buat / Register Surat Baru
                 </h3>
               </div>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -811,7 +812,7 @@ export default function KelolaSurat() {
 
             <form
               onSubmit={handleCreateDocument}
-              className="p-6 space-y-4 text-slate-800 text-xs font-medium"
+              className="p-6 space-y-4 text-sm font-medium"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Kategori */}
@@ -834,7 +835,7 @@ export default function KelolaSurat() {
                         jenisSurat: defaultSub,
                       });
                     }}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                   >
                     <option value="surat_masuk">Surat Masuk</option>
                     <option value="surat_keluar">Surat Keluar</option>
@@ -855,7 +856,7 @@ export default function KelolaSurat() {
                         jenisSurat: e.target.value as SubJenisSurat,
                       })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                   >
                     {formData.kategori === "surat_masuk" && (
                       <>
@@ -897,12 +898,12 @@ export default function KelolaSurat() {
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: BA/015/PLENO-LSP/VIII/2026 atau 50025/LSP-SGD/VIII/2026"
+                    placeholder="Contoh: BA/015/PLENO-LSP/VIII/2026"
                     value={formData.nomorSurat}
                     onChange={(e) =>
                       setFormData({ ...formData, nomorSurat: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                   />
                 </div>
 
@@ -922,7 +923,7 @@ export default function KelolaSurat() {
                         tanggalTerbit: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                   />
                 </div>
               </div>
@@ -937,12 +938,12 @@ export default function KelolaSurat() {
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Direktur LSP / Ahmad Rizki (NIM: 1197050001)"
+                    placeholder="Contoh: Direktur LSP / Ahmad Rizki"
                     value={formData.penerima}
                     onChange={(e) =>
                       setFormData({ ...formData, penerima: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                   />
                 </div>
 
@@ -957,7 +958,7 @@ export default function KelolaSurat() {
                     onChange={(e) =>
                       setFormData({ ...formData, penerbit: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                   />
                 </div>
               </div>
@@ -974,22 +975,22 @@ export default function KelolaSurat() {
                   onChange={(e) =>
                     setFormData({ ...formData, urlGdrive: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#008BE3]"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
                 />
               </div>
 
               {/* Buttons */}
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+              <div className="pt-5 flex items-center justify-end gap-3 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold text-xs transition-colors"
+                  className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg font-bold text-xs shadow-sm transition-all"
+                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all"
                 >
                   Simpan Dokumen
                 </button>

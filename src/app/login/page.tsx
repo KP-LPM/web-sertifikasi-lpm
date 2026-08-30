@@ -894,7 +894,7 @@ export default function Login() {
             <form className="space-y-4" onSubmit={handleLogin}>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nama Pengguna
+                  Nama Pengguna/E-Mail
                 </label>
                 <div className="relative">
                   <Mail
@@ -906,7 +906,7 @@ export default function Login() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="text-black w-full pl-9 pr-4 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
-                    placeholder="Masukkan nama pengguna"
+                    placeholder="Masukkan nama pengguna/E-Mail"
                     required
                   />
                 </div>
