@@ -176,8 +176,11 @@ export interface AsesiPlenoRecord {
 
 export interface PlenoSchedule {
   id: string;
+  batchCode?: string;
+  title?: string;
   tanggal: string;
   waktu: string;
+  jenisTuk?: TipeTuk;
   skema: string;
   jumlahAsesi: number;
   status: "Terjadwal" | "Menunggu Persetujuan" | "Selesai" | string;
@@ -214,6 +217,7 @@ export interface PlenoDetailData {
   noSK?: string;
   tanggal: string;
   waktu: string;
+  jenisTuk?: TipeTuk;
   alamat: string;
   detailAlamat?: string;
   suratPlenoUrl?: string;

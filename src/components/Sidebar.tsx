@@ -125,7 +125,7 @@ export function Sidebar() {
                     }
                   />
                   {!sidebarCollapsed && (
-                    <span className="text-[12px] font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
+                    <span className="text-sm font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
                       {item.label}
                     </span>
                   )}
@@ -143,7 +143,7 @@ export function Sidebar() {
             >
               <LogOut size={18} />
               {!sidebarCollapsed && (
-                <span className="text-[12px] font-bold">Logout</span>
+                <span className="text-sm font-bold">Logout</span>
               )}
             </button>
           </div>

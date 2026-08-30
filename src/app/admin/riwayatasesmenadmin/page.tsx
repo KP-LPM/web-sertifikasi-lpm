@@ -441,7 +441,7 @@ export default function RiwayatAsesmenAdmin() {
   // If detail view of individual assessment is open
   if (selectedAsesmen) {
     return (
-      <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+      <div className="space-y-6 pb-24 text-sm text-gray-700">
         <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
           {/* Banner/Header Info */}
           <div className="p-4 sm:p-6 border-b border-gray-100 space-y-5">
@@ -466,7 +466,7 @@ export default function RiwayatAsesmenAdmin() {
 
               <div className="shrink-0 flex items-center gap-2">
                 <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-2xs ${
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${
                     selectedAsesmen.hasil === "Kompeten"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                       : "bg-red-50 text-red-700 border-red-200"
@@ -474,15 +474,25 @@ export default function RiwayatAsesmenAdmin() {
                 >
                   {selectedAsesmen.hasil}
                 </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">
-                  <CheckCircle size={12} /> {selectedAsesmen.status}
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${
+                    selectedAsesmen.status === "Selesai"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : selectedAsesmen.status === "Terjadwal"
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : "bg-slate-50 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  {selectedAsesmen.status === "Selesai" && <CheckCircle size={12} />}
+                  {selectedAsesmen.status === "Terjadwal" && <Clock size={12} />}
+                  {selectedAsesmen.status}
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-6 pt-3 border-t border-gray-100">
               <div className="min-w-0">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">
                   Asesor Penguji
                 </p>
                 <p className="text-slate-800 font-bold text-xs sm:text-sm">
@@ -490,8 +500,8 @@ export default function RiwayatAsesmenAdmin() {
                 </p>
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                  tipeTuk
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">
+                  Tipe TUK
                 </p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                   <MapPin size={14} className="text-slate-400 shrink-0" />
@@ -499,7 +509,7 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">
                   Pelaksanaan
                 </p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
@@ -508,7 +518,7 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">
                   Tanggal
                 </p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
@@ -517,7 +527,7 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">
                   Waktu
                 </p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
@@ -801,7 +811,7 @@ export default function RiwayatAsesmenAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -872,14 +882,14 @@ export default function RiwayatAsesmenAdmin() {
                     placeholder="Cari Asesi, Skema, Asesor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+                    className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
                   />
                 </div>
 
                 <select
                   value={hasilFilter}
                   onChange={(e) => setHasilFilter(e.target.value)}
-                  className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
+                  className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
                 >
                   <option value="">Semua Hasil</option>
                   <option value="Kompeten">Kompeten</option>
@@ -889,7 +899,7 @@ export default function RiwayatAsesmenAdmin() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
+                  className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
                 >
                   <option value="">Semua Status</option>
                   <option value="Selesai">Selesai</option>
@@ -902,7 +912,7 @@ export default function RiwayatAsesmenAdmin() {
                     type="date"
                     value={tanggalFilter}
                     onChange={(e) => setTanggalFilter(e.target.value)}
-                    className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 cursor-pointer font-semibold"
+                    className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 cursor-pointer font-semibold"
                   />
                   {tanggalFilter && (
                     <button
@@ -921,28 +931,31 @@ export default function RiwayatAsesmenAdmin() {
               <table className="w-full text-left border-collapse min-w-175 sm:min-w-250">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Nama Asesi
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Skema Sertifikasi
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Asesor Penguji
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                      tipeTuk / Jenis
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      TUK
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Metode
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Tanggal & Waktu
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Hasil
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Status
                     </th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-28 sm:w-36 sticky right-0 bg-[#0F172A] z-20 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-36 sticky right-0 bg-[#0F172A] z-20 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
                       Aksi
                     </th>
                   </tr>
@@ -954,44 +967,44 @@ export default function RiwayatAsesmenAdmin() {
                         key={item.id}
                         className="group/row hover:bg-[#F9FAFC] transition-colors"
                       >
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-800 font-bold whitespace-nowrap">
+                        <td className="px-6 py-4 text-[14px] text-slate-800 font-bold whitespace-nowrap">
                           {item.nama}
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-800 font-semibold whitespace-nowrap">
+                        <td className="px-6 py-4 text-[14px] text-slate-800 font-semibold whitespace-nowrap">
                           {item.skema}
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 font-medium whitespace-nowrap">
+                        <td className="px-6 py-4 text-[14px] text-slate-600 font-medium whitespace-nowrap">
                           {item.asesor || "Dr. Aris Thorne"}
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                                item.tipeTuk === "Sewaktu"
-                                  ? "bg-blue-50 text-blue-700 border-blue-200"
-                                  : item.tipeTuk === "Tempat Kerja"
-                                    ? "bg-purple-50 text-purple-700 border-purple-200"
-                                    : "bg-orange-50 text-orange-700 border-orange-200"
-                              }`}
-                            >
-                              {item.tipeTuk}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-medium bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                              {item.metode}
-                            </span>
-                          </div>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                              item.tipeTuk === "Sewaktu"
+                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : item.tipeTuk === "Tempat Kerja"
+                                  ? "bg-purple-50 text-purple-700 border-purple-200"
+                                  : "bg-orange-50 text-orange-700 border-orange-200"
+                            }`}
+                          >
+                            {item.tipeTuk}
+                          </span>
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="text-slate-700 font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-[11px] text-slate-500 font-medium bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                            {item.metode}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-slate-700 font-medium text-[14px]">
                             {item.tglAsesmen}
                           </div>
                           <div className="text-[11px] text-slate-400 font-semibold">
                             {item.waktu}
                           </div>
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                               item.hasil === "Kompeten"
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-red-50 text-red-700 border-red-200"
@@ -1000,21 +1013,21 @@ export default function RiwayatAsesmenAdmin() {
                             {item.hasil}
                           </span>
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                               item.status === "Selesai"
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-amber-50 text-amber-700 border-amber-200"
                             }`}
                           >
-                            <CheckCircle size={10} /> {item.status}
+                            <CheckCircle size={12} /> {item.status}
                           </span>
                         </td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
+                        <td className="px-6 py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
                           <button
                             onClick={() => setSelectedAsesmen(item)}
-                            className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                            className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-lg font-bold text-[12px] shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                           >
                             <FileText size={14} className="text-[#008BE3]" />{" "}
                             Detail
@@ -1175,7 +1188,7 @@ export default function RiwayatAsesmenAdmin() {
                       placeholder="Cari nama asesi atau NIK..."
                       value={batchSearchTerm}
                       onChange={(e) => setBatchSearchTerm(e.target.value)}
-                      className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-slate-800 placeholder-gray-400 font-semibold"
+                      className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-slate-800 placeholder-gray-400 font-medium"
                     />
                   </div>
                 </div>
@@ -1184,19 +1197,19 @@ export default function RiwayatAsesmenAdmin() {
                   <table className="w-full text-left border-collapse min-w-175">
                     <thead>
                       <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                        <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider w-12 text-center">
+                        <th className="px-4 py-4 text-xs font-bold text-white/90 uppercase tracking-wider w-12 text-center">
                           No
                         </th>
-                        <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
                           Nama Asesi &amp; NIK
                         </th>
-                        <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
                           Hasil Asesmen
                         </th>
-                        <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
                           Status Asesmen
                         </th>
-                        <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 w-32 border-l border-white/10">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 w-32 border-l border-white/10">
                           Aksi
                         </th>
                       </tr>
@@ -1216,30 +1229,30 @@ export default function RiwayatAsesmenAdmin() {
                             key={idx}
                             className="hover:bg-slate-50/80 transition-colors"
                           >
-                            <td className="px-4 py-4 text-center font-bold text-slate-400">
+                            <td className="px-4 py-4 text-center font-bold text-[14px] text-slate-500">
                               {idx + 1}
                             </td>
                             <td className="px-6 py-4">
-                              <div className="font-extrabold text-slate-900">
+                              <div className="text-[14px] font-bold text-slate-900">
                                 {asesi.nama}
                               </div>
-                              <div className="text-xs text-slate-500 font-mono">
+                              <div className="text-[12px] text-slate-500 font-mono font-medium">
                                 NIK: {asesi.nik}
                               </div>
                             </td>
                             <td className="px-6 py-4">
                               <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                                   asesi.hasil === "Kompeten"
-                                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                    : "bg-red-100 text-red-800 border border-red-200"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-red-50 text-red-700 border-red-200"
                                 }`}
                               >
                                 {asesi.hasil}
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">
                                 <CheckCircle size={12} /> Selesai
                               </span>
                             </td>
@@ -1336,7 +1349,7 @@ export default function RiwayatAsesmenAdmin() {
                     placeholder="Cari Batch, Skema, atau Asesor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-slate-800 placeholder-gray-400 font-semibold"
+                    className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-slate-800 placeholder-gray-400 font-medium"
                   />
                 </div>
               </div>
@@ -1469,7 +1482,7 @@ export default function RiwayatAsesmenAdmin() {
 
                         {/* Card Footer Action */}
                         <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
-                          <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">
                             <CheckCircle size={12} /> Batch Selesai
                           </span>
 
@@ -1527,7 +1540,7 @@ export default function RiwayatAsesmenAdmin() {
                     placeholder="Cari Batch, Title, No. SK, atau Skema..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-transparent border-none focus:ring-0 text-xs md:text-sm w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+                    className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-medium"
                   />
                 </div>
               </div>
@@ -1536,28 +1549,34 @@ export default function RiwayatAsesmenAdmin() {
                 <table className="w-full text-left border-collapse min-w-225">
                   <thead>
                     <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        Batch &amp; Nama Pleno
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                        Batch
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                        Nama Sidang Pleno
+                      </th>
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                         No. SK Keputusan
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                         Tanggal
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        Tempat
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                        TUK
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                        Alamat TUK
+                      </th>
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                         Waktu
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap text-center">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap text-center">
                         Jumlah Asesi
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                         Status
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-28 sm:w-32 sticky right-0 bg-[#0F172A] z-20 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-32 sticky right-0 bg-[#0F172A] z-20 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
                         Aksi
                       </th>
                     </tr>
@@ -1570,28 +1589,46 @@ export default function RiwayatAsesmenAdmin() {
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2.5">
-                              <span className="font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors">
-                                {item.title || `Sidang Pleno ${item.skema}`}
-                              </span>
-                              <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                                {item.batchCode || item.id}
-                              </span>
-                            </div>
+                            <span className="text-[14px] font-bold text-slate-900">
+                              {item.batchCode || item.id}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="font-mono font-bold text-slate-700 bg-sky-50 ] border border-sky-100 px-2.5 py-1 rounded-md">
+                            <div className="text-[14px] font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors leading-snug">
+                              {item.title || `Sidang Pleno ${item.skema}`}
+                            </div>
+                            {item.skema && (
+                              <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-[250px]">
+                                {item.skema}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-[14px] font-mono font-bold text-slate-700 bg-sky-50 border border-sky-100 px-2.5 py-1 rounded-md">
                               {item.noSK}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                            <div className="flex items-center gap-1.5 text-[14px] font-bold text-slate-800">
                               <Calendar size={13} className="text-[#008BE3]" />
                               {item.tanggal}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 text-slate-700 font-medium text-xs">
+                            <span
+                              className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${
+                                item.jenisTuk === "Sewaktu" || !item.jenisTuk
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : item.jenisTuk === "Mandiri"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-blue-50 text-blue-700 border-blue-200"
+                              }`}
+                            >
+                              {item.jenisTuk || "Sewaktu"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-slate-700 font-medium text-[14px]">
                               <MapPin
                                 size={13}
                                 className="text-[#008BE3] shrink-0"
@@ -1602,7 +1639,7 @@ export default function RiwayatAsesmenAdmin() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 text-slate-600 font-medium text-xs">
+                            <div className="flex items-center gap-1.5 text-slate-600 font-medium text-[14px]">
                               <Clock
                                 size={13}
                                 className="text-[#008BE3] shrink-0"
@@ -1617,7 +1654,7 @@ export default function RiwayatAsesmenAdmin() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border bg-emerald-50 text-emerald-700 border-emerald-200">
+                            <span className="px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border bg-emerald-50 text-emerald-700 border-emerald-200">
                               <CheckCircle size={12} className="stroke-[2.5]" />
                               Selesai
                             </span>
@@ -1625,8 +1662,9 @@ export default function RiwayatAsesmenAdmin() {
                           <td className="px-6 py-4 text-center whitespace-nowrap bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
                             <button
                               onClick={() => setSelectedPleno(item)}
-                              className="bg-sky-50 text-[#008BE3] border border-sky-200 hover:bg-[#008BE3] hover:text-white px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                              className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                             >
+                              <Eye size={14} />
                               <span>Detail</span>
                             </button>
                           </td>
@@ -1634,7 +1672,7 @@ export default function RiwayatAsesmenAdmin() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={8} className="px-6 py-16 text-center">
+                        <td colSpan={10} className="px-6 py-16 text-center">
                           <div className="flex flex-col items-center justify-center text-gray-400">
                             <Award size={36} className="mb-2 text-slate-300" />
                             <p className="font-bold text-slate-700 text-base">
@@ -1684,8 +1722,8 @@ export default function RiwayatAsesmenAdmin() {
                   <span className="font-mono text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">
                     {selectedPleno.batchCode || selectedPleno.id}
                   </span>
-                  <span className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">
-                    Status: Selesai
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <CheckCircle size={12} /> Status: Selesai
                   </span>
                 </div>
                 <h2 className="text-lg md:text-xl font-black text-slate-900">
@@ -1964,28 +2002,28 @@ export default function RiwayatAsesmenAdmin() {
                               </td>
                               <td className="px-4 py-3 text-center">
                                 <span
-                                  className={`px-2.5 py-0.5 rounded font-bold text-[11px] ${
+                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                                     asesi.rekomendasiAsesor === "K"
-                                      ? "bg-emerald-100 text-emerald-800"
-                                      : "bg-rose-100 text-rose-800"
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                      : "bg-red-50 text-red-700 border-red-200"
                                   }`}
                                 >
                                   {asesi.rekomendasiAsesor === "K"
-                                    ? "Kompeten (K)"
-                                    : "Belum Kompeten (BK)"}
+                                    ? "Kompeten"
+                                    : "Belum Kompeten"}
                                 </span>
                               </td>
                               <td className="px-4 py-3 text-center">
                                 <span
-                                  className={`px-3 py-1 rounded-lg text-xs font-bold ${
+                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                                     asesi.statusPleno === "K"
-                                      ? "bg-emerald-600 text-white"
-                                      : "bg-rose-600 text-white"
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                      : "bg-red-50 text-red-700 border-red-200"
                                   }`}
                                 >
                                   {asesi.statusPleno === "K"
-                                    ? "Kompeten (K)"
-                                    : "Belum Kompeten (BK)"}
+                                    ? "Kompeten"
+                                    : "Belum Kompeten"}
                                 </span>
                               </td>
                             </tr>

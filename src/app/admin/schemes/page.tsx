@@ -11,6 +11,7 @@ import {
   FolderTree,
   Eye,
   ArrowLeft,
+  CheckCircle,
 } from "lucide-react";
 import { schemesData as initialSchemesData } from "../../data";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
@@ -860,32 +861,45 @@ function StatCard({ label, value, color = "text-[#008BE3]" }: StatCardProps) {
   let borderColor = "border-gray-100";
   let textColor = color;
   let labelColor = "text-gray-400";
+  let Icon = FolderTree;
+  let iconColor = "text-sky-500 bg-sky-100";
 
   if (label === "Total Skema") {
     bgColor = "bg-[#E6F4FF]";
     borderColor = "border-[#BCE0FD]";
     textColor = "text-sky-800";
     labelColor = "text-sky-600";
+    Icon = FolderTree;
+    iconColor = "text-sky-600 bg-[#E6F4FF] border border-[#BCE0FD]";
   } else if (label === "Aktif") {
     bgColor = "bg-[#F4FBF7]";
     borderColor = "border-[#A7F3D0]";
     textColor = "text-emerald-700";
     labelColor = "text-emerald-600";
+    Icon = CheckCircle;
+    iconColor = "text-emerald-600 bg-[#F4FBF7] border border-[#A7F3D0]";
   } else if (label === "Diarsipkan") {
     bgColor = "bg-[#F1F5F9]";
     borderColor = "border-[#CBD5E1]";
     textColor = "text-slate-700";
     labelColor = "text-slate-500";
+    Icon = Archive;
+    iconColor = "text-slate-500 bg-[#F1F5F9] border border-[#CBD5E1]";
   }
 
   return (
     <div
-      className={`${bgColor} p-5 rounded-xl shadow-sm border ${borderColor} flex flex-col justify-center relative overflow-hidden group hover:scale-[1.01] transition-transform duration-200 cursor-pointer`}
+      className={`${bgColor} p-5 sm:p-6 rounded-xl shadow-2xs border ${borderColor} flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] hover:shadow-md transition-all duration-300 cursor-pointer`}
     >
-      <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 z-10 ${labelColor}`}>
-        {label}
-      </p>
-      <p className={`text-2xl font-black z-10 ${textColor}`}>{value}</p>
+      <div className="z-10 space-y-0.5">
+        <p className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 ${labelColor}`}>
+          {label}
+        </p>
+        <p className={`text-2xl md:text-3xl font-black ${textColor}`}>{value}</p>
+      </div>
+      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 z-10 ${iconColor}`}>
+        <Icon size={22} className="stroke-[2]" />
+      </div>
     </div>
   );
 }

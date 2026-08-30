@@ -14,11 +14,11 @@ import {
   ArrowLeft,
   ExternalLink,
   Link2,
+  Clock,
   FileCheck,
   AlertCircle,
   Sparkles,
   Search,
-  Filter,
   Check,
   MapPin,
   Eye,
@@ -34,7 +34,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     title: "Sidang Pleno Penetapan Uji Kompetensi Batch 1 Auditor Halal",
     skema: "Auditor Halal",
     noSK: "SK/LSP-UIN/PLN/2026/001",
-    tanggal: "16-18 Oktober 2026",
+    tanggal: "16-10-2026 s/d 18-10-2026",
     waktu: "09:00 - 11:00 WIB",
     alamat: "Ruang Rapat Utama (Offline)",
     detailAlamat: "Ruang Rapat Utama Gedung A, Lantai 2",
@@ -178,7 +178,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
     skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     noSK: "SK/LSP-UIN/PLN/2026/003",
-    tanggal: "25-27 Oktober 2026",
+    tanggal: "25 10 2026",
     waktu: "10:00 - 12:00 WIB",
     alamat: "Ruang Rapat Utama (Offline)",
 
@@ -227,10 +227,12 @@ export default function SidangPleno() {
   const [filterStatus, setFilterStatus] = useState("Semua");
 
   // Detail Form State
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeSession, setActiveSession] = useState<PlenoDetailData | null>(
     null,
   );
   const [formData, setFormData] = useState<PlenoDetailData | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Dirty & Saved State Management for Save / Generate requirements
@@ -258,7 +260,7 @@ export default function SidangPleno() {
   // Preview Document Modal state
   const [isGenerateModalOpen, setIsGenerateModalOpen] =
     useState<boolean>(false);
-  const [activeDocType, setActiveDocType] = useState<
+  const [activeDocType] = useState<
     "berita_acara" | "sk_direktur" | "blanko_bnsp"
   >("sk_direktur");
 
@@ -783,7 +785,7 @@ export default function SidangPleno() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       <AnimatePresence>
         {showSaveToast && (
           <motion.div
@@ -803,80 +805,88 @@ export default function SidangPleno() {
 
       {/* VIEW 1: TABLE DAFTAR SIDANG PLENO */}
       {!selectedPlenoId && (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6">
           {/* Header Title - Aligned with other pages */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
                 <Scale size={20} className="stroke-[2.5]" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
                   Sidang Pleno
                 </h2>
-                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
+                <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
                   Pelaksanaan & Hasil Sidang Pleno Komite Teknis
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs shrink-0">
+            <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-lg border border-gray-100 text-sm font-bold text-slate-700 shadow-xs shrink-0">
               <FileCheck size={16} className="text-[#008BE3]" />
               <span>Total: {sessions.length} Pelaksanaan Pleno</span>
             </div>
           </div>
 
-          {/* Search & Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-            <div className="relative w-full sm:w-80">
-              <Search
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                size={17}
-              />
-              <input
-                type="text"
-                placeholder="Cari Batch, SK, atau Skema..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none transition-all"
-              />
+          {/* Search & Filter Bar and Tabel Sidang Pleno Container */}
+          <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <div className="min-w-0">
+                <h3 className="text-base font-black text-slate-900">
+                  Cari Sidang Pleno
+                </h3>
+              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
+                <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+                  <Search className="text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Cari Batch, SK, atau Skema..."
+                    className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div className="relative z-50 flex items-center gap-2">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
+                  >
+                    <option value="Semua">Semua Status</option>
+                    <option value="Belum Ditetapkan">Belum Ditetapkan</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <Filter size={16} className="text-slate-400" />
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-700 outline-none focus:border-[#008BE3] cursor-pointer"
-              >
-                <option value="Semua">Semua Status</option>
-                <option value="Belum Ditetapkan">Belum Ditetapkan</option>
-                <option value="Selesai">Selesai</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tabel Sidang Pleno */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-225">
+            <div className="overflow-x-auto relative">
+              <table className="w-full text-left border-collapse min-w-[1200px]">
                 <thead>
-                  <tr className="bg-slate-900 text-white whitespace-nowrap">
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-50">
+                  <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
+                      Batch
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">
                       Nama Sidang Pleno
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-45">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">
                       Tanggal Pelaksanaan
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-45">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[100px] sticky top-0 z-20 bg-[#0F172A]">
                       TUK
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-30">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">
+                      Alamat TUK
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
                       Total Asesi
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-35">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
                       Status Sidang
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-40 sticky right-0 bg-slate-900">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-40 top-0">
                       Aksi
                     </th>
                   </tr>
@@ -885,7 +895,7 @@ export default function SidangPleno() {
                   {filteredSessions.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-6 py-12 text-center text-slate-400"
                       >
                         <div className="flex flex-col items-center justify-center gap-2">
@@ -907,52 +917,75 @@ export default function SidangPleno() {
                     filteredSessions.map((item) => (
                       <tr
                         key={item.id}
-                        className="hover:bg-slate-50/80 transition-colors group"
+                        className="group/row hover:bg-[#F9FAFC] transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-bold text-slate-900 group-hover:text-[#008BE3] transition-colors">
-                            {item.title}
+                          <div className="text-[14px] font-bold text-slate-900">
+                            {item.batchCode || item.id}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-semibold text-slate-600">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-[14px] font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors leading-snug">
+                            {item.title || `Sidang Pleno ${item.skema}`}
+                          </div>
+                          {item.skema && (
+                            <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-[250px]">
+                              {item.skema}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-600">
                           <div className="flex items-center gap-1.5">
                             <Calendar
-                              size={13}
+                              size={14}
                               className="text-slate-400 shrink-0"
                             />
                             {item.tanggal}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-medium text-slate-700">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${
+                              item.jenisTuk === "Sewaktu" || !item.jenisTuk
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : item.jenisTuk === "Mandiri"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
+                          >
+                            {item.jenisTuk || "Sewaktu"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-slate-700">
                           <div className="flex items-center gap-1.5">
                             <MapPin
-                              size={14}
+                              size={16}
                               className="text-slate-400 shrink-0"
                             />
                             <span>{item.alamat}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xs md:text-sm font-bold text-slate-700">
+                        <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
                           <span>{item.asesiList?.length || 0} Asesi</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-xs font-bold">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           {item.status === "Selesai" ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              Sudah Selesai
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <CheckCircle size={12} /> Sudah Selesai
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                              Belum Selesai
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                              <Clock size={12} /> Belum Selesai
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/80 border-l border-slate-100">
+                        <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() =>
                                 setSelectedPlenoId(String(item.id))
                               }
-                              className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                              className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                               title="Detail Sidang Pleno"
                             >
                               <Eye size={14} />
@@ -997,60 +1030,89 @@ export default function SidangPleno() {
       {/* VIEW 2: DETAIL SIDANG PLENO */}
       {selectedPlenoId && formData && (
         <div className="space-y-6">
-          {/* Header Sidang Pleno with Back Button & Title */}
-          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <button
-                onClick={() => setSelectedPlenoId(null)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
-                title="Kembali ke Daftar Pleno"
+          {/* Header Sidang Pleno with Back Button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <button
+              onClick={() => setSelectedPlenoId(null)}
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
+              title="Kembali ke Daftar Pleno"
+            >
+              <ArrowLeft size={18} className="stroke-[2.5]" />
+            </button>
+          </div>
+
+          {/* Header Info Pleno */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <span className="font-mono text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">
+                BATCH-{formData.id}
+              </span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                  formData.status === "Selesai"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-amber-50 text-amber-700 border-amber-200"
+                }`}
               >
-                <ArrowLeft size={18} />
-              </button>
-              <h2 className="text-lg md:text-xl font-black text-slate-900 truncate">
-                {formData.title}
-              </h2>
+                {formData.status === "Selesai" ? (
+                  <CheckCircle size={12} />
+                ) : (
+                  <Clock size={12} />
+                )}
+                Status: {formData.status}
+              </span>
             </div>
+            <h2 className="text-lg md:text-xl font-black text-slate-900">
+              Sidang Pleno {formData.skema}
+            </h2>
+            <p className="text-xs text-slate-600 font-medium">
+              Skema Sertifikasi:{" "}
+              <span className="font-bold text-slate-800">
+                {formData.skema}
+              </span>
+            </p>
           </div>
 
           {/* Section 1: Informasi Keputusan & Jadwal Sidang (Include Field Link Surat Berita Pleno) */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-5">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Scale size={18} className="text-[#008BE3]" />
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Scale size={20} className="text-[#008BE3]" />
+              </div>
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">
                 Informasi Keputusan & Jadwal Sidang
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
                   Nama Sidang
                 </label>
                 <input
                   type="text"
-                  value={formData.title}
+                  value={formData.id}
                   readOnly
                   disabled
-                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 bg-slate-100/80 cursor-not-allowed outline-none select-none truncate"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none truncate"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Rentang Tanggal Pelaksanaan
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                  Tanggal Pelaksanaan
                 </label>
                 <input
                   type="text"
                   value={formData.tanggal}
                   readOnly
                   disabled
-                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
                   TUK
                 </label>
                 <input
@@ -1058,17 +1120,17 @@ export default function SidangPleno() {
                   value={formData.alamat}
                   readOnly
                   disabled
-                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none"
                 />
               </div>
             </div>
 
             {/* Peserta Sidang (Direktur, Dewan Pengarah, Komite & Notulis) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
                 Peserta Sidang (Direktur, Pengarah &amp; Komite)
               </label>
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl min-h-11 flex flex-wrap gap-2 items-center">
+              <div className="p-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl min-h-[52px] flex flex-wrap gap-2 items-center">
                 {(() => {
                   const attendees =
                     formData.plenoAttendees &&
@@ -1090,12 +1152,12 @@ export default function SidangPleno() {
                   return attendees.map((att, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 text-slate-800 rounded-lg text-xs font-bold shadow-2xs"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs shadow-sm hover:border-[#008BE3]/30 transition-colors"
                     >
-                      <span className="text-[#008BE3] font-semibold">
-                        [{att.role}]
+                      <span className="text-[#008BE3] font-bold uppercase tracking-wider text-[10px] bg-blue-50 px-1.5 py-0.5 rounded-md">
+                        {att.role}
                       </span>
-                      <span>{att.nama}</span>
+                      <span className="font-bold text-[12px]">{att.nama}</span>
                     </span>
                   ));
                 })()}
@@ -1104,15 +1166,17 @@ export default function SidangPleno() {
           </div>
 
           {/* Section 2: 3 Link Surat Dokumen Keputusan & Tombol Generate Surat */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-slate-900 font-bold">
-                <Link2 size={18} className="text-[#008BE3]" />
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 hover:shadow-md transition-shadow">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3 text-slate-800">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Link2 size={20} className="text-[#008BE3]" />
+                </div>
                 <span className="text-sm font-black uppercase tracking-wider">
                   Dokumen Keputusan & Surat Hasil Pleno
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-[#008BE3] bg-sky-50 px-3 py-1 rounded-full border border-sky-100">
+              <span className="text-xs font-bold text-[#008BE3] bg-blue-50 px-3.5 py-1.5 rounded-lg border border-blue-100/50 shrink-0">
                 Dokumen Penetapan Resmi
               </span>
             </div>
@@ -1121,7 +1185,7 @@ export default function SidangPleno() {
               {/* Field 1: Link Surat Berita Acara Pleno */}
               <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
                 <div className="flex-1 space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800">
+                  <label className="block text-[12px] font-bold text-slate-700">
                     <span>
                       1. Link Surat Berita Acara Pleno{" "}
                       <span className="text-slate-400 font-normal">
@@ -1141,7 +1205,7 @@ export default function SidangPleno() {
                         ? "Belum ada link surat"
                         : "https://drive.google.com/file/d/..."
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 transition-all ${
+                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${
                       readOnly
                         ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
                         : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
@@ -1192,7 +1256,7 @@ export default function SidangPleno() {
               {/* Field 2: Link Surat Keputusan Direktur */}
               <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
                 <div className="flex-1 space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800">
+                  <label className="block text-[12px] font-bold text-slate-700">
                     <span>
                       2. Link Surat Keputusan Direktur{" "}
                       <span className="text-slate-400 font-normal">
@@ -1220,7 +1284,7 @@ export default function SidangPleno() {
                         ? "Belum ada link surat"
                         : "https://drive.google.com/file/d/..."
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 transition-all ${
+                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${
                       readOnly
                         ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
                         : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
@@ -1279,7 +1343,7 @@ export default function SidangPleno() {
               {/* Field 3: Link Surat Blanko BNSP */}
               <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
                 <div className="flex-1 space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800">
+                  <label className="block text-[12px] font-bold text-slate-700">
                     <span>
                       3. Link Surat Blanko BNSP{" "}
                       <span className="text-slate-400 font-normal">
@@ -1299,7 +1363,7 @@ export default function SidangPleno() {
                         ? "Belum ada link surat"
                         : "https://drive.google.com/file/d/..."
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 transition-all ${
+                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${
                       readOnly
                         ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
                         : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
@@ -1353,26 +1417,28 @@ export default function SidangPleno() {
               <p className="text-[11px] font-bold text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 flex items-center gap-2">
                 <AlertCircle size={14} className="shrink-0 text-amber-600" />
                 <span>
-                  Tombol Generate Surat dinonaktifkan sementara karena terdapat
-                  perubahan data. Klik <strong>Simpan Perubahan</strong> di
-                  akhir form untuk mengaktifkan kembali.
+                  Klik <strong>Simpan Perubahan</strong> sebelum melakukan generate surat.
                 </span>
               </p>
             )}
           </div>
 
           {/* Section 3: TABEL ASESI & PERUBAHAN STATUS K / BK */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden space-y-4 p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-              <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <Users size={18} className="text-[#008BE3]" />
-                  Daftar Asesi & Penetapan Status Kelulusan
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Ubah status hasil pleno Kompeten atau Belum Kompeten untuk
-                  setiap asesi yang didaftarkan.
-                </p>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-5 p-6 hover:shadow-md transition-shadow">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg shrink-0">
+                  <Users size={20} className="text-[#008BE3]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                    Daftar Asesi & Penetapan Status Kelulusan
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    Ubah status hasil pleno Kompeten atau Belum Kompeten untuk
+                    setiap asesi yang didaftarkan.
+                  </p>
+                </div>
               </div>
 
               {/* Badge Data Tersimpan / Ada Perubahan */}
@@ -1394,54 +1460,54 @@ export default function SidangPleno() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto relative">
               <table className="w-full text-left border-collapse min-w-175">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 border-y border-slate-200">
-                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                  <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       No
                     </th>
-                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       nik / ID
                     </th>
-                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       Nama Asesi
                     </th>
-                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       Asesor Penguji
                     </th>
-                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center">
+                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       Rekomendasi Asesor
                     </th>
-                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center">
+                    <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       Status Sidang Pleno
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs font-medium">
+                <tbody className="divide-y divide-slate-100">
                   {normalizedAsesiList.map((asesi, idx) => (
                     <tr
                       key={asesi.id}
-                      className="hover:bg-slate-50/80 transition-colors"
+                      className="group/row hover:bg-[#F9FAFC] transition-colors"
                     >
-                      <td className="px-4 py-3 font-bold text-slate-500">
+                      <td className="px-4 py-3 text-[14px] font-medium text-slate-700">
                         {idx + 1}
                       </td>
-                      <td className="px-4 py-3 font-mono font-bold text-slate-700">
+                      <td className="px-4 py-3 text-[14px] font-medium text-slate-700">
                         {asesi.nik}
                       </td>
-                      <td className="px-4 py-3 font-bold text-slate-900">
+                      <td className="px-4 py-3 text-[14px] font-medium text-slate-900 group-hover/row:text-[#008BE3] transition-colors">
                         {asesi.nama}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td className="px-4 py-3 text-[14px] font-medium text-slate-600">
                         {asesi.asesor}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
-                          className={`px-2.5 py-0.5 rounded font-bold text-[11px] ${
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                             asesi.rekomendasiAsesor === "K"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-rose-100 text-rose-800"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
                           }`}
                         >
                           {asesi.rekomendasiAsesor === "K"
@@ -1459,7 +1525,7 @@ export default function SidangPleno() {
                               onClick={() =>
                                 handleAsesiStatusChange(asesi.id, "K")
                               }
-                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                              className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
                                 asesi.statusPleno === "K"
                                   ? "bg-emerald-600 text-white shadow-2xs"
                                   : "text-slate-600 hover:text-slate-900"
@@ -1473,7 +1539,7 @@ export default function SidangPleno() {
                               onClick={() =>
                                 handleAsesiStatusChange(asesi.id, "BK")
                               }
-                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                              className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
                                 asesi.statusPleno === "BK"
                                   ? "bg-rose-600 text-white shadow-2xs"
                                   : "text-slate-600 hover:text-slate-900"
@@ -1485,10 +1551,10 @@ export default function SidangPleno() {
                           </div>
                         ) : (
                           <span
-                            className={`px-3 py-1 rounded-lg text-xs font-bold ${
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                               asesi.statusPleno === "K"
-                                ? "bg-emerald-600 text-white"
-                                : "bg-rose-600 text-white"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-red-50 text-red-700 border-red-200"
                             }`}
                           >
                             {asesi.statusPleno === "K"
@@ -1971,7 +2037,11 @@ export default function SidangPleno() {
                             </td>
                             <td className="p-2 text-center font-bold">
                               <span
-                                className={`px-2 py-0.5 rounded text-[10px] ${a.statusPleno === "K" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                                  a.statusPleno === "K"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-red-50 text-red-700 border-red-200"
+                                }`}
                               >
                                 {a.statusPleno === "K"
                                   ? "KOMPETEN (K)"
