@@ -132,7 +132,7 @@ export interface UserItem {
   namaLengkap: string | ""; // dari ProfilPengguna.namaLengkap
   email: string; // dari User.email
   role: Role;
-  status: "Aktif" | "Terverifikasi" | "Nonaktif" | "Menunggu Verifikasi"; // computed
+  status: "Aktif" | "Nonaktif" | string; // computed
   nik?: string;
   tempPassword?: string;
   verificationData?: UserVerificationData;

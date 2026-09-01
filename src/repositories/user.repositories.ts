@@ -13,11 +13,16 @@ export class UserRepository {
     });
     return user;
   }
-  async getUserByUsername(username: string) {
+
+  async getUserById(id: number) {
     return await db.user.findUnique({
-      where: { username },
+      where: { id },
+      select: {
+        isActive: true,
+      },
     });
   }
+
   async createUser(data: {
     username: string;
     email: string;
@@ -35,13 +40,10 @@ export class UserRepository {
       },
     });
   }
-  async updateUser(
+
+  async updateUserStatus(
     id: number,
     data: {
-      username: string;
-      email: string;
-      password: string;
-      role: Role;
       isActive: boolean;
     },
   ) {
@@ -50,20 +52,11 @@ export class UserRepository {
         id: Number(id),
       },
       data: {
-        username: data.username,
-        password: data.password,
-        role: data.role,
-        email: data.email,
         isActive: data.isActive,
       },
     });
   }
-  async updatePassword(id: number, password: string) {
-    return await db.user.update({
-      where: { id },
-      data: { password },
-    });
-  }
+
   async deleteUser(id: number) {
     const user = await db.user.delete({
       where: { id: id },
