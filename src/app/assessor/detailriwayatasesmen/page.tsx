@@ -22,7 +22,18 @@ import {
   FormFRIA07,
   FormFRAPL02,
 } from "@/components/forms";
-import { AssessmentItem } from "@/types/types";
+
+type AsesmenData = {
+  nama: string;
+  skema: string;
+  noSkema: string;
+  tuk: string;
+  metodeAsesmen: string;
+  tanggal: string;
+  asesor: string;
+  asesorReg?: string;
+  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
 
 export default function DetailRiwayatAsesmen() {
   const router = useRouter();
@@ -48,7 +59,7 @@ export default function DetailRiwayatAsesmen() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
         {/* Banner/Header Info */}
         <div className="p-4 sm:p-6 border-b border-gray-100 space-y-5">
@@ -405,7 +416,7 @@ export default function DetailRiwayatAsesmen() {
                         tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as AssessmentItem
+                      } as AsesmenData
                     }
                   />
                 )}
@@ -420,7 +431,7 @@ export default function DetailRiwayatAsesmen() {
                         tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as AssessmentItem
+                      } as AsesmenData
                     }
                   />
                 )}
@@ -435,7 +446,7 @@ export default function DetailRiwayatAsesmen() {
                         tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as AssessmentItem
+                      } as AsesmenData
                     }
                   />
                 )}
@@ -450,7 +461,7 @@ export default function DetailRiwayatAsesmen() {
                         tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as AssessmentItem
+                      } as AsesmenData
                     }
                     rekomendasi={selectedAsesmen.hasil}
                   />
@@ -466,7 +477,7 @@ export default function DetailRiwayatAsesmen() {
                         tuk: selectedAsesmen.tipeTuk,
                         tanggal: selectedAsesmen.tglAsesmen,
                         asesor: "Dr. Aris Thorne",
-                      } as unknown as AssessmentItem
+                      } as AsesmenData
                     }
                   />
                 )}

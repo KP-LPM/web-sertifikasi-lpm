@@ -277,26 +277,26 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] pb-20">
-      <div className="bg-white px-4 md:px-8 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
+      {/* Header Title Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
             <UserIcon size={20} className="stroke-[2.5]" />
           </div>
-          <div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">
+          <div className="min-w-0">
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
               Profil Pengguna
             </h2>
-            <p className="text-slate-500 font-medium text-xs mt-0 leading-3.75">
+            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
               Kelola data diri dan informasi akun Anda
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-        <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
-          <div className="p-5 md:p-6 space-y-6">
+      <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
+        <div className="p-6 space-y-6">
             {/* Avatar Section */}
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm shrink-0">
@@ -312,7 +312,7 @@ export default function Profile() {
               </div>
               <button
                 onClick={() => fileAvatarRef.current?.click()}
-                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-xs transition-colors"
+                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-xs transition-colors"
               >
                 Ubah Gambar
               </button>
@@ -352,7 +352,7 @@ export default function Profile() {
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                   <p className="text-[10px] text-gray-400 mt-1">
                     Username tidak boleh mengandung spasi dan karakter spesial
@@ -367,7 +367,7 @@ export default function Profile() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
               </div>
@@ -388,7 +388,7 @@ export default function Profile() {
                     name="namaLengkap"
                     value={formData.namaLengkap}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
                 <div>
@@ -400,7 +400,7 @@ export default function Profile() {
                     name="tempatLahir"
                     value={formData.tempatLahir}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
                 <div>
@@ -412,7 +412,7 @@ export default function Profile() {
                     name="tanggalLahir"
                     value={formData.tanggalLahir}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
 
@@ -456,7 +456,7 @@ export default function Profile() {
                     onChange={handleChange}
                     placeholder="Masukkan alamat"
                     rows={4}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
                   ></textarea>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3">
@@ -469,7 +469,7 @@ export default function Profile() {
                     name="alamatWilayah"
                     value={formData.alamatWilayah}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
                 <div>
@@ -481,7 +481,7 @@ export default function Profile() {
                     name="nik"
                     value={formData.nik}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
                 <div>
@@ -493,7 +493,7 @@ export default function Profile() {
                     name="kodePos"
                     value={formData.kodePos}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
                 {formData.peran === "Asesor" && (
@@ -507,7 +507,7 @@ export default function Profile() {
                       name="noRegistrasi"
                       value={formData.noRegistrasi}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                     />
                   </div>
                 )}
@@ -520,7 +520,7 @@ export default function Profile() {
                     name="noTelp"
                     value={formData.noTelp}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
 
@@ -532,7 +532,7 @@ export default function Profile() {
                     name="pekerjaan"
                     value={formData.pekerjaan}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   >
                     <option value="" disabled>
                       Pilih Pekerjaan
@@ -551,7 +551,7 @@ export default function Profile() {
                     name="pendidikanTerakhir"
                     value={formData.pendidikanTerakhir}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   >
                     <option value="" disabled>
                       Pilih Pendidikan
@@ -578,7 +578,7 @@ export default function Profile() {
                   <div>
                     <button
                       onClick={() => setIsSignatureModalOpen(true)}
-                      className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-xs transition-colors"
+                      className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-sm font-bold shadow-xs transition-colors"
                     >
                       {formData.tandaTangan
                         ? "Ubah Tanda Tangan"
@@ -605,7 +605,7 @@ export default function Profile() {
                   onClick={() =>
                     alert("Tautan reset password telah dikirim ke email Anda!")
                   }
-                  className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-xs transition-colors"
+                  className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors"
                 >
                   Ganti Kata Sandi
                 </button>
@@ -616,7 +616,7 @@ export default function Profile() {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-lg text-sm font-bold shadow-xs transition-colors w-full md:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xs transition-colors w-full md:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={18} className="stroke-[2.5]" />
                 {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
@@ -624,7 +624,6 @@ export default function Profile() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Signature Modal */}
       {isSignatureModalOpen && (
@@ -678,14 +677,14 @@ export default function Profile() {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2"
                 >
                   <Upload size={14} />
                   Upload
                 </button>
                 <button
                   onClick={handleSaveSignature}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2"
                 >
                   <Save size={14} />
                   Simpan

@@ -71,7 +71,7 @@ export default function AssessorOverview() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Title Section */}
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
@@ -296,7 +296,7 @@ export default function AssessorOverview() {
   );
 }
 
-function StatCard({ title, value, theme, subtext, onClick }: StatCardProps) {
+function StatCard({ title, value, theme, subtext, onClick, icon: Icon }: StatCardProps & { icon?: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }) {
   let containerClass = "";
   let titleClass = "";
   let subtextClass = "";
@@ -343,7 +343,9 @@ function StatCard({ title, value, theme, subtext, onClick }: StatCardProps) {
       </div>
       <div
         className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs ${iconClass}`}
-      ></div>
+      >
+        {Icon && <Icon size={20} strokeWidth={2.5} />}
+      </div>
     </div>
   );
 }

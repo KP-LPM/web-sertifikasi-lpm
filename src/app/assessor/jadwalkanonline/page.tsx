@@ -61,8 +61,8 @@ export default function JadwalkanOnline() {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-[#F8F9FC] p-4 flex flex-col items-center justify-center text-sm text-gray-700">
-      <div className="w-full max-w-2xl space-y-6 mt-0 md:-mt-20">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
+      <div className="w-full max-w-2xl space-y-6 mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
           <div className="flex items-center gap-3 min-w-0">
             <button

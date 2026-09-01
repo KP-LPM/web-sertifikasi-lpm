@@ -19,8 +19,19 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { AssessmentItem } from "@/types/types";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
+
+type AsesmenData = {
+  nama: string;
+  skema: string;
+  noSkema: string;
+  tuk: string;
+  metodeAsesmen: string;
+  tanggal: string;
+  asesor: string;
+  asesorReg?: string;
+  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
 
 type SignatureCanvasRef = {
   clear: () => void;
@@ -55,6 +66,7 @@ export default function AssessmentForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [asesiSignatureApl02, setAsesiSignatureApl02] = useState<string>("");
+  const [asesiDateApl02, setAsesiDateApl02] = useState<string>("");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -69,7 +81,7 @@ export default function AssessmentForm() {
     metodeAsesmen: String(selectedAsesmen?.metode),
     tanggal: "11 Oktober 2024",
     asesor: "Ichsan Taufik",
-  } as unknown as AssessmentItem;
+  } as AsesmenData;
   // Step 1: Form FR.APL.02 State
   const [rekomendasiApl02, setRekomendasiApl02] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
@@ -903,9 +915,6 @@ export default function AssessmentForm() {
     }
   }, [isAsesiSigOpen, asesiSignature]);
 
-  const [asesiDateApl02, setAsesiDateApl02] = useState<string>(
-    String(asesmenData.tglAsesmen || ""),
-  );
 
   const renderStep1 = () => {
     // 1. Simpan target nama skema ke variabel dengan fallback string kosong
@@ -968,7 +977,7 @@ export default function AssessmentForm() {
               tanggal: asesmenData.tglAsesmen,
               asesor: asesmenData.asesor,
               asesorReg: "MET.000.001234 2021",
-            } as unknown as AssessmentItem
+            } as AsesmenData
           }
           answers={answersApl02}
           onAnswerChange={(key, val) =>
@@ -1313,9 +1322,11 @@ export default function AssessmentForm() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
-      {/* Centered Step Indicators */}
-      <div className="max-w-200 mx-auto mb-6 flex items-center justify-center">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
+      {/* 
+        Container Form Maksimal
+        Menggunakan grid untuk membagi Sidebar & Konten Utama
+      */}<div className="max-w-200 mx-auto mb-6 flex items-center justify-center">
         <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 text-xs md:text-sm font-semibold text-slate-500">
           {steps.map((s, i) => (
             <React.Fragment key={s.num}>

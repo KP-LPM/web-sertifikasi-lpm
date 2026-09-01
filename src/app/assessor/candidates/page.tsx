@@ -63,7 +63,7 @@ export default function AsesiList() {
       batchMap.set(batchKey, {
         id: item.kodeBatch || batchKey, // tambahkan — bisa pakai kodeBatch item, atau batchKey itu sendiri
         status: item.status || "Terjadwal", // tambahkan — sesuaikan default/sumbernya
-        kodeBatch: item.kodeBatch,
+        kodeBatch: item.kodeBatch || batchKey,
         namaBatch: skemaNama,
         skema: skemaNama,
         tipeTuk: item.tipeTuk || "-",
@@ -129,81 +129,101 @@ export default function AsesiList() {
     : [];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
-      {/* Header Banner */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-50 flex items-center justify-center text-[#008BE3] border border-sky-100 shrink-0 shadow-2xs mt-0.5 sm:mt-0">
-            <LayoutList size={22} className="sm:w-6 sm:h-6 stroke-[2.5]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight mb-1">
-              Daftar Asesmen
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-medium sm:max-w-md leading-relaxed">
-              Kelola dan pantau proses asesmen kandidat asesi yang terkelompok
-              berdasarkan Batch Penugasan.
-            </p>
-          </div>
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
+      {/* Title Section */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+          <LayoutList size={20} className="stroke-[2.5]" />
         </div>
-
-        {/* Top High-Level Metrics */}
-        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 mt-1 sm:mt-0">
-          <div className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-center">
-            <span className="block text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Total
-            </span>
-            <span className="text-xs sm:text-sm font-black text-slate-900">
-              {allBatches.length}
-            </span>
-          </div>
-          <div className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-center">
-            <span className="block text-[9px] sm:text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-              Offline
-            </span>
-            <span className="text-xs sm:text-sm font-black text-emerald-800">
-              {
-                allBatches.filter((b) => b.metode?.toLowerCase() === "offline")
-                  .length
-              }
-            </span>
-          </div>
-          <div className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-center">
-            <span className="block text-[9px] sm:text-[10px] font-bold text-purple-600 uppercase tracking-wider">
-              Online
-            </span>
-            <span className="text-xs sm:text-sm font-black text-purple-800">
-              {
-                allBatches.filter((b) => b.metode?.toLowerCase() === "online")
-                  .length
-              }
-            </span>
-          </div>
+        <div className="min-w-0">
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            Daftar Asesmen
+          </h2>
+          <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4">
+            Kelola dan pantau proses asesmen kandidat asesi yang terkelompok berdasarkan Batch Penugasan.
+          </p>
         </div>
-
-        {/* Success Notification Banner */}
-        {successNotification && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-xl flex items-center justify-between gap-3 shadow-2xs ">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle size={20} className="text-emerald-600 shrink-0" />
-              <span className="text-xs sm:text-sm font-bold">
-                {successNotification}
-              </span>
-            </div>
-            <button
-              onClick={() => setSuccessNotification(null)}
-              className="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Success Notification Banner */}
+      {successNotification && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-xl flex items-center justify-between gap-3 shadow-2xs ">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle size={20} className="text-emerald-600 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold">
+              {successNotification}
+            </span>
+          </div>
+          <button
+            onClick={() => setSuccessNotification(null)}
+            className="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* VIEW SWITCHER: LEVEL 1 (Batch List) vs LEVEL 2 (Candidates inside selected Batch) */}
       {!selectedBatchCode ? (
         /* ==================== LEVEL 1 VIEW: BATCH LIST ==================== */
         <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Total */}
+            <div className="p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 bg-[#E6F4FF] border border-[#BCE0FD] hover:border-sky-300">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-sky-800">
+                  Total Batch
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {allBatches.length.toString().padStart(2, "0")}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-sky-600">Semua Batch Penugasan</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#008BE3] text-white">
+                <Layers size={20} strokeWidth={2.5} />
+              </div>
+            </div>
+
+            {/* Offline */}
+            <div className="p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 bg-[#F4FBF7] border border-[#A7F3D0] hover:border-emerald-300">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-emerald-800">
+                  Batch Offline
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {allBatches.filter((b) => b.metode?.toLowerCase() === "offline").length.toString().padStart(2, "0")}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-emerald-600">Metode Tatap Muka</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#84CC16] text-white">
+                <Building2 size={20} strokeWidth={2.5} />
+              </div>
+            </div>
+
+            {/* Online */}
+            <div className="p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 bg-[#F5F3FF] border border-[#DDD6FE] hover:border-purple-300">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-purple-800">
+                  Batch Online
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {allBatches.filter((b) => b.metode?.toLowerCase() === "online").length.toString().padStart(2, "0")}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-purple-600">Metode Daring</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-purple-500 text-white">
+                <Video size={20} strokeWidth={2.5} />
+              </div>
+            </div>
+          </div>
+
           {/* Filters & Search Row */}
           <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
             {/* Filter Dropdown */}
@@ -281,29 +301,26 @@ export default function AsesiList() {
                     {/* Card Top Header */}
                     <div className="p-5 space-y-3.5">
                       <div className="flex items-center justify-between gap-2">
-                        {/* Batch Code Badge */}
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-black tracking-wide border border-slate-200">
-                          <Layers size={13} className="text-slate-500" />
-                          {batch.kodeBatch}
+                        {/* Card Icon */}
+                        <div className="w-8 h-8 rounded-lg bg-[#008BE3] flex items-center justify-center text-white shadow-xs shrink-0">
+                          <Layers size={16} strokeWidth={2.5} />
                         </div>
 
                         {/* AssessmentItem Type Badge */}
-                        {isOnline ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                            <Video size={12} className="stroke-[2.5]" />
-                            Online
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <Building2 size={12} className="stroke-[2.5]" />
-                            Offline
-                          </span>
-                        )}
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${
+                            isOnline
+                              ? "bg-purple-50 text-purple-700 border-purple-200"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          }`}
+                        >
+                          {isOnline ? "Online" : "Offline"}
+                        </span>
                       </div>
 
                       {/* Batch Name & Scheme */}
-                      <div className="min-w-0">
-                        <h3 className="text-base font-black text-slate-900 group-hover:text-[#008BE3] transition-colors leading-snug">
+                      <div>
+                        <h3 className="text-[15px] sm:text-base font-black text-slate-800 leading-tight">
                           {batch.namaBatch}
                         </h3>
                         <p className="text-xs font-semibold text-slate-500 mt-0.5 leading-snug">
@@ -645,7 +662,10 @@ export default function AsesiList() {
               <table className="w-full text-left border-collapse min-w-150">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16">
+                      No
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider min-w-[200px] sm:w-[30%]">
                       Nama Asesi
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
@@ -658,11 +678,26 @@ export default function AsesiList() {
                 </thead>
                 <tbody className="font-medium text-xs sm:text-sm divide-y divide-slate-100">
                   {filteredCandidates.length > 0 ? (
-                    filteredCandidates.map((candidate) => (
+                    filteredCandidates.map((candidate, idx) => (
                       <tr
                         key={candidate.id}
                         className="hover:bg-slate-50/80 transition-colors"
                       >
+                        {/* No */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div
+                            className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                              idx % 3 === 0
+                                ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                : idx % 3 === 1
+                                  ? "bg-[#84CC16]/10 text-[#73B412]"
+                                  : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {idx + 1}
+                          </div>
+                        </td>
+
                         {/* Candidate Name */}
                         <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
                           {candidate.nama}
@@ -724,7 +759,7 @@ export default function AsesiList() {
                   ) : (
                     <tr>
                       <td
-                        colSpan={3}
+                        colSpan={4}
                         className="px-6 py-12 text-center text-slate-400 font-medium"
                       >
                         Tidak ada candidate asesi ditemukan dalam batch ini.

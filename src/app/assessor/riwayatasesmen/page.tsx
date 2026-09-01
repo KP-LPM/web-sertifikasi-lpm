@@ -79,7 +79,7 @@ export default function RiwayatAsesmen() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
@@ -153,7 +153,10 @@ export default function RiwayatAsesmen() {
             <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16 whitespace-nowrap">
+                    No
+                  </th>
+                  <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap min-w-[200px] sm:w-[30%]">
                     Nama Asesi
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -184,12 +187,25 @@ export default function RiwayatAsesmen() {
               </thead>
               <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
                 {filteredAssessments.length > 0 ? (
-                  filteredAssessments.map((item) => (
+                  filteredAssessments.map((item, idx) => (
                     <tr
                       key={item.id}
                       className="group/row hover:bg-[#F9FAFC] transition-colors"
                     >
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
+                        <div
+                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                            idx % 3 === 0
+                              ? "bg-[#008BE3]/10 text-[#008BE3]"
+                              : idx % 3 === 1
+                                ? "bg-[#84CC16]/10 text-[#73B412]"
+                                : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {idx + 1}
+                        </div>
+                      </td>
+                      <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
                         {item.nama}
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
@@ -205,7 +221,7 @@ export default function RiwayatAsesmen() {
                           {item.tipeTuk}
                         </span>
                       </td>
-                      <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
+                      <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-[#008BE3] whitespace-nowrap">
                         {item.skema}
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
@@ -258,7 +274,7 @@ export default function RiwayatAsesmen() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="px-6 py-24 text-center">
+                    <td colSpan={10} className="px-6 py-24 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-400">
                         <Inbox
                           size={48}

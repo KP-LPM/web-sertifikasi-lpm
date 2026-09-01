@@ -17,7 +17,7 @@ export default function AssessmentFinalization() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       <div className="mb-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
         <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
           Finalisasi Asesmen
