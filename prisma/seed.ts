@@ -27,8 +27,8 @@ async function main() {
   for (const scheme of AVAILABLE_SCHEMES) {
     const createdSkema = await prisma.masterSkema.create({
       data: {
-        kodeSkema: scheme.code,
-        namaSkema: scheme.name,
+        kodeSkema: scheme.code || "",
+        namaSkema: scheme.name || "",
         statusAktif: true,
       },
     });

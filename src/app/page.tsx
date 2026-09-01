@@ -16,20 +16,23 @@ const ROLE_HOME: Record<string, string> = {
 
 export default function Page() {
   const router = useRouter();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const { user } = useAppContext();
 
   useEffect(() => {
     if (status === "loading") return;
 
-    if (status === "unauthenticated" || !user || !user.role) {
+    // Use session.user directly to avoid race condition with context state
+    const currentUser = session?.user || user;
+
+    if (status === "unauthenticated" || !currentUser || !currentUser.role) {
       router.replace("/login");
       return;
     }
 
-    const target = ROLE_HOME[user.role] ?? "/login";
+    const target = ROLE_HOME[currentUser.role] ?? "/login";
     router.replace(target);
-  }, [status, user, router]);
+  }, [status, session, user, router]);
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]">
       <p className="text-sm text-slate-500">Mengalihkan...</p>

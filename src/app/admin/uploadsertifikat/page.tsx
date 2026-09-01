@@ -24,6 +24,8 @@ import {
   ChevronDown,
   Sparkles,
   Eye,
+  FileText,
+  CheckCircle,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { AsesiPlenoRecord, PlenoGroup } from "@/types/types";
@@ -488,7 +490,7 @@ export default function UploadSertifikat() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Title - Aligned with standard admin page headers */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -497,35 +499,11 @@ export default function UploadSertifikat() {
           </div>
           <div className="min-w-0">
             <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Upload Sertifikat (Link GDrive)
+              Upload Sertifikat
             </h2>
             <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
               Pengelolaan & pengunggahan tautan sertifikat per Sidang Pleno
             </p>
-          </div>
-        </div>
-
-        {/* High-Level Metrics Badges */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs">
-            <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
-              Sidang Pleno:
-            </span>
-            <span className="text-slate-900 font-black">{totalPlenoCount}</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs">
-            <span className="text-[10px] uppercase tracking-wider text-[#008BE3] font-bold">
-              Total Asesi:
-            </span>
-            <span className="text-[#008BE3] font-black">{totalAsesiAll}</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-gray-100 text-xs font-bold text-slate-700 shadow-2xs">
-            <span className="text-[10px] uppercase tracking-wider text-emerald-600 font-bold">
-              Terbit GDrive:
-            </span>
-            <span className="text-emerald-700 font-black">
-              {totalCertUploadedAll}/{totalAsesiAll}
-            </span>
           </div>
         </div>
       </div>
@@ -534,6 +512,77 @@ export default function UploadSertifikat() {
       {!selectedPlenoId ? (
         /* ==================== LEVEL 1 VIEW: DAFTAR SIDANG PLENO (GRID CARDS) ==================== */
         <div className="space-y-6">
+          {/* Overview Cards Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Card 1: Sky */}
+            <div className="bg-[#E6F4FF] p-4 rounded-lg border border-[#BCE0FD] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black text-sky-800 uppercase tracking-wider block">
+                  Sidang Pleno
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {totalPlenoCount}
+                  </span>
+                  <span className="text-base font-bold text-sky-700 ml-0.75">
+                    Jadwal
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-sky-600">
+                  Telah Terjadwal
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-[#008BE3] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <FileText size={18} />
+              </div>
+            </div>
+
+            {/* Card 2: Emerald */}
+            <div className="bg-[#F4FBF7] p-4 rounded-lg border border-[#A7F3D0] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">
+                  Total Asesi
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {totalAsesiAll}
+                  </span>
+                  <span className="text-base font-bold text-emerald-700 ml-0.75">
+                    Orang
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-emerald-600">
+                  Dari Seluruh Pleno
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-[#84CC16] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Users size={18} />
+              </div>
+            </div>
+
+            {/* Card 3: Slate */}
+            <div className="bg-[#F1F5F9] p-4 rounded-lg border border-[#CBD5E1] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider block">
+                  Terbit GDrive
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {totalCertUploadedAll}
+                  </span>
+                  <span className="text-base font-bold text-slate-700 ml-0.75">
+                    / {totalAsesiAll}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-slate-500">
+                  Sertifikat Terunggah
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-slate-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <CheckCircle size={18} />
+              </div>
+            </div>
+          </div>
           {/* Filters & Search Row */}
           <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
             {/* Filter Dropdown */}
@@ -611,13 +660,17 @@ export default function UploadSertifikat() {
 
                         {/* Online / Offline / Status Badge */}
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                             pleno.status === "Selesai"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                               : "bg-amber-50 text-amber-700 border-amber-200"
                           }`}
                         >
-                          <CheckCircle2 size={12} className="stroke-[2.5]" />
+                          {pleno.status === "Selesai" ? (
+                            <CheckCircle2 size={12} className="stroke-[2.5]" />
+                          ) : (
+                            <Clock size={12} className="stroke-[2.5]" />
+                          )}
                           {pleno.status}
                         </span>
                       </div>
@@ -860,28 +913,28 @@ export default function UploadSertifikat() {
               <table className="w-full text-left border-collapse min-w-max">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                    <th className="px-3 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       No
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Nama Asesi
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Skema Sertifikasi
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Nomor Sertifikat
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Tanggal Terbit
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Status Sertifikat
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Tautan Google Drive
                     </th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-20 border-l border-white/10 whitespace-nowrap">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 whitespace-nowrap top-0 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
                       Aksi
                     </th>
                   </tr>
@@ -894,67 +947,72 @@ export default function UploadSertifikat() {
                         className="hover:bg-slate-50/80 transition-colors group"
                       >
                         {/* No */}
-                        <td className="px-3 py-4 align-middle text-center whitespace-nowrap">
-                          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-xs inline-flex items-center justify-center">
+                        <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-[14px] inline-flex items-center justify-center">
                             {index + 1}
                           </span>
                         </td>
 
                         {/* Nama Asesi */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
-                          <p className="font-bold text-slate-900 text-sm whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle whitespace-nowrap">
+                          <p className="font-bold text-slate-900 text-[14px] whitespace-nowrap">
                             {candidate.nama}
                           </p>
                         </td>
 
                         {/* Skema Sertifikasi */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
-                          <span className="inline-block px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold border border-slate-200 whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle whitespace-nowrap">
+                          <p className="font-medium text-slate-700 text-[14px] whitespace-nowrap">
                             {candidate.skema}
-                          </span>
+                          </p>
                         </td>
 
                         {/* Nomor Sertifikat */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle whitespace-nowrap">
                           {candidate.noSertifikat ? (
-                            <p className="font-mono font-bold text-slate-800 text-xs whitespace-nowrap">
+                            <p className="font-bold text-slate-900 text-[14px] whitespace-nowrap">
                               {candidate.noSertifikat}
                             </p>
                           ) : (
-                            <span className="text-slate-400 italic text-xs whitespace-nowrap">
+                            <span className="text-slate-400 italic text-[14px] whitespace-nowrap">
                               -
                             </span>
                           )}
                         </td>
 
                         {/* Tanggal Terbit */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle whitespace-nowrap">
                           {candidate.issueDate ? (
-                            <p className="font-medium text-slate-700 text-xs whitespace-nowrap">
+                            <p className="font-medium text-slate-700 text-[14px] whitespace-nowrap">
                               {candidate.issueDate}
                             </p>
                           ) : (
-                            <span className="text-slate-400 italic text-xs whitespace-nowrap">
+                            <span className="text-slate-400 italic text-[14px] whitespace-nowrap">
                               -
                             </span>
                           )}
                         </td>
 
                         {/* Status Sertifikat */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle whitespace-nowrap">
                           {candidate.status === "Terbit" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                              <CheckCircle2 size={12} /> Terbit
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                              <CheckCircle2
+                                size={12}
+                                className="stroke-[2.5]"
+                              />{" "}
+                              Terbit
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
-                              <AlertCircle size={12} /> Belum Upload
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                              <AlertCircle size={12} className="stroke-[2.5]" />{" "}
+                              Belum Upload
                             </span>
                           )}
                         </td>
 
                         {/* Tautan Google Drive */}
-                        <td className="px-4 py-4 align-middle whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle whitespace-nowrap">
                           {candidate.status === "Terbit" &&
                           candidate.gdriveUrl ? (
                             <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -962,11 +1020,11 @@ export default function UploadSertifikat() {
                                 href={candidate.gdriveUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-bold text-[#008BE3] hover:underline bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-200 transition-colors whitespace-nowrap"
+                                className="inline-flex items-center gap-1 text-[14px] font-bold text-[#008BE3] hover:underline bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-200 transition-colors whitespace-nowrap"
                                 title={candidate.gdriveUrl}
                               >
                                 <ExternalLink size={12} className="shrink-0" />
-                                <span className="truncate max-w-[200px]">
+                                <span className="truncate max-w-50">
                                   {candidate.gdriveUrl}
                                 </span>
                               </a>
@@ -988,14 +1046,14 @@ export default function UploadSertifikat() {
                               </button>
                             </div>
                           ) : (
-                            <span className="text-slate-400 italic text-xs whitespace-nowrap">
+                            <span className="text-slate-400 italic text-[14px] whitespace-nowrap">
                               -
                             </span>
                           )}
                         </td>
 
                         {/* ACTION COLUMN ON THE RIGHT */}
-                        <td className="px-4 py-4 align-middle text-center bg-white group-hover:bg-slate-50/80 sticky right-0 z-10 border-l border-slate-100 whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle text-center bg-white group-hover:bg-slate-50/80 sticky right-0 z-10 border-l border-slate-100 whitespace-nowrap">
                           {readOnly ? (
                             <button
                               onClick={() =>
@@ -1005,7 +1063,7 @@ export default function UploadSertifikat() {
                                   candidate,
                                 )
                               }
-                              className="bg-sky-50 hover:bg-sky-100 text-[#008BE3] border border-sky-200 px-3 py-1.5 rounded-lg font-bold text-xs shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                              className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                               title="Lihat Detail Sertifikat Asesi"
                             >
                               <Eye size={14} /> Detail
@@ -1135,7 +1193,7 @@ export default function UploadSertifikat() {
 
               {/* Google Drive Link Input */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700 mb-1 items-center justify-between">
                   <span>Tautan Google Drive Sertifikat {!readOnly && "*"}</span>
                   <span className="text-[10px] text-[#008BE3] font-bold">
                     PDF / Google Drive URL
@@ -1173,12 +1231,26 @@ export default function UploadSertifikat() {
                   {!readOnly && (
                     <button
                       type="button"
+                      disabled={isLoading}
                       onClick={() => handleDownloadSertifikat()}
-                      className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                      className={`px-3.5 py-2.5 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95 ${
+                        isLoading
+                          ? "bg-slate-400 cursor-not-allowed"
+                          : "bg-emerald-600 hover:bg-emerald-700"
+                      }`}
                       title="Generate otomatis tautan Google Drive sertifikat"
                     >
-                      <Sparkles size={14} />
-                      <span>Generate Sertifikat</span>
+                      {isLoading ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={14} />
+                          <span>Generate Sertifikat</span>
+                        </>
+                      )}
                     </button>
                   )}
                 </div>

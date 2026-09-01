@@ -660,27 +660,26 @@ export default function Reports() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-8 pb-28 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Page */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
-            <BarChart2 size={24} className="stroke-[2.5]" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+            <BarChart2 size={20} className="stroke-[2.5]" />
           </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
               Laporan & Statistik Sistem
-            </h2>
-            <p className="text-xs text-gray-500 font-medium">
+            </h1>
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4 truncate">
               Data rekapitulasi kelulusan asesi, hasil asesmen, dan performa
-              skema sertifikasi LSP.
             </p>
           </div>
         </div>
       </div>
 
       {/* Filter Row */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-xs border border-slate-200/80 space-y-3">
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
           <Filter size={15} className="text-[#008BE3]" />
           <span>Filter Laporan Data</span>
@@ -742,7 +741,7 @@ export default function Reports() {
       {/* STATS CARDS (ANGKA KUNCI LAPORAN) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {/* Total Asesi */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between">
+        <div className="bg-[#F0F9FF] p-6 rounded-xl border border-[#BAE6FD] shadow-2xs flex items-center justify-between group hover:scale-[1.02] hover:shadow-md transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Total Asesi Teruji
@@ -760,7 +759,7 @@ export default function Reports() {
         </div>
 
         {/* Asesi Kompeten (Lulus) */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between">
+        <div className="bg-[#F4FBF7] p-6 rounded-xl border border-[#A7F3D0] shadow-2xs flex items-center justify-between group hover:scale-[1.02] hover:shadow-md transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Asesi Lulus (Kompeten)
@@ -778,7 +777,7 @@ export default function Reports() {
         </div>
 
         {/* Asesi Belum Kompeten */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between">
+        <div className="bg-[#FFF1F2] p-6 rounded-xl border border-[#FECDD3] shadow-2xs flex items-center justify-between group hover:scale-[1.02] hover:shadow-md transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Belum Kompeten
@@ -796,7 +795,7 @@ export default function Reports() {
         </div>
 
         {/* Tingkat Kelulusan */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between">
+        <div className="bg-[#FFFBEB] p-6 rounded-xl border border-[#FDE68A] shadow-2xs flex items-center justify-between group hover:scale-[1.02] hover:shadow-md transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Tingkat Kelulusan
@@ -817,7 +816,7 @@ export default function Reports() {
       {/* LARGER CHARTS SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Pie Chart (Larger View) */}
-        <div className="lg:col-span-4 bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white p-6 sm:p-7 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[#008BE3]"></span>
@@ -926,7 +925,7 @@ export default function Reports() {
         </div>
 
         {/* Bar Chart (Larger View) */}
-        <div className="lg:col-span-8 bg-white p-6 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-white p-6 sm:p-7 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
@@ -1016,7 +1015,7 @@ export default function Reports() {
       </div>
 
       {/* NUMERICAL DATA TABLE PER SCHEME (ANGKA) */}
-      <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden space-y-0">
+      <div className="bg-white rounded-xl shadow-2xs border border-slate-200/80 overflow-hidden space-y-0">
         <div className="p-5 sm:p-6 bg-white border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
@@ -1039,20 +1038,20 @@ export default function Reports() {
 
         {/* Table View */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase font-black tracking-wider text-[11px]">
-                <th className="py-3.5 px-4 w-12 text-center">No</th>
-                <th className="py-3.5 px-4">Nama Skema Sertifikasi</th>
-                <th className="py-3.5 px-4 text-center">Total Asesi</th>
-                <th className="py-3.5 px-4 text-center">
+              <tr className="bg-[#0F172A] border-b border-[#0F172A] text-white/90 uppercase font-bold tracking-wider text-xs">
+                <th className="py-4 px-6 w-12 text-center sticky top-0 z-20 bg-[#0F172A]">No</th>
+                <th className="py-4 px-6 text-left sticky top-0 z-20 bg-[#0F172A]">Nama Skema Sertifikasi</th>
+                <th className="py-4 px-6 text-center sticky top-0 z-20 bg-[#0F172A]">Total Asesi</th>
+                <th className="py-4 px-6 text-center sticky top-0 z-20 bg-[#0F172A]">
                   Jumlah Lulus (Kompeten)
                 </th>
-                <th className="py-3.5 px-4 text-center">
+                <th className="py-4 px-6 text-center sticky top-0 z-20 bg-[#0F172A]">
                   Jumlah Belum Kompeten
                 </th>
-                <th className="py-3.5 px-4 text-center">Tingkat Kelulusan</th>
-                <th className="py-3.5 px-4 text-center">Status Performansi</th>
+                <th className="py-4 px-6 text-center sticky top-0 z-20 bg-[#0F172A]">Tingkat Kelulusan</th>
+                <th className="py-4 px-6 text-center sticky top-0 z-20 bg-[#0F172A]">Status Performansi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200/80 font-medium text-slate-800">
@@ -1064,29 +1063,29 @@ export default function Reports() {
                       key={idx}
                       className="hover:bg-slate-50/80 transition-colors"
                     >
-                      <td className="py-3.5 px-4 text-center font-bold text-slate-400">
+                      <td className="py-4 px-6 text-center font-bold text-slate-400">
                         {idx + 1}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                      <td className="py-4 px-6 font-bold text-slate-900">
                         {scheme.skema}
                       </td>
-                      <td className="py-3.5 px-4 text-center font-extrabold text-slate-800">
+                      <td className="py-4 px-6 text-center font-extrabold text-slate-800">
                         {scheme.total} Asesi
                       </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-black bg-emerald-100 text-emerald-800">
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-[13px] font-black bg-emerald-100 text-emerald-800">
                           {scheme.kompeten} Asesi
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-black bg-rose-100 text-rose-800">
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-[13px] font-black bg-rose-100 text-rose-800">
                           {scheme.belumKompeten} Asesi
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-center font-black text-slate-900 text-sm">
+                      <td className="py-4 px-6 text-center font-black text-slate-900 text-sm">
                         {scheme.rate}%
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-4 px-6 text-center">
                         {rateNum >= 90 ? (
                           <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                             Sangat Baik
@@ -1118,26 +1117,26 @@ export default function Reports() {
             {/* Table Summary Footer */}
             {statsSummary.schemeList.length > 0 && (
               <tfoot>
-                <tr className="bg-slate-900 text-white font-bold text-xs">
+                <tr className="bg-gray-50 border-t border-gray-200 text-slate-700 font-bold text-xs">
                   <td
                     colSpan={2}
-                    className="py-4 px-4 font-black uppercase tracking-wider text-right"
+                    className="py-4 px-6 font-black uppercase tracking-wider text-right"
                   >
                     Total Keseluruhan Laporan:
                   </td>
-                  <td className="py-4 px-4 text-center font-black text-sm">
+                  <td className="py-4 px-6 text-center font-black text-slate-900 text-sm">
                     {statsSummary.totalAsesi} Asesi
                   </td>
-                  <td className="py-4 px-4 text-center font-black text-emerald-400 text-sm">
+                  <td className="py-4 px-6 text-center font-black text-emerald-600 text-sm">
                     {statsSummary.totalKompeten} Lulus
                   </td>
-                  <td className="py-4 px-4 text-center font-black text-rose-400 text-sm">
+                  <td className="py-4 px-6 text-center font-black text-rose-600 text-sm">
                     {statsSummary.totalBelumKompeten} Belum Lulus
                   </td>
-                  <td className="py-4 px-4 text-center font-black text-amber-300 text-sm">
+                  <td className="py-4 px-6 text-center font-black text-amber-600 text-sm">
                     {statsSummary.tingkatKelulusan}%
                   </td>
-                  <td className="py-4 px-4 text-center text-slate-400 font-normal">
+                  <td className="py-4 px-6 text-center text-slate-500 font-normal">
                     Rata-rata LSP
                   </td>
                 </tr>

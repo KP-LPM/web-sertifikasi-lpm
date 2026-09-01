@@ -12,6 +12,8 @@ import {
   XCircle,
   Eye,
   User,
+  Filter,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
@@ -188,408 +190,418 @@ export default function TukManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
-      {/* Header section... */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
-            <MapPin size={20} className="stroke-[2.5]" />
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
+      {!(isModalOpen || isEditModalOpen) ? (
+        <>
+          {/* Header section... */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+                <MapPin size={20} className="stroke-[2.5]" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                  Manajemen TUK
+                </h1>
+                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
+                  Kelola Tempat Uji Kompetensi dan kapasitasnya
+                </p>
+              </div>
+            </div>
+            {!readOnly && (
+              <button
+                onClick={() => {
+                  setFormData(DEFAULT_FORM_DATA);
+                  setIsModalOpen(true);
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer w-full sm:w-auto"
+              >
+                <Plus size={18} className="stroke-3" />
+                Tambah TUK Baru
+              </button>
+            )}
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Manajemen TUK
-            </h1>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
-              Kelola Tempat Uji Kompetensi dan kapasitasnya
-            </p>
+
+          {/* Filters... */}
+          <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
+              <div className="flex items-center gap-2">
+                <div className="relative w-full sm:w-48">
+                  <Filter
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    size={16}
+                  />
+                  <select
+                    value={tipeFilter}
+                    onChange={(e) => settipeFilter(e.target.value)}
+                    className="w-full appearance-none pl-10 pr-9 py-2 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
+                  >
+                    <option>Semua tipe</option>
+                    <option>Sewaktu</option>
+                    <option>Mandiri</option>
+                  </select>
+                </div>
+                <div className="relative w-full sm:w-48">
+                  <Filter
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    size={16}
+                  />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full appearance-none pl-10 pr-9 py-2 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
+                  >
+                    <option>Semua Status</option>
+                    <option>Aktif</option>
+                    <option>Tidak Aktif</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3 h-10 w-full sm:w-72 border border-slate-200 focus-within:border-[#008BE3]/40 transition-colors order-first md:order-last">
+                <Search className="text-slate-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Cari ID atau nama TUK..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-slate-800 placeholder-gray-400 font-medium"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        {!readOnly && (
-          <button
-            onClick={() => {
-              setFormData(DEFAULT_FORM_DATA);
-              setIsModalOpen(true);
-            }}
-            className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm w-full sm:w-auto justify-center"
-          >
-            <Plus size={18} />
-            Tambah TUK Baru
-          </button>
-        )}
-      </div>
 
-      {/* Filters... */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Cari ID atau nama TUK..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all font-medium"
-          />
-        </div>
-        <div className="flex gap-3">
-          <select
-            value={tipeFilter}
-            onChange={(e) => settipeFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-35"
-          >
-            <option>Semua tipe</option>
-            <option>Sewaktu</option>
-            <option>Mandiri</option>
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 text-slate-700 text-sm rounded-lg px-4 py-2 outline-none focus:border-[#008BE3] font-medium min-w-35"
-          >
-            <option>Semua Status</option>
-            <option>Aktif</option>
-            <option>Tidak Aktif</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {filteredTuk.map((tuk) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              key={tuk.id}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col group overflow-hidden"
-            >
-              <div className="p-5 border-b border-gray-50 flex-1">
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-xs font-bold text-[#008BE3] bg-sky-50 px-2.5 py-1 rounded-md tracking-wide">
-                    {tuk.id}
-                  </span>
-                  <div className="flex items-center gap-1.5 sm:opacity-0 group-hover:opacity-100 opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openDetailModal(tuk)}
-                      className="px-2.5 py-1 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
-                      title="Lihat Detail"
-                    >
-                      <Eye size={14} />
-                      <span>Detail</span>
-                    </button>
-                    {!readOnly && (
-                      <>
+          {/* Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {filteredTuk.map((tuk) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  key={tuk.id}
+                  className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col group overflow-hidden"
+                >
+                  <div className="p-5 border-b border-gray-50 flex-1">
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-[#008BE3] text-[11px] font-black tracking-wider uppercase border border-sky-100">
+                        {tuk.id}
+                      </span>
+                      <div className="flex items-center gap-1.5 sm:opacity-0 group-hover:opacity-100 opacity-100 transition-opacity">
                         <button
-                          onClick={() => openEditModal(tuk)}
-                          className="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-md transition-colors"
+                          onClick={() => openDetailModal(tuk)}
+                          className="px-2.5 py-1 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+                          title="Lihat Detail"
                         >
-                          <Edit size={16} />
+                          <Eye size={14} />
+                          <span>Detail</span>
                         </button>
+                        {!readOnly && (
+                          <>
+                            <button
+                              onClick={() => openEditModal(tuk)}
+                              className="p-1.5 text-slate-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(tuk)}
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="font-black text-slate-900 text-[15px] sm:text-base mb-1.5 leading-snug">
+                      {tuk.nama}
+                    </h3>
+
+                    <div className="flex items-start gap-2 mt-4 text-xs sm:text-sm text-slate-500 font-medium">
+                      <MapPin
+                        size={16}
+                        className="text-slate-400 shrink-0 mt-0.5"
+                      />
+                      <span className="line-clamp-2 leading-relaxed">
+                        {tuk.alamat}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50/50 flex items-center justify-between mt-auto">
+                    <div className="flex items-center gap-4 text-xs font-bold">
+                      <div className="flex items-center gap-1.5 text-slate-600">
+                        <Building2 size={14} className="text-slate-400" />
+                        {tuk.kapasitas} Orang
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {tuk.status === "Aktif" ? (
+                          <span className="text-emerald-600 flex items-center gap-1">
+                            <CheckCircle size={14} /> Aktif
+                          </span>
+                        ) : (
+                          <span className="text-red-500 flex items-center gap-1">
+                            <XCircle size={14} /> Tidak Aktif
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
+                      {tuk.tipe}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {filteredTuk.length === 0 && (
+            <div className="text-center py-16 bg-white rounded-xl border border-gray-100 border-dashed">
+              <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building2 size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-1">
+                Tidak ada TUK ditemukan
+              </h3>
+              <p className="text-gray-500 text-sm">
+                Coba sesuaikan kata kunci pencarian atau filter Anda.
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        /* FORM VIEW */
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setIsEditModalOpen(false);
+                }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
+                title="Kembali ke Daftar TUK"
+              >
+                <ArrowLeft size={18} className="stroke-[2.5]" />
+              </button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                  {isEditModalOpen ? "Edit TUK" : "Tambah TUK Baru"}
+                </h1>
+                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
+                  Lengkapi form di bawah ini
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+            <div className="p-6 md:p-8 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Nama Gedung/Alamat
+                  </label>
+                  <select
+                    value={formData.nama}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nama: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
+                  >
+                    {UIN_BUILDINGS.map((building) => (
+                      <option key={building} value={building}>
+                        {building}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Keterangan Ruangan/Link
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Misal: Aula Lantai 1"
+                    value={formData.keterangan}
+                    onChange={(e) =>
+                      setFormData({ ...formData, keterangan: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Penanggung Jawab TUK
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Nama Penanggung Jawab"
+                    value={formData.penanggungJawab}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        penanggungJawab: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Kapasitas Peserta
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={formData.kapasitas}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        kapasitas: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    tipe TUK
+                  </label>
+                  <select
+                    value={formData.tipe}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tipe: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                  >
+                    <option>Sewaktu</option>
+                    <option>Mandiri</option>
+                  </select>
+                </div>
+
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Status
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({ ...formData, status: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                  >
+                    <option>Aktif</option>
+                    <option>Tidak Aktif</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Alamat Lengkap
+                  </label>
+                  <textarea
+                    placeholder="Masukkan alamat lengkap TUK..."
+                    rows={2}
+                    value={formData.alamat}
+                    onChange={(e) =>
+                      setFormData({ ...formData, alamat: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 resize-none"
+                  ></textarea>
+                </div>
+
+                {/* Inventaris Section */}
+                <div className="md:col-span-2 border-t border-gray-100 pt-4 mt-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-bold text-slate-800">
+                      Inventaris / Fasilitas TUK
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addInventaris}
+                      className="text-xs font-bold text-[#008BE3] hover:text-[#0076C2] flex items-center gap-1 bg-sky-50 px-2 py-1 rounded"
+                    >
+                      <Plus size={14} /> Tambah
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {formData.inventaris?.map((inv, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder="Nama Fasilitas (mis: Meja)"
+                          value={inv.nama}
+                          onChange={(e) =>
+                            handleInventarisChange(idx, "nama", e.target.value)
+                          }
+                          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Jml"
+                          value={inv.jumlah}
+                          onChange={(e) =>
+                            handleInventarisChange(
+                              idx,
+                              "jumlah",
+                              Number(e.target.value),
+                            )
+                          }
+                          className="w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                        />
                         <button
-                          onClick={() => openDeleteModal(tuk)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                          type="button"
+                          onClick={() => removeInventaris(idx)}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 size={16} />
                         </button>
-                      </>
+                      </div>
+                    ))}
+                    {formData.inventaris?.length === 0 && (
+                      <p className="text-sm text-gray-500 italic">
+                        Belum ada inventaris ditambahkan.
+                      </p>
                     )}
                   </div>
                 </div>
-
-                <h3 className="font-bold text-slate-900 text-lg mb-1 leading-tight">
-                  {tuk.nama}
-                </h3>
-
-                <div className="flex items-center gap-2 mt-4 text-sm text-gray-500 font-medium">
-                  <MapPin size={16} className="text-gray-400 shrink-0" />
-                  <span className="line-clamp-2">{tuk.alamat}</span>
-                </div>
               </div>
+            </div>
 
-              <div className="p-4 bg-gray-50/50 flex items-center justify-between mt-auto">
-                <div className="flex items-center gap-4 text-xs font-bold">
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                    <Building2 size={14} className="text-slate-400" />
-                    {tuk.kapasitas} Orang
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {tuk.status === "Aktif" ? (
-                      <span className="text-emerald-600 flex items-center gap-1">
-                        <CheckCircle size={14} /> Aktif
-                      </span>
-                    ) : (
-                      <span className="text-red-500 flex items-center gap-1">
-                        <XCircle size={14} /> Tidak Aktif
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-white border border-gray-200 px-2 py-1 rounded-md">
-                  {tuk.tipe}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {filteredTuk.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-100 border-dashed">
-          <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Building2 size={24} />
+            <div className="px-6 md:px-8 py-5 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setIsEditModalOpen(false);
+                }}
+                className="px-4 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                onClick={isEditModalOpen ? saveEdit : saveAdd}
+                className="px-4 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-lg transition-colors shadow-xs cursor-pointer"
+              >
+                Simpan TUK
+              </button>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 mb-1">
-            Tidak ada TUK ditemukan
-          </h3>
-          <p className="text-gray-500 text-sm">
-            Coba sesuaikan kata kunci pencarian atau filter Anda.
-          </p>
-        </div>
+        </motion.div>
       )}
 
-      {/* Add / Edit Modal */}
+      {/* Delete Modal */}
       <AnimatePresence>
-        {(isModalOpen || isEditModalOpen) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setIsModalOpen(false);
-                setIsEditModalOpen(false);
-              }}
-              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-2xl relative z-10 overflow-hidden max-h-[90vh] flex flex-col"
-            >
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                <h3 className="font-bold text-slate-900 text-lg">
-                  {isEditModalOpen ? "Edit TUK" : "Tambah TUK Baru"}
-                </h3>
-                <button
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setIsEditModalOpen(false);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Plus size={20} className="rotate-45" />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-5 overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Nama Gedung/Alamat
-                    </label>
-                    <select
-                      value={formData.nama}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nama: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white"
-                    >
-                      {UIN_BUILDINGS.map((building) => (
-                        <option key={building} value={building}>
-                          {building}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Keterangan Ruangan/Link
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Misal: Aula Lantai 1"
-                      value={formData.keterangan}
-                      onChange={(e) =>
-                        setFormData({ ...formData, keterangan: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Penanggung Jawab TUK
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Nama Penanggung Jawab"
-                      value={formData.penanggungJawab}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          penanggungJawab: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    />
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Kapasitas Peserta
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={formData.kapasitas}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          kapasitas: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    />
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      tipe TUK
-                    </label>
-                    <select
-                      value={formData.tipe}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tipe: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    >
-                      <option>Sewaktu</option>
-                      <option>Mandiri</option>
-                    </select>
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Status
-                    </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) =>
-                        setFormData({ ...formData, status: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    >
-                      <option>Aktif</option>
-                      <option>Tidak Aktif</option>
-                    </select>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Alamat Lengkap
-                    </label>
-                    <textarea
-                      placeholder="Masukkan alamat lengkap TUK..."
-                      rows={2}
-                      value={formData.alamat}
-                      onChange={(e) =>
-                        setFormData({ ...formData, alamat: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 resize-none"
-                    ></textarea>
-                  </div>
-
-                  {/* Inventaris Section */}
-                  <div className="md:col-span-2 border-t border-gray-100 pt-4 mt-2">
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="block text-sm font-bold text-slate-800">
-                        Inventaris / Fasilitas TUK
-                      </label>
-                      <button
-                        type="button"
-                        onClick={addInventaris}
-                        className="text-xs font-bold text-[#008BE3] hover:text-[#0076C2] flex items-center gap-1 bg-sky-50 px-2 py-1 rounded"
-                      >
-                        <Plus size={14} /> Tambah
-                      </button>
-                    </div>
-
-                    <div className="space-y-2">
-                      {formData.inventaris?.map((inv, idx) => (
-                        <div key={idx} className="flex items-center gap-3">
-                          <input
-                            type="text"
-                            placeholder="Nama Fasilitas (mis: Meja)"
-                            value={inv.nama}
-                            onChange={(e) =>
-                              handleInventarisChange(
-                                idx,
-                                "nama",
-                                e.target.value,
-                              )
-                            }
-                            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                          />
-                          <input
-                            type="number"
-                            placeholder="Jml"
-                            value={inv.jumlah}
-                            onChange={(e) =>
-                              handleInventarisChange(
-                                idx,
-                                "jumlah",
-                                Number(e.target.value),
-                              )
-                            }
-                            className="w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeInventaris(idx)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ))}
-                      {formData.inventaris?.length === 0 && (
-                        <p className="text-sm text-gray-500 italic">
-                          Belum ada inventaris ditambahkan.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50 mt-auto">
-                <button
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setIsEditModalOpen(false);
-                  }}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={isEditModalOpen ? saveEdit : saveAdd}
-                  className="px-4 py-2 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-lg transition-colors shadow-xs"
-                >
-                  Simpan TUK
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Delete Modal */}
         {isDeleteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
