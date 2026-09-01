@@ -69,7 +69,7 @@ function VerifikasiBandingList({
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -87,30 +87,32 @@ function VerifikasiBandingList({
         </div>
       </div>
 
-      {/* Filter Section */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Cari nama asesi atau skema..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all"
-          />
+      {/* Table Section with Filter */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden flex flex-col">
+        {/* Table Toolbar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
+          <div className="relative w-full md:max-w-md">
+            <Search
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
+            <input
+              type="text"
+              placeholder="Cari nama asesi atau skema..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none text-xs sm:text-sm transition-all placeholder:text-slate-400"
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Table Section */}
-      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto relative">
+          <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-200">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16 whitespace-nowrap">
+                  No
+                </th>
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap min-w-[200px] sm:w-[30%]">
                   Nama Asesi
                 </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -119,19 +121,32 @@ function VerifikasiBandingList({
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Skema
                 </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs text-center font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky right-0 bg-[#0F172A] z-20 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 whitespace-nowrap">
                   Aksi
                 </th>
               </tr>
             </thead>
             <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
               {displayedAssessments.length > 0 ? (
-                displayedAssessments.map((item) => (
+                displayedAssessments.map((item, idx) => (
                   <tr
                     key={item.id}
                     className="group/row hover:bg-[#F9FAFC] transition-colors"
                   >
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
+                      <div
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                          idx % 3 === 0
+                            ? "bg-[#008BE3]/10 text-[#008BE3]"
+                            : idx % 3 === 1
+                              ? "bg-[#84CC16]/10 text-[#73B412]"
+                              : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {idx + 1}
+                      </div>
+                    </td>
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
                       {item.nama}
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
@@ -147,10 +162,10 @@ function VerifikasiBandingList({
                         {item.tipeTuk}
                       </span>
                     </td>
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-[#008BE3] whitespace-nowrap">
                       {item.skema}
                     </td>
-                    <td className="px-2.5 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC]   sticky right-0 z-10">
+                    <td className="px-2.5 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
                       <div className="flex justify-center">
                         <button
                           onClick={() => onVerify(item)}
@@ -165,7 +180,7 @@ function VerifikasiBandingList({
               ) : (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-16 text-center text-gray-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -263,7 +278,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700 relative">
+    <div className="space-y-6 pb-24 text-sm text-gray-700 relative">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 border border-slate-700">
@@ -361,7 +376,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* Alasan Banding Section */}
-        <div className="p-4 sm:p-8 border-b border-gray-100 bg-orange-50/50">
+        <div className="p-4 sm:p-6 border-b border-gray-100 bg-orange-50/50">
           <h2 className="text-base sm:text-lg font-black text-orange-900 tracking-tight mb-4 flex items-center gap-2">
             <AlertCircle size={20} className="text-orange-600 shrink-0" />{" "}
             Pengajuan Banding Asesi
@@ -392,7 +407,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* Detail Penilaian (Read-only) */}
-        <div className="p-8">
+        <div className="p-4 sm:p-6">
           <h2 className="text-lg font-black text-slate-900 tracking-tight mb-6 flex items-center gap-2">
             Rekapitulasi Penilaian Asesmen
           </h2>

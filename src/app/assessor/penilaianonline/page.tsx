@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import {
   Video,
   FileText,
@@ -14,21 +14,8 @@ import { useRouter } from "next/navigation";
 export default function PenilaianOnline() {
   const router = useRouter();
   const { selectedAsesmen } = useAppContext();
-  const [keputusan, setKeputusan] = useState("");
-
-  const [pencapaian, setPencapaian] = useState<Record<string, string>>({});
-
-  const handleSimpan = () => {
-    alert(`Penilaian akhir berhasil disimpan.\nKeputusan: ${keputusan}`);
-    router.push("assessor/candidates");
-  };
-
-  const handlePencapaian = (code: string, value: string) => {
-    setPencapaian((prev) => ({ ...prev, [code]: value }));
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
         <div className="flex items-center gap-3 min-w-0">
           <button

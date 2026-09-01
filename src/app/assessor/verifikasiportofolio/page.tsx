@@ -352,92 +352,117 @@ export default function VerifikasiPortofolio() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-24 text-sm text-gray-700">
-      {/* Page Header & Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-start gap-3">
-          <div className="p-2.5 bg-sky-50 text-[#008BE3] rounded-xl border border-sky-100 shrink-0 mt-0.5">
-            <FolderCheck size={22} />
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+            <FolderCheck size={20} className="stroke-[2.5]" />
           </div>
           <div className="min-w-0">
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Verifikasi Portofolio
+              {isUploadModalOpen ? "Upload Portofolio" : "Verifikasi Portofolio"}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-medium">
-              Upload dan kelola dokumen portofolio Anda untuk diverifikasi oleh
-              admin.
+            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4">
+              {isUploadModalOpen
+                ? "Lengkapi informasi portofolio untuk diajukan."
+                : "Upload dan kelola dokumen portofolio Anda untuk diverifikasi oleh admin."}
             </p>
           </div>
         </div>
 
         <button
           onClick={() => {
-            resetForm();
-            setIsUploadModalOpen(true);
+            if (isUploadModalOpen) {
+              setIsUploadModalOpen(false);
+            } else {
+              resetForm();
+              setIsUploadModalOpen(true);
+            }
           }}
           className="flex items-center justify-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-2xs transition-colors cursor-pointer shrink-0"
         >
-          <Plus size={18} className="stroke-[2.5]" />
-          <span>Upload Portofolio</span>
+          {isUploadModalOpen ? (
+            <X size={18} className="stroke-[2.5]" />
+          ) : (
+            <Plus size={18} className="stroke-[2.5]" />
+          )}
+          <span>{isUploadModalOpen ? "Batal Upload" : "Upload Portofolio"}</span>
         </button>
       </div>
 
+      {!isUploadModalOpen ? (
+        <>
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-bold">
-            <FileText size={20} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+        <div className="bg-[#E6F4FF] border border-[#BCE0FD] hover:border-sky-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-black uppercase tracking-wider block text-sky-800">
               Total Dokumen
-            </p>
-            <p className="text-xl font-black text-slate-900">{totalCount}</p>
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-slate-900 tracking-tight">
+                {totalCount}
+              </span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#008BE3] text-white">
+            <FileText size={20} className="stroke-[2.5]" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <Clock size={20} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+        <div className="bg-[#FFFBEB] border border-[#FDE68A] hover:border-amber-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-black uppercase tracking-wider block text-amber-800">
               Menunggu
-            </p>
-            <p className="text-xl font-black text-amber-600">{pendingCount}</p>
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-slate-900 tracking-tight">
+                {pendingCount}
+              </span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-amber-500 text-white">
+            <Clock size={20} className="stroke-[2.5]" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle size={20} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+        <div className="bg-[#F4FBF7] border border-[#A7F3D0] hover:border-emerald-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-black uppercase tracking-wider block text-emerald-800">
               Terverifikasi
-            </p>
-            <p className="text-xl font-black text-emerald-600">
-              {verifiedCount}
-            </p>
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-slate-900 tracking-tight">
+                {verifiedCount}
+              </span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#84CC16] text-white">
+            <CheckCircle size={20} className="stroke-[2.5]" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold">
-            <AlertCircle size={20} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+        <div className="bg-[#FEF2F2] border border-[#FECACA] hover:border-red-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-black uppercase tracking-wider block text-red-800">
               Ditolak
-            </p>
-            <p className="text-xl font-black text-red-600">{rejectedCount}</p>
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-slate-900 tracking-tight">
+                {rejectedCount}
+              </span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-red-500 text-white">
+            <AlertCircle size={20} className="stroke-[2.5]" />
           </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-slate-200">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+      {/* Table Section */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        {/* Table Toolbar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
           <div className="relative w-full md:max-w-md">
             <Search
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
@@ -475,14 +500,14 @@ export default function VerifikasiPortofolio() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Table */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative">
           <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16 whitespace-nowrap">
+                  No
+                </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Skema
                 </th>
@@ -490,10 +515,13 @@ export default function VerifikasiPortofolio() {
                   Nama Dokumen
                 </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Tanggal Verifikasi
+                  Status Asesor
                 </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  File
+                  Alamat LSP
+                </th>
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                  Tanggal Verifikasi
                 </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Status Verifikasi
@@ -503,11 +531,11 @@ export default function VerifikasiPortofolio() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
               {filteredPortfolios.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={8}
                     className="px-6 py-12 text-center text-slate-400"
                   >
                     <FileText size={40} className="mx-auto mb-3 opacity-30" />
@@ -521,126 +549,77 @@ export default function VerifikasiPortofolio() {
                   </td>
                 </tr>
               ) : (
-                filteredPortfolios.map((item) => (
+                filteredPortfolios.map((item, idx) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-slate-50/80 transition-colors"
+                    className="group/row hover:bg-[#F9FAFC] transition-colors"
                   >
+                    {/* No */}
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
+                      <div
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                          idx % 3 === 0
+                            ? "bg-[#008BE3]/10 text-[#008BE3]"
+                            : idx % 3 === 1
+                              ? "bg-[#84CC16]/10 text-[#73B412]"
+                              : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {idx + 1}
+                      </div>
+                    </td>
+
                     {/* Skema */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-bold text-sm text-slate-900 block whitespace-nowrap">
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                      <span className="font-bold text-[11px] sm:text-sm text-[#008BE3] block whitespace-nowrap">
                         {item.skema}
                       </span>
                     </td>
 
-                    {/* Nama Dokumen & Status Asesor */}
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    {/* Nama Dokumen */}
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-900 whitespace-nowrap">
+                        <p className="text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
                           {item.namaDokumen}
                         </p>
-
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                              item.statusAsesor === "Asesor dari Luar"
-                                ? "bg-purple-50 text-purple-700 border-purple-200"
-                                : "bg-sky-50 text-sky-700 border-sky-200"
-                            }`}
-                          >
-                            {item.statusAsesor || "Asesor dari UIN Bandung"}
-                          </span>
-
-                          {item.alamatLsp && (
-                            <span
-                              className="text-[11px] text-slate-500 font-medium truncate max-w-45"
-                              title={item.alamatLsp}
-                            >
-                              • {item.alamatLsp}
-                            </span>
-                          )}
-                        </div>
-
                         {item.deskripsi && (
-                          <p className="text-xs text-slate-500 line-clamp-1 mt-1 whitespace-nowrap">
+                          <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-1 whitespace-nowrap">
                             {item.deskripsi}
                           </p>
                         )}
                       </div>
                     </td>
 
+                    {/* Status Asesor */}
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                      <span
+                        className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
+                          item.statusAsesor === "Asesor dari Luar"
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
+                            : "bg-sky-50 text-sky-700 border-sky-200"
+                        }`}
+                      >
+                        {item.statusAsesor || "Asesor dari UIN Bandung"}
+                      </span>
+                    </td>
+
+                    {/* Alamat LSP */}
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                      <span className="text-[11px] sm:text-sm text-slate-500 font-medium truncate max-w-45 block">
+                        {item.alamatLsp || "-"}
+                      </span>
+                    </td>
+
                     {/* Tanggal Verifikasi */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-slate-600 text-xs font-medium">
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-slate-500 text-[11px] sm:text-sm font-medium">
                         <Calendar size={14} className="text-slate-400" />
                         <span>{item.tanggal}</span>
                       </div>
                     </td>
 
-                    {/* File */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.statusAsesor === "Asesor dari Luar" ? (
-                        <div className="flex flex-col gap-1.5">
-                          <button
-                            onClick={() =>
-                              setPreviewFile({
-                                name:
-                                  item.filePeminjamanName ||
-                                  item.fileName ||
-                                  " ",
-                                type: item.fileType,
-                              })
-                            }
-                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                            title="File Peminjaman Asesor"
-                          >
-                            <Eye size={12} />
-                            <span className="truncate max-w-32.5">
-                              Peminjaman:{" "}
-                              {item.filePeminjamanName || item.fileName}
-                            </span>
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              setPreviewFile({
-                                name:
-                                  item.fileJawabanName ||
-                                  "Konfirmasi_Peminjaman.pdf",
-                                type: item.fileType,
-                              })
-                            }
-                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                            title="File Jawaban LSP Luar"
-                          >
-                            <Eye size={12} />
-                            <span className="truncate max-w-32.5">
-                              Jawaban LSP:{" "}
-                              {item.fileJawabanName ||
-                                "Konfirmasi_Peminjaman.pdf"}
-                            </span>
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            setPreviewFile({
-                              name: item.fileName || "",
-                              type: item.fileType,
-                            })
-                          }
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:text-[#0076C2] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Eye size={14} />
-                          <span className="truncate max-w-35">
-                            {item.fileName}
-                          </span>
-                        </button>
-                      )}
-                    </td>
-
                     {/* Status Verifikasi */}
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                       {item.status === "Terverifikasi" && (
                         <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5">
                           <CheckCircle size={14} className="stroke-[2.5]" />{" "}
@@ -662,7 +641,7 @@ export default function VerifikasiPortofolio() {
                     </td>
 
                     {/* Aksi */}
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white z-10 border-l border-slate-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.04)]">
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
                       <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                         {/* Lihat Detail */}
                         <button
@@ -714,44 +693,13 @@ export default function VerifikasiPortofolio() {
           </table>
         </div>
       </div>
-
-      {/* MODAL: + Upload Portofolio */}
-      <AnimatePresence>
-        {isUploadModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden my-auto max-h-[90vh] flex flex-col"
-            >
-              <div className="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-[#008BE3] flex items-center justify-center text-white shrink-0">
-                    <Upload size={18} />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-extrabold text-sm sm:text-base text-white leading-tight">
-                      Upload Portofolio Baru
-                    </h3>
-                    <p className="text-xs text-slate-300 font-medium">
-                      Lengkapi informasi portofolio untuk diajukan.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsUploadModalOpen(false)}
-                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form
-                onSubmit={handleUploadSubmit}
-                className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1"
-              >
+        </>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+          <form
+            onSubmit={handleUploadSubmit}
+            className="p-4 sm:p-6 space-y-4"
+          >
                 {/* Status Asesor */}
                 <div className="min-w-0">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -1020,10 +968,8 @@ export default function VerifikasiPortofolio() {
                   </button>
                 </div>
               </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* MODAL: Detail Portofolio */}
       <AnimatePresence>

@@ -323,6 +323,9 @@ export default function KelolaPengguna() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Email
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                  NIK
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Peran (Role)
                 </th>

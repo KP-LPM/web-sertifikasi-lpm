@@ -1017,7 +1017,7 @@ export default function TambahKonfigurasiPertanyaan() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 space-y-6 pb-28 text-sm text-gray-700">
+    <div className="space-y-6 pb-28 text-sm text-gray-700">
       {/* Toast Notification Alert */}
       <AnimatePresence>
         {validationError && (
@@ -1210,10 +1210,10 @@ export default function TambahKonfigurasiPertanyaan() {
         <div className="min-w-175">
           <div className="grid grid-cols-5 gap-2 relative">
             {/* Connecting Progress Line */}
-            <div className="absolute top-5 left-8 right-8 h-1 bg-gray-100 z-0">
+            <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-100 z-0">
               <div
                 className="h-full bg-[#008BE3] transition-all duration-300"
-                style={{ width: `${((activeStep - 1) / 4) * 100}%` }}
+                style={{ width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%` }}
               />
             </div>
 
