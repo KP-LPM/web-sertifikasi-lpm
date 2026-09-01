@@ -49,8 +49,8 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     status: "Belum Ditetapkan",
     plenoAttendees: [
       { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "dewan pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
-      { role: "komite skema", nama: "Asep Abdul Sahid, M.T." },
+      { role: "dewan_pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
+      { role: "komite_skema", nama: "Asep Abdul Sahid, M.T." },
     ],
     asesiList: [
       {
@@ -131,7 +131,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     status: "Belum Ditetapkan",
     plenoAttendees: [
       { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "komite skema", nama: "Siti Alia, M.T." },
+      { role: "komite_skema", nama: "Siti Alia, M.T." },
     ],
     asesiList: [
       {
@@ -189,7 +189,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     status: "Selesai",
     plenoAttendees: [
       { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "dewan pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
+      { role: "dewan_pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
     ],
     asesiList: [
       {
@@ -219,8 +219,8 @@ export default function SidangPleno() {
   const readOnly = user?.role !== "admin";
 
   // List State
-  const [sessions, setSessions] = useState<PlenoDetailData[]>(
-    DEFAULT_PLENO_SESSIONS,
+  const [sessions, setSessions] = useState<PlenoDetailData[]>(() =>
+    DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"),
   );
   const [selectedPlenoId, setSelectedPlenoId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -742,9 +742,10 @@ export default function SidangPleno() {
 
   // Quick Action to complete plenary session directly from table
   const handleCompletePlenoSession = (sessionId: string) => {
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, status: "Selesai" } : s)),
-    );
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    if (selectedPlenoId === sessionId) {
+      setSelectedPlenoId(null);
+    }
     setToastText({
       title: "Sidang Pleno Berhasil Diselesaikan!",
       desc: "Status sidang pleno telah diperbarui menjadi Selesai.",
@@ -998,7 +999,7 @@ export default function SidangPleno() {
       {selectedPlenoId && formData && (
         <div className="space-y-6">
           {/* Header Sidang Pleno with Back Button & Title */}
-          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5 min-w-0">
               <button
                 onClick={() => setSelectedPlenoId(null)}
@@ -1011,6 +1012,17 @@ export default function SidangPleno() {
                 {formData.title}
               </h2>
             </div>
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={() => handleCompletePlenoSession(String(formData.id))}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs shrink-0"
+                title="Selesaikan Sidang Pleno dan hapus dari daftar"
+              >
+                <CheckCircle size={16} />
+                <span>Selesaikan Sidang Pleno</span>
+              </button>
+            )}
           </div>
 
           {/* Section 1: Informasi Keputusan & Jadwal Sidang (Include Field Link Surat Berita Pleno) */}
@@ -1063,7 +1075,7 @@ export default function SidangPleno() {
               </div>
             </div>
 
-            {/* Peserta Sidang (Direktur, Dewan Pengarah, Komite & Notulis) */}
+            {/* Peserta Sidang (Direktur, dewan_pengarah, Komite & Notulis) */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Peserta Sidang (Direktur, Pengarah &amp; Komite)
@@ -1079,11 +1091,11 @@ export default function SidangPleno() {
                       : [
                           { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
                           {
-                            role: "dewan pengarah",
+                            role: "dewan_pengarah",
                             nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
                           },
                           {
-                            role: "komite skema",
+                            role: "komite_skema",
                             nama: "Asep Abdul Sahid, M.T.",
                           },
                         ];

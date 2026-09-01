@@ -17,6 +17,7 @@ model User {
   createdAt                       DateTime                          @default(now()) @map("created_at")
   resetToken                      String?                           @map("reset_token") @db.VarChar(255)
   resetTokenExpiry                DateTime?                         @map("reset_token_expiry")
+  isActive                        Boolean?                          @default(false) @map("is_active")
   jadwal_asesmen                  jadwal_asesmen[]
   konfigurasi_pertanyaan_penyusun konfigurasi_pertanyaan_penyusun[]
   pengajuanSkema                  PengajuanSkema[]
@@ -168,6 +169,7 @@ model PengajuanSkema {
   master_tuk             master_tuk?              @relation(fields: [tuk_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user                   User                     @relation(fields: [userId], references: [id])
   pleno_asesi            pleno_asesi[]
+  sertifikat             sertifikat?
   verifikasi_pengajuan   verifikasi_pengajuan?
 
   @@index([skemaId], map: "idx_pengajuan_skema_skema_id")
@@ -521,6 +523,7 @@ model pleno_asesi {
   users              User?          @relation(fields: [asesor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   pengajuan_skema    PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   pleno_batch        pleno_batch    @relation(fields: [pleno_batch_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sertifikat         sertifikat[]
 
   @@unique([pleno_batch_id, pengajuan_id])
   @@index([asesor_id], map: "idx_pleno_asesi_asesor_id")
@@ -631,6 +634,7 @@ model surat {
   lokasi           String?
   detail_payload   Json?
   created_at       DateTime     @default(now()) @db.Timestamp(6)
+  sertifikat       sertifikat[]
   master_skema     MasterSkema? @relation(fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([skema_id], map: "idx_surat_skema_id")
@@ -654,6 +658,28 @@ model verifikasi_pengajuan {
   pengajuan_skema     PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([assigned_asesor_id], map: "idx_verifikasi_pengajuan_assigned_asesor_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sertifikat {
+  id              Int            @id @default(autoincrement())
+  pengajuan_id    Int            @unique
+  pleno_asesi_id  Int?
+  no_sertifikat   String?        @unique @db.VarChar
+  no_registrasi   String?        @db.VarChar
+  tanggal_terbit  DateTime?      @db.Date
+  tanggal_berlaku DateTime?      @db.Date
+  gdrive_url      String?
+  surat_id        Int?
+  status          String         @default("Belum Upload") @db.VarChar
+  created_at      DateTime       @default(now()) @db.Timestamp(6)
+  updated_at      DateTime       @default(now()) @db.Timestamp(6)
+  pengajuan_skema PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  pleno_asesi     pleno_asesi?   @relation(fields: [pleno_asesi_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  surat           surat?         @relation(fields: [surat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([surat_id], map: "idx_sertifikat_surat_id")
 }
 
 enum Role {

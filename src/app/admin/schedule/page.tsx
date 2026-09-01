@@ -62,7 +62,7 @@ const getTukRuangSpec = (tukValue?: string) => {
 const getDocumentPreviewUrl = (name?: string, url?: string) => {
   if (url && url.trim().length > 0) return url;
   const safeName = name ? encodeURIComponent(name) : "Surat_Sidang_Pleno.pdf";
-  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" fill="none"><rect width="600" height="800" fill="white" rx="16"/><rect x="40" y="40" width="520" height="720" fill="%23F8FAFC" stroke="%23E2E8F0" stroke-width="2" rx="12"/><rect x="70" y="70" width="100" height="36" fill="%23008BE3" rx="6"/><text x="185" y="93" font-family="sans-serif" font-weight="bold" font-size="18" fill="%230F172A">SURAT KEPUTUSAN SIDANG PLENO</text><text x="185" y="115" font-family="sans-serif" font-size="13" fill="%2364748B">LSP SERTIFIKASI PROFESI INDONESIA</text><line x1="70" y1="135" x2="530" y2="135" stroke="%23008BE3" stroke-width="2"/><text x="70" y="180" font-family="sans-serif" font-weight="bold" font-size="15" fill="%231E293B">BERITA ACARA &amp; HASIL KEPUTUSAN SIDANG</text><text x="70" y="210" font-family="sans-serif" font-size="13" fill="%23008BE3">Lampiran Dokumen: ${safeName}</text><rect x="70" y="235" width="460" height="150" fill="%23F1F5F9" rx="8" stroke="%23CBD5E1"/><text x="90" y="270" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23334155">Detail Pengesahan Hasil Asesmen:</text><text x="90" y="300" font-family="sans-serif" font-size="12" fill="%23475569">1. Penetapan Keputusan Sertifikasi Asesi Terdaftar</text><text x="90" y="325" font-family="sans-serif" font-size="12" fill="%23475569">2. Verifikasi Berkas Rekam Jejak Asesmen Asesor</text><text x="90" y="350" font-family="sans-serif" font-size="12" fill="%23475569">3. Persetujuan Dewan Pengarah dan Komite Skema</text><rect x="70" y="415" width="460" height="1" fill="%23E2E8F0"/><text x="70" y="450" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23059669">STATUS DOKUMEN: RESMI, SAH &amp; TERVERIFIKASI</text><rect x="70" y="520" width="180" height="90" fill="%23F0F9FF" rx="8" stroke="%23008BE3"/><text x="85" y="555" font-family="sans-serif" font-weight="bold" font-size="12" fill="%23008BE3">LSP SERTIFIKASI PROFESI</text><text x="85" y="580" font-family="sans-serif" font-size="11" fill="%230284C7">[ CAP STAMPEL &amp; TTD ]</text><text x="340" y="555" font-family="sans-serif" font-size="11" fill="%2364748B">Ketua Komite Sidang Pleno</text><line x1="340" y1="590" x2="510" y2="590" stroke="%2394A3B8" stroke-dasharray="2 2"/></svg>`;
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" fill="none"><rect width="600" height="800" fill="white" rx="16"/><rect x="40" y="40" width="520" height="720" fill="%23F8FAFC" stroke="%23E2E8F0" stroke-width="2" rx="12"/><rect x="70" y="70" width="100" height="36" fill="%23008BE3" rx="6"/><text x="185" y="93" font-family="sans-serif" font-weight="bold" font-size="18" fill="%230F172A">SURAT KEPUTUSAN SIDANG PLENO</text><text x="185" y="115" font-family="sans-serif" font-size="13" fill="%2364748B">LSP SERTIFIKASI PROFESI INDONESIA</text><line x1="70" y1="135" x2="530" y2="135" stroke="%23008BE3" stroke-width="2"/><text x="70" y="180" font-family="sans-serif" font-weight="bold" font-size="15" fill="%231E293B">BERITA ACARA &amp; HASIL KEPUTUSAN SIDANG</text><text x="70" y="210" font-family="sans-serif" font-size="13" fill="%23008BE3">Lampiran Dokumen: ${safeName}</text><rect x="70" y="235" width="460" height="150" fill="%23F1F5F9" rx="8" stroke="%23CBD5E1"/><text x="90" y="270" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23334155">Detail Pengesahan Hasil Asesmen:</text><text x="90" y="300" font-family="sans-serif" font-size="12" fill="%23475569">1. Penetapan Keputusan Sertifikasi Asesi Terdaftar</text><text x="90" y="325" font-family="sans-serif" font-size="12" fill="%23475569">2. Verifikasi Berkas Rekam Jejak Asesmen Asesor</text><text x="90" y="350" font-family="sans-serif" font-size="12" fill="%23475569">3. Persetujuan dewan_pengarah dan komite_skema</text><rect x="70" y="415" width="460" height="1" fill="%23E2E8F0"/><text x="70" y="450" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23059669">STATUS DOKUMEN: RESMI, SAH &amp; TERVERIFIKASI</text><rect x="70" y="520" width="180" height="90" fill="%23F0F9FF" rx="8" stroke="%23008BE3"/><text x="85" y="555" font-family="sans-serif" font-weight="bold" font-size="12" fill="%23008BE3">LSP SERTIFIKASI PROFESI</text><text x="85" y="580" font-family="sans-serif" font-size="11" fill="%230284C7">[ CAP STAMPEL &amp; TTD ]</text><text x="340" y="555" font-family="sans-serif" font-size="11" fill="%2364748B">Ketua Komite Sidang Pleno</text><line x1="340" y1="590" x2="510" y2="590" stroke="%2394A3B8" stroke-dasharray="2 2"/></svg>`;
 };
 
 const ALL_PLENO_USERS = [
@@ -99,21 +99,21 @@ const ALL_PLENO_USERS = [
   // Direktur
   { id: "p-usr-25", nama: "Gitarja, S.T., M.T.", role: "Direktur" },
 
-  // Dewan Pengarah
+  // dewan_pengarah
   {
     id: "p-usr-26",
     nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
-    role: "Dewan Pengarah",
+    role: "dewan_pengarah",
   },
   {
     id: "p-usr-27",
     nama: "Prof. Dr. Ir. Hj. Endang Suhartini",
-    role: "Dewan Pengarah",
+    role: "dewan_pengarah",
   },
 
-  // Komite Skema
-  { id: "p-usr-28", nama: "Drs. Hendra Gunawan, M.Kom.", role: "Komite Skema" },
-  { id: "p-usr-29", nama: "Rina Fitriani, S.Kom., M.T.", role: "Komite Skema" },
+  // komite_skema
+  { id: "p-usr-28", nama: "Drs. Hendra Gunawan, M.Kom.", role: "komite_skema" },
+  { id: "p-usr-29", nama: "Rina Fitriani, S.Kom., M.T.", role: "komite_skema" },
 
   // Manajer Administrasi dan Keuangan
   {
@@ -156,8 +156,8 @@ export default function AssessmentSchedule() {
   const isPlenoOnlyRole =
     user?.role === "direktur" ||
     user?.role === "manajer" ||
-    user?.role === "dewan pengarah" ||
-    user?.role === "komite skema";
+    user?.role === "dewan_pengarah" ||
+    user?.role === "komite_skema";
   const readOnly = user?.role !== "admin";
 
   const [confirmAsesmenId, setConfirmAsesmenId] = useState<string | null>(null);
@@ -1274,8 +1274,8 @@ export default function AssessmentSchedule() {
                   >
                     <option value="Asesor">Asesor</option>
                     <option value="Direktur">Direktur</option>
-                    <option value="Dewan Pengarah">Dewan Pengarah</option>
-                    <option value="Komite Skema">Komite Skema</option>
+                    <option value="dewan_pengarah">dewan_pengarah</option>
+                    <option value="komite_skema">komite_skema</option>
                     <option value="Manajer Administrasi dan Keuangan">
                       Manajer Administrasi dan Keuangan
                     </option>

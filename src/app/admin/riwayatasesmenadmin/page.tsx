@@ -1735,7 +1735,7 @@ export default function RiwayatAsesmenAdmin() {
                   </div>
                 </div>
 
-                {/* Peserta Sidang (Direktur, Dewan Pengarah, Komite & Notulis) */}
+                {/* Peserta Sidang (Direktur, dewan_pengarah, Komite & Notulis) */}
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">
                     Peserta Sidang (Direktur, Pengarah &amp; Komite)
@@ -1753,12 +1753,12 @@ export default function RiwayatAsesmenAdmin() {
                           : [
                               { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
                               {
-                                role: "Dewan Pengarah",
+                                role: "dewan_pengarah",
                                 nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
                               },
 
                               {
-                                role: "Komite Skema",
+                                role: "komite_skema",
                                 nama: "Asep Abdul Sahid, M.T.",
                               },
                             ];

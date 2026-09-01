@@ -21,12 +21,10 @@ export const ROLE_OPTIONS = [
   "admin",
   "asesor",
   "asesi",
-  "manajer",
   "direktur",
-  "Ketua Dewan Pengarah",
-  "Anggota Dewan Pengarah",
-  "Ketua Komite Skema",
-  "Anggota Komite Skema",
+  "manajer",
+  "dewan_pengarah",
+  "komite_skema",
 ];
 
 export default function KelolaPengguna() {
@@ -132,7 +130,6 @@ export default function KelolaPengguna() {
     username: "",
     namaLengkap: "",
     email: "",
-    nik: "",
     role: "asesi",
     status: "Aktif" as UserItem["status"],
     tempPassword: "",
@@ -143,8 +140,7 @@ export default function KelolaPengguna() {
     const matchesSearch =
       userItem.namaLengkap.toLowerCase().includes(term) ||
       userItem.username?.toLowerCase().includes(term) ||
-      userItem.email.toLowerCase().includes(term) ||
-      (userItem.nik && userItem.nik.toLowerCase().includes(term));
+      userItem.email.toLowerCase().includes(term);
 
     const matchesRole =
       selectedRoleFilter === "Semua" || userItem.role === selectedRoleFilter;
@@ -157,7 +153,6 @@ export default function KelolaPengguna() {
       username: "",
       namaLengkap: "",
       email: "",
-      nik: "",
       role: "asesi",
       status: "Aktif",
       tempPassword: "LSP" + Math.floor(100000 + Math.random() * 900000) + "!",
@@ -168,14 +163,18 @@ export default function KelolaPengguna() {
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.namaLengkap.trim() || !formData.email.trim() || !formData.username.trim()) return;
+    if (
+      !formData.namaLengkap.trim() ||
+      !formData.email.trim() ||
+      !formData.username.trim()
+    )
+      return;
 
     const newUser: UserItem = {
       id: `usr-${Date.now()}`,
       username: formData.username.trim(),
       namaLengkap: formData.namaLengkap.trim(),
       email: formData.email.trim(),
-      nik: formData.nik.trim(),
       role: formData.role as Role,
       status: formData.status,
       tempPassword: formData.tempPassword.trim() || undefined,
@@ -191,7 +190,6 @@ export default function KelolaPengguna() {
       username: userItem.username || "",
       namaLengkap: userItem.namaLengkap,
       email: userItem.email,
-      nik: userItem.nik || "",
       role: userItem.role as Role,
       status: userItem.status,
       tempPassword: userItem.tempPassword || "",
@@ -212,7 +210,6 @@ export default function KelolaPengguna() {
               username: formData.username.trim(),
               namaLengkap: formData.namaLengkap.trim(),
               email: formData.email.trim(),
-              nik: formData.nik.trim(),
               role: formData.role as Role,
               status: formData.status,
               tempPassword: formData.tempPassword.trim() || u.tempPassword,
@@ -238,10 +235,10 @@ export default function KelolaPengguna() {
     if (roleLower.includes("direktur") || roleLower.includes("manajer")) {
       return "bg-purple-50 text-purple-700 border-purple-200";
     }
-    if (roleLower.includes("dewan pengarah")) {
+    if (roleLower.includes("dewan_pengarah")) {
       return "bg-indigo-50 text-indigo-700 border-indigo-200";
     }
-    if (roleLower.includes("komite skema")) {
+    if (roleLower.includes("komite_skema")) {
       return "bg-teal-50 text-teal-700 border-teal-200";
     }
     if (roleLower.includes("admin")) {
@@ -301,7 +298,7 @@ export default function KelolaPengguna() {
                 className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
               />
             </div>
-            
+
             <select
               value={selectedRoleFilter}
               onChange={(e) => setSelectedRoleFilter(e.target.value)}
@@ -330,9 +327,6 @@ export default function KelolaPengguna() {
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Email
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
-                  NIP / NIM / NIK
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Peran (Role)
@@ -513,7 +507,8 @@ export default function KelolaPengguna() {
               >
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Username {!readOnly && <span className="text-rose-500">*</span>}
+                    Username{" "}
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <input
                     type="text"
@@ -534,7 +529,8 @@ export default function KelolaPengguna() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Nama Lengkap {!readOnly && <span className="text-rose-500">*</span>}
+                    Nama Lengkap{" "}
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <input
                     type="text"
@@ -555,7 +551,8 @@ export default function KelolaPengguna() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Email Aktif {!readOnly && <span className="text-rose-500">*</span>}
+                    Email Aktif{" "}
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <input
                     type="email"
@@ -574,30 +571,11 @@ export default function KelolaPengguna() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    NIP / NIM / NIK
-                  </label>
-                  <input
-                    type="text"
-                    readOnly={readOnly}
-                    placeholder="Contoh: 198001012005011001"
-                    value={formData.nik}
-                    onChange={(e) =>
-                      setFormData({ ...formData, nik: e.target.value })
-                    }
-                    className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
-                      readOnly
-                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                        : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                    }`}
-                  />
-                </div>
-
                 {!readOnly && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Password Sementara <span className="text-rose-500">*</span>
+                      Password Sementara{" "}
+                      <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -655,7 +633,8 @@ export default function KelolaPengguna() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Peran (Role) Pengguna {!readOnly && <span className="text-rose-500">*</span>}
+                    Peran (Role) Pengguna{" "}
+                    {!readOnly && <span className="text-rose-500">*</span>}
                   </label>
                   <select
                     disabled={readOnly}
@@ -696,12 +675,8 @@ export default function KelolaPengguna() {
                         : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
                     }`}
                   >
-                    <option value="Aktif">Aktif</option>
-                    <option value="Terverifikasi">Terverifikasi</option>
-                    <option value="Menunggu Verifikasi">
-                      Menunggu Verifikasi
-                    </option>
-                    <option value="Nonaktif">Nonaktif</option>
+                    <option value={true}>Aktif</option>
+                    <option value={false}>Nonaktif</option>
                   </select>
                 </div>
 

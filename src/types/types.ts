@@ -9,8 +9,8 @@ export type Role =
   | "asesi"
   | "direktur"
   | "manajer"
-  | "dewan pengarah"
-  | "komite skema"
+  | "dewan_pengarah"
+  | "komite_skema"
   | string;
 
 export interface CrumbItem {
