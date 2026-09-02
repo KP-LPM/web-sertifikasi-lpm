@@ -8,7 +8,15 @@ export class UserService {
   async getUser() {
     const user = await this.userRepository.getUser();
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User tidak ditemukan");
+    }
+    return user;
+  }
+
+  async getUserById(id: number) {
+    const user = await this.userRepository.getUserById(id);
+    if (!user) {
+      throw new NotFoundError("User tidak ditemukan");
     }
     return user;
   }
@@ -16,7 +24,7 @@ export class UserService {
   async getUserByEmail(email: string) {
     const user = await this.userRepository.getUserByEmail(email);
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User tidak ditemukan");
     }
     return user;
   }
@@ -38,6 +46,10 @@ export class UserService {
   }
 
   async updateUserStatus(id: number, data: BaseUserInput) {
+    const existingUser = await this.userRepository.getUserById(id);
+    if (!existingUser) {
+      throw new NotFoundError("User tidak ditemukan");
+    }
     const user = await this.userRepository.updateUserStatus(id, data);
     if (!user) {
       throw new InvariantError("Gagal Mengupdate User");
@@ -46,9 +58,13 @@ export class UserService {
   }
 
   async deleteUser(id: number) {
+    const existingUser = await this.userRepository.getUserById(id);
+    if (!existingUser) {
+      throw new NotFoundError("User tidak ditemukan");
+    }
     const user = await this.userRepository.deleteUser(id);
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new InvariantError("Gagal menghapus user");
     }
     return user;
   }

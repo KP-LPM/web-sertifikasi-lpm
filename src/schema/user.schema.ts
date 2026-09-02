@@ -2,9 +2,17 @@ import { z } from "zod";
 
 export const BaseUserSchema = z.object({
   username: z.string().trim().min(1),
-  email: z.string().trim().min(1).email(), // sekalian tambah .email() biar tervalidasi format
+  email: z.string().trim().min(1).email(),
   password: z.string().trim().min(1),
-  role: z.enum(["admin", "asesor", "asesi"]), // ganti dari z.string()
+  role: z.enum([
+    "admin",
+    "asesor",
+    "asesi",
+    "direktur",
+    "manajer",
+    "dewan_pengarah",
+    "komite_skema",
+  ]),
   isActive: z.boolean(),
 });
 

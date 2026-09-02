@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { UserService } from "@/src/services/user.service";
-import { ClientError } from "@/src/error/index";
-import { sendResponse } from "@/src/lib/response";
+import { UserService } from "@/services/user.service";
+import { ClientError } from "@/error/index";
+import { sendResponse } from "@/lib/response";
 
 const userService = new UserService();
 
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const user = await userService.getUserByEmail();
+    const user = await userService.getUserById(id);
     return sendResponse(200, "User retrieved successfully", user);
   } catch (error) {
     if (error instanceof ClientError) {
@@ -24,7 +24,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
@@ -35,10 +35,11 @@ export async function PATCH(
 
     const body = await request.json();
 
-    const newPassword = body?.newPassword || body?.password;
-    await userService.updatePassword(id, newPassword);
+    const updatedUser = await userService.updateUserStatus(id, body);
 
-    return sendResponse(200, "Password petugas berhasil diperbarui");
+    return sendResponse(200, "Status berhasil diperbarui", {
+      isActive: updatedUser.isActive,
+    });
   } catch (error) {
     if (error instanceof ClientError) {
       return sendResponse(error.statusCode, error.message);
@@ -50,11 +51,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: number }> },
 ) {
   try {
     const { id } = await params;
-
     if (!id) {
       return sendResponse(400, "ID parameter is required");
     }
@@ -66,7 +66,7 @@ export async function DELETE(
     if (error instanceof ClientError) {
       return sendResponse(error.statusCode, error.message);
     }
-
+    console.log(error);
     return sendResponse(500, "Terjadi kesalahan pada server");
   }
 }

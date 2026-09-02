@@ -686,6 +686,10 @@ enum Role {
   asesi
   asesor
   admin
+  direktur
+  manajer
+  dewan_pengarah
+  komite_skema
 }
 
 enum JenisKelamin {

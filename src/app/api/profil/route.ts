@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
     const userId = Number(token.id || token.sub);
     const body = await request.json();
     
-    // Mapping data dari form frontend ke schema Prisma database
     const dataProfil = {
         namaLengkap: body.nama_lengkap,
         tempatLahir: body.tempat_lahir,

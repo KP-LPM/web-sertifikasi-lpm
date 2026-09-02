@@ -13,18 +13,28 @@ export class UserRepository {
       select: {
         id: true,
         username: true,
-        password: true,
+        email: true,
         role: true,
       },
     });
     return user;
   }
 
+  async getUserById(id: number) {
+    return await db.user.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        isActive: true,
+      },
+    });
+  }
+
   async getUserByEmail(email: string) {
     return await db.user.findUnique({
       where: { email },
       select: {
-        isActive: true,
+        email: true,
       },
     });
   }
@@ -53,7 +63,7 @@ export class UserRepository {
 
   async deleteUser(id: number) {
     const user = await db.user.delete({
-      where: { id: id },
+      where: { id: Number(id) },
     });
     return user;
   }
