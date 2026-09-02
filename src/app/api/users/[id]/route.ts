@@ -5,6 +5,23 @@ import { sendResponse } from "@/src/lib/response";
 
 const userService = new UserService();
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: number }> },
+) {
+  try {
+    const { id } = await params;
+    const user = await userService.getUserByEmail();
+    return sendResponse(200, "User retrieved successfully", user);
+  } catch (error) {
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
+    console.log(error);
+    return sendResponse(500, "Internal server error");
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

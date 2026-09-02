@@ -40,7 +40,6 @@ export default function KelolaPengguna() {
       email: "mahmud@uin.ac.id",
       role: "direktur",
       status: "Aktif",
-      nik: "196204151990031002",
     },
     {
       id: "usr-002",
@@ -49,7 +48,6 @@ export default function KelolaPengguna() {
       email: "bambang.s@lsp.uin.ac.id",
       role: "manajer",
       status: "Aktif",
-      nik: "197508122002121001",
     },
     {
       id: "usr-003",
@@ -58,7 +56,6 @@ export default function KelolaPengguna() {
       email: "m.zaini@uin.ac.id",
       role: "manajer",
       status: "Aktif",
-      nik: "196811051994031004",
     },
     {
       id: "usr-004",
@@ -67,7 +64,6 @@ export default function KelolaPengguna() {
       email: "siti.fatimah@uin.ac.id",
       role: "manajer",
       status: "Aktif",
-      nik: "197103201998022001",
     },
     {
       id: "usr-005",
@@ -76,7 +72,6 @@ export default function KelolaPengguna() {
       email: "dian.w@uin.ac.id",
       role: "manajer",
       status: "Aktif",
-      nik: "198006142006041003",
     },
     {
       id: "usr-006",
@@ -85,7 +80,6 @@ export default function KelolaPengguna() {
       email: "rahmat.h@uin.ac.id",
       role: "manajer",
       status: "Aktif",
-      nik: "198502102010121002",
     },
     {
       id: "usr-007",
@@ -94,7 +88,6 @@ export default function KelolaPengguna() {
       email: "admin.lsp@uin.ac.id",
       role: "admin",
       status: "Aktif",
-      nik: "199505122020011005",
     },
     {
       id: "usr-008",
@@ -103,7 +96,6 @@ export default function KelolaPengguna() {
       email: "siti.r@lecturer.uin.ac.id",
       role: "asesor",
       status: "Aktif",
-      nik: "198209152008012006",
     },
     {
       id: "usr-009",
@@ -112,7 +104,6 @@ export default function KelolaPengguna() {
       email: "ahmad.h@student.uin.ac.id",
       role: "asesi",
       status: "Nonaktif",
-      nik: "1197050001",
     },
   ]);
 
@@ -287,7 +278,7 @@ export default function KelolaPengguna() {
               <Search className="text-gray-400" size={16} />
               <input
                 type="text"
-                placeholder="Cari nama, username, NIK..."
+                placeholder="Cari nama.."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
@@ -322,9 +313,6 @@ export default function KelolaPengguna() {
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Email
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
-                  NIK
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Peran (Role)
@@ -365,9 +353,6 @@ export default function KelolaPengguna() {
                         <span className="text-xs md:text-sm font-bold text-slate-900 whitespace-nowrap">
                           {u.namaLengkap}
                         </span>
-                        <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap mt-0.5">
-                          @{u.username}
-                        </span>
                       </div>
                     </td>
 
@@ -375,11 +360,6 @@ export default function KelolaPengguna() {
                       <span className="text-xs md:text-sm text-slate-600 font-medium whitespace-nowrap">
                         {u.email}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 align-middle whitespace-nowrap">
-                      <p className="text-xs md:text-sm font-semibold text-slate-700 whitespace-nowrap">
-                        {u.nik || "-"}
-                      </p>
                     </td>
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <span

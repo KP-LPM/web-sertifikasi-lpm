@@ -1,9 +1,10 @@
 import { UserRepository } from "../repositories/user.repositories";
+import { BaseUserInput } from "@/schema/user.schema";
 import { InvariantError, NotFoundError } from "../error/index";
-import bcrypt from "bcrypt";
 
 export class UserService {
   private userRepository = new UserRepository();
+
   async getUser() {
     const user = await this.userRepository.getUser();
     if (!user) {
@@ -11,55 +12,44 @@ export class UserService {
     }
     return user;
   }
-  async createUser(data: { username: string; password: string; role: string }) {
-    if (!data.username || !data.password) {
-      throw new InvariantError("Username dan password wajib diisi");
-    }
 
-    const existingUser = await this.userRepository.getUserByUsername(
-      data.username,
-    );
-    if (existingUser) {
-      throw new InvariantError(
-        "Username sudah digunakan, silakan pakai username lain",
-      );
-    }
-
-    const newUser = await this.userRepository.createUser({
-      username: data.username,
-      password: data.password,
-      role: data.role || "PETUGAS",
-    });
-
-    if (!newUser) {
-      throw new InvariantError("Gagal membuat pengguna baru");
-    }
-
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
-  }
-  async deleteUser(id: string) {
-    const user = await this.userRepository.deleteUser(id);
+  async getUserByEmail(email: string) {
+    const user = await this.userRepository.getUserByEmail(email);
     if (!user) {
       throw new NotFoundError("User not found");
     }
     return user;
   }
 
-  async updatePassword(id: string, newPassword: string) {
-    if (!newPassword || newPassword.length < 6) {
-      throw new InvariantError("Password minimal 6 karakter");
+  async createUser(data: BaseUserInput) {
+    const existingUser = await this.userRepository.getUserByEmail(data.email);
+    if (existingUser) {
+      throw new InvariantError(
+        "Username sudah digunakan, silakan pakai username lain",
+      );
+    }
+    const newUser = await this.userRepository.createUser(data);
+
+    if (!newUser) {
+      throw new InvariantError("Gagal membuat pengguna baru");
     }
 
-    const updatedUser = await this.userRepository.updatePassword(
-      id,
-      newPassword,
-    );
+    return newUser;
+  }
 
-    if (!updatedUser) {
-      throw new NotFoundError("Petugas tidak ditemukan");
+  async updateUserStatus(id: number, data: BaseUserInput) {
+    const user = await this.userRepository.updateUserStatus(id, data);
+    if (!user) {
+      throw new InvariantError("Gagal Mengupdate User");
     }
+    return user;
+  }
 
-    return updatedUser;
+  async deleteUser(id: number) {
+    const user = await this.userRepository.deleteUser(id);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return user;
   }
 }
