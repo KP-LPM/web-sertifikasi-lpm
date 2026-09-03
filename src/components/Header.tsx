@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 function getProfilePath() {
-  return "/profile";
+  return "/profil";
 }
 
 type ProfileDataType = {

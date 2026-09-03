@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 import { getToken } from 'next-auth/jwt';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const userId = Number(token.id || token.sub);
 
-    const profil = await prisma.profilPengguna.findUnique({
+    const profil = await db.profilPengguna.findUnique({
       where: { userId: userId },
     });
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Upsert pakai userId dinamis dari sesi login
-    const profil = await prisma.profilPengguna.upsert({
+    const profil = await db.profilPengguna.upsert({
       where: { userId: userId },
       update: dataProfil,
       create: {

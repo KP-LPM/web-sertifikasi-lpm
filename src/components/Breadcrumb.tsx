@@ -169,7 +169,7 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
   if (!user || !pathname) return null;
 
   let baseCrumbs: Crumb[] | undefined;
-  if (pathname === "/profile") {
+  if (pathname === "/profil") {
     baseCrumbs = [
       { label: "Dashboard", path: getDashboardPath(user.role) },
       { label: "Profil Saya" },
@@ -191,6 +191,7 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
     >
       {crumbs.map((crumb, idx) => {
         const isLast = idx === crumbs.length - 1;
+        const linkTarget = ("path" in crumb ? crumb.path : undefined) || ("href" in crumb ? crumb.href : undefined);
 
         return (
           <React.Fragment key={idx}>
@@ -211,10 +212,10 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
               >
                 {crumb.label}
               </button>
-            ) : crumb.path ? (
+            ) : linkTarget ? (
               // Jika ini rute URL normal, gunakan Link Next.js
               <Link
-                href={crumb.path}
+                href={linkTarget}
                 className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
               >
                 {crumb.label}
