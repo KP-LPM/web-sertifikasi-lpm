@@ -1,85 +1,49 @@
-import { NextResponse } from 'next/server';
-import { db } from "@/lib/db";
-import type { PengajuanPayload } from '@/types/types.ts';
+import { NextResponse } from "next/server";
+import { prosesPengajuanBaru } from "@/services/pengajuanskema.service";
+import { createPengajuanSchema } from "@/schema/pengajuanskema.schema";
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = (await request.json()) as PengajuanPayload;
-    const skema = await db.masterSkema.findFirst({
-      where: { kodeSkema: body.code }
-    });
+    // Tangkap data dari frontend
+    const body = await req.json();
 
-    if (!skema) {
+    // 1. Validasi data
+    const validationResult = createPengajuanSchema.safeParse(body);
+
+    if (!validationResult.success) {
       return NextResponse.json(
-        { message: `Skema dengan kode ${body.code} tidak ditemukan di database.` },
-        { status: 404 }
+        {
+          success: false,
+          message: "Validasi data gagal. Periksa kembali form anda.",
+          errors: validationResult.error.format(), 
+        },
+        { status: 400 }
       );
     }
 
-    const pengajuanBaru = await db.pengajuanSkema.create({
-      data: {
-        nomorPengajuan: `PGJ-${Date.now()}`,
-        userId: body.userId ? parseInt(body.userId, 10) : 0, 
-        skemaId: skema.id, 
-        tuk: body.tuk, 
-        jenisAsesmen: 'Sertifikasi', 
-        status: 'Draf',
-        
-        dataPribadi: {
-          create: {
-            nik: body.nik,
-            namaLengkap: body.namaLengkap,
-            tempatLahir: body.tempatLahir,
-            tanggalLahir: new Date(body.tanggalLahir), 
-            jenisKelamin: body.jenisKelamin === 'Laki-laki' ? 'Laki_laki' : 'Perempuan', 
-            alamat: body.alamat,
-            kodeProvinsi: body.provinsi,      
-            kodeKota: body.kota,              
-            kodePosAsesi: body.kodePos,       
-            kewarganegaraan: body.kebangsaan, 
-            noHp: body.noTelp,
-            pendidikanTerakhir: body.pendidikanTerakhir,
-            pekerjaan: body.pekerjaan,
-            tandaTangan: body.tandaTangan || '-',
-            
-            // Kolom Detail Pekerjaan
-            namaInstitusi: body.institusiPerusahaan,
-            jabatan: body.jabatan,
-            emailInstitusi: body.emailInstitusi,
-            kodePosInstitusi: body.kodePosInstitusi,
-            telpInstitusi: body.telpInstitusi,
-            alamatInstitusi: body.alamatInstitusi,
-            faxInstitusi: body.faxInstitusi,
+    // 2. Berikan ke Service
+    const dataValid = validationResult.data;
+    const pengajuanBaru = await prosesPengajuanBaru(dataValid);
 
-            memerlukanPenyesuaianWajar: body.penyesuaianWajar || false,
-            isBerpengalaman: body.berpengalaman || false,
-          }
-        },
-        
-        asesmenMandiri: (body.dataAsesmen && body.dataAsesmen.length > 0) ? {
-          create: body.dataAsesmen.map(item => ({
-            unitId: item.unitId, 
-            penilaianAsesi: item.penilaianAsesi, 
-          }))
-        } : undefined
-      }
-    });
-
+    // 3. Kembalikan Response Sukses
     return NextResponse.json(
-      { message: 'Pengajuan berhasil disimpan!', data: pengajuanBaru },
+      {
+        success: true,
+        message: "Pengajuan sertifikasi berhasil disubmit.",
+        data: pengajuanBaru,
+      },
       { status: 201 }
     );
-
   } catch (error: unknown) {
-    console.error('Error saat submit:', error);
+    console.error("[ERROR POST PENGAJUAN]:", error);
     
-    let errorMessage = "Terjadi kesalahan saat memproses data.";
-    if (error instanceof Error) {
-        errorMessage = error.message;
-    }
-
+    // Tangkap error server
     return NextResponse.json(
-      { message: 'Gagal menyimpan data pengajuan.', error: errorMessage },
+      {
+        success: false,
+        message: "Terjadi kesalahan internal pada server.",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
