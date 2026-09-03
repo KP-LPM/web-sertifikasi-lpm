@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return sendResponse(400, "ID tidak valid.");
     }
 
-    const inventarisExisting = await prisma.master_tuk_inventaris.findFirst({
+    const inventarisExisting = await db.master_tuk_inventaris.findFirst({
       where: { id: invId, tuk_id: tukId },
     });
 
@@ -34,7 +34,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const { nama, jumlah } = body;
 
-    const inventarisUpdated = await prisma.master_tuk_inventaris.update({
+    const inventarisUpdated = await db.master_tuk_inventaris.update({
       where: { id: invId },
       data: {
         ...(nama !== undefined && { nama }),
@@ -64,7 +64,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return sendResponse(400, "ID tidak valid.");
     }
 
-    const inventarisExisting = await prisma.master_tuk_inventaris.findFirst({
+    const inventarisExisting = await db.master_tuk_inventaris.findFirst({
       where: { id: invId, tuk_id: tukId },
     });
 
@@ -72,7 +72,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return sendResponse(404, "Item inventaris tidak ditemukan.");
     }
 
-    await prisma.master_tuk_inventaris.delete({
+    await db.master_tuk_inventaris.delete({
       where: { id: invId },
     });
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -8,7 +8,7 @@ export async function GET() {
     const hashedPassword = await bcrypt.hash("rahasia123", 10);
 
     // 2. Uji coba simpan user ke database Supabase
-    const testUser = await prisma.user.create({
+    const testUser = await db.user.create({
       data: {
         username: "testos",
         password: hashedPassword,

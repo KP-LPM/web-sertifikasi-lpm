@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (isNaN(asesorId)) return sendResponse(400, "ID asesor tidak valid.");
 
     // 1. Jadwal Asesor Mendatang
-    const jadwalMendatang = await prisma.jadwal_asesmen.count({
+    const jadwalMendatang = await db.jadwal_asesmen.count({
       where: {
         asesor_id: asesorId,
         tanggal: { gte: new Date() },
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 2. Kandidat siap dinilai (peserta dari jadwal milik asesor yang hasil asesmen-nya "Belum Dinilai")
-    const kandidatSiapDinilai = await prisma.jadwal_asesmen_peserta.count({
+    const kandidatSiapDinilai = await db.jadwal_asesmen_peserta.count({
       where: {
         jadwal_asesmen: {
           asesor_id: asesorId,
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 3. Banding masuk untuk asesor ini
-    const bandingMasuk = await prisma.pengajuan_banding.count({
+    const bandingMasuk = await db.pengajuan_banding.count({
       where: {
         status: "Menunggu Verifikasi",
         hasil_asesmen: {

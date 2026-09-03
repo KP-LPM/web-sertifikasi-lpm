@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const candidates = await prisma.pengajuanSkema.findMany({
+    const candidates = await db.pengajuanSkema.findMany({
       where: whereClause,
       include: {
         user: { select: { username: true, email: true } },

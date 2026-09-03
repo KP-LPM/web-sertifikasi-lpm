@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 1. Total pengajuan per status
-    const pengajuanGrup = await prisma.pengajuanSkema.groupBy({
+    const pengajuanGrup = await db.pengajuanSkema.groupBy({
       by: ["status"],
       _count: { id: true },
     });
@@ -39,12 +39,12 @@ export async function GET(request: NextRequest) {
     });
 
     // 2. Verifikasi pending (pengajuan dengan status "Diajukan")
-    const verifikasiPending = await prisma.pengajuanSkema.count({
+    const verifikasiPending = await db.pengajuanSkema.count({
       where: { status: "Diajukan" },
     });
 
     // 3. Jadwal mendatang (jadwal_asesmen dengan tanggal > hari ini dan status = "Terjadwal")
-    const jadwalMendatang = await prisma.jadwal_asesmen.count({
+    const jadwalMendatang = await db.jadwal_asesmen.count({
       where: {
         tanggal: { gte: new Date() },
         status: "Terjadwal",
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 4. Banding masuk (pengajuan_banding status "Menunggu Verifikasi")
-    const bandingMasuk = await prisma.pengajuan_banding.count({
+    const bandingMasuk = await db.pengajuan_banding.count({
       where: { status: "Menunggu Verifikasi" },
     });
 

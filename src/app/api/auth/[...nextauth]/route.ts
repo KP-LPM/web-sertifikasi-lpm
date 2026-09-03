@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -18,7 +18,7 @@ const handler = NextAuth({
           throw new Error("Tolong isi username/email dan password!");
         }
 
-        const user = await prisma.user.findFirst({
+        const user = await db.user.findFirst({
           where: {
             OR: [
               { username: credentials.username },

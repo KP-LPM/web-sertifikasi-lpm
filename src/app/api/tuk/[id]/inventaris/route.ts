@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -18,7 +18,7 @@ export async function POST(
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tukExisting = await prisma.master_tuk.findUnique({ where: { id: tukId } });
+    const tukExisting = await db.master_tuk.findUnique({ where: { id: tukId } });
     if (!tukExisting) return sendResponse(404, "TUK tidak ditemukan.");
 
     const body = await request.json();
@@ -28,7 +28,7 @@ export async function POST(
       return sendResponse(400, "Field 'nama' wajib diisi.");
     }
 
-    const inventarisBaru = await prisma.master_tuk_inventaris.create({
+    const inventarisBaru = await db.master_tuk_inventaris.create({
       data: {
         tuk_id: tukId,
         nama,

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Hanya ambil batch (jadwal_asesmen atau pleno_batch tergantung bisnis,
     // di sini kita gunakan pleno_batch dengan status "Selesai")
-    const completedBatches = await prisma.pleno_batch.findMany({
+    const completedBatches = await db.pleno_batch.findMany({
       where: { status: "Selesai" },
       include: {
         pleno_asesi: {

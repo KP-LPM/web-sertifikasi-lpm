@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { JenisKelamin, Role } from "@prisma/client"; 
 import type { RegisterPayload } from "@/types/types";
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await db.user.findFirst({
       where: { OR: [{ username }, { email }] }
     });
     
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     const mappedJenisKelamin = (jenis_kelamin === 'Laki-laki' ? 'Laki_laki' : 'Perempuan') as JenisKelamin;
 
-    const newUser = await prisma.user.create({
+    const newUser = await db.user.create({
       data: {
         username,
         email,
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     });
 
     if (tanggal_lahir) {
-      await prisma.profilPengguna.create({
+      await db.profilPengguna.create({
         data: {
           userId: newUser.id,
           nik: nik,
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
           kewarganegaraan: role === 'asesi' ? kewarganegaraan : null,
           nomorRegistrasiMet: role === 'asesor' ? nomor_registrasi_met : null,
           pendidikanTerakhir: role === 'asesor' ? pendidikan_terakhir : null,
-          alamatWilayah: role === 'asesor' ? alamat_wilayah : null,
+          alamat: role === 'asesor' ? alamat_wilayah : null,
           tandaTangan: tanda_tangan || null
         }
       });

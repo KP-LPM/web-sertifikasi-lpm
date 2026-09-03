@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (isNaN(asesiId)) return sendResponse(400, "ID asesi tidak valid.");
 
     // 1. Status pengajuan aktif
-    const pengajuanAktif = await prisma.pengajuanSkema.findFirst({
+    const pengajuanAktif = await db.pengajuanSkema.findFirst({
       where: { 
         userId: asesiId,
         status: { not: "Selesai" },
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 2. Riwayat asesmen (pengajuan yang sudah selesai atau dijadwalkan)
-    const riwayatAsesmen = await prisma.pengajuanSkema.findMany({
+    const riwayatAsesmen = await db.pengajuanSkema.findMany({
       where: { userId: asesiId },
       orderBy: { created_at: "desc" },
       include: {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 3. Sertifikat
-    const sertifikat = await prisma.sertifikat.findMany({
+    const sertifikat = await db.sertifikat.findMany({
       where: {
         pengajuan_skema: { userId: asesiId },
         status: "Terbit",
