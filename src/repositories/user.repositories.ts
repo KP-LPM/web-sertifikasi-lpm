@@ -1,10 +1,5 @@
 import { db } from "@/lib/db";
-import {
-  BaseUserInput,
-  ProfilAsesiUpdateInput,
-  ProfilAsesorUpdateInput,
-  ProfilAdminUpdateInput,
-} from "@/schema/user.schema";
+import { BaseUserInput } from "@/schema/user.schema";
 
 export class UserRepository {
   // Kelola Users Admin
@@ -25,6 +20,7 @@ export class UserRepository {
       where: { id: Number(id) },
       select: {
         id: true,
+        role: true,
         isActive: true,
       },
     });
@@ -66,66 +62,5 @@ export class UserRepository {
       where: { id: Number(id) },
     });
     return user;
-  }
-
-  // Profile
-
-  baseProfilSelect = {
-    nik: true,
-    namaLengkap: true,
-    tempatLahir: true,
-    tanggalLahir: true,
-    jenisKelamin: true,
-    kewarganegaraan: true,
-    noHp: true,
-    pendidikanTerakhir: true,
-    pekerjaan: true,
-    alamat: true,
-    kodePos: true,
-    kodeKota: true,
-    kodeProvinsi: true,
-    tandaTangan: true,
-    avatar: true,
-  } as const;
-
-  async getProfileAsesi(id: number) {
-    return await db.profilPengguna.findUnique({
-      where: { id },
-      select: {
-        ...this.baseProfilSelect,
-        namaInstitusi: true,
-        jabatan: true,
-        emailInstitusi: true,
-        kodePosInstitusi: true,
-        noHpInstitusi: true,
-        alamatInstitusi: true,
-        noFaxInstitusi: true,
-      },
-    });
-  }
-  async getProfileAsesor(id: number) {
-    return await db.profilPengguna.findUnique({
-      where: { id },
-      select: {
-        ...this.baseProfilSelect,
-        nomorRegistrasiMet: true,
-      },
-    });
-  }
-  async getProfileAdmin(id: number) {
-    return await db.profilPengguna.findUnique({
-      where: { id },
-      select: this.baseProfilSelect,
-    });
-  }
-
-  async updateProfileAsesi(id: number, data: ProfilAsesiUpdateInput) {
-    return await db.profilPengguna.update({ where: { id }, data });
-  }
-  async updateProfileAsesor(id: number, data: ProfilAsesorUpdateInput) {
-    return await db.profilPengguna.update({ where: { id }, data });
-  }
-  async updateProfileAdmin(id: number, data: ProfilAdminUpdateInput) {
-    return await db.profilPengguna.update({ where: { id }, data });
   }
 }

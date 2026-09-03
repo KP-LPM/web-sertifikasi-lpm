@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 import { Prisma } from "@prisma/client";
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       ...(skemaId && { skema_id: parseInt(skemaId, 10) }),
     };
 
-    const suratList = await prisma.surat.findMany({
+    const suratList = await db.surat.findMany({
       where,
       include: {
         master_skema: {
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       return sendResponse(400, "Field 'nomor_surat', 'judul', 'kategori', dan 'jenis_surat' wajib diisi.");
     }
 
-    const existingSurat = await prisma.surat.findUnique({
+    const existingSurat = await db.surat.findUnique({
       where: { nomor_surat },
     });
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       return sendResponse(400, "Nomor surat sudah terdaftar.");
     }
 
-    const suratBaru = await prisma.surat.create({
+    const suratBaru = await db.surat.create({
       data: {
         nomor_surat,
         judul,

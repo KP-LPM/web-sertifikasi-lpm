@@ -99,7 +99,7 @@ export default function AsesiOverviewPage() {
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
-        const response = await fetch("/api/profil");
+        const response = await fetch("/api/profile");
         if (response.ok) {
           // Type assertion untuk menghindari 'any' type
           const data = (await response.json()) as {

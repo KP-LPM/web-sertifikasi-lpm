@@ -4,11 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppContext } from "@/context/context";
-
-interface Crumb {
-  label: string;
-  path?: string; // undefined = bukan link (misal breadcrumb terakhir/aktif)
-}
+import { CrumbItem } from "@/types/types";
 
 function getDashboardPath(role: string | null | undefined): string {
   switch (role) {
@@ -30,134 +26,134 @@ function getDashboardPath(role: string | null | undefined): string {
 // ==========================================================================
 // PETA RUTE -> BREADCRUMB
 // ==========================================================================
-const ROUTE_CRUMBS: Record<string, Crumb[]> = {
+const ROUTE_CRUMBS: Record<string, CrumbItem[]> = {
   // ---------------- ASESOR ----------------
   "/assessor/overview": [{ label: "Dashboard" }],
   "/assessor/candidates": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     { label: "Daftar Asesmen" },
   ],
   "/assessor/asessmentform": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Daftar Asesmen", path: "/assessor/candidates" },
+    { label: "Dashboard", href: "/assessor/overview" },
+    { label: "Daftar Asesmen", href: "/assessor/candidates" },
     { label: "Form Asesmen" },
   ],
   "/assessor/jadwalkanonline": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Daftar Asesmen", path: "/assessor/candidates" },
+    { label: "Dashboard", href: "/assessor/overview" },
+    { label: "Daftar Asesmen", href: "/assessor/candidates" },
     { label: "Jadwalkan Online" },
   ],
   "/assessor/penilaianonline": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Daftar Asesmen", path: "/assessor/candidates" },
+    { label: "Dashboard", href: "/assessor/overview" },
+    { label: "Daftar Asesmen", href: "/assessor/candidates" },
     { label: "Penilaian Online" },
   ],
   "/assessor/finalization": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Daftar Asesmen", path: "/assessor/candidates" },
+    { label: "Dashboard", href: "/assessor/overview" },
+    { label: "Daftar Asesmen", href: "/assessor/candidates" },
     { label: "Finalisasi" },
   ],
   "/assessor/riwayatasesmen": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     { label: "Riwayat Asesmen" },
   ],
   "/assessor/detailriwayatasesmen": [
-    { label: "Dashboard", path: "/assessor/overview" },
-    { label: "Riwayat Asesmen", path: "/assessor/riwayatasesmen" },
+    { label: "Dashboard", href: "/assessor/overview" },
+    { label: "Riwayat Asesmen", href: "/assessor/riwayatasesmen" },
     { label: "Detail Riwayat" },
   ],
   "/assessor/verifikasiapl02": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     { label: "Verifikasi Berkas" },
   ],
   "/assessor/verifikasiportofolio": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     { label: "Verifikasi Portofolio" },
   ],
   "/assessor/verifikasibanding": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     { label: "Verifikasi Banding" },
   ],
   "/assessor/konfigurasipertanyaan": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     { label: "Konfigurasi Pertanyaan" },
   ],
   "/assessor/tambahkonfigurasipertanyaan": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     {
       label: "Konfigurasi Pertanyaan",
-      path: "/assessor/konfigurasipertanyaan",
+      href: "/assessor/konfigurasipertanyaan",
     },
     { label: "Buat Paket Soal" },
   ],
   "/assessor/detailkonfigurasipertanyaan": [
-    { label: "Dashboard", path: "/assessor/overview" },
+    { label: "Dashboard", href: "/assessor/overview" },
     {
       label: "Konfigurasi Pertanyaan",
-      path: "/assessor/konfigurasipertanyaan",
+      href: "/assessor/konfigurasipertanyaan",
     },
     { label: "Detail Paket Soal" },
   ],
 
   // ---------------- ASESI ----------------
   "/asesi/overview": [{ label: "Dashboard" }],
-  "/asesi/pengajuanskema": [{ label: "Dashboard", path: "/asesi/overview" }],
+  "/asesi/pengajuanskema": [{ label: "Dashboard", href: "/asesi/overview" }],
   "/asesi/riwayatasesmen": [
-    { label: "Dashboard", path: "/asesi/overview" },
+    { label: "Dashboard", href: "/asesi/overview" },
     // Label disesuaikan dengan kode asesi lama
-    { label: "Riwayat & Sertifikat", path: "/asesi/riwayatasesmen" },
+    { label: "Riwayat & Sertifikat", href: "/asesi/riwayatasesmen" },
   ],
   "/asesi/banding": [
-    { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Banding Asesmen", path: "/asesi/banding" },
+    { label: "Dashboard", href: "/asesi/overview" },
+    { label: "Banding Asesmen", href: "/asesi/banding" },
   ],
   // Tambahan rute Ujian Online yang sebelumnya hilang
   "/asesi/ujian": [
-    { label: "Dashboard", path: "/asesi/overview" },
-    { label: "Ujian Online", path: "/asesi/ujian" },
+    { label: "Dashboard", href: "/asesi/overview" },
+    { label: "Ujian Online", href: "/asesi/ujian" },
   ],
 
   // ---------------- ADMIN / DIREKTUR / MANAJER ----------------
   "/admin/overview": [{ label: "Dashboard" }],
   "/direktur/dashboard": [{ label: "Dashboard" }],
   "/admin/kelolapengguna": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Kelola Pengguna" },
   ],
   "/admin/kelolasurat": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Kelola Surat" },
   ],
   "/admin/schemes": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Skema Sertifikasi" },
   ],
   "/admin/schedule": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Jadwal & Penugasan" },
   ],
   "/admin/riwayatasesmenadmin": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Riwayat Asesmen" },
   ],
   "/admin/sidangpleno": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Sidang Pleno" },
   ],
   "/admin/tuk": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Manajemen TUK" },
   ],
   "/admin/uploadsertifikat": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Upload Sertifikat" },
   ],
   "/admin/verifikasiberkas": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Daftar Pengguna" },
   ],
   "/admin/reports": [
-    { label: "Dashboard", path: "/admin/overview" },
+    { label: "Dashboard", href: "/admin/overview" },
     { label: "Laporan" },
   ],
 };
@@ -168,10 +164,10 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
 
   if (!user || !pathname) return null;
 
-  let baseCrumbs: Crumb[] | undefined;
+  let baseCrumbs: CrumbItem[] | undefined;
   if (pathname === "/profile") {
     baseCrumbs = [
-      { label: "Dashboard", path: getDashboardPath(user.role) },
+      { label: "Dashboard", href: getDashboardPath(user.role) },
       { label: "Profil Saya" },
     ];
   } else {
@@ -211,16 +207,16 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
               >
                 {crumb.label}
               </button>
-            ) : crumb.path ? (
+            ) : crumb.href ? (
               // Jika ini rute URL normal, gunakan Link Next.js
               <Link
-                href={crumb.path}
+                href={crumb.href}
                 className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
               >
                 {crumb.label}
               </Link>
             ) : (
-              // Jika tidak ada onClick dan tidak ada path, jadikan teks biasa
+              // Jika tidak ada onClick dan tidak ada href, jadikan teks biasa
               <span className="text-slate-500">{crumb.label}</span>
             )}
           </React.Fragment>

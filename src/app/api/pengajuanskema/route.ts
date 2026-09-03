@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from "@/lib/db";
 import type { PengajuanPayload } from '@/types/types.ts';
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as PengajuanPayload;
-    const skema = await prisma.masterSkema.findFirst({
+    const skema = await db.masterSkema.findFirst({
       where: { kodeSkema: body.code }
     });
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const pengajuanBaru = await prisma.pengajuanSkema.create({
+    const pengajuanBaru = await db.pengajuanSkema.create({
       data: {
         nomorPengajuan: `PGJ-${Date.now()}`,
         userId: body.userId ? parseInt(body.userId, 10) : 0, 

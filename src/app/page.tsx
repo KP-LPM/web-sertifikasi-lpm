@@ -22,7 +22,6 @@ export default function Page() {
   useEffect(() => {
     if (status === "loading") return;
 
-    // Use session.user directly to avoid race condition with context state
     const currentUser = session?.user || user;
 
     if (status === "unauthenticated" || !currentUser || !currentUser.role) {

@@ -46,7 +46,7 @@ export function Header() {
   useEffect(() => {
     const fetchHeaderProfile = async () => {
       try {
-        const res = await fetch("/api/profil");
+        const res = await fetch("/api/profile");
         if (res.ok) {
           const data = (await res.json()) as ProfileDataType;
           setDbProfile({

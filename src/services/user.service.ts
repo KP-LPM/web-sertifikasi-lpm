@@ -6,11 +6,7 @@ export class UserService {
   private userRepository = new UserRepository();
 
   async getUser() {
-    const user = await this.userRepository.getUser();
-    if (!user) {
-      throw new NotFoundError("User tidak ditemukan");
-    }
-    return user;
+    return await this.userRepository.getUser();
   }
 
   async getUserById(id: number) {
@@ -33,7 +29,7 @@ export class UserService {
     const existingUser = await this.userRepository.getUserByEmail(data.email);
     if (existingUser) {
       throw new InvariantError(
-        "Username sudah digunakan, silakan pakai username lain",
+        "Email sudah digunakan, silakan pakai email lain",
       );
     }
     const newUser = await this.userRepository.createUser(data);
@@ -45,14 +41,14 @@ export class UserService {
     return newUser;
   }
 
-  async updateUserStatus(id: number, data: BaseUserInput) {
+  async updateUserStatus(id: number, data: { isActive: boolean }) {
     const existingUser = await this.userRepository.getUserById(id);
     if (!existingUser) {
       throw new NotFoundError("User tidak ditemukan");
     }
     const user = await this.userRepository.updateUserStatus(id, data);
     if (!user) {
-      throw new InvariantError("Gagal Mengupdate User");
+      throw new InvariantError("Gagal mengupdate status user");
     }
     return user;
   }
@@ -68,4 +64,7 @@ export class UserService {
     }
     return user;
   }
+
 }
+
+export const userService = new UserService();

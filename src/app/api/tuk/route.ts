@@ -4,7 +4,7 @@
  */
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const where =
       statusParam === "all" ? {} : { status: "Aktif" };
 
-    const tukList = await prisma.master_tuk.findMany({
+    const tukList = await db.master_tuk.findMany({
       where,
       include: {
         master_tuk_inventaris: true,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       return sendResponse(400, "Field 'nama' wajib diisi.");
     }
 
-    const tukBaru = await prisma.master_tuk.create({
+    const tukBaru = await db.master_tuk.create({
       data: {
         nama,
         keterangan: keterangan ?? null,

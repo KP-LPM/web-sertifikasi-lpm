@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     const asesorId = parseInt(session.user.id, 10);
 
-    const portfolioBaru = await prisma.portfolio_asesor.create({
+    const portfolioBaru = await db.portfolio_asesor.create({
       data: {
         asesor_id: asesorId,
         skema_id: skema_id ? parseInt(skema_id, 10) : null,

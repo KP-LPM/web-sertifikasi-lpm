@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -12,10 +12,13 @@ export async function GET(request: NextRequest) {
     if (!session) {
       return sendResponse(401, "Anda harus login.");
     }
-    
+
     const role = session.user?.role;
     if (role !== "admin" && role !== "asesor") {
-      return sendResponse(403, "Akses ditolak. Hanya admin atau asesor yang dapat melihat daftar kandidat.");
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya admin atau asesor yang dapat melihat daftar kandidat.",
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -25,7 +28,7 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {};
     if (jadwalId) {
       whereClause.jadwal_asesmen_peserta = {
-        some: { jadwal_id: parseInt(jadwalId, 10) }
+        some: { jadwal_id: parseInt(jadwalId, 10) },
       };
     }
     if (skemaId) {
@@ -37,17 +40,17 @@ export async function GET(request: NextRequest) {
       const asesorId = parseInt(session.user.id, 10);
       whereClause.jadwal_asesmen_peserta = {
         some: {
-          jadwal_asesmen: { asesor_id: asesorId }
-        }
+          jadwal_asesmen: { asesor_id: asesorId },
+        },
       };
     }
 
-    const candidates = await prisma.pengajuanSkema.findMany({
+    const candidates = await db.pengajuanSkema.findMany({
       where: whereClause,
       include: {
         user: { select: { username: true, email: true } },
         dataPribadi: {
-          select: { nik: true, namaLengkap: true, noHp: true }
+          select: { nik: true, namaLengkap: true, noHp: true },
         },
         skema: { select: { kodeSkema: true, namaSkema: true } },
         hasil_asesmen: true,
@@ -58,10 +61,12 @@ export async function GET(request: NextRequest) {
                 id: true,
                 tanggal: true,
                 asesor_id: true,
-                users: { select: { profil: { select: { namaLengkap: true } } } }
-              }
-            }
-          }
+                users: {
+                  select: { profil: { select: { namaLengkap: true } } },
+                },
+              },
+            },
+          },
         },
       },
       orderBy: { created_at: "desc" },
@@ -89,9 +94,16 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return sendResponse(200, "Berhasil mengambil daftar kandidat", formattedCandidates);
+    return sendResponse(
+      200,
+      "Berhasil mengambil daftar kandidat",
+      formattedCandidates,
+    );
   } catch (error) {
     console.error("[GET /api/candidates]", error);
-    return sendResponse(500, "Terjadi kesalahan saat mengambil daftar kandidat");
+    return sendResponse(
+      500,
+      "Terjadi kesalahan saat mengambil daftar kandidat",
+    );
   }
 }

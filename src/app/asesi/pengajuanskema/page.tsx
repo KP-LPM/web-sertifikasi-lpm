@@ -42,6 +42,7 @@ import {
   DATA_PENDIDIKAN,
   DATA_INSTANSI,
 } from "@/data/rujukan";
+import { getUsersProfile } from "@/lib/api";
 
 // --- INTERFACE UNTUK DATA RUJUKAN ---
 interface RujukanItem {
@@ -209,7 +210,6 @@ export default function PengajuanSkemaPage() {
     }
     return [];
   });
-
   const [searchSub, setSearchSub] = useState("");
   const [statusSubFilter, setStatusSubFilter] = useState("Semua");
   const [dateSubFilter, setDateSubFilter] = useState("");
@@ -225,16 +225,13 @@ export default function PengajuanSkemaPage() {
   const [alamat, setAlamat] = useState("");
   const [provinsi, setProvinsi] = useState("");
   const [kota, setKota] = useState("");
-
   const namaProvinsi = provinsis.find((p) => p.id === provinsi)?.label || "";
   const namaKota = kotas.find((k) => k.id === kota)?.label || "";
   const alamatWilayah = [namaKota, namaProvinsi].filter(Boolean).join(", ");
-
   const [nik, setNik] = useState("");
   const [kewarganegaraan, setKewarganegaraan] = useState("WNI");
   const [kodePos, setKodePos] = useState("");
   const [noTelp, setNoTelp] = useState("");
-
   const [pendidikanTerakhir, setPendidikanTerakhir] = useState("");
   const [pekerjaan, setPekerjaan] = useState("");
   const [institusiPerusahaan, setInstitusiPerusahaan] = useState("");
@@ -244,61 +241,68 @@ export default function PengajuanSkemaPage() {
   const [alamatInstitusi, setAlamatInstitusi] = useState("");
   const [telpInstitusi, setTelpInstitusi] = useState("");
   const [faxInstitusi, setFaxInstitusi] = useState("");
+
   const [tuk, setTuk] = useState("");
   const [metode, setMetode] = useState("");
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
-  // FETCH PROFIL USER
+  // FETCH PROFIL USER MENGGUNAKAN getUsersProfile
   React.useEffect(() => {
     const fetchProfil = async () => {
+      const userId = Number(user?.id);
+      if (!userId) return;
+
       try {
-        const response = await fetch("/api/profil");
+        const response = await getUsersProfile(userId);
+        const dataProfil = (
+          Array.isArray(response) ? response[0] : response
+        ) as Record<string, unknown> | undefined;
 
-        if (response.ok) {
-          const dataProfil = await response.json();
+        if (!dataProfil) return;
 
-          if (dataProfil.namaLengkap) setNamaLengkap(dataProfil.namaLengkap);
-          if (dataProfil.nik) setNik(dataProfil.nik);
-          if (dataProfil.tempatLahir) setTempatLahir(dataProfil.tempatLahir);
+        const profileSetters: [unknown, (val: string) => void][] = [
+          [dataProfil.namaLengkap, setNamaLengkap],
+          [dataProfil.nik, setNik],
+          [dataProfil.tempatLahir, setTempatLahir],
+          [
+            dataProfil.tanggalLahir
+              ? new Date(String(dataProfil.tanggalLahir))
+                  .toISOString()
+                  .split("T")[0]
+              : null,
+            setTanggalLahir,
+          ],
+          [dataProfil.jenisKelamin, setJenisKelamin],
+          [dataProfil.kewarganegaraan, setKewarganegaraan],
+          [dataProfil.noHp, setNoTelp],
+          [dataProfil.alamat, setAlamat],
+          [dataProfil.kodeProvinsi, setProvinsi],
+          [dataProfil.kodeKota, setKota],
+          [dataProfil.kodePos, setKodePos],
+          [dataProfil.pendidikanTerakhir, setPendidikanTerakhir],
+          [dataProfil.pekerjaan, setPekerjaan],
+          [dataProfil.namaInstitusi, setInstitusiPerusahaan],
+          [dataProfil.jabatan, setJabatan],
+          [dataProfil.emailInstitusi, setEmailInstitusi],
+          [dataProfil.kodePosInstitusi, setKodePosInstitusi],
+          [dataProfil.telpInstitusi, setTelpInstitusi],
+          [dataProfil.alamatInstitusi, setAlamatInstitusi],
+          [dataProfil.faxInstitusi, setFaxInstitusi],
+        ];
 
-          if (dataProfil.tanggalLahir) {
-            const dateObj = new Date(dataProfil.tanggalLahir);
-            setTanggalLahir(dateObj.toISOString().split("T")[0]);
+        profileSetters.forEach(([val, setter]) => {
+          if (val !== undefined && val !== null && val !== "") {
+            setter(String(val));
           }
-
-          if (dataProfil.jenisKelamin) setJenisKelamin(dataProfil.jenisKelamin);
-          if (dataProfil.kewarganegaraan)
-            setKewarganegaraan(dataProfil.kewarganegaraan);
-
-          if (dataProfil.noHp) setNoTelp(dataProfil.noHp);
-          if (dataProfil.alamat) setAlamat(dataProfil.alamat);
-          if (dataProfil.kodeProvinsi) setProvinsi(dataProfil.kodeProvinsi);
-          if (dataProfil.kodeKota) setKota(dataProfil.kodeKota);
-          if (dataProfil.kodePos) setKodePos(dataProfil.kodePos);
-          if (dataProfil.pendidikanTerakhir)
-            setPendidikanTerakhir(dataProfil.pendidikanTerakhir);
-          if (dataProfil.pekerjaan) setPekerjaan(dataProfil.pekerjaan);
-          if (dataProfil.namaInstitusi)
-            setInstitusiPerusahaan(dataProfil.namaInstitusi);
-          if (dataProfil.jabatan) setJabatan(dataProfil.jabatan);
-          if (dataProfil.emailInstitusi)
-            setEmailInstitusi(dataProfil.emailInstitusi);
-          if (dataProfil.kodePosInstitusi)
-            setKodePosInstitusi(dataProfil.kodePosInstitusi);
-          if (dataProfil.telpInstitusi)
-            setTelpInstitusi(dataProfil.telpInstitusi);
-          if (dataProfil.alamatInstitusi)
-            setAlamatInstitusi(dataProfil.alamatInstitusi);
-          if (dataProfil.faxInstitusi) setFaxInstitusi(dataProfil.faxInstitusi);
-        }
+        });
       } catch (error) {
         console.error("Gagal mengambil data profil:", error);
       }
     };
 
     fetchProfil();
-  }, []);
+  }, [user?.id]);
 
   // FETCH MASTER SKEMA DARI BACKEND
   React.useEffect(() => {

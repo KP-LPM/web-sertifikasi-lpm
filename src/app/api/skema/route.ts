@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from "@/lib/db";
 
 export const dynamic = 'force-dynamic'; 
 
 export async function GET() {
   try {
-    const skemaList = await prisma.masterSkema.findMany({
+    const skemaList = await db.masterSkema.findMany({
       where: {
         statusAktif: true, 
       },

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -19,7 +19,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const portfolioId = parseInt(id, 10);
     if (isNaN(portfolioId)) return sendResponse(400, "ID portfolio tidak valid.");
 
-    const portfolioExisting = await prisma.portfolio_asesor.findUnique({
+    const portfolioExisting = await db.portfolio_asesor.findUnique({
       where: { id: portfolioId },
     });
 
@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       file_type 
     } = body;
 
-    const portfolioUpdated = await prisma.portfolio_asesor.update({
+    const portfolioUpdated = await db.portfolio_asesor.update({
       where: { id: portfolioId },
       data: {
         ...(skema_id !== undefined && { skema_id: skema_id ? parseInt(skema_id, 10) : null }),
@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const portfolioId = parseInt(id, 10);
     if (isNaN(portfolioId)) return sendResponse(400, "ID portfolio tidak valid.");
 
-    const portfolioExisting = await prisma.portfolio_asesor.findUnique({
+    const portfolioExisting = await db.portfolio_asesor.findUnique({
       where: { id: portfolioId },
     });
 
@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    await prisma.portfolio_asesor.delete({
+    await db.portfolio_asesor.delete({
       where: { id: portfolioId },
     });
 

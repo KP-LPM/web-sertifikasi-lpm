@@ -5,7 +5,7 @@
  */
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -21,7 +21,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tuk = await prisma.master_tuk.findUnique({
+    const tuk = await db.master_tuk.findUnique({
       where: { id: tukId },
       include: { master_tuk_inventaris: true },
     });
@@ -46,13 +46,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tukExisting = await prisma.master_tuk.findUnique({ where: { id: tukId } });
+    const tukExisting = await db.master_tuk.findUnique({ where: { id: tukId } });
     if (!tukExisting) return sendResponse(404, "TUK tidak ditemukan.");
 
     const body = await request.json();
     const { nama, keterangan, tipe, alamat, kapasitas, penanggung_jawab, status } = body;
 
-    const tukUpdated = await prisma.master_tuk.update({
+    const tukUpdated = await db.master_tuk.update({
       where: { id: tukId },
       data: {
         ...(nama !== undefined && { nama }),
@@ -83,11 +83,11 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tukExisting = await prisma.master_tuk.findUnique({ where: { id: tukId } });
+    const tukExisting = await db.master_tuk.findUnique({ where: { id: tukId } });
     if (!tukExisting) return sendResponse(404, "TUK tidak ditemukan.");
 
     // Soft-delete: ubah status menjadi Nonaktif
-    await prisma.master_tuk.update({
+    await db.master_tuk.update({
       where: { id: tukId },
       data: { status: "Nonaktif" },
     });

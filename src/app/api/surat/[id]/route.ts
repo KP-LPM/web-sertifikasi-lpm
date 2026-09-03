@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const suratId = parseInt(id, 10);
     if (isNaN(suratId)) return sendResponse(400, "ID surat tidak valid.");
 
-    const suratDetail = await prisma.surat.findUnique({
+    const suratDetail = await db.surat.findUnique({
       where: { id: suratId },
       include: {
         master_skema: {
@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const suratId = parseInt(id, 10);
     if (isNaN(suratId)) return sendResponse(400, "ID surat tidak valid.");
 
-    const suratExisting = await prisma.surat.findUnique({
+    const suratExisting = await db.surat.findUnique({
       where: { id: suratId },
     });
 
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const { status, tanggal_terbit, url_dokumen, url_gdrive, catatan } = body;
 
-    const suratUpdated = await prisma.surat.update({
+    const suratUpdated = await db.surat.update({
       where: { id: suratId },
       data: {
         ...(status !== undefined && { status }),
@@ -90,7 +90,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const suratId = parseInt(id, 10);
     if (isNaN(suratId)) return sendResponse(400, "ID surat tidak valid.");
 
-    const suratExisting = await prisma.surat.findUnique({
+    const suratExisting = await db.surat.findUnique({
       where: { id: suratId },
     });
 
@@ -99,7 +99,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Soft-delete: set status ke 'Arsip'
-    await prisma.surat.update({
+    await db.surat.update({
       where: { id: suratId },
       data: { status: "Arsip" },
     });
