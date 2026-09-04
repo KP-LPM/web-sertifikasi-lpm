@@ -4,7 +4,7 @@ import {
   ProfilAsesiUpdateInput,
   ProfilAsesorUpdateInput,
   ProfilAdminUpdateInput,
-} from "@/schema/profile.schema";
+} from "@/schemas/profile.schema";
 
 export class ProfileRepository {
   baseProfilSelect = {
@@ -25,39 +25,21 @@ export class ProfileRepository {
     avatar: true,
   } as const;
 
-  // Cek duplikasi user sebelum registrasi
   async findUserByUsernameOrEmail(username: string, email: string) {
     return await db.user.findFirst({
-      where: {
-        OR: [{ username }, { email }],
-      },
+      where: { OR: [{ username }, { email }] },
     });
   }
 
-  // Pembuatan Akun User + Profil via Transaksi Database
   async registerWithProfile(
-    userData: {
-      username: string;
-      email: string;
-      password: string;
-      role: Role;
-    },
+    userData: { username: string; email: string; password: string; role: Role },
     profileData: Prisma.ProfilPenggunaCreateWithoutUserInput,
   ) {
     return await db.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: userData,
-      });
-
+      const newUser = await tx.user.create({ data: userData });
       const newProfile = await tx.profilPengguna.create({
-        data: {
-          ...profileData,
-          user: {
-            connect: { id: newUser.id },
-          },
-        },
+        data: { ...profileData, user: { connect: { id: newUser.id } } },
       });
-
       return { user: newUser, profile: newProfile };
     });
   }
@@ -81,10 +63,7 @@ export class ProfileRepository {
   async getProfileAsesor(userId: number) {
     return await db.profilPengguna.findUnique({
       where: { userId },
-      select: {
-        ...this.baseProfilSelect,
-        nomorRegistrasiMet: true,
-      },
+      select: { ...this.baseProfilSelect, nomorRegistrasiMet: true },
     });
   }
 
@@ -95,16 +74,31 @@ export class ProfileRepository {
     });
   }
 
-  async updateProfileAsesi(userId: number, data: ProfilAsesiUpdateInput) {
-    return await db.profilPengguna.update({ where: { userId }, data });
+  // Ketiga method di bawah ini ditambahkan parameter `tx` opsional —
+  // dipakai ProfileService supaya update profil ikut dalam transaksi
+  // yang sama dengan update email (lihat profile.service.ts).
+  async updateProfileAsesi(
+    userId: number,
+    data: ProfilAsesiUpdateInput,
+    tx: Prisma.TransactionClient | typeof db = db,
+  ) {
+    return await tx.profilPengguna.update({ where: { userId }, data });
   }
 
-  async updateProfileAsesor(userId: number, data: ProfilAsesorUpdateInput) {
-    return await db.profilPengguna.update({ where: { userId }, data });
+  async updateProfileAsesor(
+    userId: number,
+    data: ProfilAsesorUpdateInput,
+    tx: Prisma.TransactionClient | typeof db = db,
+  ) {
+    return await tx.profilPengguna.update({ where: { userId }, data });
   }
 
-  async updateProfileAdmin(userId: number, data: ProfilAdminUpdateInput) {
-    return await db.profilPengguna.update({ where: { userId }, data });
+  async updateProfileAdmin(
+    userId: number,
+    data: ProfilAdminUpdateInput,
+    tx: Prisma.TransactionClient | typeof db = db,
+  ) {
+    return await tx.profilPengguna.update({ where: { userId }, data });
   }
 }
 

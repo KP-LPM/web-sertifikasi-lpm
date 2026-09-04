@@ -11,9 +11,10 @@ import {
   Languages,
   LogOut,
 } from "lucide-react";
+import { getUsersProfile } from "@/lib/api";
 
 function getProfilePath() {
-  return "/profil";
+  return "/profile";
 }
 
 type ProfileDataType = {
@@ -45,17 +46,17 @@ export function Header() {
 
   useEffect(() => {
     const fetchHeaderProfile = async () => {
+      const userId = Number(user?.id);
+      if (!userId) return;
       try {
-        const res = await fetch("/api/profile");
-        if (res.ok) {
-          const data = (await res.json()) as ProfileDataType;
-          setDbProfile({
-            name: (data.namaLengkap || data.nama_lengkap || data.nama) as
-              | string
-              | undefined,
-            avatar: data.avatar as string | undefined,
-          });
-        }
+        const response = await getUsersProfile(userId);
+
+        // Antisipasi jika kembalian berupa array atau single object
+        const data = (Array.isArray(response) ? response[0] : response) as
+          | Record<string, unknown>
+          | undefined;
+
+        if (!data) return;
       } catch (error) {
         console.error("Gagal ambil data header:", error);
       }

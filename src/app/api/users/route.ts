@@ -2,7 +2,7 @@ import { UserService } from "@/services/user.service";
 import { ClientError } from "@/error/index";
 import { sendResponse } from "@/lib/response";
 import { NextRequest } from "next/server";
-import { BaseUserSchema } from "@/schema/user.schema";
+import { BaseUserSchema } from "@/schemas/user.schema";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import bcrypt from "bcryptjs";

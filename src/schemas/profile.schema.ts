@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const baseProfilUpdateSchema = z.object({
+  email: z.string().trim().min(1).email().optional(), // BARU — semua role boleh ganti email
   namaLengkap: z.string().min(1).optional(),
   tempatLahir: z.string().optional(),
   tanggalLahir: z.coerce.date().optional(),

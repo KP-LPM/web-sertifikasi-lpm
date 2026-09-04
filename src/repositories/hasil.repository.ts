@@ -1,9 +1,9 @@
 import { db } from "@/lib/db";
-import { HasilAsesmenDTO } from "@/schema/hasil.schema";
+import { HasilAsesmenDTO } from "@/schemas/hasil.schema";
 
 export const upsertHasilAsesmen = async (
   pengajuanId: number,
-  data: HasilAsesmenDTO
+  data: HasilAsesmenDTO,
 ) => {
   return await db.$transaction(async (tx) => {
     // 1. Simpan/Update Hasil Asesmen

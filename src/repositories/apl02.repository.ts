@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
-import { PenilaianApl02DTO } from "@/schema/apl02.schema";
+import { PenilaianApl02DTO } from "@/schemas/apl02.schema";
 
 export const upsertPenilaianApl02 = async (
   pengajuanId: number,
   data: PenilaianApl02DTO,
-  statusBaru: string
+  statusBaru: string,
 ) => {
   return await db.$transaction(async (tx) => {
     // 1. Simpan/Update header penilaian APL02
@@ -27,7 +27,7 @@ export const upsertPenilaianApl02 = async (
       },
     });
 
-    // 2. Hapus data penyusun/validator lama 
+    // 2. Hapus data penyusun/validator lama
     await tx.apl02_penyusun_validator.deleteMany({
       where: { apl02_id: apl02.id },
     });
@@ -40,7 +40,7 @@ export const upsertPenilaianApl02 = async (
       no_met?: string | null;
       ttd_tanggal?: Date | null;
     }> = [];
-    
+
     if (data.penyusun && data.penyusun.length > 0) {
       data.penyusun.forEach((p) => {
         penyusunValidatorData.push({
@@ -73,9 +73,9 @@ export const upsertPenilaianApl02 = async (
     }
 
     await tx.pengajuanSkema.update({
-        where: { id: pengajuanId },
-        data: { status: statusBaru },
-      });
+      where: { id: pengajuanId },
+      data: { status: statusBaru },
+    });
 
     return apl02;
   });

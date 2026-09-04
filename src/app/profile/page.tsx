@@ -5,7 +5,7 @@ import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
 import { supabase } from "@/lib/supabase";
-import { getUsersProfile } from "@/lib/api";
+import { forgotPassword, getUsersProfile } from "@/lib/api";
 
 type SessionUser = {
   id?: string | number;
@@ -29,6 +29,7 @@ export default function Profile() {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const fileAvatarRef = useRef<HTMLInputElement>(null);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   const [formData, setFormData] = useState({
     peran:
@@ -132,6 +133,29 @@ export default function Profile() {
     }
   };
 
+  const handleGantiPassword = async () => {
+    const email = (user as SessionUser)?.email;
+
+    if (!email) {
+      alert("Email tidak ditemukan, silakan login ulang.");
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      const result = await forgotPassword(email);
+      alert(result.message); // ganti dengan showNotification kalau ada di halaman ini
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Gagal mengirim tautan reset password.";
+      alert(message);
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
   React.useEffect(() => {
     if (isSignatureModalOpen && formData.tandaTangan && signatureRef.current) {
       setTimeout(() => {
@@ -177,13 +201,9 @@ export default function Profile() {
       if (!userId) return;
 
       try {
-        // Panggil fungsi dengan argumen userId
         const response = await getUsersProfile(userId);
-
-        // Antisipasi jika kembalian berupa array atau single object
         const data = (Array.isArray(response) ? response[0] : response) as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
 
         if (!data) return;
 
@@ -290,18 +310,23 @@ export default function Profile() {
         avatar: finalAvatarUrl,
       };
 
-      // Kirim data lengkap ke API profil
-
       const response = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Gagal menyimpan profil ke database");
+      const result = await response.json();
+      console.log("Response dari backend:", result);
 
-      updateUser(payload as unknown as Record<string, string | undefined>);
-      alert("Profil berhasil disimpan!");
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menyimpan profil ke database");
+      }
+
+      updateUser({
+        ...payload,
+        email: result.user?.email || payload.email,
+      });
     } catch (error) {
       if (error instanceof Error) {
         alert(error.message);
@@ -638,12 +663,11 @@ export default function Profile() {
                 Ganti Kata Sandi
               </p>
               <button
-                onClick={() =>
-                  alert("Tautan reset password telah dikirim ke email Anda!")
-                }
-                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors"
+                onClick={handleGantiPassword}
+                disabled={isSendingReset}
+                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Ganti Kata Sandi
+                {isSendingReset ? "Mengirim..." : "Ganti Kata Sandi"}
               </button>
             </div>
           </section>

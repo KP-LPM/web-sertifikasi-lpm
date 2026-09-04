@@ -1,5 +1,5 @@
 import { UserRepository } from "../repositories/user.repositories";
-import { BaseUserInput } from "@/schema/user.schema";
+import { BaseUserInput } from "@/schemas/user.schema";
 import { InvariantError, NotFoundError } from "../error/index";
 
 export class UserService {
@@ -64,7 +64,6 @@ export class UserService {
     }
     return user;
   }
-
 }
 
 export const userService = new UserService();

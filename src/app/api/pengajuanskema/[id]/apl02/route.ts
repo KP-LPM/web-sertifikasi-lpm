@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { penilaianApl02Schema } from "@/schema/apl02.schema";
+import { penilaianApl02Schema } from "@/schemas/apl02.schema";
 import { prosesPenilaianApl02 } from "@/services/apl02.service";
 
 interface Params {
@@ -15,7 +15,7 @@ export async function PUT(req: Request, { params }: Params) {
     if (isNaN(pengajuanId)) {
       return NextResponse.json(
         { success: false, message: "ID pengajuan tidak valid" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -31,7 +31,7 @@ export async function PUT(req: Request, { params }: Params) {
           message: "Validasi data gagal.",
           errors: validationResult.error.format(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -46,18 +46,18 @@ export async function PUT(req: Request, { params }: Params) {
         message: "Data penilaian APL.02 berhasil disimpan.",
         data: hasilApl02,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     console.error("[ERROR PUT PENILAIAN APL02]:", error);
-    
+
     return NextResponse.json(
       {
         success: false,
         message: "Terjadi kesalahan internal pada server.",
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

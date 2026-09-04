@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prosesPengajuanBaru } from "@/services/pengajuanskema.service";
-import { createPengajuanSchema } from "@/schema/pengajuanskema.schema";
+import { createPengajuanSchema } from "@/schemas/pengajuanskema.schema";
 
 export async function POST(req: Request) {
   try {
@@ -15,9 +15,9 @@ export async function POST(req: Request) {
         {
           success: false,
           message: "Validasi data gagal. Periksa kembali form anda.",
-          errors: validationResult.error.format(), 
+          errors: validationResult.error.format(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,11 +32,11 @@ export async function POST(req: Request) {
         message: "Pengajuan sertifikasi berhasil disubmit.",
         data: pengajuanBaru,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error: unknown) {
     console.error("[ERROR POST PENGAJUAN]:", error);
-    
+
     // Tangkap error server
     return NextResponse.json(
       {
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         message: "Terjadi kesalahan internal pada server.",
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

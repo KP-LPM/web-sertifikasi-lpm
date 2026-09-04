@@ -58,7 +58,7 @@ const handler = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
-        token.email = user.email; // tambahkan ini untuk eksplisit
+        token.email = user.email;
       }
       return token;
     },
@@ -67,7 +67,7 @@ const handler = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role;
         session.user.username = token.username as string;
-        session.user.email = token.email as string; // tambahkan ini
+        session.user.email = token.email as string;
       }
       return session;
     },

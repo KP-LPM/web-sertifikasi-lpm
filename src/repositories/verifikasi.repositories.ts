@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
-import { VerifikasiApl01DTO } from "@/schema/verifikasi.schema";
+import { VerifikasiApl01DTO } from "@/schemas/verifikasi.schema";
 
 export const upsertVerifikasiPengajuan = async (
   pengajuanId: number,
   data: VerifikasiApl01DTO,
-  statusPengajuanBaru: string
+  statusPengajuanBaru: string,
 ) => {
   return await db.$transaction(async (tx) => {
     // 1. Simpan/Update data verifikasi

@@ -15,7 +15,6 @@ import {
   History,
   FileText,
   LogOut,
-  GraduationCap,
   Menu,
   FileEdit,
   Building2,
@@ -57,9 +56,7 @@ export function Sidebar() {
                   <Image
                     src={logoLsp}
                     alt="Logo LSP"
-                    width={33}
-                    height={33}
-                    className="object-contain"
+                    className="object-contain w-33 h-auto"
                   />
                 </div>
                 <div className="transition-all duration-300 overflow-hidden whitespace-nowrap">
@@ -88,9 +85,6 @@ export function Sidebar() {
               >
                 <Menu size={18} />
               </button>
-              <div className="w-9 h-9 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] shrink-0 border border-[#008BE3]/20 shadow-xs">
-                <GraduationCap size={20} className="stroke-[2.5]" />
-              </div>
             </>
           )}
         </div>
@@ -125,7 +119,7 @@ export function Sidebar() {
                     }
                   />
                   {!sidebarCollapsed && (
-                    <span className="text-sm font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
+                    <span className="text-[12px] font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
                       {item.label}
                     </span>
                   )}

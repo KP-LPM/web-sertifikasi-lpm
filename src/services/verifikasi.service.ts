@@ -1,13 +1,13 @@
 import { upsertVerifikasiPengajuan } from "@/repositories/verifikasi.repositories";
-import { VerifikasiApl01DTO } from "@/schema/verifikasi.schema";
+import { VerifikasiApl01DTO } from "@/schemas/verifikasi.schema";
 
 export const prosesVerifikasiApl01 = async (
   pengajuanId: number,
-  data: VerifikasiApl01DTO
+  data: VerifikasiApl01DTO,
 ) => {
   // Tentukan status pengajuan baru berdasarkan rekomendasi admin
   let statusPengajuanBaru = "Terverifikasi";
-  
+
   if (data.rekomendasi === "Ditolak") {
     statusPengajuanBaru = "Ditolak / Revisi";
   }
@@ -16,7 +16,7 @@ export const prosesVerifikasiApl01 = async (
   const verifikasiTersimpan = await upsertVerifikasiPengajuan(
     pengajuanId,
     data,
-    statusPengajuanBaru
+    statusPengajuanBaru,
   );
 
   return verifikasiTersimpan;

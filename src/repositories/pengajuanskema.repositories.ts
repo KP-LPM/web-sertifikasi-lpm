@@ -1,9 +1,9 @@
-import {db} from "@/lib/db";
-import { CreatePengajuanDTO } from "@/schema/pengajuanskema.schema";
+import { db } from "@/lib/db";
+import { CreatePengajuanDTO } from "@/schemas/pengajuanskema.schema";
 
 export const insertPengajuanBaru = async (
   nomorPengajuan: string,
-  data: CreatePengajuanDTO
+  data: CreatePengajuanDTO,
 ) => {
   return await db.$transaction(async (tx) => {
     const pengajuan = await tx.pengajuanSkema.create({
@@ -30,7 +30,8 @@ export const insertPengajuanBaru = async (
             pendidikanTerakhir: data.dataPribadi.pendidikanTerakhir,
             pekerjaan: data.dataPribadi.pekerjaan,
             tandaTangan: data.dataPribadi.tandaTangan,
-            memerlukanPenyesuaianWajar: data.dataPribadi.memerlukanPenyesuaianWajar,
+            memerlukanPenyesuaianWajar:
+              data.dataPribadi.memerlukanPenyesuaianWajar,
             isBerpengalaman: data.dataPribadi.isBerpengalaman,
             namaInstitusi: data.dataPribadi.namaInstitusi,
             jabatan: data.dataPribadi.jabatan,

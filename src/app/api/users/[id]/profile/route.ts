@@ -9,7 +9,7 @@ import {
   profilAsesiUpdateSchema,
   profilAsesorUpdateSchema,
   profilAdminUpdateSchema,
-} from "@/schema/profile.schema";
+} from "@/schemas/profile.schema";
 
 export const dynamic = "force-dynamic";
 

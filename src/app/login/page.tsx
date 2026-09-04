@@ -18,6 +18,13 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import {
+  forgotPassword,
+  registerUsers,
+  resetPassword,
+  verifyOtp,
+} from "@/lib/api";
+import { RegisterPayload } from "@/types/types";
 
 type SignatureCanvasRef = {
   clear: () => void;
@@ -49,18 +56,23 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isOtpView, setIsOtpView] = useState(false);
+  const [isNewPasswordView, setIsNewPasswordView] = useState(false);
+  const [resetEmail, setResetEmail] = useState(""); // simpan email dari step 1, dipakai lagi di step 2
+  const [resetToken, setResetToken] = useState("");
+  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [notification, setNotification] = useState({
     show: false,
     message: "",
     type: "success",
   });
-  
+
   const showNotification = (message: string, type: "success" | "error") => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
       setNotification((prev) => ({ ...prev, show: false }));
-    }, 3000); 
+    }, 3000);
   };
 
   // State Signature
@@ -135,8 +147,11 @@ export default function Login() {
 
     const formDataObj = new FormData(form);
 
+    const password = String(formDataObj.get("password") || "");
+    const confirmPassword = String(formDataObj.get("confirm_password") || "");
+
     // Validasi konfirmasi password
-    if (formDataObj.get("password") !== formDataObj.get("confirm_password")) {
+    if (password !== confirmPassword) {
       showNotification(
         "Password dan Konfirmasi Password tidak cocok!",
         "error",
@@ -144,52 +159,51 @@ export default function Login() {
       return;
     }
 
-    const data = {
-      role: mode,
-      username: formDataObj.get("username"),
-      email: formDataObj.get("email"),
-      password: formDataObj.get("password"),
-      nik: formDataObj.get("nik"),
-      nama_lengkap: formDataObj.get("nama_lengkap"),
-      tempat_lahir: formDataObj.get("tempat_lahir"),
-      tanggal_lahir: formDataObj.get("tanggal_lahir"),
-      jenis_kelamin: formDataObj.get("jenis_kelamin"),
-      no_hp: formDataObj.get("no_hp"),
-      pekerjaan: formDataObj.get("pekerjaan"),
+    const payload: RegisterPayload = {
+      role: mode as "asesi" | "asesor",
+      username: String(formDataObj.get("username") || ""),
+      email: String(formDataObj.get("email") || ""),
+      password: password,
+      nik: String(formDataObj.get("nik") || ""),
+      nama_lengkap: String(formDataObj.get("nama_lengkap") || ""),
+      tempat_lahir: String(formDataObj.get("tempat_lahir") || ""),
+      tanggal_lahir: String(formDataObj.get("tanggal_lahir") || ""),
+      jenis_kelamin: String(formDataObj.get("jenis_kelamin") || ""),
+      no_hp: String(formDataObj.get("no_hp") || ""),
+      pekerjaan: String(formDataObj.get("pekerjaan") || ""),
       kewarganegaraan:
-        mode === "asesi" ? formDataObj.get("kewarganegaraan") : null,
+        mode === "asesi"
+          ? String(formDataObj.get("kewarganegaraan") || "")
+          : undefined,
       nomor_registrasi_met:
-        mode === "asesor" ? formDataObj.get("nomor_registrasi_met") : null,
+        mode === "asesor"
+          ? String(formDataObj.get("nomor_registrasi_met") || "")
+          : undefined,
       pendidikan_terakhir:
-        mode === "asesor" ? formDataObj.get("pendidikan_terakhir") : null,
+        mode === "asesor"
+          ? String(formDataObj.get("pendidikan_terakhir") || "")
+          : undefined,
       alamat_wilayah:
-        mode === "asesor" ? formDataObj.get("alamat_wilayah") : null,
+        mode === "asesor"
+          ? String(formDataObj.get("alamat_wilayah") || "")
+          : undefined,
       tanda_tangan: tandaTangan,
     };
 
     setIsLoading(true);
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        showNotification("Registrasi sukses! Silakan masuk.", "success");
-        setTimeout(() => setIsLoginView(true), 1500);
-      } else {
-        showNotification("Gagal Daftar: " + result.message, "error");
-      }
-    } catch {
-      showNotification(
-        "Terjadi kesalahan pada server saat mendaftar.",
-        "error",
-      );
+      await registerUsers(payload);
+      showNotification("Registrasi sukses! Silakan masuk.", "success");
+      setTimeout(() => setIsLoginView(true), 1500);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat mendaftar.";
+      showNotification("Gagal Daftar: " + errorMessage, "error");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -203,28 +217,131 @@ export default function Login() {
     const email = emailInput.value;
 
     try {
-      const res = await fetch("/api/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const result = await forgotPassword(email);
+      showNotification(result.message, "success");
 
-      const result = await res.json();
-
-      if (res.ok) {
-        showNotification(result.message, "success");
-        setTimeout(() => {
-          setIsForgotPasswordView(false);
-          setIsLoginView(true);
-        }, 2000);
-      } else {
-        showNotification(result.message, "error");
-      }
-    } catch {
-      showNotification("Terjadi kesalahan saat mengirim instruksi.", "error");
+      setResetEmail(email); // simpan buat dipakai di step verifikasi OTP
+      setIsForgotPasswordView(false);
+      setIsOtpView(true); // pindah ke tampilan input OTP
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan.";
+      showNotification(message, "error");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // ============================================================================
+  // Handler BARU — verifikasi OTP
+  // ============================================================================
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const otp = otpDigits.join("");
+    if (otp.length !== 6) {
+      showNotification("Masukkan 6 digit kode OTP", "error");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await verifyOtp(resetEmail, otp);
+      showNotification(result.message, "success");
+
+      setResetToken(result.resetToken);
+      setIsOtpView(false);
+      setIsNewPasswordView(true);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Kode OTP tidak valid.";
+      showNotification(message, "error");
+      setOtpDigits(Array(6).fill("")); // reset semua kotak kalau OTP salah
+      otpInputRefs.current[0]?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ============================================================================
+  // Handler BARU — submit password baru
+  // ============================================================================
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const form = e.currentTarget as HTMLFormElement;
+    const passwordInput = form.querySelector(
+      'input[name="newPassword"]',
+    ) as HTMLInputElement;
+    const newPassword = passwordInput.value;
+
+    try {
+      const result = await resetPassword(resetToken, newPassword);
+      showNotification(result.message, "success");
+
+      // Reset semua state, balik ke login
+      setResetEmail("");
+      setResetToken("");
+      setTimeout(() => {
+        setIsNewPasswordView(false);
+        setIsLoginView(true);
+      }, 2000);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Gagal mereset password.";
+      showNotification(message, "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    // cuma terima 1 digit angka
+    const digit = value.replace(/[^0-9]/g, "").slice(-1);
+
+    const newDigits = [...otpDigits];
+    newDigits[index] = digit;
+    setOtpDigits(newDigits);
+
+    // otomatis pindah fokus ke kotak berikutnya kalau baru diisi
+    if (digit && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handler backspace — pindah fokus ke kotak sebelumnya kalau kotak
+  // sekarang sudah kosong
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Handler paste — kalau user paste kode 6 digit sekaligus (misal dari
+  // notifikasi email di HP), otomatis kesebar ke semua kotak
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/[^0-9]/g, "")
+      .slice(0, 6);
+    if (!pasted) return;
+
+    const newDigits = Array(6).fill("");
+    pasted.split("").forEach((digit, i) => {
+      newDigits[i] = digit;
+    });
+    setOtpDigits(newDigits);
+
+    // fokus ke kotak terakhir yang keisi
+    const lastIndex = Math.min(pasted.length, 6) - 1;
+    otpInputRefs.current[lastIndex]?.focus();
   };
 
   // --- TAMPILAN LUPA PASSWORD ---
@@ -802,6 +919,190 @@ export default function Login() {
     );
   }
 
+  if (isOtpView) {
+    return (
+      <div
+        className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 md:p-6 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
+        }}
+      >
+        {notification.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
+              notification.type === "success"
+                ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+                : "bg-rose-50/90 border-rose-200 text-rose-800"
+            }`}
+          >
+            {notification.type === "success" ? (
+              <BadgeCheck size={20} className="text-emerald-500" />
+            ) : (
+              <X
+                size={20}
+                className="text-rose-500 bg-rose-100 rounded-full p-0.5"
+              />
+            )}
+            <p className="text-sm font-bold tracking-wide">
+              {notification.message}
+            </p>
+          </motion.div>
+        )}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-lg bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 md:p-10"
+        >
+          <div className="flex items-center gap-2.5 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs">
+              <Mail size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 leading-none">
+                Masukkan Kode OTP
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Kode 6 digit telah dikirim ke {resetEmail}
+              </p>
+            </div>
+          </div>
+          <form className="space-y-5" onSubmit={handleVerifyOtp}>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Kode OTP
+              </label>
+              <div className="flex gap-2 justify-between">
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => {
+                      otpInputRefs.current[index] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={index === 0 ? handleOtpPaste : undefined}
+                    autoComplete="one-time-code" // penting — mencegah browser nyocokin autofill lain (email, dsb)
+                    className="text-black w-11 h-12 md:w-12 md:h-14 text-center text-xl font-bold border rounded-lg outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20"
+                    required
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOtpView(false);
+                  setIsForgotPasswordView(true);
+                }}
+                className="text-black w-full px-5 py-2 border rounded-lg text-xs font-bold hover:bg-slate-50"
+              >
+                Kembali
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#0076C2] disabled:opacity-50"
+              >
+                {isLoading ? "Memverifikasi..." : "Verifikasi"}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (isNewPasswordView) {
+    return (
+      <div
+        className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 md:p-6 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
+        }}
+      >
+        {notification.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
+              notification.type === "success"
+                ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+                : "bg-rose-50/90 border-rose-200 text-rose-800"
+            }`}
+          >
+            {notification.type === "success" ? (
+              <BadgeCheck size={20} className="text-emerald-500" />
+            ) : (
+              <X
+                size={20}
+                className="text-rose-500 bg-rose-100 rounded-full p-0.5"
+              />
+            )}
+            <p className="text-sm font-bold tracking-wide">
+              {notification.message}
+            </p>
+          </motion.div>
+        )}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-lg bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 md:p-10"
+        >
+          <div className="flex items-center gap-2.5 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs">
+              <Mail size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 leading-none">
+                Buat Password Baru
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Minimal 8 karakter</p>
+            </div>
+          </div>
+          <form className="space-y-5" onSubmit={handleResetPassword}>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Password Baru
+              </label>
+              <input
+                type="password"
+                name="newPassword"
+                className="text-black w-full px-4 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
+                placeholder="Minimal 8 karakter"
+                minLength={8}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#008BE3]"
+              >
+                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-2 bg-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#0076C2] disabled:opacity-50"
+              >
+                {isLoading ? "Menyimpan..." : "Simpan Password Baru"}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
   // --- TAMPILAN LOGIN ---
   return (
     <div
@@ -953,14 +1254,14 @@ export default function Login() {
                 </button>
               </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-[#008BE3] hover:bg-[#0076C2] active:scale-[0.99] text-white font-bold py-2.5 rounded-lg text-xs flex justify-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer"
-                  >
-                  <LogIn size={13} />
-                  {isLoading ? "Memproses..." : "Masuk ke Aplikasi"}
-                </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#008BE3] hover:bg-[#0076C2] active:scale-[0.99] text-white font-bold py-2.5 rounded-lg text-xs flex justify-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer"
+              >
+                <LogIn size={13} />
+                {isLoading ? "Memproses..." : "Masuk ke Aplikasi"}
+              </button>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">

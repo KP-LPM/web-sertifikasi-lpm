@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifikasiApl01Schema } from "@/schema/verifikasi.schema";
+import { verifikasiApl01Schema } from "@/schemas/verifikasi.schema";
 import { prosesVerifikasiApl01 } from "@/services/verifikasi.service";
 
 // Tipe untuk parameter URL [id]
@@ -17,7 +17,7 @@ export async function PUT(req: Request, { params }: Params) {
     if (isNaN(pengajuanId)) {
       return NextResponse.json(
         { success: false, message: "ID pengajuan tidak valid" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function PUT(req: Request, { params }: Params) {
           message: "Validasi data gagal.",
           errors: validationResult.error.format(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,18 +48,18 @@ export async function PUT(req: Request, { params }: Params) {
         message: "Data verifikasi APL.01 berhasil disimpan.",
         data: hasilVerifikasi,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     console.error("[ERROR PUT VERIFIKASI APL01]:", error);
-    
+
     return NextResponse.json(
       {
         success: false,
         message: "Terjadi kesalahan internal pada server.",
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

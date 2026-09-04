@@ -1,16 +1,15 @@
+import { db } from "@/lib/db";
 import { ProfileRepository } from "@/repositories/profile.repositories";
 import { UserRepository } from "@/repositories/user.repositories";
-import { NotFoundError } from "../error/index";
+import { NotFoundError, InvariantError } from "../error/index";
 import {
   ProfilAsesiUpdateInput,
   ProfilAsesorUpdateInput,
   ProfilAdminUpdateInput,
-} from "@/schema/profile.schema";
+} from "@/schemas/profile.schema";
 
 export type UpdateProfileInput =
-  | ProfilAsesiUpdateInput
-  | ProfilAsesorUpdateInput
-  | ProfilAdminUpdateInput;
+  ProfilAsesiUpdateInput | ProfilAsesorUpdateInput | ProfilAdminUpdateInput;
 
 export class ProfileService {
   private userRepository = new UserRepository();
@@ -37,23 +36,51 @@ export class ProfileService {
       throw new NotFoundError("User tidak ditemukan");
     }
 
-    if (checkUser.role === "asesi") {
-      return await this.profileRepository.updateProfileAsesi(
-        id,
-        data as ProfilAsesiUpdateInput,
-      );
+    const { email, ...profilData } = data as UpdateProfileInput & {
+      email?: string;
+    };
+
+    if (email) {
+      const isTaken = await this.userRepository.isEmailTakenByOther(email, id);
+      if (isTaken) {
+        throw new InvariantError("Email sudah digunakan oleh akun lain.");
+      }
     }
 
-    if (checkUser.role === "asesor") {
-      return await this.profileRepository.updateProfileAsesor(
-        id,
-        data as ProfilAsesorUpdateInput,
-      );
-    }
+    return await db.$transaction(async (tx) => {
+      if (email) {
+        await this.userRepository.updateEmail(id, email, tx);
+      }
 
-    return await this.profileRepository.updateProfileAdmin(
-      id,
-      data as ProfilAdminUpdateInput,
-    );
+      let profil;
+      if (checkUser.role === "asesi") {
+        profil = await this.profileRepository.updateProfileAsesi(
+          id,
+          profilData as ProfilAsesiUpdateInput,
+          tx,
+        );
+      } else if (checkUser.role === "asesor") {
+        profil = await this.profileRepository.updateProfileAsesor(
+          id,
+          profilData as ProfilAsesorUpdateInput,
+          tx,
+        );
+      } else {
+        profil = await this.profileRepository.updateProfileAdmin(
+          id,
+          profilData as ProfilAdminUpdateInput,
+          tx,
+        );
+      }
+
+      const user = await tx.user.findUnique({
+        where: { id },
+        select: { id: true, email: true, username: true, role: true },
+      });
+
+      return { user, profil };
+    });
   }
 }
+
+export const profileService = new ProfileService();

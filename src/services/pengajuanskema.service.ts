@@ -1,5 +1,5 @@
 import { insertPengajuanBaru } from "@/repositories/pengajuanskema.repositories";
-import { CreatePengajuanDTO } from "@/schema/pengajuanskema.schema";
+import { CreatePengajuanDTO } from "@/schemas/pengajuanskema.schema";
 
 export const prosesPengajuanBaru = async (data: CreatePengajuanDTO) => {
   // Logic 1: Generate Nomor Pengajuan (Contoh: APL-1712345678)
