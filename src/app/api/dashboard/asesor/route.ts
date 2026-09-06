@@ -3,11 +3,18 @@ import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-dashboard-asesor",
+    });
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "asesor") {
       return sendResponse(403, "Akses ditolak. Hanya asesor yang dapat melihat dashboard ini.");
@@ -58,6 +65,9 @@ export async function GET(request: NextRequest) {
       bandingMasuk,
     });
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[GET /api/dashboard/asesor]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil data dashboard asesor");
   }

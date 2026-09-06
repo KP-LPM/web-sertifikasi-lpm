@@ -6,9 +6,15 @@ import {
   generateSertifikatHtml,
   SertifikatPayload,
 } from "@/templates/Sertifikat";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    rateLimitApi(req, {
+      limit: 15,
+      windowMs: 60 * 1000,
+      key: "post-surat-sertifikat-pdf",
+    });
     const payload: SertifikatPayload = await req.json();
 
     // Baca logo Garuda dari folder public menjadi Base64 Data URI
@@ -51,6 +57,12 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "Terlalu banyak permintaan." },
+        { status: error.status },
+      );
+    }
     console.error("Error generate Sertifikat PDF:", error);
     return NextResponse.json(
       { error: "Gagal membuat file Sertifikat PDF." },

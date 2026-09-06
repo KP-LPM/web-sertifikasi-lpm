@@ -3,11 +3,18 @@ import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-dashboard-asesi",
+    });
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "asesi") {
       return sendResponse(
@@ -25,7 +32,7 @@ export async function GET(request: NextRequest) {
         userId: asesiId,
         status: { not: "Selesai" },
       },
-      orderBy: { created_at: "desc" },
+      orderBy: { createdAt: "desc" },
       include: {
         skema: { select: { namaSkema: true } },
       },
@@ -34,7 +41,7 @@ export async function GET(request: NextRequest) {
     // 2. Riwayat asesmen (pengajuan yang sudah selesai atau dijadwalkan)
     const riwayatAsesmen = await db.pengajuanSkema.findMany({
       where: { userId: asesiId },
-      orderBy: { created_at: "desc" },
+      orderBy: { createdAt: "desc" },
       include: {
         skema: { select: { namaSkema: true } },
         hasil_asesmen: true,
@@ -61,6 +68,9 @@ export async function GET(request: NextRequest) {
       sertifikat,
     });
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[GET /api/dashboard/asesi]", error);
     return sendResponse(
       500,

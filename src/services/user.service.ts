@@ -1,4 +1,4 @@
-import { UserRepository } from "../repositories/user.repositories";
+import { UserRepository } from "../repositories/user.repository";
 import { BaseUserInput } from "@/schemas/user.schema";
 import { InvariantError, NotFoundError } from "../error/index";
 
@@ -47,6 +47,18 @@ export class UserService {
       throw new NotFoundError("User tidak ditemukan");
     }
     const user = await this.userRepository.updateUserStatus(id, data);
+    if (!user) {
+      throw new InvariantError("Gagal mengupdate status user");
+    }
+    return user;
+  }
+
+  async updateUserVerifyStatus(id: number, data: { isVerified: boolean }) {
+    const existingUser = await this.userRepository.getUserById(id);
+    if (!existingUser) {
+      throw new NotFoundError("User tidak ditemukan");
+    }
+    const user = await this.userRepository.updateUserVerifyStatus(id, data);
     if (!user) {
       throw new InvariantError("Gagal mengupdate status user");
     }

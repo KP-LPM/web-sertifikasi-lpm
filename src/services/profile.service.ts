@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
-import { ProfileRepository } from "@/repositories/profile.repositories";
-import { UserRepository } from "@/repositories/user.repositories";
+import { ProfileRepository } from "@/repositories/profile.repository";
+import { UserRepository } from "@/repositories/user.repository";
 import { NotFoundError, InvariantError } from "../error/index";
 import {
   ProfilAsesiUpdateInput,

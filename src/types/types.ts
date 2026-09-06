@@ -21,10 +21,7 @@ export interface CrumbItem {
 export type JenisMetode = "Offline" | "Online";
 export type TipeTuk = "Sewaktu" | "Mandiri" | "Tempat Kerja" | string;
 export type HasilAsesmen =
-  | "Kompeten"
-  | "Belum Kompeten"
-  | "Belum Dinilai"
-  | string;
+  "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | string;
 export type StatusAsesmen = "Selesai" | "Belum Selesai" | string;
 
 export interface PenyusunOption {
@@ -588,16 +585,9 @@ export interface Candidate {
   tipeTuk?: string;
   statusAPL02?: "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
   statusPortofolio?:
-    | "Terverifikasi"
-    | "Belum Terverifikasi"
-    | "Proses"
-    | string;
+    "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
   statusAsesmen?:
-    | "Kompeten"
-    | "Belum Kompeten"
-    | "Belum Dinilai"
-    | "Proses"
-    | string;
+    "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | "Proses" | string;
   linkVideo?: string;
 }
 
@@ -762,10 +752,7 @@ export interface AppealRecord {
   asesmen: string;
   skemaSertifikasi: string;
   status:
-    | "Menunggu Verifikasi"
-    | "Disetujui"
-    | "Ditolak"
-    | "Dalam Penyelidikan";
+    "Menunggu Verifikasi" | "Disetujui" | "Ditolak" | "Dalam Penyelidikan";
   alasan: string;
   penjelasan: string;
   keputusanAdmin?: string;
@@ -808,6 +795,7 @@ export interface Profile {
   faxInstitusi?: string;
   tipeTuk?: string;
   berpengalaman?: boolean;
+  avatar?: string;
 }
 
 export interface KompetensiItem {

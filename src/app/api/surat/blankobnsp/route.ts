@@ -6,9 +6,15 @@ import {
   generatePermohonanBlankoHtml,
   PermohonanBlankoPayload,
 } from "@/templates/SuratBnsp";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    rateLimitApi(req, {
+      limit: 15,
+      windowMs: 60 * 1000,
+      key: "post-surat-blanko-bnsp",
+    });
     const payload: PermohonanBlankoPayload = await req.json();
 
     const logoPath = path.join(process.cwd(), "public", "logo-lsp.png");
@@ -49,6 +55,12 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "Terlalu banyak permintaan." },
+        { status: error.status },
+      );
+    }
     console.error("Error generate Permohonan Blanko PDF:", error);
     return NextResponse.json(
       { error: "Gagal membuat file Surat Permohonan Blanko PDF." },

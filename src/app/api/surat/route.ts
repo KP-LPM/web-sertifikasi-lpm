@@ -1,14 +1,22 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 import { Prisma } from "@prisma/client";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-all-surat",
+    });
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat melihat daftar surat.");
@@ -39,6 +47,9 @@ export async function GET(request: NextRequest) {
 
     return sendResponse(200, "Berhasil mengambil daftar surat", suratList);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[GET /api/surat]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil daftar surat");
   }
@@ -46,6 +57,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "post-surat",
+    });
+
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat membuat surat.");
@@ -114,8 +131,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    revalidatePath("/api/surat");
+
     return sendResponse(201, "Surat berhasil dibuat", suratBaru);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[POST /api/surat]", error);
     return sendResponse(500, "Terjadi kesalahan saat membuat surat");
   }

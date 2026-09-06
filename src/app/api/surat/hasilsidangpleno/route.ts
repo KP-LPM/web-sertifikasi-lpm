@@ -3,9 +3,15 @@ import puppeteer from "puppeteer";
 import path from "path";
 import fs from "fs";
 import { generateSkHtml, SkPdfPayload } from "@/templates/SuratKeputusanPleno";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    rateLimitApi(req, {
+      limit: 15,
+      windowMs: 60 * 1000,
+      key: "post-surat-sk-hasil-sidang-pleno",
+    });
     const payload: SkPdfPayload = await req.json();
 
     // Membaca logo dari folder public menjadi data URI Base64
@@ -52,6 +58,12 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: "Terlalu banyak permintaan." },
+        { status: error.status },
+      );
+    }
     console.error("Error generate PDF:", error);
     return NextResponse.json(
       { error: "Gagal membuat file PDF." },

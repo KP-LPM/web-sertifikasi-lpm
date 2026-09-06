@@ -1,50 +1,60 @@
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
+import { getToken } from "next-auth/jwt";
 import { prosesPengajuanBaru } from "@/services/pengajuanskema.service";
 import { createPengajuanSchema } from "@/schemas/pengajuanskema.schema";
+import { sendResponse } from "@/lib/response";
+import { ClientError } from "@/error/index";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    // Tangkap data dari frontend
-    const body = await req.json();
+    rateLimitApi(req, {
+      limit: 5,
+      windowMs: 60 * 1000,
+      key: "post-pengajuan-baru",
+    });
 
-    // 1. Validasi data
-    const validationResult = createPengajuanSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Validasi data gagal. Periksa kembali form anda.",
-          errors: validationResult.error.format(),
-        },
-        { status: 400 },
+    const token = await getToken({ req });
+    if (!token || token.role !== "asesi") {
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya asesi yang dapat membuat pengajuan.",
       );
     }
 
-    // 2. Berikan ke Service
-    const dataValid = validationResult.data;
-    const pengajuanBaru = await prosesPengajuanBaru(dataValid);
+    const body = await req.json();
 
-    // 3. Kembalikan Response Sukses
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Pengajuan sertifikasi berhasil disubmit.",
-        data: pengajuanBaru,
-      },
-      { status: 201 },
+    const validationResult = createPengajuanSchema.safeParse(body);
+    if (!validationResult.success) {
+      return sendResponse(
+        400,
+        "Validasi data gagal. Periksa kembali form anda.",
+        validationResult.error.flatten().fieldErrors,
+      );
+    }
+
+    const pengajuanBaru = await prosesPengajuanBaru(validationResult.data);
+
+    revalidatePath("/api/pengajuanskema");
+
+    return sendResponse(
+      201,
+      "Pengajuan sertifikasi berhasil disubmit.",
+      pengajuanBaru,
     );
   } catch (error: unknown) {
-    console.error("[ERROR POST PENGAJUAN]:", error);
+    if (error instanceof RateLimitError) {
+      return sendResponse(
+        error.status,
+        "Terlalu banyak permintaan submit. Silakan coba sesaat lagi.",
+      );
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
 
-    // Tangkap error server
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Terjadi kesalahan internal pada server.",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    console.error("[ERROR POST PENGAJUAN]:", error);
+    return sendResponse(500, "Terjadi kesalahan internal pada server.");
   }
 }

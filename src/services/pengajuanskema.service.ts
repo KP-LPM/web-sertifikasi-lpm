@@ -1,4 +1,4 @@
-import { insertPengajuanBaru } from "@/repositories/pengajuanskema.repositories";
+import { insertPengajuanBaru } from "@/repositories/pengajuanskema.repository";
 import { CreatePengajuanDTO } from "@/schemas/pengajuanskema.schema";
 
 export const prosesPengajuanBaru = async (data: CreatePengajuanDTO) => {

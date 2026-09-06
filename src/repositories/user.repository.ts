@@ -59,6 +59,22 @@ export class UserRepository {
     });
   }
 
+  async updateUserVerifyStatus(
+    id: number,
+    data: {
+      isVerified: boolean;
+    },
+  ) {
+    return await db.user.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        isVerified: data.isVerified,
+      },
+    });
+  }
+
   async deleteUser(id: number) {
     const user = await db.user.delete({
       where: { id: Number(id) },

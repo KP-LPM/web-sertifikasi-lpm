@@ -1,37 +1,63 @@
-import { NextResponse } from 'next/server';
-import { db } from "@/lib/db";
+import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
+import { getToken } from "next-auth/jwt";
+import { skemaService } from "@/services/skema.service";
+import { sendResponse } from "@/lib/response";
+import { ClientError } from "@/error/index";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
-export const dynamic = 'force-dynamic'; 
+export const revalidate = 3600;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const skemaList = await db.masterSkema.findMany({
-      where: {
-        statusAktif: true, 
-      },
-      include: {
-        unitKompetensi: true, 
-        persyaratanDasar: true,         
-        buktiAdministratif: true,
-      }
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-all-skema",
     });
 
-    return NextResponse.json(
-      { message: 'Berhasil mengambil data skema', data: skemaList }, 
-      { status: 200 }
-    );
-    
-  } catch (error: unknown) {
-    console.error('Error fetching skema:', error);
-    
-    let errorMessage = "Terjadi kesalahan saat mengambil data skema.";
-    if (error instanceof Error) {
-        errorMessage = error.message;
+    const skemaList = await skemaService.getSkema();
+    return sendResponse(200, "Berhasil mengambil data skema", skemaList);
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
-    
-    return NextResponse.json(
-      { message: 'Gagal mengambil data', error: errorMessage }, 
-      { status: 500 }
-    );
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
+    console.log(error);
+    return sendResponse(500, "Internal server error");
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "post-skema",
+    });
+
+    const token = await getToken({ req: request });
+    if (!token || token.role !== "admin")
+      return sendResponse(403, "Akses ditolak");
+
+    const body = await request.json();
+    const newSkema = await skemaService.createSkema(body);
+
+    // PERBAIKAN 4: Hancurkan cache GET agar data langsung ter-update
+    revalidatePath("/api/skema");
+
+    return sendResponse(201, "Skema berhasil dibuat!", newSkema);
+  } catch (error) {
+    // PERBAIKAN 2: Tangkap RateLimitError
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
+    console.log(error);
+    return sendResponse(500, "Internal server error");
   }
 }

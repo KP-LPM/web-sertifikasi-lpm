@@ -4,12 +4,15 @@
  * DELETE /api/tuk/[id]  — [admin] Nonaktifkan TUK (soft-delete)
  */
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -17,6 +20,11 @@ interface RouteParams {
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(_request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-tuk-detail",
+    });
     const { id } = await params;
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
@@ -30,6 +38,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     return sendResponse(200, "Berhasil mengambil detail TUK", tuk);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[GET /api/tuk/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil detail TUK");
   }
@@ -37,6 +48,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "patch-tuk",
+    });
+
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat mengubah TUK.");
@@ -65,8 +82,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    revalidatePath("/api/tuk");
+
     return sendResponse(200, "TUK berhasil diperbarui", tukUpdated);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[PATCH /api/tuk/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat memperbarui TUK");
   }
@@ -74,6 +96,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(_request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "delete-tuk",
+    });
+
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat menonaktifkan TUK.");
@@ -92,8 +120,13 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       data: { status: "Nonaktif" },
     });
 
+    revalidatePath("/api/tuk");
+
     return sendResponse(200, "TUK berhasil dinonaktifkan");
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[DELETE /api/tuk/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat menonaktifkan TUK");
   }

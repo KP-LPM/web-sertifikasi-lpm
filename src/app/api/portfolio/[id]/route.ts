@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -10,6 +12,11 @@ interface RouteParams {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "patch-portfolio",
+    });
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "asesor") {
       return sendResponse(403, "Akses ditolak. Hanya asesor yang dapat mengubah portfolionya.");
@@ -60,8 +67,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    revalidatePath("/api/portfolio");
+
     return sendResponse(200, "Portfolio berhasil diperbarui", portfolioUpdated);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[PATCH /api/portfolio/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat memperbarui portfolio");
   }
@@ -69,6 +81,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "delete-portfolio",
+    });
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return sendResponse(401, "Anda harus login.");
@@ -105,8 +123,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id: portfolioId },
     });
 
+    revalidatePath("/api/portfolio");
+
     return sendResponse(200, "Portfolio berhasil dihapus");
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[DELETE /api/portfolio/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat menghapus portfolio");
   }

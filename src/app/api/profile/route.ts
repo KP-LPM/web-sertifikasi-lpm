@@ -1,13 +1,21 @@
 import { NextResponse, NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getToken } from "next-auth/jwt";
 import { profileService, UpdateProfileInput } from "@/services/profile.service";
 import { InvariantError, NotFoundError } from "@/error";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-profile",
+    });
     const token = await getToken({ req: request });
 
     if (!token) {
@@ -32,6 +40,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(profil, { status: 200 });
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { message: "Terlalu banyak permintaan." },
+        { status: error.status },
+      );
+    }
     console.error("Waduh, error ambil profil:", error);
     return NextResponse.json(
       { message: "Gagal mengambil data profil", error: String(error) },
@@ -42,6 +56,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "post-profile",
+    });
+
     const token = await getToken({ req: request });
     if (!token) {
       return NextResponse.json(
@@ -76,11 +96,20 @@ export async function POST(request: NextRequest) {
 
     const result = await profileService.updateProfileUsers(userId, dataProfil);
 
+    revalidatePath("/api/profile");
+
     return NextResponse.json(
       { message: "Profil sukses disimpan!", ...result },
       { status: 200 },
     );
   } catch (error: unknown) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { message: "Terlalu banyak permintaan." },
+        { status: error.status },
+      );
+    }
+
     if (error instanceof NotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });
     }

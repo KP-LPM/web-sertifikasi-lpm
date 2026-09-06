@@ -1,8 +1,12 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+
+export const revalidate = 3600;
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -10,6 +14,11 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-surat-detail",
+    });
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat melihat detail surat.");
@@ -34,6 +43,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return sendResponse(200, "Berhasil mengambil detail surat", suratDetail);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[GET /api/surat/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil detail surat");
   }
@@ -41,6 +53,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "patch-surat",
+    });
+
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat mengubah surat.");
@@ -72,8 +90,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    revalidatePath("/api/surat");
+
     return sendResponse(200, "Surat berhasil diperbarui", suratUpdated);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[PATCH /api/surat/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat memperbarui surat");
   }
@@ -81,6 +104,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "delete-surat",
+    });
+
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
       return sendResponse(403, "Akses ditolak. Hanya admin yang dapat mengarsipkan surat.");
@@ -104,8 +133,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       data: { status: "Arsip" },
     });
 
+    revalidatePath("/api/surat");
+
     return sendResponse(200, "Surat berhasil diarsipkan");
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     console.error("[DELETE /api/surat/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengarsipkan surat");
   }

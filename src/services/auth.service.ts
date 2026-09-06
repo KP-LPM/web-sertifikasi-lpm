@@ -4,7 +4,7 @@ import { JenisKelamin, Role } from "@prisma/client";
 import {
   profileRepository,
   ProfileRepository,
-} from "@/repositories/profile.repositories";
+} from "@/repositories/profile.repository";
 
 import type { RegisterPayload } from "@/types/types";
 import type {
@@ -12,7 +12,7 @@ import type {
   ResetPasswordInput,
   VerifyOtpInput,
 } from "@/schemas/auth.schema";
-import { userRepository } from "@/repositories/user.repositories";
+import { userRepository } from "@/repositories/user.repository";
 import { resend } from "@/lib/resend";
 import { InvariantError } from "@/error";
 import OtpEmail from "@/components/emails/OtpEmail";

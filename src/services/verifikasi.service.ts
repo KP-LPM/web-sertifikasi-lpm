@@ -1,4 +1,4 @@
-import { upsertVerifikasiPengajuan } from "@/repositories/verifikasi.repositories";
+import { upsertVerifikasiPengajuan } from "@/repositories/verifikasi.repository";
 import { VerifikasiApl01DTO } from "@/schemas/verifikasi.schema";
 
 export const prosesVerifikasiApl01 = async (

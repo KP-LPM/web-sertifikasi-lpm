@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getToken } from "next-auth/jwt";
 import { z } from "zod";
 import { Role } from "@prisma/client";
@@ -10,8 +11,10 @@ import {
   profilAsesorUpdateSchema,
   profilAdminUpdateSchema,
 } from "@/schemas/profile.schema";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const profileService = new ProfileService();
 
@@ -20,6 +23,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    rateLimitApi(request, {
+      limit: 60,
+      windowMs: 60 * 1000,
+      key: "get-user-profile",
+    });
     const token = await getToken({ req: request });
     if (!token) {
       return sendResponse(401, "Akses ditolak, silakan login.");
@@ -40,6 +48,9 @@ export async function GET(
     const user = await profileService.getProfileUsers(targetId);
     return sendResponse(200, "User retrieved successfully", user);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
     if (error instanceof ClientError) {
       return sendResponse(error.statusCode, error.message);
     }
@@ -50,6 +61,12 @@ export async function GET(
 
 export async function PUT(request: NextRequest) {
   try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "put-user-profile",
+    });
+
     const token = await getToken({ req: request });
     if (!token) {
       return sendResponse(401, "Akses ditolak, silakan login.");
@@ -73,8 +90,14 @@ export async function PUT(request: NextRequest) {
       validatedData,
     );
 
+    revalidatePath("/api/users");
+
     return sendResponse(200, "Profil sukses disimpan!", updatedProfil);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
+
     if (error instanceof z.ZodError) {
       return sendResponse(400, "Validasi gagal", error.flatten().fieldErrors);
     }

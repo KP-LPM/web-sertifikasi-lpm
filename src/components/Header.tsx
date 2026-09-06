@@ -8,7 +8,6 @@ import {
   Bell,
   ChevronDown,
   User as UserIcon,
-  Languages,
   LogOut,
 } from "lucide-react";
 import { getUsersProfile } from "@/lib/api";
@@ -53,16 +52,20 @@ export function Header() {
 
         // Antisipasi jika kembalian berupa array atau single object
         const data = (Array.isArray(response) ? response[0] : response) as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
 
         if (!data) return;
+
+        setDbProfile({
+          name: (data.nama || data.nama_lengkap) as string,
+          avatar: data.avatar as string,
+        });
       } catch (error) {
         console.error("Gagal ambil data header:", error);
       }
     };
     fetchHeaderProfile();
-  }, [registeredProfile]);
+  }, [user?.id]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -159,9 +162,9 @@ export function Header() {
               <img
                 src={displayAvatar}
                 alt="Avatar"
-                width={32}
-                height={32}
-                className="w-8 h-8 rounded-lg object-cover shadow-xs"
+                width={30}
+                height={30}
+                className="w-8 h-8 rounded-xl object-cover shadow-xs"
               />
             ) : (
               <div className="w-8 h-8 rounded-lg bg-[#E6F4FF] text-[#008BE3] flex items-center justify-center font-extrabold text-xs shadow-xs">
@@ -194,9 +197,9 @@ export function Header() {
               >
                 <UserIcon size={16} /> Profile
               </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors">
+              {/* <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#008BE3] flex items-center gap-3 transition-colors">
                 <Languages size={16} /> Indonesia
-              </button>
+              </button> */}
               <div className="h-px bg-gray-100 my-1 mx-2"></div>
               <button
                 onClick={logout}

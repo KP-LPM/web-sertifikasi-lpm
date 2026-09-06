@@ -1,63 +1,81 @@
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
+import { getToken } from "next-auth/jwt";
 import { penilaianApl02Schema } from "@/schemas/apl02.schema";
 import { prosesPenilaianApl02 } from "@/services/apl02.service";
+import { sendResponse } from "@/lib/response";
+import { ClientError } from "@/error/index";
+import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
-interface Params {
-  params: {
-    id: string;
-  };
-}
+type Context = {
+  params: Promise<{ id: string }>;
+};
 
-export async function PUT(req: Request, { params }: Params) {
+// Tanpa caching karena penilaian bersifat transaksional dan dinamis
+
+export async function PUT(req: NextRequest, context: Context) {
   try {
-    const pengajuanId = parseInt(params.id, 10);
+    // 1. Terapkan Rate Limiter (kategori Medium: 20 req/menit)
+    rateLimitApi(req, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "put-penilaian-apl02",
+    });
+
+    // 2. Autentikasi dan otorisasi role asesor / admin
+    const token = await getToken({ req });
+    if (!token || (token.role !== "asesor" && token.role !== "admin")) {
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
+      );
+    }
+
+    // 3. Await dynamic params (Next.js 15+)
+    const { id } = await context.params;
+    const pengajuanId = parseInt(id, 10);
 
     if (isNaN(pengajuanId)) {
-      return NextResponse.json(
-        { success: false, message: "ID pengajuan tidak valid" },
-        { status: 400 },
-      );
+      return sendResponse(400, "ID pengajuan tidak valid.");
     }
 
     const body = await req.json();
 
-    // 1. Validasi Zod
+    // 4. Validasi payload dengan Zod
     const validationResult = penilaianApl02Schema.safeParse(body);
-
     if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Validasi data gagal.",
-          errors: validationResult.error.format(),
-        },
-        { status: 400 },
+      return sendResponse(
+        400,
+        "Validasi data gagal.",
+        validationResult.error.flatten().fieldErrors,
       );
     }
 
-    // 2. Eksekusi Service
-    const dataValid = validationResult.data;
-    const hasilApl02 = await prosesPenilaianApl02(pengajuanId, dataValid);
+    // 5. Eksekusi Service
+    const hasilApl02 = await prosesPenilaianApl02(
+      pengajuanId,
+      validationResult.data,
+    );
 
-    // 3. Response Sukses
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Data penilaian APL.02 berhasil disimpan.",
-        data: hasilApl02,
-      },
-      { status: 200 },
+    revalidatePath("/api/pengajuanskema");
+
+    return sendResponse(
+      200,
+      "Data penilaian APL.02 berhasil disimpan.",
+      hasilApl02,
     );
   } catch (error: unknown) {
-    console.error("[ERROR PUT PENILAIAN APL02]:", error);
+    if (error instanceof RateLimitError) {
+      return sendResponse(
+        error.status,
+        "Terlalu banyak permintaan. Silakan coba sesaat lagi.",
+      );
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
 
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Terjadi kesalahan internal pada server.",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    console.error("[ERROR PUT PENILAIAN APL02]:", error);
+    return sendResponse(500, "Terjadi kesalahan internal pada server.");
   }
 }
