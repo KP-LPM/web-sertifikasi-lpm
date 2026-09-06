@@ -17,7 +17,7 @@ import { useAppContext } from "@/context/context";
 import { Role, UserItem } from "@/types/types";
 export type { UserItem };
 
-export const ROLE_OPTIONS = [
+const ROLE_OPTIONS = [
   "admin",
   "asesor",
   "asesi",

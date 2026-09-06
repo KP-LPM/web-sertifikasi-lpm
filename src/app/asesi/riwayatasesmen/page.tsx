@@ -102,7 +102,7 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
 ];
 
 export default function AsesiHistoryPage() {
-  const { user, setExtraCrumbs } = useAppContext();
+  const { user, setExtraCrumbs, showNotification } = useAppContext();
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -258,7 +258,7 @@ export default function AsesiHistoryPage() {
       JSON.stringify([newAppeal, ...savedAppeals]),
     );
 
-    alert("Banding berhasil diajukan!");
+    showNotification("Banding berhasil diajukan!", "success");
     setShowSubmitModal(false);
     setIsBandingFormOpen(false);
     setSelectedAssessment(null);
@@ -572,15 +572,15 @@ export default function AsesiHistoryPage() {
                       bandingForm.didiskusikan === null ||
                       bandingForm.melibatkanOrangLain === null
                     ) {
-                      alert("Harap jawab semua pertanyaan Ya/Tidak.");
+                      showNotification("Harap jawab semua pertanyaan Ya/Tidak.", "error");
                       return;
                     }
                     if (!bandingForm.alasan.trim()) {
-                      alert("Harap isi alasan banding.");
+                      showNotification("Harap isi alasan banding.", "error");
                       return;
                     }
                     if (!bandingForm.ttdAsesi) {
-                      alert("Harap centang tanda tangan.");
+                      showNotification("Harap centang tanda tangan.", "error");
                       return;
                     }
 
@@ -1193,8 +1193,8 @@ export default function AsesiHistoryPage() {
               </button>
               <button
                 onClick={() => {
-                  alert(
-                    `Mengunduh Sertifikat Resmi:\nNo: ${certificatePreview.noSertifikat}\nSkema: ${certificatePreview.skemaSertifikasi}`,
+                  showNotification(
+                    `Mengunduh Sertifikat Resmi:\nNo: ${certificatePreview.noSertifikat}\nSkema: ${certificatePreview.skemaSertifikasi}`, "success"
                   );
                   setCertificatePreview(null);
                 }}

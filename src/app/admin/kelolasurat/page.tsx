@@ -4,7 +4,6 @@ import {
   Search,
   Plus,
   ExternalLink,
-  CheckCircle2,
   Award,
   FileCheck2,
   Inbox,
@@ -239,7 +238,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
 ];
 
 export default function KelolaSurat() {
-  const { user } = useAppContext();
+  const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
 
   const [documents, setDocuments] = useState<SuratItem[]>(INITIAL_SURAT_DATA);
@@ -252,8 +251,6 @@ export default function KelolaSurat() {
 
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
   // Form State for creating new document
   const [formData, setFormData] = useState<Partial<SuratItem>>({
     nomorSurat: "",
@@ -270,12 +267,7 @@ export default function KelolaSurat() {
     catatan: "",
   });
 
-  const showNotification = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3500);
-  };
+
 
   // Filtered Documents
   const filteredDocuments = useMemo(() => {
@@ -336,7 +328,7 @@ export default function KelolaSurat() {
   const handleCreateDocument = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nomorSurat) {
-      alert("Mohon isi Nomor Surat terlebih dahulu.");
+      showNotification("Mohon isi Nomor Surat terlebih dahulu.", "error");
       return;
     }
 
@@ -373,7 +365,7 @@ export default function KelolaSurat() {
     setDocuments([newDoc, ...documents]);
     setIsCreateModalOpen(false);
     showNotification(
-      `Dokumen "${newDoc.nomorSurat}" berhasil didaftarkan dan disimpan.`,
+      `Dokumen "${newDoc.nomorSurat}" berhasil didaftarkan dan disimpan.`, "success"
     );
     setFormData({
       nomorSurat: "",
@@ -396,18 +388,11 @@ export default function KelolaSurat() {
       url ||
       `https://drive.google.com/file/d/verify/${encodeURIComponent(nomor || "")}`;
     navigator.clipboard.writeText(link);
-    showNotification(`Tautan GDrive (${nomor}) berhasil disalin.`);
+    showNotification(`Tautan GDrive (${nomor}) berhasil disalin.`, "success");
   };
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-5 right-5 z-200 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-in fade-in slide-in-from-top-3">
-          <CheckCircle2 className="text-emerald-400 shrink-0" size={20} />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
 
       {/* Page Title Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

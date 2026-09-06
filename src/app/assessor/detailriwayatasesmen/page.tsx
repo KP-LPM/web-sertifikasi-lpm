@@ -37,7 +37,7 @@ type AsesmenData = {
 
 export default function DetailRiwayatAsesmen() {
   const router = useRouter();
-  const { selectedAsesmen } = useAppContext();
+  const { selectedAsesmen, showNotification } = useAppContext();
   const [previewForm, setPreviewForm] = useState<
     "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
   >(null);
@@ -230,7 +230,7 @@ export default function DetailRiwayatAsesmen() {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_AK_07_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_AK_07_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors cursor-pointer"
                   >
@@ -266,7 +266,7 @@ export default function DetailRiwayatAsesmen() {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_IA_04A_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_IA_04A_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors cursor-pointer"
                   >
@@ -303,7 +303,7 @@ export default function DetailRiwayatAsesmen() {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_IA_04B_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_IA_04B_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors cursor-pointer"
                   >
@@ -340,7 +340,7 @@ export default function DetailRiwayatAsesmen() {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_IA_07_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_IA_07_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors cursor-pointer"
                   >

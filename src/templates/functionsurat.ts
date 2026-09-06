@@ -1,5 +1,6 @@
-const [isLoading, setIsLoading] = useState<boolean>(false);
-const handleDownloadSuratTugas = async () => {
+import { useState } from "react";
+const [, setIsLoading] = useState<boolean>(false);
+export const handleDownloadSuratTugas = async () => {
   try {
     const payload = {
       nomorSurat: "B-005/UN.05/V.7/PP.00.9/07/2025",
@@ -42,7 +43,7 @@ const handleDownloadSuratTugas = async () => {
   }
 };
 
-const handleDownloadSkPdf = async () => {
+export const handleDownloadSkPdf = async () => {
   try {
     setIsLoading(true);
 
@@ -96,13 +97,13 @@ const handleDownloadSkPdf = async () => {
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error("Error saat download SK:", error);
-    alert("Terjadi kesalahan saat membuat dokumen PDF.");
+    console.error("Terjadi kesalahan saat membuat dokumen PDF.");
   } finally {
     setIsLoading(false);
   }
 };
 
-const handleDownloadBerita = async () => {
+export const handleDownloadBerita = async () => {
   try {
     setIsLoading(true);
 
@@ -332,13 +333,13 @@ const handleDownloadBerita = async () => {
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error("Download error:", error);
-    alert("Terjadi kesalahan saat mengunduh Berita Acara.");
+    console.error("Terjadi kesalahan saat mengunduh Berita Acara.");
   } finally {
     setIsLoading(false);
   }
 };
 
-const handleDownloadBlankoBnsp = async () => {
+export const handleDownloadBlankoBnsp = async () => {
   try {
     setIsLoading(true);
 
@@ -380,13 +381,13 @@ const handleDownloadBlankoBnsp = async () => {
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error(error);
-    alert("Terjadi kesalahan saat mengunduh surat permohonan blanko.");
+    console.error("Terjadi kesalahan saat mengunduh surat permohonan blanko.");
   } finally {
     setIsLoading(false);
   }
 };
 
-const handleDownloadSertifikat = async () => {
+export const handleDownloadSertifikat = async () => {
   try {
     setIsLoading(true);
 
@@ -487,7 +488,7 @@ const handleDownloadSertifikat = async () => {
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error(error);
-    alert("Terjadi kesalahan saat mengunduh sertifikat.");
+    console.error("Terjadi kesalahan saat mengunduh sertifikat.");
   } finally {
     setIsLoading(false);
   }

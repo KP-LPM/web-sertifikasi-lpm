@@ -33,7 +33,7 @@ import { AsesiPlenoRecord, PlenoGroup } from "@/types/types";
 export type { AsesiPlenoRecord };
 
 export default function UploadSertifikat() {
-  const { user } = useAppContext();
+  const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleDownloadSertifikat = async () => {
@@ -137,7 +137,7 @@ export default function UploadSertifikat() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan saat mengunduh sertifikat.");
+      showNotification("Terjadi kesalahan saat mengunduh sertifikat.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -388,7 +388,7 @@ export default function UploadSertifikat() {
     if (!editingAsesi) return;
 
     if (!inputForm.gdriveUrl.trim()) {
-      alert("Tautan Google Drive sertifikat wajib diisi.");
+      showNotification("Tautan Google Drive sertifikat wajib diisi.", "error");
       return;
     }
 

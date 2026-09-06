@@ -86,13 +86,14 @@ interface ApiSkemaResponse {
 }
 
 export default function PengajuanSkemaPage() {
-  const { user, setExtraCrumbs } = useAppContext();
+  const { user, setExtraCrumbs, showNotification } = useAppContext();
 
   const [subView, setSubView] = useState<
     "list" | "choose-scheme" | "apply-form"
   >("list");
 
   // STATE BARU: Untuk menyimpan data Skema dari Supabase API
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [schemesData, setSchemesData] = useState<SchemeItem[]>([]);
   const [isLoadingSchemes, setIsLoadingSchemes] = useState(true);
   const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
@@ -170,12 +171,7 @@ export default function PengajuanSkemaPage() {
   const [tempEFormData, setTempEFormData] = useState<Record<string, unknown>>(
     {},
   );
-  const [alertMsg, setAlertMsg] = useState("");
-
-  const showAlert = (msg: string) => {
-    setAlertMsg(msg);
-    setTimeout(() => setAlertMsg(""), 3000);
-  };
+  // removed showAlert
 
   React.useEffect(() => {
     if (
@@ -466,7 +462,7 @@ export default function PengajuanSkemaPage() {
 
   const handleSubmitForm = async () => {
     try {
-      showAlert("Mengunggah dokumen dan memproses pengajuan...");
+      showNotification("Mengunggah dokumen dan memproses pengajuan...", "success");
 
       // Tipe eksplisit agar bebas dari omelan implicit any
       const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> =
@@ -545,7 +541,7 @@ export default function PengajuanSkemaPage() {
         );
       }
 
-      showAlert(`Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`);
+      showNotification(`Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`, "success");
 
       setTempatLahir("");
       setAlamat("");
@@ -559,9 +555,9 @@ export default function PengajuanSkemaPage() {
     } catch (error: unknown) {
       console.error(error);
       if (error instanceof Error) {
-        showAlert(error.message);
+        showNotification(error.message, "error");
       } else {
-        showAlert("Yah, terjadi kesalahan saat mengirim pengajuan.");
+        showNotification("Yah, terjadi kesalahan saat mengirim pengajuan.", "error");
       }
     }
   };
@@ -657,11 +653,6 @@ export default function PengajuanSkemaPage() {
 
   return (
     <>
-      {alertMsg && (
-        <div className="fixed top-4 right-4 bg-slate-900 text-white p-4 rounded-lg shadow-2xl z-9999 font-medium text-sm max-w-sm animate-in fade-in slide-in-from-top-4">
-          {alertMsg}
-        </div>
-      )}
 
       {/* VIEW 1: LIST SUBMISSIONS */}
       {subView === "list" && (
@@ -1192,9 +1183,9 @@ export default function PengajuanSkemaPage() {
 
                   <div className="p-6 md:p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 mt-auto">
                     <button
-                      onClick={() =>
-                        showAlert(`Simulasi Cetak Bukti Pendaftaran`)
-                      }
+                      onClick={() => {
+                        showNotification(`Simulasi Cetak Bukti Pendaftaran`, "success");
+                      }}
                       className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm cursor-pointer"
                     >
                       Cetak Bukti
@@ -2432,8 +2423,9 @@ export default function PengajuanSkemaPage() {
                 <button
                   onClick={() => {
                     if (activeModalDoc?.name?.includes("APL.01")) {
-                      if (!tempEFormData.tujuan) {
-                        showAlert("Harap isi Tujuan Asesmen");
+                      const tujuanAsesmen = (tempEFormData as Record<string, unknown>)?.tujuan;
+                      if (!tujuanAsesmen) {
+                        showNotification("Harap isi Tujuan Asesmen", "error");
                         window.dispatchEvent(
                           new CustomEvent("scroll-to-apl01-error"),
                         );
@@ -2468,9 +2460,10 @@ export default function PengajuanSkemaPage() {
                             tempEFormData.kompetensi as Record<string, unknown>
                           )?.[k],
                       );
-                      if (!isAllChecked) {
-                        showAlert(
-                          "Harap beri tanda K atau BK pada seluruh kriteria!",
+                      const tandaTanganAsesi = (tempEFormData as Record<string, unknown>)?.tandaTanganAsesi;
+                      if (!isAllChecked || !tandaTanganAsesi) {
+                        showNotification(
+                          "Harap beri tanda K atau BK pada seluruh kriteria dan centang Tanda Tangan Asesi!", "error"
                         );
                         if (firstUnfilled) {
                           window.dispatchEvent(
@@ -2484,7 +2477,7 @@ export default function PengajuanSkemaPage() {
                     }
                     const key = String(activeModalDoc?.name ?? "");
                     setEFormData({ ...eFormData, [key]: tempEFormData });
-                    showAlert("Data berhasil disimpan!");
+                    showNotification("Data berhasil disimpan!", "success");
                     setActiveModalDoc(null);
                     setTempFiles([]);
                   }}
@@ -2540,7 +2533,7 @@ export default function PengajuanSkemaPage() {
                   </div>
                   <div className="flex gap-2 justify-center mt-2 w-full">
                     <button
-                      onClick={() => showAlert("Mengunduh dokumen...")}
+                      onClick={() => showNotification("Mengunduh dokumen...", "success")}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
                     >
                       <Download size={16} /> Unduh
@@ -2684,7 +2677,7 @@ export default function PengajuanSkemaPage() {
                 <button
                   onClick={() => {
                     if (tempFiles.length === 0) {
-                      showAlert("Harap pilih file terlebih dahulu.");
+                      showNotification("Harap pilih file terlebih dahulu.", "error");
                       return;
                     }
                     if (typeof activeModalDoc?.name === "string") {
@@ -2692,7 +2685,7 @@ export default function PengajuanSkemaPage() {
                         ...eFormData,
                         [activeModalDoc.name]: tempFiles,
                       });
-                      showAlert("Data berhasil disimpan!");
+                      showNotification("Data berhasil disimpan!", "success");
                       setActiveModalDoc(null);
                       setTempFiles([]);
                     }

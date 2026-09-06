@@ -112,7 +112,7 @@ function VerifikasiBandingList({
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16 whitespace-nowrap">
                   No
                 </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap min-w-[200px] sm:w-[30%]">
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap min-w-50 sm:w-[30%]">
                   Nama Asesi
                 </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -216,20 +216,15 @@ function VerifikasiBandingList({
 }
 
 function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
-  const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem } =
+  const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem, showNotification } =
     useAppContext();
   const [modalAction, setModalAction] = useState<"approve" | "reject" | null>(
     null,
   );
   const [catatanBaru, setCatatanBaru] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   if (!selectedAsesmen) return null;
-
-  const previousNote =
-    selectedAsesmen.catatan ||
-    "asesi masih perlu pendalaman pada aspek praktik lanjutan";
 
   const openModal = (action: "approve" | "reject") => {
     setModalAction(action);
@@ -267,8 +262,8 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
 
       const actionText =
         modalAction === "approve" ? "Banding Disetujui" : "Banding Ditolak";
-      setToastMessage(
-        `Status & catatan asesor berhasil diperbarui: ${actionText}`,
+      showNotification(
+        `Status & catatan asesor berhasil diperbarui: ${actionText}`, "success"
       );
 
       setTimeout(() => {
@@ -278,15 +273,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="space-y-6 pb-24 text-sm text-gray-700 relative">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 border border-slate-700">
-          <CheckCircle size={18} className="text-emerald-400" />
-          <span className="font-bold text-xs md:text-sm">{toastMessage}</span>
-        </div>
-      )}
-
+    <div className="flex flex-col min-h-screen bg-[#F8F9FC]">
       <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
         {/* Banner/Header Info */}
         <div className="p-4 sm:p-6 border-b border-gray-100 space-y-5">
@@ -434,7 +421,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() =>
-                      alert("Pratinjau dokumen: FR_AK_04A_Signed.pdf")
+                      showNotification("Pratinjau dokumen: FR_AK_04A_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors"
                   >
@@ -442,7 +429,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_AK_04A_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_AK_04A_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
                   >
@@ -473,7 +460,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() =>
-                      alert("Pratinjau dokumen: FR_AK_04B_Signed.pdf")
+                      showNotification("Pratinjau dokumen: FR_AK_04B_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors"
                   >
@@ -481,7 +468,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_AK_04B_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_AK_04B_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
                   >
@@ -512,7 +499,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() =>
-                      alert("Pratinjau dokumen: FR_IA_07_Signed.pdf")
+                      showNotification("Pratinjau dokumen: FR_IA_07_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors"
                   >
@@ -520,7 +507,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   </button>
                   <button
                     onClick={() =>
-                      alert("Mengunduh dokumen: FR_IA_07_Signed.pdf")
+                      showNotification("Mengunduh dokumen: FR_IA_07_Signed.pdf", "success")
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
                   >

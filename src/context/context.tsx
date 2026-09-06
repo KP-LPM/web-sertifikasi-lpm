@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { BadgeCheck, X } from "lucide-react";
 import {
   UserItem,
   AssessmentItem,
@@ -68,6 +70,7 @@ interface AppContextType {
     nav: { type: "view" | "action"; target: string | (() => void) } | null,
   ) => void;
   requestNavigation: (target: string | (() => void)) => void;
+  showNotification: (message: string, type?: "success" | "error") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -96,6 +99,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAsesmen, setSelectedAsesmen] = useState<AssessmentItem | null>(
     null,
   );
+  
+  // --- NOTIFICATION STATE ---
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({ show: false, type: "success", message: "" });
+
+  const showNotification = (message: string, type: "success" | "error" = "success") => {
+    setNotification({ show: true, type, message });
+    setTimeout(() => {
+      setNotification((prev) => ({ ...prev, show: false }));
+    }, 3000);
+  };
 
   useEffect(() => {
     if (session?.user) {
@@ -479,9 +496,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const logout = async () => {
+    showNotification("Berhasil keluar dari akun.", "success");
     setIsLoggingOut(true);
     await signOut({ redirect: false });
-    window.location.href = "/login";
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1500);
   };
   return (
     <AppContext.Provider
@@ -523,8 +543,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         pendingNavigation,
         setPendingNavigation,
         requestNavigation,
+        showNotification,
       }}
     >
+      <AnimatePresence>
+        {notification.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
+              notification.type === "success"
+                ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+                : "bg-rose-50/90 border-rose-200 text-rose-800"
+            }`}
+          >
+            {notification.type === "success" ? (
+              <BadgeCheck size={20} className="text-emerald-500" />
+            ) : (
+              <X
+                size={20}
+                className="text-rose-500 bg-rose-100 rounded-full p-0.5"
+              />
+            )}
+            <p className="text-sm font-bold tracking-wide">
+              {notification.message}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {children}
     </AppContext.Provider>
   );

@@ -13,8 +13,8 @@ const getAuthHeaders = () => {
 };
 
 export async function getUsersProfile(id: number): Promise<User[]> {
-  const res = await fetch(`${BASE_URL}/users/${id}/profile`, {
-    headers: getAuthHeaders(),
+  const res = await fetch(`/api/users/${id}/profile`, {
+    credentials: "include",
   });
   if (!res.ok) throw new Error("Gagal mengambil data profile");
   const json = await res.json();

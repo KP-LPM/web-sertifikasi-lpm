@@ -17,7 +17,7 @@ type SessionUser = {
 };
 
 export default function Profile() {
-  const { user, registeredProfile, updateUser } = useAppContext();
+  const { user, registeredProfile, updateUser, showNotification } = useAppContext();
 
   // State untuk modal tanda tangan
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
@@ -124,7 +124,7 @@ export default function Profile() {
   const handleSaveSignature = () => {
     if (signatureRef.current) {
       if (signatureRef.current.isEmpty()) {
-        alert("Tanda tangan masih kosong!");
+        showNotification("Tanda tangan masih kosong!", "error");
         return;
       }
       const dataUrl = signatureRef.current.toDataURL();
@@ -226,8 +226,8 @@ export default function Profile() {
           tanggalLahir:
             data.tanggalLahir || data.tanggal_lahir
               ? new Date(String(data.tanggalLahir || data.tanggal_lahir))
-                  .toISOString()
-                  .split("T")[0]
+                .toISOString()
+                .split("T")[0]
               : prev.tanggalLahir,
           jenisKelamin:
             (data.jenisKelamin as string) ||
@@ -275,9 +275,8 @@ export default function Profile() {
 
       if (avatarFile) {
         const compressedFile = await compressImage(avatarFile);
-        const fileName = `avatar-${
-          (user as SessionUser)?.id || Date.now()
-        }-${Date.now()}.jpg`;
+        const fileName = `avatar-${(user as SessionUser)?.id || Date.now()
+          }-${Date.now()}.jpg`;
 
         const { error: uploadError } = await supabase.storage
           .from("avatars")
@@ -327,11 +326,13 @@ export default function Profile() {
         ...payload,
         email: result.user?.email || payload.email,
       });
+
+      showNotification("Profil berhasil disimpan!", "success");
     } catch (error) {
       if (error instanceof Error) {
-        alert(error.message);
+        showNotification(error.message, "error");
       } else {
-        alert("Terjadi kesalahan saat menyimpan profil.");
+        showNotification("Terjadi kesalahan saat menyimpan profil.", "error");
       }
     } finally {
       setIsSaving(false);
@@ -663,7 +664,10 @@ export default function Profile() {
                 Ganti Kata Sandi
               </p>
               <button
-                onClick={handleGantiPassword}
+                onClick={() => {
+                  handleGantiPassword();
+                  showNotification("Tautan reset password telah dikirim ke email Anda!", "success");
+                }}
                 disabled={isSendingReset}
                 className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
