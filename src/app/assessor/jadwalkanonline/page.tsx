@@ -12,7 +12,7 @@ import { useAppContext } from "@/context/context";
 
 export default function JadwalkanOnline() {
   const router = useRouter();
-  const { selectedAsesmen, updateAssessmentItem } = useAppContext();
+  const { selectedAsesmen, updateAssessmentItem, showNotification } = useAppContext();
   const [tanggal, setTanggal] = useState("");
   const [waktu, setWaktu] = useState("");
   const [linkMeet, setLinkMeet] = useState("");
@@ -54,8 +54,8 @@ export default function JadwalkanOnline() {
         tglAsesmen: formattedDate,
       });
     }
-    alert(
-      `Jadwal presentasi online berhasil disimpan untuk ${selectedAsesmen?.nama}\nTanggal: ${tanggal}\nWaktu: ${waktu}\nLink: ${linkMeet}`,
+    showNotification(
+      `Jadwal presentasi online berhasil disimpan untuk ${selectedAsesmen?.nama}\nTanggal: ${tanggal}\nWaktu: ${waktu}\nLink: ${linkMeet}`, "success"
     );
     router.push("/assessor/candidates");
   };

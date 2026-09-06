@@ -2,16 +2,21 @@
 import React, { useState } from "react";
 import { Send, CheckCircle, PenTool } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAppContext } from "@/context/context";
 export default function AssessmentFinalization() {
   const router = useRouter();
+  const { showNotification } = useAppContext();
   const [signed, setSigned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = () => {
-    if (!signed) return alert("Harap konfirmasi pernyataan sertifikasi");
+    if (!signed) {
+      showNotification("Harap konfirmasi pernyataan sertifikasi", "error");
+      return;
+    }
     setSubmitting(true);
     setTimeout(() => {
-      alert("Hasil Difinalisasi!");
+      showNotification("Hasil Difinalisasi!", "success");
       router.push("/assessor/dashboard");
     }, 1000);
   };

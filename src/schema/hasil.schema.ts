@@ -4,7 +4,7 @@ const hasilEnum = ["Kompeten", "Belum Kompeten"] as const;
 
 export const hasilAsesmenSchema = z.object({
   hasil: z.enum(hasilEnum, {
-    required_error: "Hasil asesmen wajib dipilih",
+    message: "Hasil asesmen wajib dipilih",
   }),
   catatan: z.string().optional().nullable(),
   linkVideo: z.string().url("Format URL video tidak valid").optional().nullable(),

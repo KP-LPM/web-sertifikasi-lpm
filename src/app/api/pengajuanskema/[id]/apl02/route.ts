@@ -1,16 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { penilaianApl02Schema } from "@/schema/apl02.schema";
 import { prosesPenilaianApl02 } from "@/services/apl02.service";
 
-interface Params {
-  params: {
-    id: string;
-  };
-}
-
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const pengajuanId = parseInt(params.id, 10);
+    const { id } = await params;
+    const pengajuanId = parseInt(id, 10);
 
     if (isNaN(pengajuanId)) {
       return NextResponse.json(

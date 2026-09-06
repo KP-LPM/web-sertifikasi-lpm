@@ -213,7 +213,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
 ];
 
 export default function SidangPleno() {
-  const { user } = useAppContext();
+  const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
 
   // List State
@@ -255,10 +255,6 @@ export default function SidangPleno() {
   const [skDirekturKota, setSkDirekturKota] = useState<string>("Bandung");
   const [blankoBNSPKota, setBlankoBNSPKota] = useState<string>("Bandung");
 
-  const [activeDocType] = useState<
-    "berita_acara" | "sk_direktur" | "blanko_bnsp"
-  >("sk_direktur");
-
   const handleOpenBeritaAcaraModal = () => {
     setBeritaAcaraKota("Bandung");
     setIsBeritaAcaraModalOpen(true);
@@ -278,7 +274,7 @@ export default function SidangPleno() {
   const handleConfirmBeritaAcara = (e: React.FormEvent) => {
     e.preventDefault();
     if (!beritaAcaraKota.trim()) {
-      alert("Mohon masukkan Kota Ditetapkan terlebih dahulu.");
+      showNotification("Mohon masukkan Kota Ditetapkan terlebih dahulu.", "error");
       return;
     }
     setIsBeritaAcaraModalOpen(false);
@@ -339,7 +335,7 @@ export default function SidangPleno() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Error saat download SK:", error);
-      alert("Terjadi kesalahan saat membuat dokumen PDF.");
+      showNotification("Terjadi kesalahan saat membuat dokumen PDF.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -575,7 +571,7 @@ export default function SidangPleno() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Download error:", error);
-      alert("Terjadi kesalahan saat mengunduh Berita Acara.");
+      showNotification("Terjadi kesalahan saat mengunduh Berita Acara.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -623,7 +619,7 @@ export default function SidangPleno() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan saat mengunduh surat permohonan blanko.");
+      showNotification("Terjadi kesalahan saat mengunduh surat permohonan blanko.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -632,7 +628,7 @@ export default function SidangPleno() {
   const handleConfirmSKDirektur = (e: React.FormEvent) => {
     e.preventDefault();
     if (!skDirekturNomor.trim() || !skDirekturKota.trim()) {
-      alert("Mohon lengkapi Nomor Surat dan Kota Ditetapkan.");
+      showNotification("Mohon lengkapi Nomor Surat dan Kota Ditetapkan.", "error");
       return;
     }
     if (formData) {
@@ -645,7 +641,7 @@ export default function SidangPleno() {
   const handleConfirmBlankoBNSP = (e: React.FormEvent) => {
     e.preventDefault();
     if (!blankoBNSPKota.trim()) {
-      alert("Mohon masukkan Kota Ditetapkan terlebih dahulu.");
+      showNotification("Mohon masukkan Kota Ditetapkan terlebih dahulu.", "error");
       return;
     }
     setIsBlankoBNSPModalOpen(false);

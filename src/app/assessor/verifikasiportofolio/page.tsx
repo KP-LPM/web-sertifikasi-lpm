@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAppContext } from "@/context/context";
 import { PortfolioItem } from "@/types/types";
 
 const AVAILABLE_SCHEMES = [
@@ -30,6 +31,7 @@ const AVAILABLE_SCHEMES = [
 ];
 
 export default function VerifikasiPortofolio() {
+  const { showNotification } = useAppContext();
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([
     {
       id: "PF-001",
@@ -166,29 +168,29 @@ export default function VerifikasiPortofolio() {
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.namaDokumen.trim()) {
-      alert("Mohon isi nama dokumen portofolio.");
+      showNotification("Mohon isi nama dokumen portofolio.", "error");
       return;
     }
     const isLuar = formData.statusAsesor === "Asesor dari Luar";
 
     if (isLuar) {
       if (!formData.alamatLsp.trim()) {
-        alert("Mohon isi alamat LSP dari asesor luar.");
+        showNotification("Mohon isi alamat LSP dari asesor luar.", "error");
         return;
       }
       if (!formData.filePeminjaman && !formData.filePeminjamanPlaceholder) {
-        alert("Mohon unggah File Peminjaman Asesor.");
+        showNotification("Mohon unggah File Peminjaman Asesor.", "error");
         return;
       }
       if (!formData.fileJawaban && !formData.fileJawabanPlaceholder) {
-        alert(
-          "Mohon unggah File Jawaban / Konfirmasi Peminjaman dari LSP luar.",
+        showNotification(
+          "Asesor yang dipilih adalah asesor luar, harap lengkapi form dan file pendukung.", "error"
         );
         return;
       }
     } else {
       if (!formData.selectedFile && !formData.fileNamePlaceholder) {
-        alert("Mohon unggah file dokumen portofolio.");
+        showNotification("Mohon unggah file dokumen portofolio.", "error");
         return;
       }
     }
@@ -247,7 +249,7 @@ export default function VerifikasiPortofolio() {
 
     const isLuar = formData.statusAsesor === "Asesor dari Luar";
     if (isLuar && !formData.alamatLsp.trim()) {
-      alert("Mohon isi alamat LSP dari asesor luar.");
+      showNotification("Mohon isi alamat LSP dari asesor luar.", "error");
       return;
     }
 
