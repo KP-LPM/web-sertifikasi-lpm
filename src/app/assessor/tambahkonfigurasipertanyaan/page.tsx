@@ -263,7 +263,7 @@ export default function TambahKonfigurasiPertanyaan() {
   useEffect(() => {
     if ((isEdit || isReadOnly) && konfigurasiId) {
       const existing = konfigurasiPertanyaan.find(
-        (k) => k.id === konfigurasiId,
+        (k) => k.id === Number(konfigurasiId),
       );
       if (existing) {
         const existingWithData = existing as unknown as {
@@ -962,7 +962,7 @@ export default function TambahKonfigurasiPertanyaan() {
     };
 
     if (isEdit && konfigurasiId) {
-      updateKonfigurasiPertanyaan(konfigurasiId, payload);
+      updateKonfigurasiPertanyaan(Number(konfigurasiId), payload);
     } else {
       addKonfigurasiPertanyaan(payload);
     }

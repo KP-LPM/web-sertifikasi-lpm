@@ -22,7 +22,7 @@ import type { AssessmentHistory, AppealRecord } from "@/types/types";
 
 const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
   {
-    id: "1",
+    id: 1,
     asesmen: "Uji Kompetensi",
     skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
     tipeTuk: "Mandiri",
@@ -35,7 +35,7 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     tanggalPenilaian: "02/08/2026",
   },
   {
-    id: "2",
+    id: 2,
     asesmen: "Uji Teori & Praktik",
     skemaSertifikasi: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     tipeTuk: "Sewaktu",
@@ -48,7 +48,7 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     tanggalPenilaian: "05/08/2026",
   },
   {
-    id: "3",
+    id: 3,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penerjemah Teks Umum",
     tipeTuk: "Mandiri",
@@ -61,7 +61,7 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     tanggalPenilaian: "04/08/2026",
   },
   {
-    id: "4",
+    id: 4,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Auditor Halal",
     tipeTuk: "Mandiri B",
@@ -74,7 +74,7 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     tanggalPenilaian: "05/08/2026",
   },
   {
-    id: "5",
+    id: 5,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penyelia Halal",
     tipeTuk: "Mandiri",
@@ -87,7 +87,7 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     tanggalPenilaian: "04/08/2026",
   },
   {
-    id: "6",
+    id: 6,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
     tipeTuk: "Mandiri B",
@@ -238,7 +238,7 @@ export default function AsesiHistoryPage() {
 
     // Objek ini sudah menyesuaikan bentuk AppealRecord
     const newAppeal: AppealRecord = {
-      id: `APP-${Date.now().toString().slice(-4)}`,
+      id: Date.now(),
       tanggalPengajuan: new Date().toLocaleDateString("en-GB"),
       namaAsesi: user?.username || "Asesi",
       asesmen: selectedAssessment?.asesmen || "",

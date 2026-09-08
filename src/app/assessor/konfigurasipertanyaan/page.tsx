@@ -23,7 +23,7 @@ export default function KonfigurasiPertanyaan() {
   } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   const konfigurasiData = konfigurasiPertanyaan;
 
@@ -145,7 +145,7 @@ export default function KonfigurasiPertanyaan() {
                         {item.skema}
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm whitespace-nowrap">
-                        {item.status === "draft" ? (
+                        {item.status === "Draft" ? (
                           <span className="bg-amber-100 text-amber-800 border border-amber-300/60 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
                             Draft
                           </span>
@@ -159,7 +159,7 @@ export default function KonfigurasiPertanyaan() {
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
                         {item.penyusun
                           ?.map((p) =>
-                            typeof p === "string" ? p : p.value || "",
+                            typeof p === "string" ? p : p.label || "",
                           )
                           .filter(Boolean)
                           .join(", ") || "-"}
@@ -167,7 +167,7 @@ export default function KonfigurasiPertanyaan() {
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
                         {item.validator
                           ?.map((v) =>
-                            typeof v === "string" ? v : v.value || "",
+                            typeof v === "string" ? v : v.label || "",
                           )
                           .filter(Boolean)
                           .join(", ") || "-"}

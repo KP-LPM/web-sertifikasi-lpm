@@ -141,7 +141,7 @@ model MasterElemenKompetensi {
   urutan             Int
   isWajib            Boolean              @default(true) @map("is_wajib")
   createdAt          DateTime             @default(now()) @map("created_at")
-  unit               MasterUnitKompetensi @relation(fields: [unitId], references: [id])
+  unitKompetensi   MasterUnitKompetensi @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@index([unitId], map: "idx_master_elemen_kompetensi_unit_id")
   @@map("master_elemen_kompetensi")

@@ -59,7 +59,7 @@ export function TambahSkemaForm({
     statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
     konfigurasiSoalId:
       initialData?.konfigurasiSoalId ||
-      (konfigurasiPertanyaan.length > 0 ? konfigurasiPertanyaan[0].id : ""),
+      (konfigurasiPertanyaan.length > 0 ? konfigurasiPertanyaan[0].id : undefined),
     persyaratanDasar:
       initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
         ? initialData.persyaratanDasar
@@ -78,7 +78,7 @@ export function TambahSkemaForm({
         ? initialData.persyaratanAdministrasi
         : [
             {
-              id: crypto.randomUUID(),
+              id: 1,
               namaDokumen: "Kartu Tanda Penduduk (KTP)",
               deskripsi:
                 "Scan KTP asli atau identitas resmi yang masih berlaku.",
@@ -179,7 +179,7 @@ export function TambahSkemaForm({
       persyaratanAdministrasi: [
         ...prev.persyaratanAdministrasi,
         {
-          id: crypto.randomUUID(),
+          id: Date.now(),
           namaDokumen: "",
           deskripsi: "",
           isWajib: true,
@@ -1173,7 +1173,9 @@ export function TambahSkemaForm({
               onChange={(e) =>
                 setFormState((prev) => ({
                   ...prev,
-                  konfigurasiSoalId: e.target.value,
+                  konfigurasiSoalId: e.target.value
+                    ? Number(e.target.value)
+                    : undefined,
                 }))
               }
               className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold bg-white text-slate-800 outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20 transition-all cursor-pointer"

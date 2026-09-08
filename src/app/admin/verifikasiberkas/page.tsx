@@ -28,7 +28,7 @@ export default function UsersManagement() {
 
   const [users, setUsers] = useState<UserItem[]>([
     {
-      id: "1",
+      id: 1,
       username: "ahmad_h",
       namaLengkap: "Ahmad Hidayat",
       email: "ahmad.h@student.uin.ac.id",
@@ -42,7 +42,7 @@ export default function UsersManagement() {
       },
     },
     {
-      id: "2",
+      id: 2,
       username: "budi_p",
       namaLengkap: "Budi Pratama",
       email: "budi.p@student.uin.ac.id",
@@ -56,7 +56,7 @@ export default function UsersManagement() {
       },
     },
     {
-      id: "3",
+      id: 3,
       username: "dewi_l",
       namaLengkap: "Dewi Lestari",
       email: "dewi.l@student.uin.ac.id",
@@ -70,7 +70,7 @@ export default function UsersManagement() {
       },
     },
     {
-      id: "4",
+      id: 4,
       username: "rahmat_h",
       namaLengkap: "Rahmat Hidayat",
       email: "rahmat.h@student.uin.ac.id",
@@ -84,7 +84,7 @@ export default function UsersManagement() {
       },
     },
     {
-      id: "5",
+      id: 5,
       username: "siti_r",
       namaLengkap: "Dr. Siti Rohmah",
       email: "siti.r@lecturer.uin.ac.id",
@@ -92,7 +92,7 @@ export default function UsersManagement() {
       status: "Terverifikasi",
     },
     {
-      id: "asr-1",
+      id: 6,
       username: "ichsan_t",
       namaLengkap: "Ichsan Taufik",
       email: "ichsan.taufik@lsp.uin.ac.id",
@@ -100,7 +100,7 @@ export default function UsersManagement() {
       status: "Terverifikasi",
     },
     {
-      id: "asr-2",
+      id: 7,
       username: "aceng_k",
       namaLengkap: "Aceng Abdul Kodir",
       email: "aceng.kodir@lsp.uin.ac.id",
@@ -300,7 +300,7 @@ export default function UsersManagement() {
       asesorReg: userToVerify.verificationData?.asesorReg,
       penyusun: userToVerify.verificationData?.penyusun,
       validator: userToVerify.verificationData?.validator,
-      assignedAsesorId: selectedAsesorId,
+      assignedAsesorId: selectedAsesorId ? Number(selectedAsesorId) : undefined,
     };
 
     setUsers(
@@ -322,7 +322,7 @@ export default function UsersManagement() {
   const openVerifyModal = (user: UserItem) => {
     setUserToVerify(user);
     setActiveVerifyTab("apl01");
-    setSelectedAsesorId(user.verificationData?.assignedAsesorId || "");
+    setSelectedAsesorId(user.verificationData?.assignedAsesorId ? String(user.verificationData.assignedAsesorId) : "");
     
     setApl01FormData({
       isAdmin: true,
@@ -343,12 +343,12 @@ export default function UsersManagement() {
           { id: 4, namaDokumen: "Pasfoto", is_wajib: true },
         ],
         buktiAdministratif: [
-          { id: "adm-1", namaDokumen: "Sertifikat Pelatihan Tambahan", isWajib: true, isAktif: true },
-          { id: "adm-2", namaDokumen: "Surat Keterangan Kerja", isWajib: true, isAktif: true },
+          { id: 1, namaDokumen: "Sertifikat Pelatihan Tambahan", isWajib: true, isAktif: true },
+          { id: 2, namaDokumen: "Surat Keterangan Kerja", isWajib: true, isAktif: true },
         ],
         buktiKompetensi: [
-          { id: "komp-1", namaDokumen: "Portofolio Proyek", isWajib: true, isAktif: true },
-          { id: "komp-2", namaDokumen: "Sertifikat Kompetensi Sebelumnya", isWajib: true, isAktif: true },
+          { id: 1, namaDokumen: "Portofolio Proyek", isWajib: true, isAktif: true },
+          { id: 2, namaDokumen: "Sertifikat Kompetensi Sebelumnya", isWajib: true, isAktif: true },
         ],
       },
     });

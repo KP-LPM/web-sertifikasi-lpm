@@ -61,8 +61,8 @@ export default function AsesiList() {
 
     if (!batchMap.has(batchKey)) {
       batchMap.set(batchKey, {
-        id: item.kodeBatch || batchKey, // tambahkan — bisa pakai kodeBatch item, atau batchKey itu sendiri
-        status: item.status || "Terjadwal", // tambahkan — sesuaikan default/sumbernya
+        id: item.id || Date.now(),
+        status: item.status || "Terjadwal",
         kodeBatch: item.kodeBatch || batchKey,
         namaBatch: skemaNama,
         skema: skemaNama,

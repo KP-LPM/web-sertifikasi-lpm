@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: { created_at: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     // Format output (menyerupai v_candidate_list)

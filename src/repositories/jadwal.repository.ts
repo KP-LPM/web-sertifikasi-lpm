@@ -32,7 +32,7 @@ export class JadwalRepository {
         master_tuk: true,
         jadwal_asesmen_peserta: {
           include: {
-            pengajuan_skema: true, // Mengambil detail kandidat yang terhubung
+            pengajuan_skema: true,
           },
         },
       },
@@ -67,7 +67,7 @@ export class JadwalRepository {
 
     return await db.jadwal_asesmen_peserta.createMany({
       data: dataToInsert,
-      skipDuplicates: true, // Mencegah error jika peserta sudah ada di batch
+      skipDuplicates: true,
     });
   }
 
@@ -75,7 +75,6 @@ export class JadwalRepository {
     return await db.jadwal_asesmen_peserta.delete({
       where: {
         jadwal_id_pengajuan_id: {
-          // Memanfaatkan @@unique index di prisma
           jadwal_id: jadwalId,
           pengajuan_id: pengajuanId,
         },

@@ -10,7 +10,7 @@ import type { AppealRecord } from '@/types/types';
 
 const INITIAL_APPEALS: AppealRecord[] = [
   {
-    id: 'APP-01',
+    id: 1,
     tanggalPengajuan: '08/07/2026',
     namaAsesi: 'Ahmad Fauzi',
     asesmen: 'Uji Kompetensi',
@@ -25,7 +25,7 @@ const INITIAL_APPEALS: AppealRecord[] = [
     namaAsesor: 'Asesor Budi'
   },
   {
-    id: 'APP-02',
+    id: 2,
     tanggalPengajuan: '20/06/2026',
     namaAsesi: 'Ahmad Fauzi',
     asesmen: 'Uji Teori & Praktik',
@@ -41,7 +41,7 @@ const INITIAL_APPEALS: AppealRecord[] = [
     namaAsesor: 'Asesor Andi'
   },
   {
-    id: 'APP-03',
+    id: 3,
     tanggalPengajuan: '15/07/2026',
     namaAsesi: 'Ahmad Fauzi',
     asesmen: 'Asesmen Mandiri',
@@ -57,7 +57,7 @@ const INITIAL_APPEALS: AppealRecord[] = [
     namaAsesor: 'Asesor Citra'
   },
   {
-    id: 'APP-04',
+    id: 4,
     tanggalPengajuan: '10/07/2026',
     namaAsesi: 'Ahmad Fauzi',
     asesmen: 'Asesmen Mandiri',
@@ -72,7 +72,7 @@ const INITIAL_APPEALS: AppealRecord[] = [
     namaAsesor: 'Asesor Budi'
   },
   {
-    id: 'APP-05',
+    id: 5,
     tanggalPengajuan: '05/07/2026',
     namaAsesi: 'Ahmad Fauzi',
     asesmen: 'Asesmen Mandiri',

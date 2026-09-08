@@ -45,9 +45,9 @@ const UIN_BUILDINGS = [
 const DEFAULT_ADDRESS =
   "UIN Sunan Gunung Djati, Jl. AH. Nasution No.105, Cipadung Wetan, Kec. Cibiru, Kota Bandung, Jawa Barat 40614";
 
-const INITIAL_TUK_DATA = [
+const INITIAL_TUK_DATA: TukItem[] = [
   {
-    id: "GD-001",
+    id: 1,
     nama: "Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik",
     keterangan: "Ruang Aula Utama",
     tipe: "Sewaktu",
@@ -62,7 +62,7 @@ const INITIAL_TUK_DATA = [
     ],
   },
   {
-    id: "GD-002",
+    id: 2,
     nama: "Gedung D: Gedung Abjan Soelaiman (Auditorium)",
     keterangan: "Ruang Seminar 1",
     tipe: "Sewaktu",
@@ -94,7 +94,7 @@ export default function TukManagement() {
   const [selectedTuk, setSelectedTuk] = useState<TukItem | null>(null);
 
   const DEFAULT_FORM_DATA: TukItem = {
-    id: "",
+    id: 0,
     nama: UIN_BUILDINGS[0],
     tipe: "Sewaktu",
     alamat: DEFAULT_ADDRESS,
@@ -115,7 +115,7 @@ export default function TukManagement() {
   const filteredTuk = tukData.filter((tuk) => {
     const matchSearch =
       tuk.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tuk.id.toLowerCase().includes(searchTerm.toLowerCase());
+      String(tuk.id).toLowerCase().includes(searchTerm.toLowerCase());
     const matchtipe = tipeFilter === "Semua tipe" || tuk.tipe === tipeFilter;
     const matchStatus =
       statusFilter === "Semua Status" || tuk.status === statusFilter;
@@ -153,7 +153,7 @@ export default function TukManagement() {
   const saveAdd = () => {
     const newTuk: TukItem = {
       ...formData,
-      id: `GD-00${tukData.length + 1}`,
+      id: Date.now(),
     };
     setTukData([...tukData, newTuk]);
     setIsModalOpen(false);

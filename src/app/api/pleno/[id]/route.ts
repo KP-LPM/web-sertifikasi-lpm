@@ -20,9 +20,9 @@ export async function GET(request: NextRequest, context: Context) {
       key: "get-pleno-detail",
     });
 
-    const token = await getToken({ req: request });
-    if (!token || token.role !== "admin")
-      return sendResponse(403, "Akses ditolak");
+    // const token = await getToken({ req: request });
+    // if (!token || token.role !== "admin")
+    //   return sendResponse(403, "Akses ditolak");
 
     const { id } = await context.params;
     const pleno = await plenoService.getById(Number(id));

@@ -23,40 +23,40 @@ interface AppContextType {
   setExtraCrumbs: (crumbs: CrumbItem[]) => void;
   plenoSessions: PlenoSchedule[];
   addPlenoSession: (session: PlenoSchedule) => void;
-  updatePlenoSession: (id: string, data: Partial<PlenoSchedule>) => void;
-  deletePlenoSession: (id: string) => void;
+  updatePlenoSession: (id: number, data: Partial<PlenoSchedule>) => void;
+  deletePlenoSession: (id: number) => void;
   user: User | null;
   logout: () => void;
   isLoggingOut: boolean;
-  updateUser: (data: Partial<UserItem>) => void;
+  updateUser: (data: Partial<User>) => void;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
   pertanyaanAsesmen: PertanyaanAsesmenItem[];
   addPertanyaanAsesmen: (item: Omit<PertanyaanAsesmenItem, "id">) => void;
   updatePertanyaanAsesmen: (
-    id: string,
+    id: number,
     item: Omit<PertanyaanAsesmenItem, "id">,
   ) => void;
-  deletePertanyaanAsesmen: (id: string) => void;
-  selectedPertanyaanId: string | null;
-  setSelectedPertanyaanId: (id: string | null) => void;
+  deletePertanyaanAsesmen: (id: number) => void;
+  selectedPertanyaanId: number | null;
+  setSelectedPertanyaanId: (id: number | null) => void;
   konfigurasiPertanyaan: KonfigurasiPertanyaanItem[];
   addKonfigurasiPertanyaan: (
     item: Omit<KonfigurasiPertanyaanItem, "id">,
   ) => void;
   updateKonfigurasiPertanyaan: (
-    id: string,
+    id: number,
     item: Omit<KonfigurasiPertanyaanItem, "id">,
   ) => void;
-  deleteKonfigurasiPertanyaan: (id: string) => void;
-  selectedKonfigurasiId: string | null;
-  setSelectedKonfigurasiId: (id: string | null) => void;
+  deleteKonfigurasiPertanyaan: (id: number) => void;
+  selectedKonfigurasiId: number | null;
+  setSelectedKonfigurasiId: (id: number | null) => void;
   registeredProfile: Record<string, unknown> | null;
   setRegisteredProfile: (val: Record<string, unknown> | null) => void;
   selectedAsesmen: AssessmentItem | null;
   setSelectedAsesmen: (val: AssessmentItem | null) => void;
   AssessmentItems: AssessmentItem[];
-  updateAssessmentItem: (id: string, data: Partial<AssessmentItem>) => void;
+  updateAssessmentItem: (id: number, data: Partial<AssessmentItem>) => void;
   completedBatchCodes: string[];
   deleteBatchAssessmentItems: (batchCode: string) => void;
   // Fitur Konfirmasi Navigasi Form
@@ -87,10 +87,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     typeof window !== "undefined" ? window.innerWidth < 1024 : false,
   );
   const [selectedPertanyaanId, setSelectedPertanyaanId] = useState<
-    string | null
+    number | null
   >(null);
   const [selectedKonfigurasiId, setSelectedKonfigurasiId] = useState<
-    string | null
+    number | null
   >(null);
   const [registeredProfile, setRegisteredProfile] = useState<Record<
     string,
@@ -99,7 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAsesmen, setSelectedAsesmen] = useState<AssessmentItem | null>(
     null,
   );
-  
+
   // --- NOTIFICATION STATE ---
   const [notification, setNotification] = useState<{
     show: boolean;
@@ -107,7 +107,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     message: string;
   }>({ show: false, type: "success", message: "" });
 
-  const showNotification = (message: string, type: "success" | "error" = "success") => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
     setNotification({ show: true, type, message });
     setTimeout(() => {
       setNotification((prev) => ({ ...prev, show: false }));
@@ -164,7 +167,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [plenoSessions, setPlenoSessions] = useState<PlenoSchedule[]>([
     {
-      id: "PLN-001",
+      id: 1,
+      batchCode: "PLN-001",
       tanggal: "2026-10-15",
       waktu: "09:00",
       skema: "Pemrograman Web",
@@ -177,7 +181,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       asesiList: ["Ahmad Fauzi", "Budi Santoso", "Citra Kirana"],
     },
     {
-      id: "PLN-002",
+      id: 2,
+      batchCode: "PLN-002",
       tanggal: "2026-10-18",
       waktu: "13:00",
       skema: "Desain Grafis",
@@ -195,11 +200,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPlenoSessions((prev) => [session, ...prev]);
   };
 
-  const deletePlenoSession = (id: string) => {
+  const deletePlenoSession = (id: number) => {
     setPlenoSessions((prev) => prev.filter((session) => session.id !== id));
   };
 
-  const updatePlenoSession = (id: string, data: Partial<PlenoSchedule>) => {
+  const updatePlenoSession = (id: number, data: Partial<PlenoSchedule>) => {
     setPlenoSessions((prev) =>
       prev.map((p) => (p.id === id ? { ...p, ...data } : p)),
     );
@@ -300,7 +305,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const linkVideo = batch.linkVideo;
 
         return {
-          id: String(idx + 1), // 1. Konversi number ke string
+          id: idx + 1,
           nama: `Kandidat ${idx + 1}`,
           nik: `32730128${(1000 + idx).toString()}0001`,
           aplStatus:
@@ -328,14 +333,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           linkVideo: linkVideo,
           status: status,
           riwayat: idx % 3 === 0 ? "Belum ada" : "Tinjauan Awal",
-        } as AssessmentItem; // 3. Tambahkan as AssessmentItem agar properti berlebih (seperti tglPra, riwayat) tidak memicu error strict mode
+        } as AssessmentItem;
       });
     },
   );
 
   const [completedBatchCodes, setCompletedBatchCodes] = useState<string[]>([]);
 
-  const updateAssessmentItem = (id: string, data: Partial<AssessmentItem>) => {
+  const updateAssessmentItem = (id: number, data: Partial<AssessmentItem>) => {
     setAssessmentItems((prev) =>
       prev.map((a) => (a.id === id ? { ...a, ...data } : a)),
     );
@@ -402,7 +407,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     PertanyaanAsesmenItem[]
   >([
     {
-      id: "1",
+      id: 1,
       nama: "wadw",
       skema: "Pembukuan",
       tipeForm: "FR.IA-01",
@@ -416,7 +421,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ],
     },
     {
-      id: "2",
+      id: 2,
       nama: "adwdasd",
       skema: "Pembukuan",
       tipeForm: "FR.IA-05A_MERGE",
@@ -449,12 +454,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addPertanyaanAsesmen = (item: Omit<PertanyaanAsesmenItem, "id">) => {
     setPertanyaanAsesmen((prev) => [
       ...prev,
-      { ...item, id: Date.now().toString() },
+      { ...item, id: Date.now() },
     ]);
   };
 
   const updatePertanyaanAsesmen = (
-    id: string,
+    id: number,
     item: Omit<PertanyaanAsesmenItem, "id">,
   ) => {
     setPertanyaanAsesmen((prev) =>
@@ -462,7 +467,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deletePertanyaanAsesmen = (id: string) => {
+  const deletePertanyaanAsesmen = (id: number) => {
     setPertanyaanAsesmen((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -471,12 +476,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   ) => {
     setKonfigurasiPertanyaan((prev) => [
       ...prev,
-      { ...item, id: Date.now().toString() } as KonfigurasiPertanyaanItem,
+      { ...item, id: Date.now() } as KonfigurasiPertanyaanItem,
     ]);
   };
 
   const updateKonfigurasiPertanyaan = (
-    id: string,
+    id: number,
     item: Omit<KonfigurasiPertanyaanItem, "id">,
   ) => {
     setKonfigurasiPertanyaan((prev) =>
@@ -486,7 +491,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deleteKonfigurasiPertanyaan = (id: string) => {
+  const deleteKonfigurasiPertanyaan = (id: number) => {
     setKonfigurasiPertanyaan((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -552,7 +557,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-9999 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
               notification.type === "success"
                 ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
                 : "bg-rose-50/90 border-rose-200 text-rose-800"

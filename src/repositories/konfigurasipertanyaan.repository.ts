@@ -96,8 +96,6 @@ export class KonfigurasiRepository {
     return await db.konfigurasi_pertanyaan.delete({ where: { id } });
   }
 
-  // --- PEMBARUAN PER-STEP (BILAS & ISI ULANG) ---
-
   async updateStep1(id: number, data: Step1Input[]) {
     return await db.konfigurasi_pertanyaan.update({
       where: { id },

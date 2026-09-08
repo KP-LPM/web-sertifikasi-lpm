@@ -34,7 +34,7 @@ export default function KelolaPengguna() {
   // Data dummy sudah ditambahkan 'username'
   const [users, setUsers] = useState<UserItem[]>([
     {
-      id: "usr-001",
+      id: 1,
       username: "mahmud_dr",
       namaLengkap: "Prof. Dr. H. Mahmud, M.Ag",
       email: "mahmud@uin.ac.id",
@@ -42,7 +42,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-002",
+      id: 2,
       username: "bambang_s",
       namaLengkap: "Bambang Sugianto, M.M.",
       email: "bambang.s@lsp.uin.ac.id",
@@ -50,7 +50,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-003",
+      id: 3,
       username: "mzaini",
       namaLengkap: "Dr. Ir. H. Muhammad Zaini, M.T.",
       email: "m.zaini@uin.ac.id",
@@ -58,7 +58,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-004",
+      id: 4,
       username: "sitifatimah",
       namaLengkap: "Dra. Hj. Siti Fatimah, M.Si",
       email: "siti.fatimah@uin.ac.id",
@@ -66,7 +66,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-005",
+      id: 5,
       username: "dian_w",
       namaLengkap: "Dr. Eng. Dian Wahyudi, S.T., M.T.",
       email: "dian.w@uin.ac.id",
@@ -74,7 +74,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-006",
+      id: 6,
       username: "rahmat_h",
       namaLengkap: "Rahmat Hidayat, M.T.",
       email: "rahmat.h@uin.ac.id",
@@ -82,7 +82,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-007",
+      id: 7,
       username: "aditya_admin",
       namaLengkap: "Aditya Rahman, S.Kom",
       email: "admin.lsp@uin.ac.id",
@@ -90,7 +90,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-008",
+      id: 8,
       username: "siti_rohmah",
       namaLengkap: "Dr. Siti Rohmah, M.Kom",
       email: "siti.r@lecturer.uin.ac.id",
@@ -98,7 +98,7 @@ export default function KelolaPengguna() {
       status: "Aktif",
     },
     {
-      id: "usr-009",
+      id: 9,
       username: "ahmad_hidayat",
       namaLengkap: "Ahmad Hidayat",
       email: "ahmad.h@student.uin.ac.id",
@@ -162,7 +162,7 @@ export default function KelolaPengguna() {
       return;
 
     const newUser: UserItem = {
-      id: `usr-${Date.now()}`,
+      id: Date.now(),
       username: formData.username.trim(),
       namaLengkap: formData.namaLengkap.trim(),
       email: formData.email.trim(),

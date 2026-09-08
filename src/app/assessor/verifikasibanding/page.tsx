@@ -598,7 +598,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   Catatan Asesor Sebelumnya
                 </label>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 font-medium italic text-xs leading-relaxed">
-                  {`"${String(previousNote || "-")}"`}
+                  {`"${String(selectedAsesmen?.catatan || "-")}"`}
                 </div>
               </div>
 

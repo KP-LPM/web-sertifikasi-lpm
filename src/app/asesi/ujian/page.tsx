@@ -280,7 +280,7 @@ export default function UjianAsesi() {
                       noSkema: "CERT-03",
                       tuk: "Mandiri",
                       tanggal: "14/10/2026",
-                      metode: "Mandiri",
+                      metode: "Online",
                       status: "Preview",
                     }}
                     readOnly={true}

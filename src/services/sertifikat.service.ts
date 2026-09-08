@@ -17,7 +17,7 @@ export class SertifikatService {
       );
     }
 
-    if (role === "asesi" && sertifikat.pengajuan_skema?.asesi_id !== userId) {
+    if (role === "asesi" && sertifikat.pengajuan_skema?.userId !== userId) {
       throw new InvariantError(
         "Akses ditolak. Anda tidak berhak mengakses sertifikat ini.",
       );
@@ -40,13 +40,13 @@ export class SertifikatService {
     const pengajuan = await this.repo.getPengajuanWithSkema(pengajuanId);
 
     // Pastikan data MasterSkema tersedia
-    if (!pengajuan || !pengajuan.master_skema) {
+    if (!pengajuan || !pengajuan.skema) {
       throw new InvariantError(
         "Data pengajuan atau skema referensi tidak valid.",
       );
     }
 
-    let sertifikat = await this.repo.getByPengajuanId(pengajuanId);
+    const sertifikat = await this.repo.getByPengajuanId(pengajuanId);
     if (sertifikat?.status === "Terbit") {
       throw new InvariantError("Sertifikat ini sudah diterbitkan sebelumnya.");
     }
@@ -81,9 +81,9 @@ export class SertifikatService {
     // 5. Pembentukan String (Padding digit)
     // Mengambil base dari MasterSkema. Contoh: "74110 1321 5" atau "IND 2603"
     const baseSertifikat =
-      pengajuan.master_skema.nomor_sertifikat?.trim() || "00000 0000 0";
+      pengajuan.skema.nomor_sertifikat?.trim() || "00000 0000 0";
     const baseRegistrasi =
-      pengajuan.master_skema.nomor_registrasi?.trim() || "XXX 0000";
+      pengajuan.skema.nomor_registrasi?.trim() || "XXX 0000";
 
     // Ubah angka menjadi format 7 digit dan 5 digit
     const seq7 = nextSeq.toString().padStart(7, "0"); // Hasil: "0000001"

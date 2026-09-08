@@ -19,7 +19,7 @@ import { useAppContext } from "@/context/context";
 // Initial Mock Data for Generated Documents & Certificates
 const INITIAL_SURAT_DATA: SuratItem[] = [
   {
-    id: "DOC-2026-001",
+    id: 1,
     nomorSurat: "BA/014/PLENO-LSP/VIII/2026",
     judul: "Berita Acara Sidang Pleno Penetapan Asesmen Gelombang VIII 2026",
     kategori: "surat_masuk",
@@ -39,7 +39,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     urlGdrive: "https://drive.google.com/file/d/BA_Pleno_Aug2026/view",
   },
   {
-    id: "DOC-2026-002",
+    id: 2,
     nomorSurat: "SK/088/DIR-LSP/VIII/2026",
     judul:
       "Surat Keputusan Direktur LSP tentang Hasil Kelulusan Asesmen Sertifikasi Periode Agustus 2026",
@@ -60,7 +60,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     urlGdrive: "https://drive.google.com/file/d/SK_Hasil_Pleno_2026/view",
   },
   {
-    id: "DOC-2026-003",
+    id: 3,
     nomorSurat: "BA/012/PLENO-LSP/VII/2026",
     judul:
       "Berita Acara Sidang Pleno Hasil Rekomendasi Asesmen Gelombang VII 2026",
@@ -79,7 +79,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     urlGdrive: "https://drive.google.com/file/d/BA_Pleno_Jul2026/view",
   },
   {
-    id: "DOC-2026-004",
+    id: 4,
     nomorSurat: "ST/105/LSP-SGD/VIII/2026",
     judul: "Surat Penugasan Asesor Kompetensi Uji Sertifikasi Mobile Developer",
     kategori: "surat_keluar",
@@ -98,7 +98,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     urlGdrive: "https://drive.google.com/file/d/ST_Asesor_Nurhadi_Aug2026/view",
   },
   {
-    id: "DOC-2026-005",
+    id: 5,
     nomorSurat: "BNSP/410/LSP-SGD/VIII/2026",
     judul:
       "Surat Permohonan & Laporan Permintaan Blanko Sertifikat BNSP Gelombang VIII",
@@ -116,7 +116,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     urlGdrive: "https://drive.google.com/file/d/BNSP_Blanko_Req_Aug2026/view",
   },
   {
-    id: "DOC-2026-006",
+    id: 6,
     nomorSurat: "ST/098/LSP-SGD/VII/2026",
     judul: "Surat Penugasan Asesor Asesmen Kompetensi Auditor Halal",
     kategori: "surat_keluar",
@@ -135,7 +135,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
       "https://drive.google.com/file/d/ST_Asesor_Fitriani_Jul2026/view",
   },
   {
-    id: "DOC-2026-006B",
+    id: 7,
     nomorSurat: "SP/042/LSP-SGD/VIII/2026",
     judul:
       "Surat Permohonan Peminjaman Asesor Kompetensi Bidang Pemrograman Mobil",
@@ -153,7 +153,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
       "https://drive.google.com/file/d/SP_Peminjaman_Asesor_Aug2026/view",
   },
   {
-    id: "DOC-2026-007",
+    id: 8,
     nomorSurat: "50012/LSP-SGD/VIII/2026",
     judul: "Sertifikat Kompetensi BNSP - Ahmad Rizki",
     kategori: "sertifikat",
@@ -170,7 +170,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     catatan: "Telah terverifikasi BNSP",
   },
   {
-    id: "DOC-2026-008",
+    id: 9,
     nomorSurat: "50013/LSP-SGD/VIII/2026",
     judul: "Sertifikat Kompetensi BNSP - Siti Nurhaliza",
     kategori: "sertifikat",
@@ -187,7 +187,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     catatan: "Dokumen diunggah ke GDrive LSP",
   },
   {
-    id: "DOC-2026-009",
+    id: 10,
     nomorSurat: "50014/LSP-SGD/VIII/2026",
     judul: "Sertifikat Kompetensi BNSP - Dewi Anggraini",
     kategori: "sertifikat",
@@ -203,7 +203,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
       "https://drive.google.com/file/d/3C4d5E6f7G8h9I0j1K2l_Cert3/view",
   },
   {
-    id: "DOC-2026-010",
+    id: 11,
     nomorSurat: "50020/LSP-SGD/VIII/2026",
     judul: "Sertifikat Kompetensi BNSP - Dewi Lestari",
     kategori: "sertifikat",
@@ -220,7 +220,7 @@ const INITIAL_SURAT_DATA: SuratItem[] = [
     catatan: "Lulus Sidang Pleno",
   },
   {
-    id: "DOC-2026-011",
+    id: 12,
     nomorSurat: "50021/LSP-SGD/VIII/2026",
     judul: "Sertifikat Kompetensi BNSP - Hendra Wijaya",
     kategori: "sertifikat",
@@ -344,7 +344,7 @@ export default function KelolaSurat() {
       namaJenis = "Sertifikat Kompetensi BNSP";
 
     const newDoc: SuratItem = {
-      id: `DOC-2026-${String(documents.length + 1).padStart(3, "0")}`,
+      id: Date.now(),
       nomorSurat: formData.nomorSurat,
       judul: namaJenis,
       kategori: formData.kategori || "surat_masuk",
