@@ -11,10 +11,11 @@ import {
   CreditCard,
   XCircle,
   FileCheck,
+ 
   GraduationCap,
   Award,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
 import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { useAppContext } from "@/context/context";
@@ -90,6 +91,14 @@ export default function UsersManagement() {
       email: "siti.r@lecturer.uin.ac.id",
       role: "asesor",
       status: "Terverifikasi",
+      verificationData: {
+        rekomendasi: "Diterima",
+        catatan: "",
+        asalAsesor: "Internal",
+        instansi: "LSP UIN SGD",
+        skema: "Rekayasa Perangkat Lunak",
+        noReg: "MET.000.12345.2023",
+      }
     },
     {
       id: "asr-1",
@@ -97,7 +106,15 @@ export default function UsersManagement() {
       namaLengkap: "Ichsan Taufik",
       email: "ichsan.taufik@lsp.uin.ac.id",
       role: "asesor",
-      status: "Terverifikasi",
+      status: "Menunggu Verifikasi",
+      verificationData: {
+        rekomendasi: "Diterima",
+        catatan: "",
+        asalAsesor: "Eksternal",
+        instansi: "LSP Teknologi Informasi & Komunikasi Indonesia",
+        skema: "Teknisi Muda Jaringan Komputer",
+        noReg: "MET.000.98765.2025",
+      }
     },
     {
       id: "asr-2",
@@ -106,12 +123,19 @@ export default function UsersManagement() {
       email: "aceng.kodir@lsp.uin.ac.id",
       role: "asesor",
       status: "Terverifikasi",
+      verificationData: {
+        rekomendasi: "Diterima",
+        catatan: "",
+        asalAsesor: "Internal",
+        instansi: "LSP UIN SGD",
+        skema: "Rekayasa Perangkat Lunak",
+        noReg: "MET.000.54321.2024",
+      }
     },
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [previewFile, setPreviewFile] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [userToVerify, setUserToVerify] = useState<UserItem | null>(null);
@@ -334,7 +358,7 @@ export default function UsersManagement() {
       ttdAdmin: user.verificationData?.adminSignatureUrl,
       tujuan: "Sertifikasi",
       ttdAsesi: { type: "auto" },
-      onPreview: (fileName: string) => setPreviewFile(fileName),
+      onPreview: (fileName: string) => window.open('/dummy.pdf', '_blank'),
       schemeDetail: {
         persyaratanDasar: [
           { id: 1, namaDokumen: "Scan KTP", is_wajib: true },
@@ -559,30 +583,86 @@ export default function UsersManagement() {
                   )}
                 </>
               ) : (
-                <div className="grid gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[10px] uppercase font-bold text-slate-500 mb-0.5">
-                      Bidang Keahlian / Skema
-                    </p>
-                    <p className="text-sm font-bold text-slate-800">
-                      Rekayasa Perangkat Lunak
-                    </p>
+                <div className="flex flex-col gap-6 w-full">
+                  <div className="border-b border-gray-100 bg-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-col min-w-0 gap-1 items-start">
+                      {userToVerify.verificationData?.asalAsesor === "Eksternal" ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
+                          Eksternal
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Internal
+                        </span>
+                      )}
+                      <p className="text-sm md:text-base font-bold text-slate-900">
+                        {userToVerify.namaLengkap}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border ${userToVerify.status === "Menunggu Verifikasi" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                        {userToVerify.status === "Menunggu Verifikasi" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        ) : (
+                          <CheckCircle size={14} />
+                        )}
+                        {userToVerify.status}
+                      </span>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] uppercase font-bold text-slate-500 mb-0.5">
-                      No. Registrasi / NIP
-                    </p>
-                    <p className="text-sm font-bold text-slate-800">
-                      MET.000.12345.2023
-                    </p>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] uppercase font-bold text-slate-500 mb-0.5">
-                      Sertifikat Asesor
-                    </p>
-                    <p className="text-xs font-bold text-green-700 flex items-center gap-1.5">
-                      <CheckCircle size={14} /> Terlampir
-                    </p>
+
+                  <div className="px-6 pb-6">
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col md:flex-row gap-4 md:gap-8">
+                      <div className="flex-1">
+                        <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Skema Keahlian</p>
+                        <p className="text-sm font-bold text-slate-800">{userToVerify.verificationData?.skema as string || "Rekayasa Perangkat Lunak"}</p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">No. Registrasi MET</p>
+                        <p className="text-sm font-bold text-slate-800">{userToVerify.verificationData?.noReg as string || "MET.000.12345.2023"}</p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Asal LSP / Instansi</p>
+                        <p className="text-sm font-bold text-slate-800">{userToVerify.verificationData?.instansi as string || "LSP UIN SGD"}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Berkas Surat Asesor</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white hover:border-[#008BE3]/30 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center text-[#008BE3]">
+                              <FileCheck size={20} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-800">1. Surat Peminjaman Asesor</p>
+                              <p className="text-xs text-slate-500">Surat_Peminjaman_Asesor_LSP_UIN.pdf</p>
+                            </div>
+                          </div>
+                          <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-[#008BE3] transition-colors">
+                            <Eye size={14} /> Lihat File
+                          </a>
+                        </div>
+
+                        {userToVerify.verificationData?.asalAsesor === "Eksternal" && (
+                          <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white hover:border-purple-300 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                                <FileCheck size={20} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-slate-800">2. Surat Balasan / Jawaban LSP Luar</p>
+                                <p className="text-xs text-slate-500">Surat_Konfirmasi_Balasan_LSP_TIK.pdf</p>
+                              </div>
+                            </div>
+                            <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-purple-600 transition-colors">
+                              <Eye size={14} /> Lihat File
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -658,47 +738,6 @@ export default function UsersManagement() {
             </div>
           </div>
         </div>
-
-        {previewFile && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setPreviewFile(null)}
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-              />
-            </AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-2xl h-[80vh] relative z-10 flex flex-col overflow-hidden"
-            >
-              <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 className="font-bold text-slate-900">{previewFile}</h3>
-                <button
-                  onClick={() => setPreviewFile(null)}
-                  className="text-slate-400 hover:text-slate-600 font-bold text-sm bg-white border border-slate-200 px-3 py-1 rounded-md shadow-sm"
-                >
-                  Tutup
-                </button>
-              </div>
-              <div className="flex-1 p-6 bg-slate-100 flex items-center justify-center">
-                <div className="w-full h-full bg-white border border-slate-200 rounded shadow-sm flex flex-col items-center justify-center text-slate-400">
-                  <div className="text-6xl mb-4">📄</div>
-                  <p className="font-medium text-slate-500">
-                    Pratinjau Dokumen PDF / Gambar
-                  </p>
-                  <p className="text-xs mt-2">
-                    Ini adalah simulasi tampilan dokumen.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </div>
     );
   }
@@ -782,6 +821,11 @@ export default function UsersManagement() {
                 {mainTab === "asesi" && (
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                     Status Pembayaran
+                  </th>
+                )}
+                {mainTab === "asesor" && (
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                    Asal Asesor
                   </th>
                 )}
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] min-w-32 top-0">
@@ -883,6 +927,14 @@ export default function UsersManagement() {
                             Belum Bayar
                           </span>
                         )}
+                      </td>
+                    )}
+
+                    {mainTab === "asesor" && (
+                      <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                          {user.verificationData?.asalAsesor === "Eksternal" ? "Eksternal" : "Internal"}
+                        </span>
                       </td>
                     )}
 
