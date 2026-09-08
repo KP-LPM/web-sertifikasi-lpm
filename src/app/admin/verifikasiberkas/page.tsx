@@ -358,7 +358,7 @@ export default function UsersManagement() {
       ttdAdmin: user.verificationData?.adminSignatureUrl,
       tujuan: "Sertifikasi",
       ttdAsesi: { type: "auto" },
-      onPreview: (fileName: string) => window.open('/dummy.pdf', '_blank'),
+      onPreview: () => window.open('/dummy.pdf', '_blank'),
       schemeDetail: {
         persyaratanDasar: [
           { id: 1, namaDokumen: "Scan KTP", is_wajib: true },

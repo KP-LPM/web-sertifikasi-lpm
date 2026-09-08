@@ -119,7 +119,7 @@ export function Sidebar() {
                     }
                   />
                   {!sidebarCollapsed && (
-                    <span className="text-[12px] font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
+                    <span className="text-sm font-bold tracking-tight transition-all duration-300 overflow-hidden whitespace-nowrap">
                       {item.label}
                     </span>
                   )}
