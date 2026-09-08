@@ -45,13 +45,13 @@ export async function POST(request: NextRequest) {
       key: "post-konfigurasi-soal",
     });
 
-    const token = await getToken({ req: request });
-    if (!token || (token.role !== "asesor" && token.role !== "admin")) {
-      return sendResponse(
-        403,
-        "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
-      );
-    }
+      const token = await getToken({ req: request });
+      if (!token || (token.role !== "asesor" && token.role !== "admin")) {
+        return sendResponse(
+          403,
+          "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
+        );
+      }
 
     const body = await request.json();
     const validatedData = CreateKonfigurasiSchema.parse(body);

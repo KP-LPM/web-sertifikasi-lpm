@@ -9,7 +9,7 @@ export const CreatePlenoSchema = z.object({
   alamat: z.string().optional().nullable(),
   detail_alamat: z.string().optional().nullable(),
   deskripsi: z.string().optional().nullable(),
-  status: z.string().default("Draft"),
+  status: z.string().default("Belum"),
   // Array ID Skema untuk relasi pleno_batch_skema
   skema_ids: z.array(z.number().int()).default([]),
 });

@@ -10,7 +10,7 @@ export const currentUser: User = {
 
 export const schemesData: Scheme[] = [
   {
-    id: "1",
+    id: 1,
     code: "CERT-01",
     name: "Jenjang 5 Bidang Kewirausahaan Industri",
     category: "Industri",
@@ -18,7 +18,7 @@ export const schemesData: Scheme[] = [
     applicantsCount: 156,
   },
   {
-    id: "2",
+    id: 2,
     code: "CERT-02",
     name: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     category: "Komunikasi",
@@ -26,7 +26,7 @@ export const schemesData: Scheme[] = [
     applicantsCount: 89,
   },
   {
-    id: "3",
+    id: 3,
     code: "CERT-03",
     name: "Penerjemah Teks Umum",
     category: "Bahasa",
@@ -34,7 +34,7 @@ export const schemesData: Scheme[] = [
     applicantsCount: 42,
   },
   {
-    id: "4",
+    id: 4,
     code: "CERT-04",
     name: "Auditor Halal",
     category: "Sertifikasi Halal",
@@ -42,7 +42,7 @@ export const schemesData: Scheme[] = [
     applicantsCount: 214,
   },
   {
-    id: "5",
+    id: 5,
     code: "CERT-05",
     name: "Penyelia Halal",
     category: "Sertifikasi Halal",
@@ -53,7 +53,8 @@ export const schemesData: Scheme[] = [
 
 export const candidatesData: Candidate[] = [
   {
-    id: "#AS-2024-001",
+    id: 1,
+    nik: "AS-2024-001",
     nama: "John Doe",
     skema: "Jenjang 5 Bidang Kewirausahaan Industri",
     tglAsesmen: "Oct 24, 2023",
@@ -61,7 +62,8 @@ export const candidatesData: Candidate[] = [
     avatar: "JD",
   },
   {
-    id: "#AS-2024-042",
+    id: 42,
+    nik: "AS-2024-042",
     nama: "Sarah Miller",
     skema: "Penyelia Halal",
     tglAsesmen: "Oct 22, 2023",
@@ -69,7 +71,8 @@ export const candidatesData: Candidate[] = [
     avatar: "SM",
   },
   {
-    id: "#AS-2024-019",
+    id: 19,
+    nik: "AS-2024-019",
     nama: "Benjamin Wong",
     skema: "Auditor Halal",
     tglAsesmen: "Oct 21, 2023",
@@ -77,7 +80,8 @@ export const candidatesData: Candidate[] = [
     avatar: "BW",
   },
   {
-    id: "#AS-2024-005",
+    id: 5,
+    nik: "AS-2024-005",
     nama: "Alice Tanaka",
     skema: "Penyelia Halal",
     tglAsesmen: "Oct 20, 2023",
@@ -87,7 +91,7 @@ export const candidatesData: Candidate[] = [
 
 export const sessionsData: ExamSession[] = [
   {
-    id: "s1",
+    id: 1,
     date: "Oct 24, 2023",
     time: "14:00 - 15:30",
     title: "Interview: James Wilson",
@@ -95,7 +99,7 @@ export const sessionsData: ExamSession[] = [
     type: "Interview",
   },
   {
-    id: "s2",
+    id: 2,
     date: "Oct 24, 2023",
     time: "16:15 - 17:00",
     title: "Viva Voce: Linda May",

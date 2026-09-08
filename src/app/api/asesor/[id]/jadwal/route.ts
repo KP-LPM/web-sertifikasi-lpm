@@ -16,9 +16,9 @@ export async function GET(request: NextRequest, context: Context) {
       windowMs: 60 * 1000,
       key: "get-jadwal-asesor",
     });
+    const { id } = await context.params;
 
     const token = await getToken({ req: request });
-    const { id } = await context.params;
     if (!token || (token.role !== "admin" && Number(token.id) !== Number(id))) {
       return sendResponse(403, "Akses ditolak");
     }

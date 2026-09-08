@@ -923,7 +923,7 @@ export default function AssessmentForm() {
       asesmenData?.skema ||
       ""
     ).toLowerCase();
-    const targetSkemaCode = selectedAsesmen?.id || "";
+    const targetSkemaCode = selectedAsesmen?.id ? String(selectedAsesmen.id) : "";
 
     // 2. Pencarian skema yang aman dari error undefined
     const matchedSchemeApl02 =

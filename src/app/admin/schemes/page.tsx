@@ -385,7 +385,7 @@ export default function ManageSchemes() {
         onCancel={() => setIsModalOpen(false)}
         onSaveSuccess={(payload: MasterSkemaPayload) => {
           const newScheme: SchemeItem = {
-            id: Date.now().toString(),
+            id: Date.now(),
             nama: payload.namaSkema,
             kode: payload.kodeSkema,
             nomorSertifikat: payload.nomorSertifikat,

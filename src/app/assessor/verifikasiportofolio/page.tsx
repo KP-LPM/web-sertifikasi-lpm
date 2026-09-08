@@ -34,7 +34,7 @@ export default function VerifikasiPortofolio() {
   const { showNotification } = useAppContext();
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([
     {
-      id: "PF-001",
+      id: 1,
       skema: "Pemrograman Web",
       namaDokumen: "Sertifikat Industri Web Developer",
       statusAsesor: "Asesor dari UIN Bandung",
@@ -50,7 +50,7 @@ export default function VerifikasiPortofolio() {
         "Dokumen lengkap dan memenuhi persyaratan kualifikasi skema.",
     },
     {
-      id: "PF-002",
+      id: 2,
       skema: "Teknisi Muda Jaringan Komputer",
       namaDokumen: "Portofolio Implementasi Network Topology",
       statusAsesor: "Asesor dari Luar",
@@ -66,7 +66,7 @@ export default function VerifikasiPortofolio() {
       status: "Menunggu Verifikasi",
     },
     {
-      id: "PF-003",
+      id: 3,
       skema: "Desain Grafis",
       namaDokumen: "Sertifikat Kompetensi Adobe Illustrator",
       statusAsesor: "Asesor dari UIN Bandung",
@@ -195,10 +195,7 @@ export default function VerifikasiPortofolio() {
       }
     }
 
-    const generatedId =
-      typeof window !== "undefined" && window.crypto?.randomUUID
-        ? `PF-${window.crypto.randomUUID().slice(0, 5).toUpperCase()}`
-        : `PF-${(portfolios.length + 1).toString().padStart(3, "0")}`;
+    const generatedId = Date.now();
 
     const todayStr = new Date().toLocaleDateString("id-ID", {
       day: "numeric",

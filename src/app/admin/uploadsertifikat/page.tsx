@@ -146,7 +146,7 @@ export default function UploadSertifikat() {
   // State for Pleno Sessions and their Asesi lists
   const [plenoGroups, setPlenoGroups] = useState<PlenoGroup[]>([
     {
-      plenoId: "PLENO-2026-001",
+      plenoId: 1,
       plenoTitle: "Sidang Pleno Hasil Asesmen Batch 1",
       skemaList: [
         "Pemrogram Mobil Pertama (Mobile Developer)",
@@ -159,7 +159,7 @@ export default function UploadSertifikat() {
       status: "Selesai",
       asesiList: [
         {
-          id: "AS-001",
+          id: 1,
           nama: "Ahmad Rizki",
           nik: "1197050001",
           skema: "Pemrogram Mobil Pertama (Mobile Developer)",
@@ -171,7 +171,7 @@ export default function UploadSertifikat() {
           notes: "Telah terverifikasi BNSP",
         },
         {
-          id: "AS-002",
+          id: 2,
           nama: "Siti Nurhaliza",
           nik: "1197050012",
           skema: "Junior Web Developer",
@@ -183,7 +183,7 @@ export default function UploadSertifikat() {
           notes: "Dokumen diunggah ke GDrive LSP",
         },
         {
-          id: "AS-003",
+          id: 3,
           nama: "Budi Santoso",
           nik: "1197050025",
           skema: "Pemrogram Mobil Pertama (Mobile Developer)",
@@ -194,7 +194,7 @@ export default function UploadSertifikat() {
           notes: "",
         },
         {
-          id: "AS-004",
+          id: 4,
           nama: "Dewi Anggraini",
           nik: "1197050031",
           skema: "Junior Web Developer",
@@ -206,7 +206,7 @@ export default function UploadSertifikat() {
           notes: "",
         },
         {
-          id: "AS-005",
+          id: 5,
           nama: "Muhammad Farhan",
           nik: "1197050042",
           skema: "Pemrogram Mobil Pertama (Mobile Developer)",
@@ -219,7 +219,7 @@ export default function UploadSertifikat() {
       ],
     },
     {
-      plenoId: "PLENO-2026-002",
+      plenoId: 2,
       plenoTitle: "Sidang Pleno Kelulusan Asesmen Batch 2",
       skemaList: ["Junior Web Developer", "Auditor Halal"],
       tanggal: "18 Agt 2026",
@@ -229,7 +229,7 @@ export default function UploadSertifikat() {
       status: "Selesai",
       asesiList: [
         {
-          id: "AS-006",
+          id: 6,
           nama: "Dewi Lestari",
           nik: "1197050044",
           skema: "Junior Web Developer",
@@ -241,7 +241,7 @@ export default function UploadSertifikat() {
           notes: "Lulus Sidang Pleno",
         },
         {
-          id: "AS-007",
+          id: 7,
           nama: "Eko Prasetyo",
           nik: "1197050058",
           skema: "Auditor Halal",
@@ -252,7 +252,7 @@ export default function UploadSertifikat() {
           notes: "",
         },
         {
-          id: "AS-008",
+          id: 8,
           nama: "Rina Marlina",
           nik: "1197050063",
           skema: "Junior Web Developer",
@@ -263,7 +263,7 @@ export default function UploadSertifikat() {
           notes: "",
         },
         {
-          id: "AS-009",
+          id: 9,
           nama: "Hendra Wijaya",
           nik: "1197050070",
           skema: "Auditor Halal",
@@ -277,7 +277,7 @@ export default function UploadSertifikat() {
       ],
     },
     {
-      plenoId: "PLENO-2026-003",
+      plenoId: 3,
       plenoTitle: "Sidang Pleno Terpadu Batch 3",
       skemaList: [
         "Auditor Halal",
@@ -291,7 +291,7 @@ export default function UploadSertifikat() {
       status: "Terjadwal",
       asesiList: [
         {
-          id: "AS-010",
+          id: 10,
           nama: "Bambang Hermanto",
           nik: "1197050081",
           skema: "Auditor Halal",
@@ -302,7 +302,7 @@ export default function UploadSertifikat() {
           notes: "",
         },
         {
-          id: "AS-011",
+          id: 11,
           nama: "Nina Zatulini",
           nik: "1197050095",
           skema: "Pemrogram Mobil Pertama (Mobile Developer)",
@@ -313,7 +313,7 @@ export default function UploadSertifikat() {
           notes: "",
         },
         {
-          id: "AS-012",
+          id: 12,
           nama: "Dian Sastrowardoyo",
           nik: "1197050102",
           skema: "Network Administrator",
@@ -328,7 +328,7 @@ export default function UploadSertifikat() {
   ]);
 
   // Level 1 vs Level 2 state
-  const [selectedPlenoId, setSelectedPlenoId] = useState<string | null>(null);
+  const [selectedPlenoId, setSelectedPlenoId] = useState<number | null>(null);
 
   // Search and Filter states
   const [plenoSearchTerm, setPlenoSearchTerm] = useState("");
@@ -341,12 +341,12 @@ export default function UploadSertifikat() {
   >("Semua");
 
   // Copy notification state
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | number | null>(null);
 
   // Modal State for inputting/editing GDrive link for an asesi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAsesi, setEditingAsesi] = useState<{
-    plenoId: string;
+    plenoId: number;
     asesi: AsesiPlenoRecord;
   } | null>(null);
   const [inputForm, setInputForm] = useState({
@@ -357,7 +357,7 @@ export default function UploadSertifikat() {
   });
 
   // Handle copying GDrive URL
-  const handleCopy = (url: string, id: string) => {
+  const handleCopy = (url: string, id: string | number) => {
     if (!url) return;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
@@ -365,7 +365,7 @@ export default function UploadSertifikat() {
   };
 
   // Open modal to input/edit GDrive link for a specific asesi
-  const handleOpenInputModal = (plenoId: string, asesi: AsesiPlenoRecord) => {
+  const handleOpenInputModal = (plenoId: number, asesi: AsesiPlenoRecord) => {
     setEditingAsesi({ plenoId, asesi });
     const defaultCertNo =
       asesi.noSertifikat ||
@@ -432,7 +432,7 @@ export default function UploadSertifikat() {
 
     if (plenoSearchTerm.trim()) {
       const q = plenoSearchTerm.toLowerCase();
-      const matchId = group.plenoId.toLowerCase().includes(q);
+      const matchId = String(group.plenoId).toLowerCase().includes(q);
       const matchTitle = group.plenoTitle.toLowerCase().includes(q);
 
       // skemaList berisi string[], bukan objek — langsung compare string

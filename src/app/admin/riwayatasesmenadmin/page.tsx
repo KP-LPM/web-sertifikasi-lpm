@@ -136,7 +136,7 @@ const initialCompletedBatches: CompletedBatchItem[] = [
 
 const initialCompletedPleno: PlenoDetailData[] = [
   {
-    id: "PLN-2026-003",
+    id: 1,
     batchCode: "BATCH-PRG-2026-003",
     title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
     skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -151,7 +151,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
     status: "Selesai",
     asesiList: [
       {
-        id: "11",
+        id: 11,
         nik: "1217050011",
         nama: "Lani Wijaya",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -160,7 +160,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
         statusPleno: "K",
       },
       {
-        id: "12",
+        id: 12,
         nik: "1217050012",
         nama: "Muhammad Rizky",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -174,7 +174,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
     suratPlenoName: "SK_Pleno_Komunikasi_2026.pdf",
   },
   {
-    id: "PLN-2025-001",
+    id: 2,
     batchCode: "BATCH-IT-2025-089",
     title:
       "Sidang Pleno Penetapan Hasil Uji Kompetensi Auditor Halal Gelombang 3",
@@ -191,7 +191,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
     status: "Selesai",
     asesiList: [
       {
-        id: "1",
+        id: 1,
         nik: "3273012810010001",
         nama: "Ahmad Hidayat",
         skema: "Auditor Halal",
@@ -201,7 +201,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
         catatan: "Dokumen portofolio lengkap",
       },
       {
-        id: "2",
+        id: 2,
         nik: "3273012810020001",
         nama: "Siti Rohmah",
         skema: "Auditor Halal",
@@ -210,7 +210,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
         statusPleno: "K",
       },
       {
-        id: "3",
+        id: 3,
         nik: "3273012810030001",
         nama: "Budi Pratama",
         skema: "Auditor Halal",
@@ -225,7 +225,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
     suratPlenoName: "SK_Pleno_Auditor_Halal_2025.pdf",
   },
   {
-    id: "PLN-2025-002",
+    id: 3,
     batchCode: "BATCH-NET-2025-090",
     title: "Sidang Pleno Penetapan Hasil Kewirausahaan Industri Gelombang 1",
     skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -241,7 +241,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
     status: "Selesai",
     asesiList: [
       {
-        id: "7",
+        id: 7,
         nik: "3273012810060001",
         nama: "Eko Prasetyo",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -250,7 +250,7 @@ const initialCompletedPleno: PlenoDetailData[] = [
         statusPleno: "K",
       },
       {
-        id: "8",
+        id: 8,
         nik: "3273012810070001",
         nama: "Fitriani",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -394,7 +394,7 @@ export default function RiwayatAsesmenAdmin() {
           !initialCompletedPleno.some((i) => i.id === p.id),
       )
       .map((p) => ({
-        id: String(p.id), // pastikan string, sesuai interface
+        id: p.id,
         batchCode: `BATCH-${p.id}`,
         title: `Sidang Pleno ${p.skema}`,
         skema: p.skema,
@@ -411,7 +411,7 @@ export default function RiwayatAsesmenAdmin() {
           p.suratPlenoUrl || "https://drive.google.com/file/d/hasil-pleno/view",
         status: "Selesai" as const,
         asesiList: (p.asesiList || []).map((name: string, idx: number) => ({
-          id: `asesi-${idx}`,
+          id: idx + 1,
           nik: `121705${1000 + idx}`,
           nama:
             typeof name === "string"
@@ -1268,7 +1268,7 @@ export default function RiwayatAsesmenAdmin() {
                                       a.nama?.toLowerCase() ===
                                       asesi.nama.toLowerCase(),
                                   ) || {
-                                    id: asesi.id || "999",
+                                    id: 999,
                                     nama: asesi.nama,
                                     nik: asesi.nik,
                                     skema: selectedBatch.skema,
@@ -1977,7 +1977,7 @@ export default function RiwayatAsesmenAdmin() {
                             typeof asesiItem === "string" ||
                             typeof asesiItem === "number"
                               ? {
-                                  id: `asesi-${idx}`,
+                                  id: idx + 1,
                                   nik: `121705${1000 + idx}`,
                                   nama: String(asesiItem),
                                   skema: selectedPleno.skema,

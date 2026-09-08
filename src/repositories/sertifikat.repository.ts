@@ -9,8 +9,8 @@ export class SertifikatRepository {
         pengajuan_skema: {
           select: {
             id: true,
-            asesi_id: true,
-            master_skema: { select: { namaSkema: true, kodeSkema: true } },
+            userId: true,
+            skema: { select: { namaSkema: true, kodeSkema: true } },
           },
         },
       },
@@ -87,14 +87,20 @@ export class SertifikatRepository {
         ...(filters?.status && { status: filters.status }),
         ...(filters?.tanggal && { tanggal_terbit: filters.tanggal }),
         ...(filters?.skemaId && {
-          pengajuan_skema: { skema_id: filters.skemaId },
+          pengajuan_skema: { skemaId: filters.skemaId },
         }),
       },
       include: {
         pengajuan_skema: {
           include: {
-            user: { select: { namaLengkap: true, email: true } },
-            master_skema: { select: { namaSkema: true } },
+            user: {
+              select: {
+                email: true,
+                profil: { select: { namaLengkap: true } },
+              },
+            },
+            dataPribadi: { select: { namaLengkap: true } },
+            skema: { select: { namaSkema: true } },
           },
         },
       },

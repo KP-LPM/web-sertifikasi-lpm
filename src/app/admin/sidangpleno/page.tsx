@@ -27,7 +27,7 @@ import { AsesiPlenoItem, PlenoDetailData } from "@/types/types";
 
 const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
   {
-    id: "PLN-2026-001",
+    id: 1,
     batchCode: "BATCH-IT-2026-001",
     title: "Sidang Pleno Penetapan Uji Kompetensi Batch 1 Auditor Halal",
     skema: "Auditor Halal",
@@ -52,7 +52,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     ],
     asesiList: [
       {
-        id: "1",
+        id: 1,
         nik: "1217050001",
         nama: "Ahmad Hidayat",
         skema: "Auditor Halal",
@@ -62,7 +62,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         catatan: "Dokumen portofolio lengkap dan valid",
       },
       {
-        id: "2",
+        id: 2,
         nik: "1217050002",
         nama: "Budi Pratama",
         skema: "Auditor Halal",
@@ -72,7 +72,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         catatan: "Memenuhi seluruh elemen kriteria kerja",
       },
       {
-        id: "3",
+        id: 3,
         nik: "1217050003",
         nama: "Dina Larasati",
         skema: "Auditor Halal",
@@ -82,7 +82,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         catatan: "Belum melengkapi bukti kerja unit 3",
       },
       {
-        id: "4",
+        id: 4,
         nik: "1217050004",
         nama: "Eko Prasetyo",
         skema: "Auditor Halal",
@@ -92,7 +92,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         catatan: "Hasil wawancara dan observasi memuaskan",
       },
       {
-        id: "5",
+        id: 5,
         nik: "1217050005",
         nama: "Fitri Handayani",
         skema: "Auditor Halal",
@@ -102,7 +102,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         catatan: "Seluruh unit kompetensi terpenuhi",
       },
       {
-        id: "6",
+        id: 6,
         nik: "1217050006",
         nama: "Gitarja Nugraha",
         skema: "Auditor Halal",
@@ -114,7 +114,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     ],
   },
   {
-    id: "PLN-2026-002",
+    id: 2,
     batchCode: "BATCH-NET-2026-002",
     title: "Sidang Pleno Penetapan Hasil Kewirausahaan Industri Gelombang 2",
     skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -133,7 +133,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     ],
     asesiList: [
       {
-        id: "7",
+        id: 7,
         nik: "1217050007",
         nama: "Hendra Setiawan",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -142,7 +142,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         statusPleno: "K",
       },
       {
-        id: "8",
+        id: 8,
         nik: "1217050008",
         nama: "Indah Permata",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -151,7 +151,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         statusPleno: "K",
       },
       {
-        id: "9",
+        id: 9,
         nik: "1217050009",
         nama: "Joko Susilo",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -160,7 +160,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         statusPleno: "BK",
       },
       {
-        id: "10",
+        id: 10,
         nik: "1217050010",
         nama: "Kurnia Putri",
         skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -171,7 +171,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     ],
   },
   {
-    id: "PLN-2026-003",
+    id: 3,
     batchCode: "BATCH-PRG-2026-003",
     title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
     skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -191,7 +191,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
     ],
     asesiList: [
       {
-        id: "11",
+        id: 11,
         nik: "1217050011",
         nama: "Lani Wijaya",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -200,7 +200,7 @@ const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
         statusPleno: "K",
       },
       {
-        id: "12",
+        id: 12,
         nik: "1217050012",
         nama: "Muhammad Rizky",
         skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
@@ -220,7 +220,8 @@ export default function SidangPleno() {
   const [sessions, setSessions] = useState<PlenoDetailData[]>(() =>
     DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"),
   );
-  const [selectedPlenoId, setSelectedPlenoId] = useState<string | null>(null);
+  // Selected Pleno for Detail/Edit View
+  const [selectedPlenoId, setSelectedPlenoId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
 
@@ -681,7 +682,7 @@ export default function SidangPleno() {
   };
 
   // Handle Changing Candidate Status (K / BK)
-  const handleAsesiStatusChange = (asesiId: string, newStatus: "K" | "BK") => {
+  const handleAsesiStatusChange = (asesiId: number, newStatus: "K" | "BK") => {
     if (!formData) return;
     setFormData((prev) => {
       if (!prev) return null;
@@ -691,7 +692,7 @@ export default function SidangPleno() {
             return item as AsesiPlenoItem;
           }
           return {
-            id: String(item),
+            id: typeof item === "number" ? item : idx + 1,
             nik: `121705${1000 + idx}`,
             nama: `Asesi ${idx + 1}`,
             skema: prev.skema || "",
@@ -734,7 +735,7 @@ export default function SidangPleno() {
   };
 
   // Quick Action to complete plenary session directly from table
-  const handleCompletePlenoSession = (sessionId: string) => {
+  const handleCompletePlenoSession = (sessionId: number) => {
     setSessions((prev) => prev.filter((s) => s.id !== sessionId));
     if (selectedPlenoId === sessionId) {
       setSelectedPlenoId(null);
@@ -765,7 +766,7 @@ export default function SidangPleno() {
         return item as AsesiPlenoItem;
       }
       return {
-        id: String(item),
+        id: typeof item === "number" ? item : idx + 1,
         nik: `121705${1000 + idx}`,
         nama: `Asesi ${idx + 1}`,
         skema: formData?.skema || "",
@@ -975,7 +976,7 @@ export default function SidangPleno() {
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() =>
-                                setSelectedPlenoId(String(item.id))
+                                setSelectedPlenoId(item.id)
                               }
                               className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                               title="Detail Sidang Pleno"
@@ -998,7 +999,7 @@ export default function SidangPleno() {
                               ) : (
                                 <button
                                   onClick={() =>
-                                    handleCompletePlenoSession(String(item.id))
+                                    handleCompletePlenoSession(item.id)
                                   }
                                   className="bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                                   title="Tandai Sidang Pleno sebagai Selesai"
@@ -1056,7 +1057,7 @@ export default function SidangPleno() {
             {!readOnly && (
               <button
                 type="button"
-                onClick={() => handleCompletePlenoSession(String(formData.id))}
+                onClick={() => handleCompletePlenoSession(formData.id)}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs shrink-0"
                 title="Selesaikan Sidang Pleno dan hapus dari daftar"
               >

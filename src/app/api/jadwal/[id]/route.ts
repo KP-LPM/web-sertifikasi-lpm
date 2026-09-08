@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, context: Context) {
   }
 }
 
-export async function PATCH(request: NextRequest, context: Context) {
+export async function PUT(request: NextRequest, context: Context) {
   try {
     rateLimitApi(request, {
       limit: 20,
@@ -50,10 +50,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     const { id } = await context.params;
     const body = await request.json();
     const validatedData = UpdateJadwalSchema.parse(body);
-    const updatedJadwal = await jadwalService.update(
-      Number(id),
-      validatedData,
-    );
+    const updatedJadwal = await jadwalService.update(Number(id), validatedData);
 
     revalidatePath("/api/jadwal");
 

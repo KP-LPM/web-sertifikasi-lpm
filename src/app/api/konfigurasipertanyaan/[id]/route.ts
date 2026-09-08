@@ -11,6 +11,55 @@ type Context = { params: Promise<{ id: string }> };
 
 export const revalidate = 3600;
 
+export async function POST(request: NextRequest, context: Context) {
+  try {
+    rateLimitApi(request, {
+      limit: 20,
+      windowMs: 60 * 1000,
+      key: "post-publish-konfigurasi-soal", 
+    });
+
+    // const token = await getToken({ req: request });
+    // if (!token || (token.role !== "asesor" && token.role !== "admin")) {
+    //   return sendResponse(
+    //     403,
+    //     "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
+    //   );
+    // }
+
+    // 2. Await params dan validasi ID
+    const { id } = await context.params;
+    const konfigurasiId = Number(id);
+
+    if (isNaN(konfigurasiId)) {
+      return sendResponse(400, "ID konfigurasi tidak valid.");
+    }
+
+    const result = await konfigurasiService.publish(konfigurasiId);
+
+    revalidatePath("/api/konfigurasipertanyaan");
+
+    return sendResponse(
+      200,
+      "Konfigurasi berhasil diterbitkan (Published)",
+      result,
+    );
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return sendResponse(
+        error.status,
+        "Terlalu banyak permintaan. Silakan coba sesaat lagi.",
+      );
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
+
+    console.error("[POST /api/konfigurasipertanyaan/[id]/publish]", error);
+    return sendResponse(500, "Internal server error");
+  }
+}
+
 export async function GET(request: NextRequest, context: Context) {
   try {
     rateLimitApi(request, {
@@ -34,13 +83,20 @@ export async function GET(request: NextRequest, context: Context) {
   }
 }
 
-export async function PATCH(request: NextRequest, context: Context) {
+export async function PUT(request: NextRequest, context: Context) {
   try {
     rateLimitApi(request, {
       limit: 20,
       windowMs: 60 * 1000,
       key: "update-konfigurasi-pertanyaan",
     });
+    // const token = await getToken({ req: request });
+    // if (!token || (token.role !== "asesor" && token.role !== "admin")) {
+    //   return sendResponse(
+    //     403,
+    //     "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
+    //   );
+    // }
     const { id } = await context.params;
     const body = await request.json();
     const validatedData = UpdateKonfigurasiMainSchema.parse(body);

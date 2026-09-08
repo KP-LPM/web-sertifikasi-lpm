@@ -11,13 +11,19 @@ export const PenyusunSchema = z.object({
 });
 
 export const Step1OpsiSchema = z.object({
+  urutan: z.number().int().optional(),
   opsi_text: z.string().trim().min(1),
   is_valid: z.boolean().default(false),
 });
 
 export const Step1PertanyaanSchema = z.object({
+  urutan: z.number().int().optional(),
   pertanyaan_text: z.string().trim().min(1, "Pertanyaan wajib diisi"),
   opsi: z.array(Step1OpsiSchema).default([]),
+});
+
+export const UpdateStep1Schema = z.object({
+  pertanyaan: z.array(Step1PertanyaanSchema),
 });
 
 export const Step2SkenarioSchema = z.object({
@@ -31,20 +37,30 @@ export const Step2SkenarioSchema = z.object({
 });
 
 export const Step3SubPertanyaanSchema = z.object({
+  urutan: z.number().int().optional(),
   skenario_pertanyaan: z.string().trim().min(1),
   kode_kuk: JsonArray,
   ekspektasi_tanggapan: z.string().optional().nullable(),
 });
 
 export const Step3LingkupSchema = z.object({
+  urutan: z.number().int().optional(),
   nama_lingkup: z.string().trim().min(1),
   sub_pertanyaan: z.array(Step3SubPertanyaanSchema).default([]),
 });
 
 export const Step4PertanyaanSchema = z.object({
+  urutan: z.number().int().optional(),
   kode_kuk_ref: z.string().optional().nullable(),
   pertanyaan_lisan: z.string().trim().min(1),
   kunci_jawaban: z.string().optional().nullable(),
+});
+
+export const UpdateStep3Schema = z.object({
+  lingkup: z.array(Step3LingkupSchema),
+});
+export const UpdateStep4Schema = z.object({
+  pertanyaan_lisan: z.array(Step4PertanyaanSchema),
 });
 
 // --- SCHEMAS MAIN & PAYLOADS ---
@@ -64,7 +80,6 @@ export const CreateKonfigurasiSchema = z.object({
   step4: z.array(Step4PertanyaanSchema).default([]),
 });
 
-// Update main config (hanya kolom utamanya saja, tanpa steps)
 export const UpdateKonfigurasiMainSchema =
   CreateKonfigurasiSchema.partial().omit({
     penyusun: true,
@@ -80,6 +95,9 @@ export type UpdateKonfigurasiMainInput = z.infer<
   typeof UpdateKonfigurasiMainSchema
 >;
 export type Step1Input = z.infer<typeof Step1PertanyaanSchema>;
+export type UpdateStep1Input = z.infer<typeof UpdateStep1Schema>;
 export type Step2Input = z.infer<typeof Step2SkenarioSchema>;
 export type Step3Input = z.infer<typeof Step3LingkupSchema>;
+export type UpdateStep3Input = z.infer<typeof UpdateStep3Schema>;
 export type Step4Input = z.infer<typeof Step4PertanyaanSchema>;
+export type UpdateStep4Input = z.infer<typeof UpdateStep4Schema>;

@@ -41,10 +41,10 @@ export function EFormApl02({
           asesor: formData.asesorName,
           asesorReg: formData.asesorReg,
         }}
-        units={formData.schemeDetail?.units?.map((u) => ({
+        units={formData.schemeDetail?.units?.map((u: any) => ({
           code: u.unitCode || u.kode || "",
           title: u.unitTitle || u.judul || "",
-          elemen: (u.elemen || []).map((e) => ({
+          elemen: (u.elemen || []).map((e: any) => ({
             title: e.title || e.nama || "",
             kuk: e.kuk || [],
           })),
@@ -63,8 +63,16 @@ export function EFormApl02({
         onAsesiSignatureChange={(sig) =>
           !formData.isAdmin && onChange({ ...formData, ttdAsesi: sig })
         }
-        asesorName={formData.asesorName}
-        asesorReg={formData.asesorReg}
+        asesorName={
+          typeof formData.asesorName === "string"
+            ? formData.asesorName
+            : undefined
+        }
+        asesorReg={
+          typeof formData.asesorReg === "string"
+            ? formData.asesorReg
+            : undefined
+        }
         asesorSignature={
           typeof formData.ttdAsesor === "string"
             ? formData.ttdAsesor

@@ -161,16 +161,17 @@ export default function AssessmentSchedule() {
     user?.role === "komite_skema";
   const readOnly = user?.role !== "admin";
 
-  const [confirmAsesmenId, setConfirmAsesmenId] = useState<string | null>(null);
-  const [confirmPlenoId, setConfirmPlenoId] = useState<string | null>(null);
+  const [confirmAsesmenId, setConfirmAsesmenId] = useState<number | null>(null);
+  const [confirmPlenoId, setConfirmPlenoId] = useState<number | null>(null);
 
   // Pleno State
   const [isPlenoModalOpen, setIsPlenoModalOpen] = useState(false);
   const [isGeneratePenugasanModalOpen, setIsGeneratePenugasanModalOpen] =
     useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [editId, setEditId] = useState<string | number | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
@@ -269,7 +270,8 @@ export default function AssessmentSchedule() {
     setIsPreviewMode(true);
     setEditId(item.id);
     setPlenoForm({
-      id: String(item.id),
+      id: item.id,
+      batchCode: item.batchCode || `PLN-${item.id}`,
       tanggal: item.tanggal,
       waktu: item.waktu?.split(" s.d ")[0] || "",
       skema: item.skema,
@@ -283,11 +285,11 @@ export default function AssessmentSchedule() {
     setIsPlenoModalOpen(true);
   };
 
-  const handleDeletePleno = (id: string) => {
+  const handleDeletePleno = (id: number) => {
     deletePlenoSession(id);
   };
 
-  const handleDeleteSchedule = (id: string) => {
+  const handleDeleteSchedule = (id: number) => {
     setSchedules(schedules.filter((s) => s.id !== id));
   };
 
@@ -339,7 +341,7 @@ export default function AssessmentSchedule() {
   // Asesmen State
   const [schedules, setSchedules] = useState<ScheduleItem[]>([
     {
-      id: "1",
+      id: 1,
       namaBatch: "BATCH-IT-2026-001",
       nomorSurat: "ST/LSP-P1/BATCH-001/2026",
       skema: "Auditor Halal",
@@ -356,7 +358,7 @@ export default function AssessmentSchedule() {
       asesiList: [1, 5],
     },
     {
-      id: "2",
+      id: 2,
       namaBatch: "BATCH-NET-2026-002",
       nomorSurat: "ST/LSP-P1/BATCH-002/2026",
       skema: "Jenjang 5 Bidang Kewirausahaan Industri",
@@ -374,9 +376,8 @@ export default function AssessmentSchedule() {
     },
   ]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsesiForJadwal, setSelectedAsesiForJadwal] = useState<
-    (string | number)[]
+    number[]
   >([]);
   const [formData, setFormData] = useState({
     namaBatch: "",
@@ -427,7 +428,7 @@ export default function AssessmentSchedule() {
       );
     } else {
       const newSchedule = {
-        id: String(schedules.length + 1), // <-- Konversi ke string di sini
+        id: schedules.length + 1,
         ...formData,
         inisialAsesor: formData.namaAsesor
           .split(" ")
@@ -488,7 +489,8 @@ export default function AssessmentSchedule() {
   } | null>(null);
 
   const [plenoForm, setPlenoForm] = useState<{
-    id: string;
+    id?: number;
+    batchCode?: string;
     tanggal: string;
     waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
     skema: string;
@@ -498,7 +500,8 @@ export default function AssessmentSchedule() {
     suratPlenoName?: string;
     suratPlenoUrl?: string;
   }>({
-    id: "",
+    id: undefined,
+    batchCode: "",
     tanggal: "",
     waktu: "",
     skema: "",
@@ -566,7 +569,8 @@ export default function AssessmentSchedule() {
 
     const newPleno: PlenoDetailData = {
       ...restPlenoForm,
-      id: String(restPlenoForm.id || editId || Date.now()), // Gunakan Date.now()
+      id: editId ?? Date.now(),
+      batchCode: plenoForm.batchCode || `PLN-${editId ?? Date.now()}`,
       skema: skemaLabel,
       waktu: plenoForm.waktu,
       status: "Terjadwal",
@@ -581,6 +585,7 @@ export default function AssessmentSchedule() {
     // Buat payload yang sesuai dengan format PlenoSchedule
     const schedulePayload: PlenoSchedule = {
       id: newPleno.id,
+      batchCode: newPleno.batchCode,
       tanggal: newPleno.tanggal,
       waktu: newPleno.waktu,
       skema: newPleno.skema,
@@ -593,15 +598,16 @@ export default function AssessmentSchedule() {
       asesiList: newPleno.asesiList.map((a) => a.nama),
     };
 
-    if (isEditMode && editId) {
-      updatePlenoSession(String(editId), schedulePayload);
+    if (isEditMode && editId !== null) {
+      updatePlenoSession(editId, schedulePayload);
     } else {
       addPlenoSession(schedulePayload);
     }
 
     setIsPlenoModalOpen(false);
     setPlenoForm({
-      id: "", // Will be uptanggald on next open
+      id: undefined,
+      batchCode: "",
       tanggal: "",
       waktu: "",
       skema: "",
@@ -616,7 +622,7 @@ export default function AssessmentSchedule() {
 
   const filteredPleno = plenoSessions.filter(
     (item) =>
-      (item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (String(item.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.skema.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (filterStatus === "Semua" || item.status === filterStatus),
   );
@@ -1098,9 +1104,9 @@ export default function AssessmentSchedule() {
                 </label>
                 <input
                   type="text"
-                  value={plenoForm.id}
+                  value={plenoForm.batchCode || ""}
                   onChange={(e) =>
-                    setPlenoForm({ ...plenoForm, id: e.target.value })
+                    setPlenoForm({ ...plenoForm, batchCode: e.target.value })
                   }
                   disabled={isPreviewMode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
@@ -1582,7 +1588,8 @@ export default function AssessmentSchedule() {
                   setIsPreviewMode(false);
                   setIsEditMode(false);
                   setPlenoForm({
-                    id: "",
+                    id: undefined,
+                    batchCode: "",
                     tanggal: "",
                     waktu: "",
                     skema: "",

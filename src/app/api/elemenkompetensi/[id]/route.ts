@@ -22,10 +22,7 @@ export async function PATCH(request: NextRequest, context: Context) {
 
     const { id } = await context.params;
     const body = await request.json();
-    const result = await skemaService.updateElemenKompetensi(
-      Number(id),
-      body,
-    );
+    const result = await skemaService.updateElemenKompetensi(Number(id), body);
 
     revalidatePath("/api/skema");
 

@@ -1,5 +1,9 @@
 // ============================================================================
 // COMBINED TYPES & INTERFACES (Admin, asesor, Asesi)
+//
+// CATATAN AUDIT ID (lihat percakapan): semua field `id` yang merujuk baris
+// di database (Prisma id serial/Int) diubah dari `string` menjadi `number`.
+// Pengecualian yang SENGAJA tetap `string` diberi komentar penjelasan.
 // ============================================================================
 
 // CONTEXT
@@ -29,20 +33,21 @@ export interface PenyusunOption {
   label: string;
 }
 
+// --- Modul soal legacy (kemungkinan sudah digantikan KonfigurasiPertanyaanItem) ---
 export interface QuestionOptionItem {
-  id: string;
+  id: string; // ID sementara UI (react key), belum tentu map ke tabel
   text: string;
   isCorrect?: boolean;
 }
 
 export interface PertanyaanAsesmenQuestion {
-  id: string;
+  id: string; // ID sementara UI
   text: string;
   options: QuestionOptionItem[];
 }
 
 export interface PertanyaanAsesmenItem {
-  id: string;
+  id: number; // map ke konfigurasi_pertanyaan.id (integer)
   nama: string;
   skema: string;
   tipeForm: string;
@@ -52,7 +57,7 @@ export interface PertanyaanAsesmenItem {
 }
 
 export interface KonfigurasiPertanyaanItem {
-  id: string;
+  id: number; // konfigurasi_pertanyaan.id
   nama: string;
   skema: string;
   tipeForm: string;
@@ -79,7 +84,7 @@ export type SubJenisSurat =
   | "sertifikat_kompetensi";
 
 export interface SuratItem {
-  id: string;
+  id: number; // surat.id
   nomorSurat: string;
   judul: string;
   kategori: KategoriSurat;
@@ -116,20 +121,22 @@ export interface SuratItem {
 }
 
 export interface User {
-  id: string; // NextAuth selalu string, walau Prisma Int — dikonversi saat sign-in callback
+  id: string; // SENGAJA string — NextAuth selalu serialize id jadi string di
+  // JWT/session, walau kolom asli di Prisma Int. Dikonversi
+  // Number(session.user.id) tiap kali dipakai buat query Prisma.
   username: string;
   email: string;
-  role: Role; // samakan dengan Prisma enum Role
+  role: Role;
   avatar?: string;
 }
 
 export interface UserItem {
-  id?: string;
+  id?: number; // users.id
   username: string;
   namaLengkap: string | ""; // dari ProfilPengguna.namaLengkap
   email: string; // dari User.email
   role: Role;
-  status: "Aktif" | "Nonaktif" | string; // computed
+  status: "Aktif" | "Nonaktif" | string; // computed dari isActive
   nik?: string;
   tempPassword?: string;
   verificationData?: UserVerificationData;
@@ -153,14 +160,14 @@ export interface UserVerificationData {
   asesorReg?: string;
   penyusun?: string | string[] | PenyusunValidatorItem[] | unknown;
   validator?: string | string[] | PenyusunValidatorItem[] | unknown;
-  assignedAsesorId?: string;
+  assignedAsesorId?: number; // users.id
   statusPembayaran?: "Sudah" | "Belum" | string;
   sumberAnggaran?: string;
   [key: string]: unknown;
 }
 
 export interface AsesiPlenoRecord {
-  id: string;
+  id: number; // pleno_asesi.id
   nama: string;
   nik: string;
   skema: string;
@@ -172,7 +179,7 @@ export interface AsesiPlenoRecord {
 }
 
 export interface PlenoSchedule {
-  id: string;
+  id: number; // pleno_batch.id
   batchCode?: string;
   title?: string;
   tanggal: string;
@@ -180,7 +187,7 @@ export interface PlenoSchedule {
   jenisTuk?: TipeTuk;
   skema: string;
   jumlahAsesi: number;
-  status: "Terjadwal" | "Menunggu Persetujuan" | "Selesai" | string;
+  status: "Belum Selesai" | "Selesai" | string;
   alamat: string;
   detailAlamat: string;
   deskripsi: string;
@@ -194,20 +201,20 @@ export interface PlenoSchedule {
 //    asesiList berisi objek lengkap AsesiPlenoRecord
 // ============================================================
 export interface PlenoGroup {
-  plenoId: string;
+  plenoId: number; // pleno_batch.id
   plenoTitle: string;
   skemaList: string[];
   tanggal: string;
   waktu: string;
   lokasi: string;
   isOnline: boolean;
-  status: "Terjadwal" | "Selesai" | string;
+  status: "Belum Selesai" | "Selesai" | string;
   asesiList: AsesiPlenoRecord[];
   plenoAttendees?: PlenoAttendee[];
 }
 
 export interface PlenoDetailData {
-  id: string;
+  id: number; // pleno_batch.id
   batchCode?: string;
   title?: string;
   skema: string;
@@ -222,7 +229,7 @@ export interface PlenoDetailData {
   linkSuratBeritaPleno?: string;
   linkSuratKeputusanDirektur?: string;
   linkSuratBlankoBNSP?: string;
-  status: "Draft" | "Belum Ditetapkan" | "Selesai" | string;
+  status: "Belum Selesai" | "Selesai" | string;
   asesiList: AsesiPlenoItem[];
   plenoAttendees?: PlenoAttendee[];
   deskripsi?: string;
@@ -230,7 +237,7 @@ export interface PlenoDetailData {
 }
 
 export interface AsesiPlenoItem {
-  id: string;
+  id: number; // pleno_asesi.id
   nik: string;
   nama: string;
   skema: string;
@@ -248,7 +255,7 @@ export interface PlenoAttendee {
 export type TukDetailItem = TukItem;
 
 export interface PersyaratanDasar {
-  id?: number;
+  id?: number; // master_persyaratan_dasar.id — sudah benar sebelumnya
   namaDokumen: string;
   deskripsi?: string;
   urutan?: number;
@@ -256,7 +263,7 @@ export interface PersyaratanDasar {
 }
 
 export interface PersyaratanAdministrasi {
-  id: string;
+  id: number; // master_bukti_administratif.id
   namaDokumen: string;
   deskripsi?: string;
   isWajib: boolean;
@@ -264,17 +271,17 @@ export interface PersyaratanAdministrasi {
 }
 
 export interface ElemenKompetensiItem {
-  id?: string;
-  namaElemen: string; // sebelumnya ada 2 nama beda: "judul" & "nama" — disatukan
-  kriteriaUnjukKerja: string[]; // sebelumnya "kuk" — disatukan penamaannya
+  id?: number; // master_elemen_kompetensi.id
+  namaElemen: string;
+  kriteriaUnjukKerja: string[];
   urutan: number;
-  isWajib: boolean; // disamakan gaya penamaan camelCase (sebelumnya is_wajib)
+  isWajib: boolean;
 }
 
 export interface UnitKompetensiItem {
-  id?: string;
-  kodeUnit: string; // sebelumnya "kode" — disatukan jadi "kodeUnit"
-  judulUnit: string; // sebelumnya "judul" — disatukan jadi "judulUnit"
+  id?: number; // master_unit_kompetensi.id
+  kodeUnit: string;
+  judulUnit: string;
   urutan: number;
   elemen: ElemenKompetensiItem[];
 }
@@ -288,7 +295,7 @@ export interface MasterSkemaFormState {
   persyaratanDasar: PersyaratanDasar[];
   persyaratanAdministrasi: PersyaratanAdministrasi[];
   unitKompetensi: UnitKompetensiItem[];
-  konfigurasiSoalId?: string;
+  konfigurasiSoalId?: number; // konfigurasi_pertanyaan.id
 }
 
 export interface MasterSkemaElemenPayload {
@@ -308,7 +315,7 @@ export interface MasterSkemaUnitPayload {
 }
 
 export interface MasterSkemaPayload {
-  id?: string;
+  id?: number; // master_skema.id
   kodeSkema: string;
   namaSkema: string;
   nomorSertifikat?: string;
@@ -317,12 +324,12 @@ export interface MasterSkemaPayload {
   persyaratanDasar?: PersyaratanDasar[];
   persyaratanAdministrasi?: PersyaratanAdministrasi[];
   unitKompetensi?: MasterSkemaUnitPayload[];
-  konfigurasiSoalId?: string;
+  konfigurasiSoalId?: number; // konfigurasi_pertanyaan.id
 }
 
 export interface ScheduleItem {
-  id: string;
-  kodeBatch?: string; // tambahkan, disamakan dari BatchGroup
+  id: number; // jadwal_asesmen.id
+  kodeBatch?: string;
   namaBatch?: string;
   nomorSurat?: string;
   skema?: string;
@@ -331,7 +338,7 @@ export interface ScheduleItem {
   waktuMulai?: string;
   tipeTuk: TipeTuk;
   alamat?: string;
-  linkVideo?: string; // tambahkan, supaya field ini tidak hilang saat dipakai lintas konteks
+  linkVideo?: string;
   totalKandidat?: number;
   namaAsesor?: string;
   inisialAsesor?: string;
@@ -339,7 +346,7 @@ export interface ScheduleItem {
   suratTugasName?: string;
   suratTugasUrl?: string;
   status: string;
-  asesiList?: (number | string)[]; // tetap ringkas di sini
+  asesiList?: number[]; // pengajuan_skema.id[] — sebelumnya (number|string)[]
 }
 
 export interface TukInventarisItem {
@@ -348,7 +355,7 @@ export interface TukInventarisItem {
 }
 
 export interface TukItem {
-  id: string;
+  id: number; // master_tuk.id
   nama?: string;
   keterangan?: string;
   tipe?: "Sewaktu" | "Mandiri" | "Terverifikasi" | string;
@@ -360,7 +367,7 @@ export interface TukItem {
 }
 
 export interface SchemeItem {
-  id: string;
+  id: number; // master_skema.id
   kode: string;
   nama: string;
   kategori: string;
@@ -386,10 +393,12 @@ export interface RequirementItem {
 export type RequirementType = string | RequirementItem;
 
 export interface SchemeDetailInfo {
-  id?: string;
+  id?: number; // master_skema.id
   nama?: string;
+  name?: string;
   kode?: string;
-  units?: UnitKompetensiItem[];
+  code?: string;
+  units?: any[];
   persyaratanDasar?: PersyaratanDasar[];
   buktiAdministratif?: PersyaratanAdministrasi[];
   buktiKompetensi?: RequirementType[];
@@ -428,7 +437,7 @@ export interface Apl01FormData {
 }
 
 export interface EFormApl02FormData extends Apl02FormData {
-  id?: string | number;
+  id?: number; // pengajuan_skema.id / apl02_penilaian.id — disatukan ke number
   metode?: string;
   status?: string;
 }
@@ -440,7 +449,9 @@ export interface EFormApl02Props {
 }
 
 export interface EvidenceFileItem {
-  id?: string;
+  id?: string; // SENGAJA string — ID sementara sebelum file selesai diupload
+  // (biasanya crypto.randomUUID() di client), belum tentu
+  // sudah punya row database.
   nama?: string;
   url?: string;
   file?: File;
@@ -453,6 +464,7 @@ export interface Apl02FormData {
   ttdAsesor?: string | null | Record<string, null> | unknown;
   ttdAsesi?: string | null | Record<string, null> | unknown;
   namaAsesor?: string;
+  asesorName?: string;
   asesorReg?: string;
   penyusun?: string | PenyusunValidatorItem[] | unknown;
   validator?: string | PenyusunValidatorItem[] | unknown;
@@ -463,13 +475,15 @@ export interface Apl02FormData {
   tipeTuk?: TipeTuk;
   tanggal?: string;
   detailSkema?: SchemeDetailInfo;
+  schemeDetail?: SchemeDetailInfo;
   readOnly?: boolean;
   signature?: string;
+  tuk?: string;
   [key: string]: unknown;
 }
 
 export interface CompletedBatchAsesi {
-  id?: string;
+  id?: number; // pengajuan_skema.id
   nama: string;
   nik: string;
   hasil: string;
@@ -498,9 +512,31 @@ export interface StatCardProps {
   value: string | number;
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   color?: "blue" | "indigo" | "emerald" | "amber" | string;
-  theme?: "sky" | "amber" | "emerald" | "indigo" | string; // tambahkan
+  theme?: "sky" | "amber" | "emerald" | "indigo" | string;
   subtext?: string;
-  onClick?: () => void; // tambahkan
+  onClick?: () => void;
+}
+
+export interface Scheme {
+  id: number;
+  code: string;
+  name: string;
+  category: string;
+  status: "Active" | "Draft" | "Archived" | string;
+  applicantsCount?: number;
+  nama?: string;
+  kode?: string;
+  kategori?: string;
+  totalPendaftar?: number;
+}
+
+export interface ExamSession {
+  id: number;
+  date: string;
+  time: string;
+  title: string;
+  subtitle: string;
+  type: string;
 }
 
 export interface SchemeCardProps {
@@ -541,7 +577,7 @@ export interface CustomTooltipProps {
 }
 
 export interface PendingVerificationActivity {
-  id: string;
+  id: number; // pengajuan_skema.id
   asesiName: string;
   email: string;
   skema: string;
@@ -556,7 +592,7 @@ export interface PendingVerificationActivity {
 // ----------------------------------------------------------------------------
 
 export interface PortfolioItem {
-  id: string;
+  id: number; // portfolio_asesor.id
   skema: string;
   namaDokumen: string;
   statusAsesor?: "Asesor dari UIN Bandung" | "Asesor dari Luar";
@@ -573,7 +609,7 @@ export interface PortfolioItem {
 }
 
 export interface Candidate {
-  id: string;
+  id: number; // pengajuan_skema.id
   nik?: string;
   nama: string;
   skema: string;
@@ -589,10 +625,11 @@ export interface Candidate {
   statusAsesmen?:
     "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | "Proses" | string;
   linkVideo?: string;
+  avatar?: string;
 }
 
 export interface BatchDetail extends Omit<ScheduleItem, "asesiList"> {
-  candidates: Candidate[]; // versi detail, hasil fetch berdasarkan asesiList dari ScheduleItem
+  candidates: Candidate[];
 }
 
 export interface ConfigurationMetadata {
@@ -604,14 +641,17 @@ export interface ConfigurationMetadata {
   isDefault: boolean;
 }
 
+// --- Wizard state (BELUM tersimpan ke DB) — id boleh tetap string
+// (react key / crypto.randomUUID()) selama masih tahap editing di client ---
+
 export interface ChecklistOption {
-  id: string;
+  id: string; // ID sementara UI selama editing wizard
   text: string;
   isValid: boolean;
 }
 
 export interface Step1Question {
-  id: string;
+  id: string; // ID sementara UI
   pertanyaanText: string;
   options: ChecklistOption[];
 }
@@ -641,14 +681,14 @@ export interface Step2Data {
 }
 
 export interface Step3SubPertanyaan {
-  id: string;
+  id: string; // ID sementara UI
   skenarioPertanyaan: string;
   kodeKUK: string[];
   ekspektasiTanggapan: string;
 }
 
 export interface Step3LingkupPenyajian {
-  id: string;
+  id: string; // ID sementara UI
   namaLingkup: string;
   subPertanyaans: Step3SubPertanyaan[];
 }
@@ -659,7 +699,7 @@ export interface Step3Data {
 }
 
 export interface Step4Question {
-  id: string;
+  id: string; // ID sementara UI
   kodeKUKRef: string;
   pertanyaanLisan: string;
   kunciJawaban: string;
@@ -679,7 +719,7 @@ export interface WizardFormState {
 }
 
 export interface QuestionConfigItem {
-  id: string;
+  id: number; // konfigurasi_pertanyaan.id
   nama: string;
   skema: string;
   versi: string;
@@ -690,7 +730,7 @@ export interface QuestionConfigItem {
 }
 
 export interface AssessmentItem {
-  id: string;
+  id: number; // hasil_asesmen.id (atau pengajuan_skema.id, sesuaikan sumber data)
   nik: string;
   nama: string;
   skema: string;
@@ -713,12 +753,14 @@ export interface AssessmentItem {
   linkVideo?: string;
 }
 
+export type Assessment = Partial<AssessmentItem> & { [key: string]: unknown };
+
 // ----------------------------------------------------------------------------
 // 3. ASESI TYPES & INTERFACES
 // ----------------------------------------------------------------------------
 
 export interface RegisteredAssessment {
-  id: string;
+  id: number; // pengajuan_skema.id
   asesmen: string;
   skemaSertifikasi: string;
   tipeTuk: TipeTuk;
@@ -732,7 +774,7 @@ export interface RegisteredAssessment {
 }
 
 export interface AssessmentHistory {
-  id: string;
+  id: number; // pengajuan_skema.id
   asesmen: string;
   skemaSertifikasi: string;
   tipeTuk: TipeTuk;
@@ -746,7 +788,7 @@ export interface AssessmentHistory {
 }
 
 export interface AppealRecord {
-  id: string;
+  id: number; // pengajuan_banding.id
   tanggalPengajuan: string;
   namaAsesi: string;
   asesmen: string;
@@ -764,7 +806,7 @@ export interface AppealRecord {
 }
 
 export interface Profile {
-  id: string;
+  id: number; // profil_pengguna.id
   name: string;
   kode: string;
   date: string;
@@ -799,7 +841,8 @@ export interface Profile {
 }
 
 export interface KompetensiItem {
-  id: string;
+  id: string; // SENGAJA string — ID komposit (mis. "unit1-elemen2"),
+  // bukan PK asli satu tabel tunggal.
   unitTitle: string;
   unitCode: string;
   elemen: string;
@@ -808,7 +851,7 @@ export interface KompetensiItem {
 }
 
 export interface FormDocumentItem {
-  id?: string | number;
+  id?: string | number; // dibiarkan fleksibel — dipakai lintas konteks berbeda
   nama?: string;
   deskripsi?: string;
   tipe?: string;
@@ -846,7 +889,7 @@ export interface DokumenPengajuan {
 }
 
 export interface PengajuanPayload {
-  userId?: string;
+  userId?: number; // users.id
   code: string;
   tuk: string;
 

@@ -64,7 +64,6 @@ export class SkemaService {
     const skema = await this.getSkemaById(skemaId);
     if (!skema) throw new NotFoundError("Skema tidak ditemukan.");
 
-    // PERBAIKAN: Gunakan repository, bukan memanggil fungsi ini lagi
     return await this.skemaRepository.addPersyaratanDasar(skemaId, data);
   }
 

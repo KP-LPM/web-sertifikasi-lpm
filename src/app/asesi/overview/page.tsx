@@ -21,7 +21,7 @@ import type { RegisteredAssessment } from "@/types/types";
 
 const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
   {
-    id: "1",
+    id: 1,
     asesmen: "Uji Kompetensi",
     skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
     tipeTuk: "Mandiri",
@@ -34,7 +34,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     statusAsesmen: "Selesai",
   },
   {
-    id: "2",
+    id: 2,
     asesmen: "Uji Teori & Praktik",
     skemaSertifikasi: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     tipeTuk: "Sewaktu",
@@ -47,7 +47,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     statusAsesmen: "Selesai",
   },
   {
-    id: "3",
+    id: 3,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penerjemah Teks Umum",
     tipeTuk: "Mandiri",
@@ -60,7 +60,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     statusAsesmen: "Terjadwal",
   },
   {
-    id: "4",
+    id: 4,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Auditor Halal",
     tipeTuk: "Mandiri",
@@ -73,7 +73,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     statusAsesmen: "Terjadwal",
   },
   {
-    id: "5",
+    id: 5,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penyelia Halal",
     tipeTuk: "Mandiri",
