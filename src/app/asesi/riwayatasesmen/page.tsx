@@ -316,7 +316,7 @@ export default function AsesiHistoryPage() {
         )}
 
         <div className="w-full space-y-6 text-sm text-gray-700">
-          <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => {
                 setIsBandingFormOpen(false);
@@ -328,7 +328,7 @@ export default function AsesiHistoryPage() {
             >
               <ArrowLeft size={18} />
             </button>
-            <div className="max-w-200 mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
+            <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
                   <Scale className="text-[#008BE3]" size={20} /> Form Ajukan

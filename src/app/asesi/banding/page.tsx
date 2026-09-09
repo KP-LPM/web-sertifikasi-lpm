@@ -162,7 +162,7 @@ export default function AsesiAppeals() {
   if (selectedAppeal) {
     return (
       <div className="min-h-screen bg-slate-100 p-4 md:p-8 pb-24 w-full">
-        <div className="max-w-200 mx-auto animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-full max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button 
                 onClick={() => setSelectedAppeal(null)}
@@ -172,7 +172,7 @@ export default function AsesiAppeals() {
                 <ArrowLeft size={18} />
               </button>
             </div>
-            <div className="max-w-200 mx-auto bg-white shadow-xl p-8 md:p-12 min-h-280.75 space-y-8 relative mb-8 text-slate-800 text-sm">
+            <div className="w-full max-w-6xl mx-auto bg-white shadow-xl p-8 md:p-12 min-h-280.75 space-y-8 relative mb-8 text-slate-800 text-sm">
               
               <div className="flex items-center justify-between p-3.5 rounded-lg bg-white border border-slate-100 mb-4">
                 <span className="text-xs font-bold text-slate-500">Status Tindak Lanjut</span>
