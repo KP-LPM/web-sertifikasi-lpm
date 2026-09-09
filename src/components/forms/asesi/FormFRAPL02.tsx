@@ -1,6 +1,12 @@
 import React from "react";
 import { FormFRAPL02 } from "@/components/forms/FormFRAPL02";
-import { EFormApl02Props } from "@/types/types";
+import {
+  EFormApl02Props,
+  SchemeDetailUnit,
+  SchemeDetailUnitElemen,
+  UnitKompetensiItem,
+  ElemenKompetensiItem,
+} from "@/types/types";
 
 export function EFormApl02({
   formData,
@@ -41,14 +47,29 @@ export function EFormApl02({
           asesor: formData.asesorName,
           asesorReg: formData.asesorReg,
         }}
-        units={formData.schemeDetail?.units?.map((u: any) => ({
-          code: u.unitCode || u.kode || "",
-          title: u.unitTitle || u.judul || "",
-          elemen: (u.elemen || []).map((e: any) => ({
-            title: e.title || e.nama || "",
-            kuk: e.kuk || [],
-          })),
-        }))}
+        units={formData.schemeDetail?.units?.map((u) => {
+          const unit = u as SchemeDetailUnit & Partial<UnitKompetensiItem>;
+          return {
+            code: unit.unitCode || unit.kode || unit.kodeUnit || "",
+            title: unit.unitTitle || unit.judul || unit.judulUnit || "",
+            elemen: (
+              (unit.elemen || []) as (
+                | SchemeDetailUnitElemen
+                | ElemenKompetensiItem
+              )[]
+            ).map((e) => {
+              const elem = e as SchemeDetailUnitElemen &
+                Partial<ElemenKompetensiItem>;
+              return {
+                title: elem.title || elem.nama || elem.namaElemen || "",
+                kuk: (elem.kuk ||
+                  (Array.isArray(elem.kriteriaUnjukKerja)
+                    ? elem.kriteriaUnjukKerja
+                    : [])) as string[],
+              };
+            }),
+          };
+        })}
         answers={(formData.kompetensi as Record<string, "K" | "BK">) || {}}
         onAnswerChange={(key, val) => toggleK(key, val === "K")}
         evidenceFiles={allData}

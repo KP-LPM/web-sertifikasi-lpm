@@ -42,7 +42,13 @@ import {
   DATA_PENDIDIKAN,
   DATA_INSTANSI,
 } from "@/data/rujukan";
-import { getUsersProfile } from "@/lib/api";
+import {
+  getUsersProfile,
+  getPengajuanList,
+  createPengajuan,
+  getPengajuanDetail,
+  deletePengajuan,
+} from "@/lib/api";
 
 // --- INTERFACE UNTUK DATA RUJUKAN ---
 interface RujukanItem {
@@ -116,7 +122,17 @@ export default function PengajuanSkemaPage() {
   );
 
   const [selectedDetailSubmission, setSelectedDetailSubmission] =
-    useState<Profile | null>(null);
+    useState<
+      | (Profile & {
+        dokumenList?: Array<{
+          id: number;
+          namaDokumen: string;
+          fileUrl: string;
+        }>;
+      })
+      | null
+    >(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
 
   React.useEffect(() => {
     const handleReset = () => setSubView("list");
@@ -189,23 +205,115 @@ export default function PengajuanSkemaPage() {
 
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
-  const [submissions] = useState<Profile[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("lsp_submissions");
-      if (saved) {
-        const parsed = JSON.parse(saved) as Profile[];
-        const filtered = parsed.filter(
-          (p: Profile) => p.name !== "Pelayanan Pelanggan",
-        );
-        if (filtered.length !== parsed.length) {
-          localStorage.setItem("lsp_submissions", JSON.stringify(filtered));
-          return filtered;
-        }
-        return parsed;
+  const [submissions, setSubmissions] = useState<Profile[]>([]);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
+
+  const fetchSubmissions = React.useCallback(async () => {
+    setIsLoadingSubmissions(true);
+    try {
+      const data = await getPengajuanList();
+      if (Array.isArray(data)) {
+        const mappedList: Profile[] = (data as Array<{
+          id: number;
+          nomorPengajuan?: string;
+          status: string;
+          tuk?: string;
+          createdAt: string | Date;
+          skema?: { id?: number; namaSkema?: string; kodeSkema?: string };
+          user?: { username?: string; email?: string };
+          dataPribadi?: {
+            namaLengkap?: string;
+            tempatLahir?: string;
+            tanggalLahir?: string | Date;
+            jenisKelamin?: string;
+            alamat?: string;
+            kodeProvinsi?: string;
+            kodeKota?: string;
+            nik?: string;
+            kewarganegaraan?: string;
+            kodePosAsesi?: string;
+            noHp?: string;
+            pendidikanTerakhir?: string;
+            pekerjaan?: string;
+            namaInstitusi?: string;
+            jabatan?: string;
+            emailInstitusi?: string;
+            kodePosInstitusi?: string;
+            alamatInstitusi?: string;
+            telpInstitusi?: string;
+            faxInstitusi?: string;
+            memerlukanPenyesuaianWajar?: boolean;
+            isBerpengalaman?: boolean;
+          };
+        }>).map((item) => {
+          const dateStr = item.createdAt
+            ? new Date(item.createdAt)
+              .toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+              .replace(/\//g, "-")
+            : "-";
+
+          return {
+            id: item.id,
+            name: item.skema?.namaSkema || "Skema Sertifikasi",
+            kode: item.skema?.kodeSkema || item.nomorPengajuan || "-",
+            date: dateStr,
+            status: item.status || "Menunggu Verifikasi",
+            namaLengkap:
+              item.dataPribadi?.namaLengkap || item.user?.username || "",
+            tempatLahir: item.dataPribadi?.tempatLahir || "",
+            tanggalLahir: item.dataPribadi?.tanggalLahir
+              ? new Date(item.dataPribadi.tanggalLahir)
+                .toISOString()
+                .split("T")[0]
+              : "",
+            jenisKelamin:
+              item.dataPribadi?.jenisKelamin === "Laki_laki"
+                ? "Laki-laki"
+                : item.dataPribadi?.jenisKelamin || "",
+            alamat: item.dataPribadi?.alamat || "",
+            provinsi: item.dataPribadi?.kodeProvinsi || "",
+            kota: item.dataPribadi?.kodeKota || "",
+            nik: item.dataPribadi?.nik || "",
+            kewarganegaraan:
+              item.dataPribadi?.kewarganegaraan || "Indonesia",
+            kodePos: item.dataPribadi?.kodePosAsesi || "",
+            noHp: item.dataPribadi?.noHp || "",
+            telepon: item.dataPribadi?.noHp || "",
+            pendidikanTerakhir:
+              item.dataPribadi?.pendidikanTerakhir || "",
+            pekerjaan: item.dataPribadi?.pekerjaan || "",
+            institusiPerusahaan:
+              item.dataPribadi?.namaInstitusi || "",
+            jabatan: item.dataPribadi?.jabatan || "",
+            emailInstitusi: item.dataPribadi?.emailInstitusi || "",
+            kodePosInstitusi:
+              item.dataPribadi?.kodePosInstitusi || "",
+            alamatInstitusi:
+              item.dataPribadi?.alamatInstitusi || "",
+            telpInstitusi: item.dataPribadi?.telpInstitusi || "",
+            faxInstitusi: item.dataPribadi?.faxInstitusi || "",
+            tipeTuk: item.tuk || "Mandiri (Online)",
+            penyesuaianWajar:
+              item.dataPribadi?.memerlukanPenyesuaianWajar ?? false,
+            berpengalaman: item.dataPribadi?.isBerpengalaman ?? false,
+          };
+        });
+        setSubmissions(mappedList);
       }
+    } catch (error) {
+      console.error("Gagal memuat daftar pengajuan:", error);
+    } finally {
+      setIsLoadingSubmissions(false);
     }
-    return [];
-  });
+  }, []);
+
+  React.useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions, subView]);
   const [searchSub, setSearchSub] = useState("");
   const [statusSubFilter, setStatusSubFilter] = useState("Semua");
   const [dateSubFilter, setDateSubFilter] = useState("");
@@ -264,8 +372,8 @@ export default function PengajuanSkemaPage() {
           [
             dataProfil.tanggalLahir
               ? new Date(String(dataProfil.tanggalLahir))
-                  .toISOString()
-                  .split("T")[0]
+                .toISOString()
+                .split("T")[0]
               : null,
             setTanggalLahir,
           ],
@@ -308,29 +416,227 @@ export default function PengajuanSkemaPage() {
         const response = await fetch("/api/skema");
         if (response.ok) {
           const result = await response.json();
-          // MAPPING DATA: Merapikan data agar cocok dengan struktur `SchemeItem`
           const mappedSchemes: SchemeItem[] = result.data.map(
-            (skema: ApiSkemaResponse) => ({
-              ...skema,
-              id: String(skema.id),
-              code: skema.kode_skema || skema.kodeSkema || "-",
-              name: skema.nama_skema || skema.namaSkema || "-",
-              status: "Active",
-              kategori: "-",
-              unitKompetensi: Array.isArray(skema.unitKompetensi)
-                ? skema.unitKompetensi.map((unit) => ({
-                    kode: unit.kodeUnit || unit.kode_unit || "-",
-                    judul: unit.judulUnit || unit.judul_unit || "-",
-                    elemen: unit.elemen || [],
+            (skema: Record<string, unknown>) => {
+              const kodeSkema = String(
+                skema.kode_skema || skema.kodeSkema || "-",
+              );
+              const namaSkema = String(
+                skema.nama_skema || skema.namaSkema || "-",
+              );
+
+              // Cari template data lokal jika di database ada bagian relasi yang belum lengkap
+              const localMatch = (
+                AVAILABLE_SCHEMES as unknown as Array<{
+                  code?: string;
+                  kode?: string;
+                  name?: string;
+                  nama?: string;
+                  units?: Array<{
+                    code?: string;
+                    kode?: string;
+                    title?: string;
+                    judul?: string;
+                    elemen?: Array<{
+                      title?: string;
+                      nama?: string;
+                      kuk?: string[];
+                    }>;
+                  }>;
+                  persyaratanDasar?: Array<{
+                    name?: string;
+                    namaDokumen?: string;
+                    description?: string;
+                    deskripsi?: string;
+                  }>;
+                  buktiAdministratif?: Array<
+                    | string
+                    | {
+                      namaDokumen?: string;
+                      name?: string;
+                    }
+                  >;
+                }>
+              ).find(
+                (s) =>
+                  s.kode === kodeSkema ||
+                  s.code === kodeSkema ||
+                  s.nama === namaSkema ||
+                  s.name === namaSkema,
+              );
+
+              // 1. UNIT KOMPETENSI
+              const rawUnits = Array.isArray(skema.unitKompetensi)
+                ? (skema.unitKompetensi as Array<Record<string, unknown>>)
+                : [];
+              const units: UnitKompetensiItem[] =
+                rawUnits.length > 0
+                  ? rawUnits.map((u, uIdx) => {
+                    const rawElemen = Array.isArray(u.elemenKompetensi)
+                      ? (u.elemenKompetensi as Array<Record<string, unknown>>)
+                      : Array.isArray(u.elemen)
+                        ? (u.elemen as Array<Record<string, unknown>>)
+                        : [];
+
+                    const elemen = rawElemen.map((el, eIdx) => {
+                      let kukList: string[] = [];
+                      if (Array.isArray(el.kriteriaUnjukKerja)) {
+                        kukList = el.kriteriaUnjukKerja as string[];
+                      } else if (Array.isArray(el.kuk)) {
+                        kukList = el.kuk as string[];
+                      } else if (typeof el.kriteriaUnjukKerja === "string") {
+                        try {
+                          const parsed = JSON.parse(el.kriteriaUnjukKerja);
+                          kukList = Array.isArray(parsed)
+                            ? parsed
+                            : [el.kriteriaUnjukKerja];
+                        } catch {
+                          kukList = el.kriteriaUnjukKerja
+                            .split("\n")
+                            .filter(Boolean);
+                        }
+                      }
+
+                      return {
+                        id: Number(el.id || eIdx + 1),
+                        namaElemen: String(
+                          el.namaElemen ||
+                          el.nama_elemen ||
+                          el.title ||
+                          el.nama ||
+                          `Elemen ${eIdx + 1}`,
+                        ),
+                        kriteriaUnjukKerja: kukList,
+                        urutan: Number(el.urutan || eIdx + 1),
+                        isWajib: el.isWajib !== false,
+                      };
+                    });
+
+                    return {
+                      id: Number(u.id || uIdx + 1),
+                      kodeUnit: String(
+                        u.kodeUnit ||
+                        u.kode_unit ||
+                        u.code ||
+                        u.kode ||
+                        "-",
+                      ),
+                      judulUnit: String(
+                        u.judulUnit ||
+                        u.judul_unit ||
+                        u.title ||
+                        u.judul ||
+                        "-",
+                      ),
+                      urutan: Number(u.urutan || uIdx + 1),
+                      elemen,
+                    };
+                  })
+                  : (localMatch?.units || []).map((u, uIdx) => ({
+                    id: uIdx + 1,
+                    kodeUnit: u.code || u.kode || "-",
+                    judulUnit: u.title || u.judul || "-",
+                    urutan: uIdx + 1,
+                    elemen: (u.elemen || []).map((el, eIdx) => ({
+                      id: eIdx + 1,
+                      namaElemen: el.title || el.nama || `Elemen ${eIdx + 1}`,
+                      kriteriaUnjukKerja: el.kuk || [],
+                      urutan: eIdx + 1,
+                      isWajib: true,
+                    })),
+                  }));
+
+              // 2. PERSYARATAN DASAR
+              const rawPersyaratanDasar = Array.isArray(skema.persyaratanDasar)
+                ? (skema.persyaratanDasar as Array<Record<string, unknown>>)
+                : [];
+              const persyaratanDasar: PersyaratanDasar[] =
+                rawPersyaratanDasar.length > 0
+                  ? rawPersyaratanDasar.map((p, idx) => ({
+                    id: Number(p.id || idx + 1),
+                    namaDokumen: String(
+                      p.namaDokumen || p.name || p.nama || "Dokumen",
+                    ),
+                    deskripsi: p.deskripsi
+                      ? String(p.deskripsi)
+                      : p.description
+                        ? String(p.description)
+                        : "",
+                    urutan: Number(p.urutan || idx + 1),
+                    is_wajib: p.isWajib !== false,
                   }))
-                : [],
-              persyaratan_dasar:
-                skema.persyaratanDasar || skema.persyaratan_dasar || [],
-              persyaratan_administrasi:
-                skema.persyaratanAdministrasi ||
-                skema.persyaratan_administrasi ||
-                [],
-            }),
+                  : (localMatch?.persyaratanDasar || []).map((p, idx) => ({
+                    id: idx + 1,
+                    namaDokumen: p.name || p.namaDokumen || "Dokumen",
+                    deskripsi: p.description || p.deskripsi || "",
+                    urutan: idx + 1,
+                    is_wajib: true,
+                  }));
+
+              // 3. BUKTI ADMINISTRATIF
+              const rawAdm = Array.isArray(skema.master_bukti_administratif)
+                ? (skema.master_bukti_administratif as Array<
+                  Record<string, unknown>
+                >)
+                : Array.isArray(skema.persyaratanAdministrasi)
+                  ? (skema.persyaratanAdministrasi as Array<
+                    Record<string, unknown>
+                  >)
+                  : [];
+
+              const defaultBuktiAdm = [
+                {
+                  id: 1,
+                  namaDokumen: "Salinan KTP dan KTM",
+                  isWajib: true,
+                  isAktif: true,
+                },
+                {
+                  id: 2,
+                  namaDokumen:
+                    "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
+                  isWajib: true,
+                  isAktif: true,
+                },
+              ];
+
+              const persyaratanAdministrasi: PersyaratanAdministrasi[] =
+                rawAdm.length > 0
+                  ? rawAdm.map((a, idx) => ({
+                    id: Number(a.id || idx + 1),
+                    namaDokumen: String(
+                      a.namaDokumen || a.name || a.nama || "Dokumen",
+                    ),
+                    deskripsi: a.deskripsi ? String(a.deskripsi) : "",
+                    isWajib: a.isWajib !== false,
+                    isAktif: a.isAktif !== false,
+                  }))
+                  : localMatch?.buktiAdministratif &&
+                    localMatch.buktiAdministratif.length > 0
+                    ? localMatch.buktiAdministratif.map((item, idx) => ({
+                      id: idx + 1,
+                      namaDokumen:
+                        typeof item === "string"
+                          ? item
+                          : item.namaDokumen || item.name || "Dokumen",
+                      deskripsi: "",
+                      isWajib: true,
+                      isAktif: true,
+                    }))
+                    : defaultBuktiAdm;
+
+              return {
+                ...skema,
+                id: Number(skema.id),
+                kode: kodeSkema,
+                nama: namaSkema,
+                status: "Active",
+                kategori: String(skema.kategori || "-"),
+                unitKompetensi: units,
+                persyaratanDasar,
+                persyaratanAdministrasi,
+              };
+            },
           );
 
           setSchemesData(mappedSchemes);
@@ -428,12 +734,21 @@ export default function PengajuanSkemaPage() {
       }
     } else if (step === 2) {
       const reqs = selectedScheme?.persyaratanDasar || [];
-      const valid = reqs.every((req) => {
-        const key = typeof req === "string" ? req : req.namaDokumen;
-        return Boolean(key && eFormData[key]);
-      });
+      const valid =
+        reqs.length > 0 &&
+        reqs.every((req) => {
+          const key = typeof req === "string" ? req : req.namaDokumen;
+          const fileVal = key ? eFormData[key] : null;
+          return Boolean(
+            fileVal && (Array.isArray(fileVal) ? fileVal.length > 0 : true),
+          );
+        });
       if (!valid) {
         setShowStep2Errors(true);
+        showNotification(
+          "Harap lengkapi dan unggah seluruh dokumen Persyaratan Dasar sebelum melanjutkan ke tahap berikutnya!",
+          "error",
+        );
       } else {
         setShowStep2Errors(false);
         setStep(3);
@@ -441,17 +756,29 @@ export default function PengajuanSkemaPage() {
       }
     } else if (step === 3) {
       const reqs = selectedScheme?.persyaratanAdministrasi || [];
-      const valid = reqs.every((req) => {
-        const key = typeof req === "string" ? req : req.namaDokumen;
-        return Boolean(key && eFormData[key]);
-      });
+      const valid =
+        reqs.length > 0 &&
+        reqs.every((req) => {
+          const key = typeof req === "string" ? req : req.namaDokumen;
+          const fileVal = key ? eFormData[key] : null;
+          return Boolean(
+            fileVal && (Array.isArray(fileVal) ? fileVal.length > 0 : true),
+          );
+        });
       if (!valid) {
         setShowStep3Errors(true);
+        showNotification(
+          "Harap lengkapi dan unggah seluruh berkas Bukti Administratif sebelum melanjutkan ke tahap berikutnya!",
+          "error",
+        );
       } else {
         setShowStep3Errors(false);
         setStep(4);
         scrollToTopMobile();
       }
+    } else if (step === 4) {
+      setStep(5);
+      scrollToTopMobile();
     } else if (step === 5) {
       handleSubmitForm();
     } else {
@@ -501,6 +828,8 @@ export default function PengajuanSkemaPage() {
       const payloadData = {
         name: selectedScheme?.nama || "Uji Kompetensi Mandiri",
         kode: selectedScheme?.kode || "001/SKM/LSP-KJN/II/2023",
+        skemaId: selectedScheme?.id ? Number(selectedScheme.id) : undefined,
+        kodeSkema: selectedScheme?.kode,
         namaLengkap,
         tempatLahir,
         tanggalLahir,
@@ -521,27 +850,19 @@ export default function PengajuanSkemaPage() {
         alamatInstitusi,
         telpInstitusi,
         faxInstitusi,
-        tuk,
+        tuk: tuk || "Mandiri",
         metode,
         penyesuaianWajar,
         berpengalaman,
         dokumen: uploadedDokumen,
       };
 
-      const response = await fetch("/api/pengajuan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payloadData),
-      });
+      await createPengajuan(payloadData);
 
-      if (!response.ok) {
-        const errData = (await response.json()) as { message?: string };
-        throw new Error(
-          errData.message || "Gagal ngirim data ke server database",
-        );
-      }
-
-      showNotification(`Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`, "success");
+      showNotification(
+        `Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`,
+        "success",
+      );
 
       setTempatLahir("");
       setAlamat("");
@@ -552,6 +873,7 @@ export default function PengajuanSkemaPage() {
       setBerpengalaman(false);
       setStep(1);
       setSubView("list");
+      await fetchSubmissions();
     } catch (error: unknown) {
       console.error(error);
       if (error instanceof Error) {
@@ -567,7 +889,10 @@ export default function PengajuanSkemaPage() {
       item.name.toLowerCase().includes(searchSub.toLowerCase()) ||
       item.kode.toLowerCase().includes(searchSub.toLowerCase());
     const matchesStatus =
-      statusSubFilter === "Semua" || item.status === statusSubFilter;
+      statusSubFilter === "Semua" ||
+      item.status.toLowerCase() === statusSubFilter.toLowerCase() ||
+      (statusSubFilter.toLowerCase().includes("menunggu") &&
+        item.status.toLowerCase().includes("menunggu"));
     const matchesDate =
       !dateSubFilter ||
       (() => {
@@ -614,16 +939,19 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
-  const filteredSchemes = (AVAILABLE_SCHEMES as unknown as SchemeItem[]).filter(
-    (item) => {
-      const name = item.nama?.toLowerCase() ?? "";
-      const kode = item.kode?.toLowerCase() ?? "";
-      return (
-        name.includes(searchScheme.toLowerCase()) ||
-        kode.includes(searchScheme.toLowerCase())
-      );
-    },
-  );
+  const effectiveSchemes =
+    schemesData.length > 0
+      ? schemesData
+      : (AVAILABLE_SCHEMES as unknown as SchemeItem[]);
+
+  const filteredSchemes = effectiveSchemes.filter((item) => {
+    const name = (item.nama || "")?.toLowerCase() ?? "";
+    const kode = (item.kode || "")?.toLowerCase() ?? "";
+    return (
+      name.includes(searchScheme.toLowerCase()) ||
+      kode.includes(searchScheme.toLowerCase())
+    );
+  });
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const paginatedSubmissions = filteredSubmissions.slice(
@@ -643,12 +971,12 @@ export default function PengajuanSkemaPage() {
   // Pemetaan yang rapi dan Type-Safe tanpa 'any'
   const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme
     ? {
-        ...selectedScheme,
-        nama: selectedScheme.nama,
-        units: selectedScheme.unitKompetensi,
-        persyaratanDasar: selectedScheme.persyaratanDasar,
-        buktiAdministratif: selectedScheme.persyaratanAdministrasi,
-      }
+      ...selectedScheme,
+      nama: selectedScheme.nama,
+      units: selectedScheme.unitKompetensi,
+      persyaratanDasar: selectedScheme.persyaratanDasar,
+      buktiAdministratif: selectedScheme.persyaratanAdministrasi,
+    }
     : undefined;
 
   return (
@@ -720,8 +1048,8 @@ export default function PengajuanSkemaPage() {
                       className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10 outline-none text-gray-700 cursor-pointer font-bold"
                     >
                       <option value="Semua">Semua Status</option>
-                      <option value="Menunggu Persetujuan">
-                        Menunggu Persetujuan
+                      <option value="Menunggu Verifikasi">
+                        Menunggu Verifikasi
                       </option>
                       <option value="Disetujui">Disetujui</option>
                       <option value="Ditolak">Ditolak</option>
@@ -764,7 +1092,18 @@ export default function PengajuanSkemaPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100/60 font-medium">
-                      {paginatedSubmissions.length > 0 ? (
+                      {isLoadingSubmissions ? (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-12 text-center">
+                            <div className="flex flex-col items-center justify-center gap-3 text-slate-500">
+                              <div className="w-6 h-6 rounded-full border-2 border-[#008BE3] border-t-transparent animate-spin"></div>
+                              <span className="font-bold text-sm">
+                                Memuat daftar permohonan...
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : paginatedSubmissions.length > 0 ? (
                         paginatedSubmissions.map((item, idx) => (
                           <tr
                             key={item.id}
@@ -772,13 +1111,12 @@ export default function PengajuanSkemaPage() {
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
-                                  idx % 3 === 0
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
                                     ? "bg-[#008BE3]/10 text-[#008BE3]"
                                     : idx % 3 === 1
                                       ? "bg-[#84CC16]/10 text-[#73B412]"
                                       : "bg-slate-100 text-slate-600"
-                                }`}
+                                  }`}
                               >
                                 {idx + 1}
                               </div>
@@ -820,15 +1158,67 @@ export default function PengajuanSkemaPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedDetailSubmission(item);
-                                }}
-                                className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
-                              >
-                                Detail
-                              </button>
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    setSelectedDetailSubmission(item);
+                                    setIsLoadingDetail(true);
+                                    try {
+                                      const detail = await getPengajuanDetail(
+                                        item.id,
+                                      );
+                                      if (detail) {
+                                        setSelectedDetailSubmission({
+                                          ...item,
+                                          dokumenList: detail.dokumen,
+                                        });
+                                      }
+                                    } catch (err) {
+                                      console.error(
+                                        "Gagal memuat detail pengajuan:",
+                                        err,
+                                      );
+                                    } finally {
+                                      setIsLoadingDetail(false);
+                                    }
+                                  }}
+                                  className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  Detail
+                                </button>
+                                {item.status.includes("Menunggu") && (
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (
+                                        window.confirm(
+                                          `Apakah Anda yakin ingin membatalkan pengajuan ${item.name}?`,
+                                        )
+                                      ) {
+                                        try {
+                                          await deletePengajuan(item.id);
+                                          showNotification(
+                                            "Pengajuan berhasil dibatalkan",
+                                            "success",
+                                          );
+                                          await fetchSubmissions();
+                                        } catch (err: unknown) {
+                                          const msg =
+                                            err instanceof Error
+                                              ? err.message
+                                              : "Gagal membatalkan pengajuan";
+                                          showNotification(msg, "error");
+                                        }
+                                      }
+                                    }}
+                                    className="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                                    title="Batalkan Pengajuan"
+                                  >
+                                    Batal
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -871,11 +1261,10 @@ export default function PengajuanSkemaPage() {
                         <button
                           key={page}
                           onClick={() => setSubPage(page)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                            subPage === page
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${subPage === page
                               ? "bg-[#008BE3] text-white border border-[#008BE3]"
                               : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
@@ -1020,7 +1409,7 @@ export default function PengajuanSkemaPage() {
                                 ? ` | Telp: ${selectedDetailSubmission.telepon}`
                                 : ""}
                               {!selectedDetailSubmission.noHp &&
-                              !selectedDetailSubmission.telepon
+                                !selectedDetailSubmission.telepon
                                 ? "-"
                                 : ""}
                             </td>
@@ -1072,7 +1461,7 @@ export default function PengajuanSkemaPage() {
                                 ? ` | Fax: ${selectedDetailSubmission.faxInstitusi}`
                                 : ""}
                               {!selectedDetailSubmission.kodePosInstitusi &&
-                              !selectedDetailSubmission.faxInstitusi
+                                !selectedDetailSubmission.faxInstitusi
                                 ? "-"
                                 : ""}
                             </td>
@@ -1137,46 +1526,81 @@ export default function PengajuanSkemaPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm mb-4 uppercase tracking-wider border-b border-slate-200 pb-2 text-[#008BE3]">
-                        Lampiran Dokumen & Persyaratan
-                      </h4>
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-4">
+                        <h4 className="font-bold text-sm uppercase tracking-wider text-[#008BE3]">
+                          Lampiran Dokumen & Persyaratan
+                        </h4>
+                        {isLoadingDetail && (
+                          <span className="text-xs text-slate-400 animate-pulse">
+                            Memuat dokumen...
+                          </span>
+                        )}
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <a
-                          href="#"
-                          className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
-                        >
+                        {/* Formulir Resmi */}
+                        <div className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between group shadow-sm bg-white">
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
                               <BadgeCheck size={20} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors">
+                              <p className="text-sm font-bold text-slate-800 mb-1">
                                 FR.APL.01 Permohonan Sertifikasi
                               </p>
                               <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                                Lengkap
+                                Terverifikasi Form
                               </span>
                             </div>
                           </div>
-                        </a>
-                        <a
-                          href="#"
-                          className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between cursor-pointer hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm"
-                        >
+                        </div>
+
+                        <div className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between group shadow-sm bg-white">
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
                               <BadgeCheck size={20} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors">
+                              <p className="text-sm font-bold text-slate-800 mb-1">
                                 FR.APL.02 Asesmen Mandiri
                               </p>
                               <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                                Lengkap
+                                Terverifikasi Form
                               </span>
                             </div>
                           </div>
-                        </a>
+                        </div>
+
+                        {/* Dokumen Lampiran Tambahan dari Backend Database */}
+                        {selectedDetailSubmission.dokumenList &&
+                          selectedDetailSubmission.dokumenList.map((dok) => (
+                            <a
+                              key={dok.id}
+                              href={dok.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm bg-white"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
+                                  <FileText size={20} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-bold text-slate-800 mb-1 group-hover:text-[#008BE3] transition-colors truncate">
+                                    {dok.namaDokumen}
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                      File Terlampir
+                                    </span>
+                                    <span className="text-xs text-blue-600 underline group-hover:text-blue-700">
+                                      Buka File
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </a>
+                          ))}
                       </div>
                     </div>
                   </div>
@@ -1293,13 +1717,12 @@ export default function PengajuanSkemaPage() {
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
-                                  idx % 3 === 0
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
                                     ? "bg-[#008BE3]/10 text-[#008BE3]"
                                     : idx % 3 === 1
                                       ? "bg-[#84CC16]/10 text-[#73B412]"
                                       : "bg-slate-100 text-slate-600"
-                                }`}
+                                  }`}
                               >
                                 {idx + 1}
                               </div>
@@ -1408,11 +1831,10 @@ export default function PengajuanSkemaPage() {
                   <button
                     key={idx}
                     onClick={() => setSchemePage(idx + 1)}
-                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${
-                      schemePage === idx + 1
+                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${schemePage === idx + 1
                         ? "bg-[#008BE3] text-white"
                         : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
-                    }`}
+                      }`}
                   >
                     {idx + 1}
                   </button>
@@ -1537,26 +1959,77 @@ export default function PengajuanSkemaPage() {
                           }
                         } else if (step === 2 && tabStep > 2) {
                           const reqs = selectedScheme?.persyaratanDasar || [];
-                          const valid = reqs.every((req) => {
-                            const key =
-                              typeof req === "string" ? req : req.namaDokumen;
-                            return Boolean(key && eFormData[key]);
-                          });
-                          if (!valid) setShowStep2Errors(true);
-                          else {
+                          const valid =
+                            reqs.length > 0 &&
+                            reqs.every((req) => {
+                              const key =
+                                typeof req === "string" ? req : req.namaDokumen;
+                              const fileVal = key ? eFormData[key] : null;
+                              return Boolean(
+                                fileVal &&
+                                (Array.isArray(fileVal)
+                                  ? fileVal.length > 0
+                                  : true),
+                              );
+                            });
+                          if (!valid) {
+                            setShowStep2Errors(true);
+                            showNotification(
+                              "Harap lengkapi seluruh dokumen Persyaratan Dasar!",
+                              "error",
+                            );
+                          } else if (tabStep === 3) {
                             setShowStep2Errors(false);
                             setStep(tabStep);
+                          } else {
+                            const admReqs =
+                              selectedScheme?.persyaratanAdministrasi || [];
+                            const admValid =
+                              admReqs.length > 0 &&
+                              admReqs.every((req) => {
+                                const key =
+                                  typeof req === "string"
+                                    ? req
+                                    : req.namaDokumen;
+                                const fileVal = key ? eFormData[key] : null;
+                                return Boolean(
+                                  fileVal &&
+                                  (Array.isArray(fileVal)
+                                    ? fileVal.length > 0
+                                    : true),
+                                );
+                              });
+                            if (!admValid) {
+                              setShowStep2Errors(false);
+                              setStep(3);
+                            } else {
+                              setShowStep2Errors(false);
+                              setStep(tabStep);
+                            }
                           }
                         } else if (step === 3 && tabStep > 3) {
                           const reqs =
                             selectedScheme?.persyaratanAdministrasi || [];
-                          const valid = reqs.every((req) => {
-                            const key =
-                              typeof req === "string" ? req : req.namaDokumen;
-                            return Boolean(key && eFormData[key]);
-                          });
-                          if (!valid) setShowStep3Errors(true);
-                          else {
+                          const valid =
+                            reqs.length > 0 &&
+                            reqs.every((req) => {
+                              const key =
+                                typeof req === "string" ? req : req.namaDokumen;
+                              const fileVal = key ? eFormData[key] : null;
+                              return Boolean(
+                                fileVal &&
+                                (Array.isArray(fileVal)
+                                  ? fileVal.length > 0
+                                  : true),
+                              );
+                            });
+                          if (!valid) {
+                            setShowStep3Errors(true);
+                            showNotification(
+                              "Harap lengkapi seluruh berkas Bukti Administratif!",
+                              "error",
+                            );
+                          } else {
                             setShowStep3Errors(false);
                             setStep(tabStep);
                           }
@@ -1564,11 +2037,10 @@ export default function PengajuanSkemaPage() {
                           setStep(tabStep);
                         }
                       }}
-                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
-                        isActive
+                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${isActive
                           ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
                           : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
-                      }`}
+                        }`}
                     >
                       {tabLabel}
                     </button>
@@ -1756,11 +2228,10 @@ export default function PengajuanSkemaPage() {
                         setErrors({ ...errors, alamat: false });
                     }}
                     placeholder="Masukkan alamat lengkap"
-                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
-                      errors.alamat
+                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.alamat
                         ? "border-red-400 bg-red-50/10 focus:border-red-500"
                         : "border-slate-300 focus:border-[#008BE3] bg-white"
-                    }`}
+                      }`}
                   />
                   {errors.alamat && (
                     <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2290,22 +2761,22 @@ export default function PengajuanSkemaPage() {
 
                 {(!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                   !eFormData["02. FR.APL.02 Asesmen Mandiri"]) && (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
-                    <AlertTriangle
-                      size={16}
-                      className="shrink-0 text-amber-500 mt-0.5"
-                    />
-                    <div className="min-w-0">
-                      <span className="font-bold block mb-1">Perhatian</span>
-                      Anda harus mengisi dan menyimpan (
-                      <span className="font-semibold text-amber-900">
-                        Simpan Data
-                      </span>
-                      ) kedua E-Form di atas sebelum dapat men-submit pengajuan
-                      skema ini.
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
+                      <AlertTriangle
+                        size={16}
+                        className="shrink-0 text-amber-500 mt-0.5"
+                      />
+                      <div className="min-w-0">
+                        <span className="font-bold block mb-1">Perhatian</span>
+                        Anda harus mengisi dan menyimpan (
+                        <span className="font-semibold text-amber-900">
+                          Simpan Data
+                        </span>
+                        ) kedua E-Form di atas sebelum dapat men-submit pengajuan
+                        skema ini.
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             )}
 
@@ -2317,13 +2788,12 @@ export default function PengajuanSkemaPage() {
                   (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
                 }
-                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${
-                  step === 5 &&
-                  (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
-                    !eFormData["02. FR.APL.02 Asesmen Mandiri"])
+                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${step === 5 &&
+                    (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
+                      !eFormData["02. FR.APL.02 Asesmen Mandiri"])
                     ? "bg-slate-300 text-slate-500 cursor-not-allowed"
                     : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
-                }`}
+                  }`}
               >
                 {step === 5 ? "Ajukan" : "Selanjutnya"}
                 <ArrowRight size={14} />

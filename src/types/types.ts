@@ -392,13 +392,36 @@ export interface RequirementItem {
 
 export type RequirementType = string | RequirementItem;
 
+export interface SchemeDetailUnitElemen {
+  title?: string;
+  nama?: string;
+  namaElemen?: string;
+  kuk?: string[];
+  kriteriaUnjukKerja?: string[];
+  id?: number;
+  urutan?: number;
+  isWajib?: boolean;
+}
+
+export interface SchemeDetailUnit {
+  unitCode?: string;
+  kode?: string;
+  kodeUnit?: string;
+  unitTitle?: string;
+  judul?: string;
+  judulUnit?: string;
+  id?: number;
+  urutan?: number;
+  elemen?: SchemeDetailUnitElemen[];
+}
+
 export interface SchemeDetailInfo {
   id?: number; // master_skema.id
   nama?: string;
   name?: string;
   kode?: string;
   code?: string;
-  units?: any[];
+  units?: (UnitKompetensiItem | SchemeDetailUnit)[];
   persyaratanDasar?: PersyaratanDasar[];
   buktiAdministratif?: PersyaratanAdministrasi[];
   buktiKompetensi?: RequirementType[];
@@ -472,6 +495,7 @@ export interface Apl02FormData {
   namaLengkap?: string;
   skema?: string;
   nomorSkema?: string;
+  noSkema?: string;
   tipeTuk?: TipeTuk;
   tanggal?: string;
   detailSkema?: SchemeDetailInfo;

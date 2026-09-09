@@ -239,7 +239,7 @@ const initialWizardState: WizardFormState = {
 // MAIN COMPONENT: TambahKonfigurasiPertanyaan Wizard
 // ============================================================================
 
-export default function TambahKonfigurasiPertanyaan() {
+function TambahKonfigurasiPertanyaanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -2411,6 +2411,20 @@ export default function TambahKonfigurasiPertanyaan() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TambahKonfigurasiPertanyaan() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-[400px] flex items-center justify-center text-slate-500 font-medium">
+          Memuat konfigurasi pertanyaan...
+        </div>
+      }
+    >
+      <TambahKonfigurasiPertanyaanContent />
+    </React.Suspense>
   );
 }
 

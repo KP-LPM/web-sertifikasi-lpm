@@ -1,13 +1,23 @@
 import React from 'react';
 import { FileText, Eye, Upload, CheckCircle, Info, BadgeCheck } from 'lucide-react';
 
+export interface FormDocumentItem {
+  name: string;
+  description?: string;
+  type?: string;
+  required?: boolean;
+  isEForm?: boolean;
+  isPreview?: boolean;
+  [key: string]: unknown;
+}
+
 interface FormDocumentTableProps {
   title: string;
   infoText?: string;
-  documents: any[];
-  eFormData: any;
+  documents: FormDocumentItem[];
+  eFormData: Record<string, unknown>;
   showErrors?: boolean;
-  onAction: (doc: any) => void;
+  onAction: (doc: FormDocumentItem) => void;
 }
 
 export function FormDocumentTable({ title, infoText, documents, eFormData, onAction }: FormDocumentTableProps) {

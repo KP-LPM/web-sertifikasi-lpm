@@ -1,7 +1,9 @@
 export const AVAILABLE_SCHEMES = [
   {
     name: "Jenjang 5 Bidang Kewirausahaan Industri",
+    nama: "Jenjang 5 Bidang Kewirausahaan Industri",
     code: "06/LSPUINBdg/XI/2023",
+    kode: "06/LSPUINBdg/XI/2023",
     units: [
       {
         code: "M.741000.010.01",
@@ -261,7 +263,9 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
+    name: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
     nama: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+    code: "09/LSPUINBdg/XI/2023",
     kode: "09/LSPUINBdg/XI/2023",
     units: [
       {
@@ -609,7 +613,9 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
+    name: "Penerjemah Teks Umum",
     nama: "Penerjemah Teks Umum",
+    code: "05/LSPUINBdg/XI/2023",
     kode: "05/LSPUINBdg/XI/2023",
     units: [
       {
@@ -1038,7 +1044,9 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
+    name: "Auditor Halal",
     nama: "Auditor Halal",
+    code: "03/LSPUINBdg/XI/2023",
     kode: "03/LSPUINBdg/XI/2023",
     units: [
       {
@@ -1197,7 +1205,9 @@ export const AVAILABLE_SCHEMES = [
     ],
   },
   {
+    name: "Penyelia Halal",
     nama: "Penyelia Halal",
+    code: "02/LSPUINBdg/XI/2023",
     kode: "02/LSPUINBdg/XI/2023",
     units: [
       {

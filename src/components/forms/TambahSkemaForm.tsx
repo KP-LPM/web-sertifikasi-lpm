@@ -611,8 +611,8 @@ export function TambahSkemaForm({
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Nama lengkap skema kompetensi (Contoh: "Network
-                  Administrator")
+                  Nama lengkap skema kompetensi (Contoh: &quot;Network
+                  Administrator&quot;)
                 </p>
               </div>
             </div>

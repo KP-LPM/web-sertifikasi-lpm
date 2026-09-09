@@ -24,7 +24,10 @@ export const UpdatePlenoSchema = CreatePlenoSchema.partial().extend({
 });
 
 export const AddAsesiPlenoSchema = z.object({
-  pengajuan_ids: z.array(z.number().int()).min(1, "Pilih minimal satu asesi"),
+  pengajuan_ids: z
+    .array(z.number().int())
+    .min(1, "Pilih minimal satu asesi")
+    .optional(),
 });
 
 export const UpdateAsesiPlenoSchema = z.object({

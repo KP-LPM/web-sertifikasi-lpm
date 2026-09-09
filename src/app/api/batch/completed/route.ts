@@ -47,11 +47,11 @@ export async function GET(request: NextRequest) {
       orderBy: { tanggal: "desc" },
     });
 
-    const formatted = completedBatches.map((batch: any) => {
+    const formatted = completedBatches.map((batch) => {
       let kompeten = 0;
       let belumKompeten = 0;
 
-      batch.pleno_asesi.forEach((asesi: any) => {
+      batch.pleno_asesi.forEach((asesi) => {
         if (asesi.status_pleno === "Kompeten" || asesi.status_pleno === "K") {
           kompeten++;
         } else if (
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
         waktu: batch.waktu,
         alamat: batch.alamat,
         skemaList: batch.pleno_batch_skema.map(
-          (s: any) => s.master_skema.namaSkema,
+          (s) => s.master_skema.namaSkema,
         ),
         totalAsesi: batch.pleno_asesi.length,
         rekapHasil: { kompeten, belumKompeten },

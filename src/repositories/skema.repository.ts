@@ -12,14 +12,22 @@ export class SkemaRepository {
   async getSkemaList(isAdmin: boolean = false) {
     return await db.masterSkema.findMany({
       where: isAdmin ? undefined : { statusAktif: true },
-      select: {
-        id: true,
-        kodeSkema: true,
-        namaSkema: true,
-        statusAktif: true,
-        kategori: true,
-        nomor_sertifikat: true,
-        nomor_registrasi: true,
+      include: {
+        persyaratanDasar: {
+          orderBy: { urutan: "asc" },
+        },
+        master_bukti_administratif: {
+          where: { isAktif: true },
+          orderBy: { urutan: "asc" },
+        },
+        unitKompetensi: {
+          orderBy: { urutan: "asc" },
+          include: {
+            elemenKompetensi: {
+              orderBy: { urutan: "asc" },
+            },
+          },
+        },
       },
       orderBy: { created_at: "desc" },
     });

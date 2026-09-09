@@ -6,7 +6,7 @@ import { UpdateSertifikatInput } from "@/schemas/sertifikat.schema";
 import { NotFoundError, InvariantError } from "@/error/index";
 
 export class SertifikatService {
-  constructor(private repo: SertifikatRepository = sertifikatRepository) {}
+  constructor(private repo: SertifikatRepository = sertifikatRepository) { }
 
   async getByPengajuanId(pengajuanId: number, userId: number, role: string) {
     const sertifikat = await this.repo.getByPengajuanId(pengajuanId);

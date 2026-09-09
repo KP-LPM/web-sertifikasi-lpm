@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     const jadwalId = searchParams.get("jadwal_id");
     const skemaId = searchParams.get("skema_id");
 
-    const whereClause: any = {};
+    const whereClause: Prisma.PengajuanSkemaWhereInput = {};
     if (jadwalId) {
       whereClause.jadwal_asesmen_peserta = {
         some: { jadwal_id: parseInt(jadwalId, 10) },
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Format output (menyerupai v_candidate_list)
-    const formattedCandidates = candidates.map((c: any) => {
+    const formattedCandidates = candidates.map((c) => {
       const jadwal = c.jadwal_asesmen_peserta[0]?.jadwal_asesmen;
       return {
         pengajuanId: c.id,

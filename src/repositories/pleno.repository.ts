@@ -73,6 +73,56 @@ export class PlenoRepository {
 
   // --- ASESI ---
 
+  async getPengajuanSelesai(skemaIds?: number[], pengajuanIds?: number[]) {
+    return await db.pengajuanSkema.findMany({
+      where: {
+        status: { equals: "Selesai", mode: "insensitive" },
+        ...(skemaIds && skemaIds.length > 0
+          ? { skemaId: { in: skemaIds } }
+          : {}),
+        ...(pengajuanIds && pengajuanIds.length > 0
+          ? { id: { in: pengajuanIds } }
+          : {}),
+      },
+      include: {
+        user: { select: { username: true, email: true } },
+        dataPribadi: {
+          select: {
+            namaLengkap: true,
+            nik: true,
+            noHp: true,
+          },
+        },
+        skema: { select: { namaSkema: true, kodeSkema: true } },
+        hasil_asesmen: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async getAsesiByPlenoBatchId(plenoBatchId: number) {
+    return await db.pleno_asesi.findMany({
+      where: { pleno_batch_id: plenoBatchId },
+      include: {
+        pengajuan_skema: {
+          include: {
+            user: { select: { username: true, email: true } },
+            dataPribadi: {
+              select: {
+                namaLengkap: true,
+                nik: true,
+                noHp: true,
+              },
+            },
+            skema: { select: { namaSkema: true, kodeSkema: true } },
+            hasil_asesmen: true,
+          },
+        },
+        users: { select: { username: true, email: true } },
+      },
+    });
+  }
+
   async addAsesiBulk(plenoBatchId: number, pengajuanIds: number[]) {
     const dataToInsert = pengajuanIds.map((pengajuanId) => ({
       pleno_batch_id: plenoBatchId,

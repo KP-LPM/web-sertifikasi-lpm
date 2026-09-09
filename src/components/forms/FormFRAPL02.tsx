@@ -106,19 +106,22 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   }, []);
 
   const matchedScheme =
-    AVAILABLE_SCHEMES.find(
-      (s) =>
-        s.name === props.asesmenData?.skema ||
-        s.code === props.asesmenData?.id ||
-        (props.asesmenData?.skema &&
-          s.name
-            ?.toLowerCase()
-            .includes(props.asesmenData.skema.toLowerCase())) ||
-        (props.asesmenData?.skema &&
-          props.asesmenData.skema
-            .toLowerCase()
-            .includes((s.name as string).toLowerCase())),
-    ) || AVAILABLE_SCHEMES[0];
+    AVAILABLE_SCHEMES.find((s) => {
+      const sName = (s.name || (s as unknown as { nama?: string }).nama || "").toLowerCase();
+      const sCode = (s.code || (s as unknown as { kode?: string }).kode || "").toLowerCase();
+      const targetSkema = (props.asesmenData?.skema || "").toLowerCase();
+      const targetId = String(props.asesmenData?.id || "").toLowerCase();
+      const targetNoSkema = String(props.asesmenData?.noSkema || "").toLowerCase();
+
+      return (
+        (Boolean(sName) &&
+          Boolean(targetSkema) &&
+          (sName === targetSkema ||
+            sName.includes(targetSkema) ||
+            targetSkema.includes(sName))) ||
+        (Boolean(sCode) && (sCode === targetId || sCode === targetNoSkema))
+      );
+    }) || AVAILABLE_SCHEMES[0];
   const units =
     props.units ||
     (props.asesmenData?.schemeDetail as { units?: typeof DEFAULT_APL02_UNITS })

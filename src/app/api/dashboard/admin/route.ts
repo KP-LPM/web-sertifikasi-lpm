@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       selesai: 0,
     };
 
-    pengajuanGrup.forEach((g: any) => {
+    pengajuanGrup.forEach((g) => {
       pengajuan.total += g._count.id;
       const statusLower = g.status.toLowerCase();
       if (statusLower === "draf") pengajuan.draf += g._count.id;

@@ -43,12 +43,71 @@ export class PlenoService {
     return pleno;
   }
 
-  async addAsesiBulk(plenoBatchId: number, pengajuanIds: number[]) {
-    await this.getById(plenoBatchId);
-    const result = await this.repo.addAsesiBulk(plenoBatchId, pengajuanIds);
-    if (!result)
+  async addAsesiBulk(plenoBatchId: number, pengajuanIds?: number[]) {
+    const pleno = await this.getById(plenoBatchId);
+
+    // Ambil daftar skema_id terkait pleno batch ini (jika ada skema)
+    const skemaIds = pleno.pleno_batch_skema?.map((s) => s.skema_id) || [];
+
+    // Ambil pengajuan yang berstatus 'Selesai' (dan sesuai skema pleno jika pleno memiliki batasan skema)
+    const pengajuanSelesai = await this.repo.getPengajuanSelesai(
+      skemaIds.length > 0 ? skemaIds : undefined,
+      pengajuanIds,
+    );
+
+    if (pengajuanSelesai.length === 0) {
+      throw new InvariantError(
+        "Tidak ada pengajuan dengan status 'Selesai' yang valid untuk ditambahkan ke sidang pleno ini",
+      );
+    }
+
+    // Jika daftar pengajuan_ids spesifik dikirim, validasi apakah semua ID yang diminta berstatus selesai
+    if (pengajuanIds && pengajuanIds.length > 0) {
+      const validIdsSet = new Set(pengajuanSelesai.map((p) => p.id));
+      const invalidIds = pengajuanIds.filter((id) => !validIdsSet.has(id));
+      if (invalidIds.length > 0) {
+        throw new InvariantError(
+          `Pengajuan berikut tidak dapat ditambahkan karena belum berstatus 'Selesai' atau skema tidak sesuai: ID [${invalidIds.join(", ")}]`,
+        );
+      }
+    }
+
+    const idsToInsert = pengajuanSelesai.map((p) => p.id);
+    const result = await this.repo.addAsesiBulk(plenoBatchId, idsToInsert);
+    if (!result) {
       throw new InvariantError("Gagal menambahkan asesi ke batch pleno");
-    return result;
+    }
+
+    return {
+      ...result,
+      asesiCount: idsToInsert.length,
+      pengajuanIds: idsToInsert,
+    };
+  }
+
+  async getAvailablePengajuan(plenoBatchId: number) {
+    const pleno = await this.getById(plenoBatchId);
+
+    // Ambil asesi yang sudah ada di batch pleno ini
+    const existingAsesi = await this.repo.getAsesiByPlenoBatchId(plenoBatchId);
+    const existingPengajuanIds = new Set(
+      existingAsesi.map((a) => a.pengajuan_id),
+    );
+
+    const skemaIds = pleno.pleno_batch_skema?.map((s) => s.skema_id) || [];
+
+    // Ambil seluruh pengajuan berstatus 'Selesai' sesuai skema
+    const pengajuanSelesai = await this.repo.getPengajuanSelesai(
+      skemaIds.length > 0 ? skemaIds : undefined,
+    );
+
+    // Filter yang belum didaftarkan di batch pleno ini
+    return pengajuanSelesai.filter((p) => !existingPengajuanIds.has(p.id));
+  }
+
+  async getAsesiByPlenoBatchId(plenoBatchId: number) {
+    await this.getById(plenoBatchId);
+    return await this.repo.getAsesiByPlenoBatchId(plenoBatchId);
   }
 
   async updateAsesi(asesiId: number, data: UpdateAsesiPlenoInput) {

@@ -10,12 +10,22 @@ interface KompetensiItem {
   idx: number;
 }
 
+export interface FormKompetensiDocAction {
+  name: string;
+  type: string;
+  required: boolean;
+  isEForm?: boolean;
+  isBuktiKompetensi?: boolean;
+  isPreview?: boolean;
+  [key: string]: unknown;
+}
+
 interface FormKompetensiTableProps {
   title: string;
   infoText?: string;
   kompetensiList: KompetensiItem[];
-  eFormData: any;
-  onAction: (doc: any) => void;
+  eFormData: Record<string, unknown>;
+  onAction: (doc: FormKompetensiDocAction) => void;
 }
 
 export function FormKompetensiTable({

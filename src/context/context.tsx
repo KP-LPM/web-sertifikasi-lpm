@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, X } from "lucide-react";
 import {
-  UserItem,
   AssessmentItem,
   JenisMetode,
   TipeTuk,
@@ -452,10 +451,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   ]);
 
   const addPertanyaanAsesmen = (item: Omit<PertanyaanAsesmenItem, "id">) => {
-    setPertanyaanAsesmen((prev) => [
-      ...prev,
-      { ...item, id: Date.now() },
-    ]);
+    setPertanyaanAsesmen((prev) => [...prev, { ...item, id: Date.now() }]);
   };
 
   const updatePertanyaanAsesmen = (
