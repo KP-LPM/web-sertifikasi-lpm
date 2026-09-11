@@ -24,6 +24,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     id: 1,
     asesmen: "Uji Kompetensi",
     skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
+    kodeSkema: "SS-01",
     tipeTuk: "Mandiri",
     alamat: "Jl. Ahmad Yani No. 123, Bandung",
     tanggalAsesmen: "13/07/2026",
@@ -37,6 +38,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     id: 2,
     asesmen: "Uji Teori & Praktik",
     skemaSertifikasi: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+    kodeSkema: "SS-02",
     tipeTuk: "Sewaktu",
     alamat: "Gedung A, Lt. 2, Kampus Utama",
     tanggalAsesmen: "05/08/2026",
@@ -50,6 +52,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     id: 3,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penerjemah Teks Umum",
+    kodeSkema: "SS-03",
     tipeTuk: "Mandiri",
     alamat: "Online",
     tanggalAsesmen: "22/10/2026",
@@ -63,6 +66,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     id: 4,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Auditor Halal",
+    kodeSkema: "SS-04",
     tipeTuk: "Mandiri",
     alamat: "Online",
     tanggalAsesmen: "24/10/2026",
@@ -76,6 +80,7 @@ const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
     id: 5,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penyelia Halal",
+    kodeSkema: "SS-05",
     tipeTuk: "Mandiri",
     alamat: "Online",
     tanggalAsesmen: "-",
@@ -530,9 +535,14 @@ export default function AsesiOverviewPage() {
                     </td>
                     <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
-                        <span className="line-clamp-2 leading-tight">
-                          {item.skemaSertifikasi}
-                        </span>
+                        <div className="min-w-0">
+                          <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                            {item.skemaSertifikasi}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                            {item.kodeSkema || "-"}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">

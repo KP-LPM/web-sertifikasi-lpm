@@ -109,6 +109,15 @@ export class PengajuanRepository {
         user: { select: { id: true, username: true, email: true } },
         dataPribadi: true,
         skema: { select: { id: true, namaSkema: true, kodeSkema: true } },
+        jadwal_asesmen_peserta: {
+          include: {
+            jadwal_asesmen: {
+              include: {
+                users: { select: { profil: { select: { namaLengkap: true } } } }
+              }
+            }
+          }
+        },
         _count: {
           select: {
             dokumen: true,

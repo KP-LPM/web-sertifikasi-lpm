@@ -71,7 +71,7 @@ export function SignatureField({
     if (value.type === "auto") {
       return (
         <div className="flex flex-col items-center justify-center opacity-80 h-20">
-          <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-150">
+          <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-110">
             {fallbackName || "Tanda Tangan"}
           </div>
           <div className="text-[9px] text-slate-500 mt-2">

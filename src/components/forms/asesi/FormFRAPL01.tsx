@@ -35,24 +35,16 @@ export function EFormApl01({
 
   const Input = ({ field, fallback }: { field: string; fallback?: string }) => {
     const value = formData[field] as string | undefined;
-    if (formData?.readOnly) return <span>{value || fallback || ""}</span>;
-    return (
-      <input
-        type="text"
-        className="w-full border border-slate-300 rounded p-1 text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]"
-        value={value || ""}
-        onChange={(e) => onChange({ ...formData, [field]: e.target.value })}
-        placeholder={fallback || ""}
-      />
-    );
+    return <span>{value || fallback || "-"}</span>;
   };
 
   // Menggunakan React.useState agar tidak error
   const [highlightTujuan, setHighlightTujuan] = React.useState(false);
+  const [highlightTtd, setHighlightTtd] = React.useState(false);
 
   // Menggunakan React.useEffect
   React.useEffect(() => {
-    const handleScroll = () => {
+    const handleScrollTujuan = () => {
       setHighlightTujuan(true);
       setTimeout(() => {
         document
@@ -60,9 +52,23 @@ export function EFormApl01({
           ?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
     };
-    window.addEventListener("scroll-to-apl01-error", handleScroll);
-    return () =>
-      window.removeEventListener("scroll-to-apl01-error", handleScroll);
+
+    const handleScrollTtd = () => {
+      setHighlightTtd(true);
+      setTimeout(() => {
+        document
+          .getElementById("ttd-asesi-row")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    };
+
+    window.addEventListener("scroll-to-apl01-error", handleScrollTujuan);
+    window.addEventListener("scroll-to-apl01-signature-error", handleScrollTtd);
+    
+    return () => {
+      window.removeEventListener("scroll-to-apl01-error", handleScrollTujuan);
+      window.removeEventListener("scroll-to-apl01-signature-error", handleScrollTtd);
+    };
   }, []);
 
   const handleChangeTujuan = (val: string) => {
@@ -78,11 +84,9 @@ export function EFormApl01({
   };
 
   return (
-    <div className="bg-white border border-slate-300 shadow-sm p-8 w-full mx-auto font-sans text-xs sm:text-sm text-slate-800 space-y-6">
+    <div className="bg-white border border-slate-300 shadow-sm p-4 md:p-6 lg:p-8 w-full mx-auto font-sans text-xs sm:text-sm text-slate-800 space-y-6">
       <div className="flex items-center gap-4 border-b-2 border-slate-800 pb-4">
-        <div className="w-16 h-16 rounded-full border border-slate-400 flex items-center justify-center shrink-0 font-bold text-[10px] text-center p-1">
-          LSP KJN
-        </div>
+        <img src="/logo-lsp.png" alt="Logo LSP" className="w-16 h-16 object-contain shrink-0" />
         <div className="min-w-0">
           <h2 className="font-black text-lg">
             FR.APL.01 PERMOHONAN SERTIFIKASI KOMPETENSI
@@ -559,7 +563,7 @@ export function EFormApl01({
                       <Input field="namaLengkap" fallback="AHMAD FAUZI" />
                     </span>
                   </div>
-                  <div className="mb-4">
+                  <div className={`mb-4 p-2 ${highlightTtd && !formData.ttdAsesi ? "bg-red-50 border-l-4 border-red-500 transition-colors" : ""}`} id="ttd-asesi-row">
                     <span className="font-semibold inline-block mb-1">
                       Tanda Tangan dan Tanggal:{" "}
                       {!formData.readOnly && !formData.isAdmin ? (
@@ -569,11 +573,16 @@ export function EFormApl01({
                       )}
                     </span>
                     <SignatureField
-                      value={getSignatureValue(formData.ttdAsesi)}
-                      onChange={(val) =>
-                        onChange({ ...formData, ttdAsesi: val })
+                      value={
+                        formData.ttdAsesi
+                          ? getSignatureValue(formData.ttdAsesi)
+                          : {
+                              type: formData.signature ? "upload" : "auto",
+                              data: formData.signature as string,
+                            }
                       }
-                      readOnly={formData.readOnly || formData.isAdmin}
+                      onChange={() => {}}
+                      readOnly={true}
                       fallbackName={
                         (formData.signature as string) ||
                         (formData.namaLengkap as string)

@@ -13,6 +13,8 @@ import {
   X,
   Scale,
   ArrowLeft,
+  Calendar,
+  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
@@ -25,8 +27,12 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     id: 1,
     asesmen: "Uji Kompetensi",
     skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
+    kodeSkema: "SS-01",
     tipeTuk: "Mandiri",
-    metodePelaksanaan: "Offline",
+    alamat: "Jl. Ahmad Yani No. 123, Bandung",
+    tanggalAsesmen: "02/08/2026",
+    linkVirtualMeeting: "-",
+    asesor: "Dr. Hendra",
     jenisBukti: "Portofolio & Praktik",
     noSertifikat: "SER/2026/07/0423",
     tanggalBerlaku: "15/07/2029",
@@ -38,8 +44,12 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     id: 2,
     asesmen: "Uji Teori & Praktik",
     skemaSertifikasi: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+    kodeSkema: "SS-02",
     tipeTuk: "Sewaktu",
-    metodePelaksanaan: "Offline",
+    alamat: "Gedung A, Lt. 2, Kampus Utama",
+    tanggalAsesmen: "05/08/2026",
+    linkVirtualMeeting: "-",
+    asesor: "Asesor Budi",
     jenisBukti: "Praktik & Tes Lisan",
     noSertifikat: "-",
     tanggalBerlaku: "-",
@@ -51,8 +61,12 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     id: 3,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penerjemah Teks Umum",
+    kodeSkema: "SS-03",
     tipeTuk: "Mandiri",
-    metodePelaksanaan: "Online",
+    alamat: "Online",
+    tanggalAsesmen: "04/08/2026",
+    linkVirtualMeeting: "https://meet.google.com/abc-defg-hij",
+    asesor: "Asesor Siti",
     jenisBukti: "Portofolio",
     noSertifikat: "Menunggu Terbit",
     tanggalBerlaku: "Menunggu Terbit",
@@ -64,8 +78,12 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     id: 4,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Auditor Halal",
-    tipeTuk: "Mandiri B",
-    metodePelaksanaan: "Offline",
+    kodeSkema: "SS-04",
+    tipeTuk: "Sewaktu",
+    alamat: "Ruang TUK LSP",
+    tanggalAsesmen: "05/08/2026",
+    linkVirtualMeeting: "-",
+    asesor: "Asesor Anton",
     jenisBukti: "Praktik",
     noSertifikat: "-",
     tanggalBerlaku: "-",
@@ -77,8 +95,12 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     id: 5,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Penyelia Halal",
+    kodeSkema: "SS-05",
     tipeTuk: "Mandiri",
-    metodePelaksanaan: "Online",
+    alamat: "Online",
+    tanggalAsesmen: "04/08/2026",
+    linkVirtualMeeting: "https://meet.google.com/xyz-abcd-efg",
+    asesor: "Dr. Laila",
     jenisBukti: "Portofolio",
     noSertifikat: "-",
     tanggalBerlaku: "-",
@@ -90,8 +112,12 @@ const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
     id: 6,
     asesmen: "Asesmen Mandiri",
     skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
-    tipeTuk: "Mandiri B",
-    metodePelaksanaan: "Offline",
+    kodeSkema: "SS-01",
+    tipeTuk: "Sewaktu",
+    alamat: "Ruang TUK LSP",
+    tanggalAsesmen: "05/08/2026",
+    linkVirtualMeeting: "-",
+    asesor: "Asesor Budi",
     jenisBukti: "Portofolio",
     noSertifikat: "Menunggu Terbit",
     tanggalBerlaku: "Menunggu Terbit",
@@ -125,6 +151,7 @@ export default function AsesiHistoryPage() {
   });
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   React.useEffect(() => {
     if (isBandingFormOpen) {
@@ -164,7 +191,7 @@ export default function AsesiHistoryPage() {
       item.asesmen.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.skemaSertifikasi.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.tipeTuk.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.noSertifikat.toLowerCase().includes(searchQuery.toLowerCase());
+      (item.noSertifikat || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === "Semua" || item.statusAsesmen === statusFilter;
@@ -224,7 +251,7 @@ export default function AsesiHistoryPage() {
   // Metrics specifically for the history view
   const totalSertifikat = ASSESSMENT_HISTORY_DATA.filter(
     (item) =>
-      item.noSertifikat !== "-" && item.noSertifikat !== "Menunggu Terbit",
+      item.noSertifikat && item.noSertifikat !== "-" && item.noSertifikat !== "Menunggu Terbit",
   ).length;
   const totalAsesmenSelesai = ASSESSMENT_HISTORY_DATA.filter(
     (item) => item.statusAsesmen === "Selesai",
@@ -243,7 +270,7 @@ export default function AsesiHistoryPage() {
       namaAsesi: user?.username || "Asesi",
       asesmen: selectedAssessment?.asesmen || "",
       skemaSertifikasi: selectedAssessment?.skemaSertifikasi || "",
-      status: "Menunggu Verifikasi",
+      status: "Dalam Penyelidikan",
       alasan: bandingForm.alasan,
       penjelasan: bandingForm.alasan,
       dijelaskan: bandingForm.dijelaskan ?? false,
@@ -268,6 +295,44 @@ export default function AsesiHistoryPage() {
   if (selectedAssessment && isBandingFormOpen) {
     return (
       <>
+        {/* Cancel Modal */}
+        {showCancelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mb-4 shrink-0">
+                  <AlertTriangle size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  Batalkan Pengajuan?
+                </h3>
+                <p className="text-slate-600 text-sm">
+                  Apakah Anda yakin ingin membatalkan? Data yang telah Anda isi tidak akan tersimpan.
+                </p>
+              </div>
+              <div className="bg-slate-50 px-6 py-4 flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 transition-colors"
+                >
+                  Tidak
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setIsBandingFormOpen(false);
+                    setSelectedAssessment(null);
+                    setExtraCrumbs([]);
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors"
+                >
+                  Ya, Batalkan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Submit Modal */}
         {showSubmitModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -316,19 +381,15 @@ export default function AsesiHistoryPage() {
         )}
 
         <div className="w-full space-y-6 text-sm text-gray-700">
-          <div className="w-full max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-none mx-auto animate-in fade-in zoom-in-95 duration-200">
             <button
-              onClick={() => {
-                setIsBandingFormOpen(false);
-                setSelectedAssessment(null);
-                setExtraCrumbs([]);
-              }}
+              onClick={() => setShowCancelModal(true)}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-4 mt-0.5"
               title="Kembali"
             >
               <ArrowLeft size={18} />
             </button>
-            <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
+            <div className="w-full max-w-none mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
                   <Scale className="text-[#008BE3]" size={20} /> Form Ajukan
@@ -516,36 +577,21 @@ export default function AsesiHistoryPage() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-slate-300 p-4" colSpan={3}>
-                      <div className="flex flex-col sm:flex-row gap-8 mt-2">
+                    <td className="border-2 border-slate-800 p-4" colSpan={3}>
+                      <div className="flex flex-col sm:flex-row gap-8 mt-2 items-center">
                         <div className="min-w-0">
                           <span className="font-semibold mb-2 block">
                             Tanda tangan Asesi :
                           </span>
-                          <label className="flex items-center gap-2 cursor-pointer p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                            <input
-                              type="checkbox"
-                              className="w-4 h-4"
-                              checked={bandingForm.ttdAsesi}
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>,
-                              ) =>
-                                setBandingForm({
-                                  ...bandingForm,
-                                  ttdAsesi: e.target.checked,
-                                })
-                              }
-                            />
-                            <span className="font-medium text-xs">
-                              Gunakan tanda tangan dari profil
-                            </span>
-                          </label>
+                          <div className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[#008BE3] italic">
+                            Telah ditandatangani oleh {user?.username || "Ahmad Fauzi"}
+                          </div>
                         </div>
                         <div className="min-w-0">
                           <span className="font-semibold mb-2 block">
                             Tanggal :
                           </span>
-                          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium">
+                          <div className="px-4 py-2 text-slate-900 font-medium border-b-2 border-slate-800">
                             {new Date().toLocaleDateString("en-GB")}
                           </div>
                         </div>
@@ -556,11 +602,7 @@ export default function AsesiHistoryPage() {
               </table>
               <div className="pt-8 border-t border-slate-100 flex justify-end gap-3">
                 <button
-                  onClick={() => {
-                    setIsBandingFormOpen(false);
-                    setSelectedAssessment(null);
-                    setExtraCrumbs([]);
-                  }}
+                  onClick={() => setShowCancelModal(true)}
                   className="px-6 py-2 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors"
                 >
                   Batal
@@ -577,10 +619,6 @@ export default function AsesiHistoryPage() {
                     }
                     if (!bandingForm.alasan.trim()) {
                       showNotification("Harap isi alasan banding.", "error");
-                      return;
-                    }
-                    if (!bandingForm.ttdAsesi) {
-                      showNotification("Harap centang tanda tangan.", "error");
                       return;
                     }
 
@@ -748,22 +786,28 @@ export default function AsesiHistoryPage() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
                   Skema Sertifikasi
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                   TUK
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
-                  Metode Pelaksanaan
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-75 sticky top-0 z-20 bg-[#0F172A]">
+                  Alamat
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-55 sticky top-0 z-20 bg-[#0F172A]">
-                  Nomor Sertifikat
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  Tanggal Asesmen
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
-                  Tanggal Berlaku
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
+                  Asesor
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-40 sticky top-0 z-20 bg-[#0F172A]">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
+                  Virtual Meeting
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                   Hasil
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs whitespace-nowrap min-w-40 top-0">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-40 top-0">
                   Aksi
                 </th>
               </tr>
@@ -791,9 +835,14 @@ export default function AsesiHistoryPage() {
                     {/* Column 2: Skema Sertifikasi */}
                     <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
-                        <span className="line-clamp-2 leading-tight">
-                          {item.skemaSertifikasi}
-                        </span>
+                        <div className="min-w-0">
+                          <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                            {item.skemaSertifikasi}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                            {item.kodeSkema || "-"}
+                          </div>
+                        </div>
                       </div>
                     </td>
 
@@ -815,41 +864,53 @@ export default function AsesiHistoryPage() {
                       </span>
                     </td>
 
-                    {/* Column 4: Metode Pelaksanaan */}
-                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs border ${
-                          item.metodePelaksanaan === "Online"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : "bg-stone-50 text-stone-700 border-stone-200"
-                        }`}
-                      >
-                        {item.metodePelaksanaan === "Online"
-                          ? "Online (Virtual)"
-                          : "Offline (Luring)"}
+                    {/* Column 4: Alamat */}
+                    <td
+                      className="px-6 py-4 text-xs text-gray-500 font-medium"
+                      title={item.alamat}
+                    >
+                      {item.alamat}
+                    </td>
+
+                    {/* Column 5: Tanggal Asesmen */}
+                    <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Calendar size={14} className="text-gray-400" />
+                        {item.tanggalAsesmen}
                       </span>
                     </td>
-                    {/* Column 6: Nomor Sertifikat */}
-                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                      {item.noSertifikat !== "-" ? (
-                        <span className="font-mono text-[#008BE3] font-semibold bg-[#008BE3]/5 px-2 py-1 rounded">
-                          {item.noSertifikat}
+
+                    {/* Column 6: Asesor */}
+                    <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold">
+                      <span className="inline-flex items-center gap-1.5">
+                        <User size={14} className="text-gray-400" />
+                        {item.asesor}
+                      </span>
+                    </td>
+
+                    {/* Column 7: Virtual Meeting */}
+                    <td className="px-6 py-4 text-xs md:text-sm">
+                      {item.linkVirtualMeeting &&
+                      item.linkVirtualMeeting !== "-" ? (
+                        <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                          <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
+                          Tersedia
+                        </span>
+                      ) : item.alamat === "Online" ||
+                        item.tipeTuk.includes("Virtual") ||
+                        item.tipeTuk.includes("Online") ? (
+                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                          <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                          Belum Tersedia
                         </span>
                       ) : (
-                        <span className="text-gray-400 font-semibold">-</span>
+                        <span className="text-gray-400 font-semibold px-2">
+                          -
+                        </span>
                       )}
                     </td>
 
-                    {/* Column 7: Tanggal Berlaku */}
-                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap font-medium text-slate-700">
-                      {item.tanggalBerlaku !== "-" ? (
-                        item.tanggalBerlaku
-                      ) : (
-                        <span className="text-gray-400 font-semibold">-</span>
-                      )}
-                    </td>
-
-                    {/* Column 8: Status */}
+                    {/* Column 8: Hasil (Rekomendasi) */}
                     <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
@@ -871,7 +932,13 @@ export default function AsesiHistoryPage() {
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                    {/* Column 9: Status */}
+                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                      {getStatusBadge(item.statusAsesmen)}
+                    </td>
+
+                    {/* Column 10: Aksi */}
+                    <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setSelectedAssessment(item)}
@@ -1017,21 +1084,26 @@ export default function AsesiHistoryPage() {
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="text-slate-500 font-semibold">Metode</span>
+                <span className="text-slate-500 font-semibold">Alamat</span>
                 <span className="col-span-2 text-slate-900">
-                  {selectedAssessment.metodePelaksanaan === "Online"
-                    ? "Online (Virtual)"
-                    : "Offline (Luring)"}
+                  {selectedAssessment.alamat}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <span className="text-slate-500 font-semibold">
-                  Jenis Bukti
+                  Tanggal Asesmen
                 </span>
                 <span className="col-span-2 text-slate-900">
-                  {selectedAssessment.jenisBukti}
+                  {selectedAssessment.tanggalAsesmen}
                 </span>
-              </div>{" "}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <span className="text-slate-500 font-semibold">Asesor</span>
+                <span className="col-span-2 text-slate-900">
+                  {selectedAssessment.asesor}
+                </span>
+              </div>
+
               <div className="grid grid-cols-3 gap-2 items-center">
                 <span className="text-slate-500 font-semibold">Status</span>
                 <span className="col-span-2">
@@ -1063,7 +1135,7 @@ export default function AsesiHistoryPage() {
                   </span>
                 </span>
               </div>
-              {selectedAssessment.noSertifikat !== "-" && (
+              {selectedAssessment.noSertifikat && selectedAssessment.noSertifikat !== "-" && (
                 <>
                   <div className="grid grid-cols-3 gap-2">
                     <span className="text-slate-500 font-semibold">

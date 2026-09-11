@@ -600,23 +600,27 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           </span>
           <div className="mb-4">
             {asesiSignature ? (
-              <img
-                id="signature-container"
-                src={asesiSignature}
-                alt="Tanda Tangan Asesi"
-                className="h-20 object-contain cursor-pointer"
-                onClick={() => !props.readOnly && setIsAsesiSigModalOpen(true)}
-              />
+              asesiSignature.startsWith("data:") || asesiSignature.startsWith("http") || asesiSignature.startsWith("/") ? (
+                <img
+                  id="signature-container"
+                  src={asesiSignature}
+                  alt="Tanda Tangan Asesi"
+                  className="h-20 object-contain cursor-default"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center opacity-80 h-20 cursor-default">
+                  <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-110">
+                    {asesiSignature}
+                  </div>
+                  <div className="text-[9px] text-slate-500 mt-2">
+                    Ditandatangani secara elektronik
+                  </div>
+                </div>
+              )
             ) : (
-              <button
-                id="signature-container"
-                type="button"
-                disabled={props.readOnly}
-                onClick={() => setIsAsesiSigModalOpen(true)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
-              >
-                Tanda Tangan Asesi
-              </button>
+                <div className="h-20 flex items-center justify-center text-gray-400 text-sm">
+                  Belum ada tanda tangan
+                </div>
             )}
           </div>
           <div className="w-full">
