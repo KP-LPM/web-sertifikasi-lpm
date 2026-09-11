@@ -51,14 +51,14 @@ export class PengajuanRepository {
           dokumen:
             data.dokumen && data.dokumen.length > 0
               ? {
-                  create: data.dokumen,
-                }
+                create: data.dokumen,
+              }
               : undefined,
           asesmenMandiri:
             data.asesmenMandiri && data.asesmenMandiri.length > 0
               ? {
-                  create: data.asesmenMandiri,
-                }
+                create: data.asesmenMandiri,
+              }
               : undefined,
         },
         include: {

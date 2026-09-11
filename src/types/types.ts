@@ -787,6 +787,7 @@ export interface RegisteredAssessment {
   id: number; // pengajuan_skema.id
   asesmen: string;
   skemaSertifikasi: string;
+  kodeSkema?: string;
   tipeTuk: TipeTuk;
   alamat: string;
   tanggalAsesmen: string;
@@ -801,14 +802,19 @@ export interface AssessmentHistory {
   id: number; // pengajuan_skema.id
   asesmen: string;
   skemaSertifikasi: string;
+  kodeSkema?: string;
   tipeTuk: TipeTuk;
-  metodePelaksanaan: "Online" | "Offline";
+  alamat: string;
+  tanggalAsesmen: string;
+  linkVirtualMeeting: string;
+  asesor: string;
   jenisBukti: string;
-  noSertifikat: string;
-  tanggalBerlaku: string;
   rekomendasi: string;
   statusAsesmen: string;
   tanggalPenilaian?: string;
+  noSertifikat?: string;
+  tanggalBerlaku?: string;
+  metodePelaksanaan?: JenisMetode;
 }
 
 export interface AppealRecord {
@@ -862,6 +868,9 @@ export interface Profile {
   tipeTuk?: string;
   berpengalaman?: boolean;
   avatar?: string;
+  asesmenDate?: string;
+  asesorName?: string;
+  virtualMeeting?: string;
 }
 
 export interface KompetensiItem {

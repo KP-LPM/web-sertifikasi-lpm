@@ -13,6 +13,8 @@ import {
   X,
   Scale,
   ArrowLeft,
+  Calendar,
+  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
@@ -62,13 +64,22 @@ export default function AsesiHistoryPage() {
               tanggal?: string | Date;
               tipe_tuk?: string;
               alamat?: string;
+              link_video?: string;
               users?: { username?: string; profil?: { namaLengkap?: string } };
+              master_tuk?: { nama?: string; alamat?: string };
             };
           }>;
         }
 
         const mapped: AssessmentHistory[] = (data as RawPengajuan[]).map((item) => {
           const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+          const asesorName =
+            jadwal?.users?.profil?.namaLengkap ||
+            jadwal?.users?.username ||
+            item.apl02_penilaian?.nama_asesor ||
+            "Belum Ditugaskan";
+          const rawDate = jadwal?.tanggal || item.tglPengajuan || item.createdAt;
+          const formattedDate = formatDateID(rawDate);
           const tipeTuk = (jadwal?.tipe_tuk ||
             item.master_tuk?.tipe ||
             item.tuk ||
@@ -77,6 +88,13 @@ export default function AsesiHistoryPage() {
             String(tipeTuk).toLowerCase().includes("online") ||
             String(tipeTuk).toLowerCase().includes("virtual");
           const metodePelaksanaan = isOnline ? "Online" : "Offline";
+          const alamat =
+            jadwal?.alamat ||
+            jadwal?.master_tuk?.alamat ||
+            item.master_tuk?.alamat ||
+            (isOnline ? "Online" : "-");
+          const linkMeeting =
+            jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
           const noSertifikat =
             item.sertifikat?.nomor_sertifikat ||
             (item.status === "Selesai" && item.hasil_asesmen?.hasil === "Kompeten"
@@ -98,6 +116,10 @@ export default function AsesiHistoryPage() {
             asesmen: item.jenisAsesmen || "Uji Kompetensi",
             skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
             tipeTuk,
+            alamat,
+            tanggalAsesmen: formattedDate,
+            linkVirtualMeeting: linkMeeting,
+            asesor: asesorName,
             metodePelaksanaan,
             jenisBukti: "Portofolio & Praktik",
             noSertifikat,
@@ -141,6 +163,7 @@ export default function AsesiHistoryPage() {
   });
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   React.useEffect(() => {
     if (isBandingFormOpen) {
@@ -180,7 +203,7 @@ export default function AsesiHistoryPage() {
       item.asesmen.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.skemaSertifikasi.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.tipeTuk.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.noSertifikat.toLowerCase().includes(searchQuery.toLowerCase());
+      (item.noSertifikat || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === "Semua" || item.statusAsesmen === statusFilter;
@@ -240,7 +263,7 @@ export default function AsesiHistoryPage() {
   // Metrics specifically for the history view
   const totalSertifikat = historyData.filter(
     (item) =>
-      item.noSertifikat !== "-" && item.noSertifikat !== "Menunggu Terbit",
+      item.noSertifikat && item.noSertifikat !== "-" && item.noSertifikat !== "Menunggu Terbit",
   ).length;
   const totalAsesmenSelesai = historyData.filter(
     (item) => item.statusAsesmen === "Selesai" || item.rekomendasi === "Kompeten",
@@ -303,6 +326,44 @@ export default function AsesiHistoryPage() {
   if (selectedAssessment && isBandingFormOpen) {
     return (
       <>
+        {/* Cancel Modal */}
+        {showCancelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mb-4 shrink-0">
+                  <AlertTriangle size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  Batalkan Pengajuan?
+                </h3>
+                <p className="text-slate-600 text-sm">
+                  Apakah Anda yakin ingin membatalkan? Data yang telah Anda isi tidak akan tersimpan.
+                </p>
+              </div>
+              <div className="bg-slate-50 px-6 py-4 flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 transition-colors"
+                >
+                  Tidak
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setIsBandingFormOpen(false);
+                    setSelectedAssessment(null);
+                    setExtraCrumbs([]);
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors"
+                >
+                  Ya, Batalkan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Submit Modal */}
         {showSubmitModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -351,19 +412,15 @@ export default function AsesiHistoryPage() {
         )}
 
         <div className="w-full space-y-6 text-sm text-gray-700">
-          <div className="w-full max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-none mx-auto animate-in fade-in zoom-in-95 duration-200">
             <button
-              onClick={() => {
-                setIsBandingFormOpen(false);
-                setSelectedAssessment(null);
-                setExtraCrumbs([]);
-              }}
+              onClick={() => setShowCancelModal(true)}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-4 mt-0.5"
               title="Kembali"
             >
               <ArrowLeft size={18} />
             </button>
-            <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
+            <div className="w-full max-w-none mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 space-y-8 relative mb-8 text-slate-800 text-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
                   <Scale className="text-[#008BE3]" size={20} /> Form Ajukan
@@ -551,36 +608,21 @@ export default function AsesiHistoryPage() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-slate-300 p-4" colSpan={3}>
-                      <div className="flex flex-col sm:flex-row gap-8 mt-2">
+                    <td className="border-2 border-slate-800 p-4" colSpan={3}>
+                      <div className="flex flex-col sm:flex-row gap-8 mt-2 items-center">
                         <div className="min-w-0">
                           <span className="font-semibold mb-2 block">
                             Tanda tangan Asesi :
                           </span>
-                          <label className="flex items-center gap-2 cursor-pointer p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                            <input
-                              type="checkbox"
-                              className="w-4 h-4"
-                              checked={bandingForm.ttdAsesi}
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>,
-                              ) =>
-                                setBandingForm({
-                                  ...bandingForm,
-                                  ttdAsesi: e.target.checked,
-                                })
-                              }
-                            />
-                            <span className="font-medium text-xs">
-                              Gunakan tanda tangan dari profil
-                            </span>
-                          </label>
+                          <div className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[#008BE3] italic">
+                            Telah ditandatangani oleh {user?.username || "Ahmad Fauzi"}
+                          </div>
                         </div>
                         <div className="min-w-0">
                           <span className="font-semibold mb-2 block">
                             Tanggal :
                           </span>
-                          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium">
+                          <div className="px-4 py-2 text-slate-900 font-medium border-b-2 border-slate-800">
                             {new Date().toLocaleDateString("en-GB")}
                           </div>
                         </div>
@@ -591,11 +633,7 @@ export default function AsesiHistoryPage() {
               </table>
               <div className="pt-8 border-t border-slate-100 flex justify-end gap-3">
                 <button
-                  onClick={() => {
-                    setIsBandingFormOpen(false);
-                    setSelectedAssessment(null);
-                    setExtraCrumbs([]);
-                  }}
+                  onClick={() => setShowCancelModal(true)}
                   className="px-6 py-2 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors"
                 >
                   Batal
@@ -612,10 +650,6 @@ export default function AsesiHistoryPage() {
                     }
                     if (!bandingForm.alasan.trim()) {
                       showNotification("Harap isi alasan banding.", "error");
-                      return;
-                    }
-                    if (!bandingForm.ttdAsesi) {
-                      showNotification("Harap centang tanda tangan.", "error");
                       return;
                     }
 
@@ -783,22 +817,28 @@ export default function AsesiHistoryPage() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
                   Skema Sertifikasi
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                   TUK
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
-                  Metode Pelaksanaan
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-75 sticky top-0 z-20 bg-[#0F172A]">
+                  Alamat
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-55 sticky top-0 z-20 bg-[#0F172A]">
-                  Nomor Sertifikat
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  Tanggal Asesmen
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
-                  Tanggal Berlaku
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
+                  Asesor
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-40 sticky top-0 z-20 bg-[#0F172A]">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
+                  Virtual Meeting
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                   Hasil
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs whitespace-nowrap min-w-40 top-0">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-40 top-0">
                   Aksi
                 </th>
               </tr>
@@ -825,10 +865,10 @@ export default function AsesiHistoryPage() {
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
                       <div
                         className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
-                            ? "bg-[#008BE3]/10 text-[#008BE3]"
-                            : idx % 3 === 1
-                              ? "bg-[#84CC16]/10 text-[#73B412]"
-                              : "bg-slate-100 text-slate-600"
+                          ? "bg-[#008BE3]/10 text-[#008BE3]"
+                          : idx % 3 === 1
+                            ? "bg-[#84CC16]/10 text-[#73B412]"
+                            : "bg-slate-100 text-slate-600"
                           }`}
                       >
                         {(currentPage - 1) * itemsPerPage + idx + 1}
@@ -837,9 +877,14 @@ export default function AsesiHistoryPage() {
                     {/* Column 2: Skema Sertifikasi */}
                     <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
-                        <span className="line-clamp-2 leading-tight">
-                          {item.skemaSertifikasi}
-                        </span>
+                        <div className="min-w-0">
+                          <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                            {item.skemaSertifikasi}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                            {item.kodeSkema || "-"}
+                          </div>
+                        </div>
                       </div>
                     </td>
 
@@ -847,13 +892,13 @@ export default function AsesiHistoryPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk.includes("Sewaktu")
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : item.tipeTuk.includes("Tempat Kerja")
-                              ? "bg-purple-50 text-purple-700 border-purple-200"
-                              : item.tipeTuk.includes("Virtual") ||
-                                item.tipeTuk.includes("Online")
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-orange-50 text-orange-700 border-orange-200"
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : item.tipeTuk.includes("Tempat Kerja")
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
+                            : item.tipeTuk.includes("Virtual") ||
+                              item.tipeTuk.includes("Online")
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-orange-50 text-orange-700 border-orange-200"
                           }`}
                       >
                         {item.tipeTuk}
@@ -863,44 +908,55 @@ export default function AsesiHistoryPage() {
                     {/* Column 4: Metode Pelaksanaan */}
                     <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs border ${item.metodePelaksanaan === "Online"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : "bg-stone-50 text-stone-700 border-stone-200"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs border ${item.tipeTuk === "Online"
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-stone-50 text-stone-700 border-stone-200"
                           }`}
                       >
-                        {item.metodePelaksanaan === "Online"
+                        {item.tipeTuk === "Online"
                           ? "Online (Virtual)"
                           : "Offline (Luring)"}
                       </span>
                     </td>
-                    {/* Column 6: Nomor Sertifikat */}
-                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                      {item.noSertifikat !== "-" ? (
-                        <span className="font-mono text-[#008BE3] font-semibold bg-[#008BE3]/5 px-2 py-1 rounded">
-                          {item.noSertifikat}
+
+                    {/* Column 6: Asesor */}
+                    <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold">
+                      <span className="inline-flex items-center gap-1.5">
+                        <User size={14} className="text-gray-400" />
+                        {item.asesor}
+                      </span>
+                    </td>
+
+                    {/* Column 7: Virtual Meeting */}
+                    <td className="px-6 py-4 text-xs md:text-sm">
+                      {item.linkVirtualMeeting &&
+                        item.linkVirtualMeeting !== "-" ? (
+                        <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                          <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
+                          Tersedia
+                        </span>
+                      ) : item.alamat === "Online" ||
+                        item.tipeTuk.includes("Virtual") ||
+                        item.tipeTuk.includes("Online") ? (
+                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                          <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                          Belum Tersedia
                         </span>
                       ) : (
-                        <span className="text-gray-400 font-semibold">-</span>
+                        <span className="text-gray-400 font-semibold px-2">
+                          -
+                        </span>
                       )}
                     </td>
 
-                    {/* Column 7: Tanggal Berlaku */}
-                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap font-medium text-slate-700">
-                      {item.tanggalBerlaku !== "-" ? (
-                        item.tanggalBerlaku
-                      ) : (
-                        <span className="text-gray-400 font-semibold">-</span>
-                      )}
-                    </td>
-
-                    {/* Column 8: Status */}
+                    {/* Column 8: Hasil (Rekomendasi) */}
                     <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.rekomendasi === "Kompeten"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : item.rekomendasi === "Belum Kompeten"
-                              ? "bg-red-50 text-red-700 border-red-200"
-                              : "bg-slate-100 text-slate-600 border-slate-200"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : item.rekomendasi === "Belum Kompeten"
+                            ? "bg-red-50 text-red-700 border-red-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
                           }`}
                       >
                         {item.rekomendasi === "Kompeten" ? (
@@ -914,7 +970,13 @@ export default function AsesiHistoryPage() {
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                    {/* Column 9: Status */}
+                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                      {getStatusBadge(item.statusAsesmen)}
+                    </td>
+
+                    {/* Column 10: Aksi */}
+                    <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setSelectedAssessment(item)}
@@ -963,290 +1025,301 @@ export default function AsesiHistoryPage() {
                 </tr>
               )}
             </tbody>
-          </table>
-        </div>
+          </table >
+        </div >
 
         {/* Pagination Controls */}
-        {totalPages >= 1 && (
-          <div className="p-4 px-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50 rounded-b-xl">
-            <span>
-              Menampilkan{" "}
-              <span className="font-semibold text-slate-700">
-                {(currentPage - 1) * itemsPerPage + 1}
-              </span>{" "}
-              hingga{" "}
-              <span className="font-semibold text-slate-700">
-                {Math.min(currentPage * itemsPerPage, filteredHistory.length)}
-              </span>{" "}
-              dari{" "}
-              <span className="font-semibold text-slate-700">
-                {filteredHistory.length}
-              </span>{" "}
-              entri
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Sebelumnya
-              </button>
-              <div className="hidden sm:flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === page
+        {
+          totalPages >= 1 && (
+            <div className="p-4 px-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50 rounded-b-xl">
+              <span>
+                Menampilkan{" "}
+                <span className="font-semibold text-slate-700">
+                  {(currentPage - 1) * itemsPerPage + 1}
+                </span>{" "}
+                hingga{" "}
+                <span className="font-semibold text-slate-700">
+                  {Math.min(currentPage * itemsPerPage, filteredHistory.length)}
+                </span>{" "}
+                dari{" "}
+                <span className="font-semibold text-slate-700">
+                  {filteredHistory.length}
+                </span>{" "}
+                entri
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Sebelumnya
+                </button>
+                <div className="hidden sm:flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === page
                           ? "bg-[#008BE3] text-white border border-[#008BE3]"
                           : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Selanjutnya
+                </button>
               </div>
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Selanjutnya
-              </button>
             </div>
-          </div>
-        )}
-      </section>
+          )
+        }
+      </section >
 
       {/* Detail Asesmen Modal */}
-      {selectedAssessment && !isBandingFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="font-black text-slate-800 text-lg">
-                Detail Asesmen
-              </h3>
-              <button
-                onClick={() => setSelectedAssessment(null)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="p-5 space-y-4 font-medium text-sm">
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-slate-500 font-semibold">
-                  Skema Sertifikasi
-                </span>
-                <span className="col-span-2 font-bold text-slate-900">
-                  {selectedAssessment.skemaSertifikasi}
-                </span>
+      {
+        selectedAssessment && !isBandingFormOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 className="font-black text-slate-800 text-lg">
+                  Detail Asesmen
+                </h3>
+                <button
+                  onClick={() => setSelectedAssessment(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                >
+                  <X size={16} />
+                </button>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-slate-500 font-semibold">Asesmen</span>
-                <span className="col-span-2 font-bold text-slate-900">
-                  {selectedAssessment.asesmen}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-slate-500 font-semibold">TUK</span>
-                <span className="col-span-2 font-bold text-slate-900">
-                  {selectedAssessment.tipeTuk}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-slate-500 font-semibold">Metode</span>
-                <span className="col-span-2 text-slate-900">
-                  {selectedAssessment.metodePelaksanaan === "Online"
-                    ? "Online (Virtual)"
-                    : "Offline (Luring)"}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-slate-500 font-semibold">
-                  Jenis Bukti
-                </span>
-                <span className="col-span-2 text-slate-900">
-                  {selectedAssessment.jenisBukti}
-                </span>
-              </div>{" "}
-              <div className="grid grid-cols-3 gap-2 items-center">
-                <span className="text-slate-500 font-semibold">Status</span>
-                <span className="col-span-2">
-                  {getStatusBadge(selectedAssessment.statusAsesmen)}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 items-center">
-                <span className="text-slate-500 font-semibold">
-                  Rekomendasi
-                </span>
-                <span className="col-span-2">
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${selectedAssessment.rekomendasi === "Kompeten"
+              <div className="p-5 space-y-4 font-medium text-sm">
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">
+                    Skema Sertifikasi
+                  </span>
+                  <span className="col-span-2 font-bold text-slate-900">
+                    {selectedAssessment.skemaSertifikasi}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">Asesmen</span>
+                  <span className="col-span-2 font-bold text-slate-900">
+                    {selectedAssessment.asesmen}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">TUK</span>
+                  <span className="col-span-2 font-bold text-slate-900">
+                    {selectedAssessment.tipeTuk}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">Alamat</span>
+                  <span className="col-span-2 text-slate-900">
+                    {selectedAssessment.alamat}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">
+                    Tanggal Asesmen
+                  </span>
+                  <span className="col-span-2 text-slate-900">
+                    {selectedAssessment.tanggalAsesmen}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">Asesor</span>
+                  <span className="col-span-2 text-slate-900">
+                    {selectedAssessment.asesor}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="text-slate-500 font-semibold">Status</span>
+                  <span className="col-span-2">
+                    {getStatusBadge(selectedAssessment.statusAsesmen)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="text-slate-500 font-semibold">
+                    Rekomendasi
+                  </span>
+                  <span className="col-span-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${selectedAssessment.rekomendasi === "Kompeten"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : selectedAssessment.rekomendasi === "Belum Kompeten"
                           ? "bg-red-50 text-red-700 border-red-200"
                           : "bg-slate-100 text-slate-600 border-slate-200"
-                      }`}
-                  >
-                    {selectedAssessment.rekomendasi === "Kompeten" ? (
-                      <CheckCircle size={12} />
-                    ) : selectedAssessment.rekomendasi === "Belum Kompeten" ? (
-                      <AlertTriangle size={12} />
-                    ) : (
-                      <Clock size={12} />
-                    )}
-                    {selectedAssessment.rekomendasi}
+                        }`}
+                    >
+                      {selectedAssessment.rekomendasi === "Kompeten" ? (
+                        <CheckCircle size={12} />
+                      ) : selectedAssessment.rekomendasi === "Belum Kompeten" ? (
+                        <AlertTriangle size={12} />
+                      ) : (
+                        <Clock size={12} />
+                      )}
+                      {selectedAssessment.rekomendasi}
+                    </span>
                   </span>
-                </span>
-              </div>
-              {selectedAssessment.noSertifikat !== "-" && (
-                <>
-                  <div className="grid grid-cols-3 gap-2">
-                    <span className="text-slate-500 font-semibold">
-                      No. Sertifikat
-                    </span>
-                    <span className="col-span-2 text-slate-900">
-                      {selectedAssessment.noSertifikat}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <span className="text-slate-500 font-semibold">
-                      Tanggal Berlaku
-                    </span>
-                    <span className="col-span-2 text-slate-900">
-                      {selectedAssessment.tanggalBerlaku}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-            {selectedAssessment.rekomendasi === "Belum Kompeten" &&
-              (() => {
-                let diffDays = 0;
-                if (
-                  selectedAssessment.tanggalPenilaian &&
-                  selectedAssessment.tanggalPenilaian !== "-"
-                ) {
-                  const parts = selectedAssessment.tanggalPenilaian.split("/");
-                  if (parts.length === 3) {
-                    const asDate = new Date(
-                      parseInt(parts[2]),
-                      parseInt(parts[1]) - 1,
-                      parseInt(parts[0]),
-                    );
-                    const diffTime = Math.abs(
-                      new Date().getTime() - asDate.getTime(),
-                    );
-                    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  }
-                }
-                if (diffDays <= 2) {
-                  return (
-                    <div className="p-5 border-t border-slate-100 bg-red-50">
-                      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div className="text-xs text-red-700 font-medium">
-                          Anda mendapat hasil{" "}
-                          <span className="font-bold">Belum Kompeten</span>.
-                          Anda dapat mengajukan banding maksimal 2x24 jam sejak
-                          penilaian.
-                        </div>
-                        <button
-                          onClick={() => setIsBandingFormOpen(true)}
-                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold whitespace-nowrap shadow-xs transition-colors shrink-0"
-                        >
-                          Ajukan Banding
-                        </button>
-                      </div>
+                </div>
+                {selectedAssessment.noSertifikat && selectedAssessment.noSertifikat !== "-" && (
+                  <>
+                    <div className="grid grid-cols-3 gap-2">
+                      <span className="text-slate-500 font-semibold">
+                        No. Sertifikat
+                      </span>
+                      <span className="col-span-2 text-slate-900">
+                        {selectedAssessment.noSertifikat}
+                      </span>
                     </div>
-                  );
-                }
-                return null;
-              })()}
+                    <div className="grid grid-cols-3 gap-2">
+                      <span className="text-slate-500 font-semibold">
+                        Tanggal Berlaku
+                      </span>
+                      <span className="col-span-2 text-slate-900">
+                        {selectedAssessment.tanggalBerlaku}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              {selectedAssessment.rekomendasi === "Belum Kompeten" &&
+                (() => {
+                  let diffDays = 0;
+                  if (
+                    selectedAssessment.tanggalPenilaian &&
+                    selectedAssessment.tanggalPenilaian !== "-"
+                  ) {
+                    const parts = selectedAssessment.tanggalPenilaian.split("/");
+                    if (parts.length === 3) {
+                      const asDate = new Date(
+                        parseInt(parts[2]),
+                        parseInt(parts[1]) - 1,
+                        parseInt(parts[0]),
+                      );
+                      const diffTime = Math.abs(
+                        new Date().getTime() - asDate.getTime(),
+                      );
+                      diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    }
+                  }
+                  if (diffDays <= 2) {
+                    return (
+                      <div className="p-5 border-t border-slate-100 bg-red-50">
+                        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                          <div className="text-xs text-red-700 font-medium">
+                            Anda mendapat hasil{" "}
+                            <span className="font-bold">Belum Kompeten</span>.
+                            Anda dapat mengajukan banding maksimal 2x24 jam sejak
+                            penilaian.
+                          </div>
+                          <button
+                            onClick={() => setIsBandingFormOpen(true)}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold whitespace-nowrap shadow-xs transition-colors shrink-0"
+                          >
+                            Ajukan Banding
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Certificate Preview Modal */}
-      {certificatePreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="font-black text-slate-800 text-lg">
-                Pratinjau Sertifikat
-              </h3>
-              <button
-                onClick={() => setCertificatePreview(null)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
-              >
-                X
-              </button>
-            </div>
-            <div className="p-8 space-y-4 flex flex-col items-center justify-center bg-slate-50 relative">
-              <div className="w-full max-w-md aspect-[1.414] bg-white border-8 border-slate-100 rounded-sm shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                <div className="absolute inset-0 border-2 border-[#008BE3]/10 m-2"></div>
-                <Award size={48} className="text-[#008BE3] mb-4" />
-                <h2 className="text-xl font-black text-slate-800 tracking-widest uppercase">
-                  Sertifikat Kompetensi
-                </h2>
-                <p className="text-xs text-slate-500 font-medium mt-1">
-                  Diberikan kepada
-                </p>
-                <h3 className="text-lg font-bold text-slate-900 mt-2 mb-2">
-                  {user?.username || "Peserta"}
+      {
+        certificatePreview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 className="font-black text-slate-800 text-lg">
+                  Pratinjau Sertifikat
                 </h3>
-                <p className="text-[10px] text-slate-500 max-w-[80%]">
-                  Telah dinyatakan KOMPETEN dalam bidang{" "}
-                  <span className="font-bold text-slate-700">
-                    {certificatePreview.skemaSertifikasi}
-                  </span>
-                </p>
-                <div className="mt-6 flex justify-between w-full px-4 items-end">
-                  <div className="text-left">
-                    <p className="text-[8px] font-bold text-slate-400">
-                      No. Sertifikat
-                    </p>
-                    <p className="text-[10px] font-semibold text-slate-800">
-                      {certificatePreview.noSertifikat}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[8px] font-bold text-slate-400">
-                      Berlaku Hingga
-                    </p>
-                    <p className="text-[10px] font-semibold text-slate-800">
-                      {certificatePreview.tanggalBerlaku}
-                    </p>
+                <button
+                  onClick={() => setCertificatePreview(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                >
+                  X
+                </button>
+              </div>
+              <div className="p-8 space-y-4 flex flex-col items-center justify-center bg-slate-50 relative">
+                <div className="w-full max-w-md aspect-[1.414] bg-white border-8 border-slate-100 rounded-sm shadow-md p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                  <div className="absolute inset-0 border-2 border-[#008BE3]/10 m-2"></div>
+                  <Award size={48} className="text-[#008BE3] mb-4" />
+                  <h2 className="text-xl font-black text-slate-800 tracking-widest uppercase">
+                    Sertifikat Kompetensi
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    Diberikan kepada
+                  </p>
+                  <h3 className="text-lg font-bold text-slate-900 mt-2 mb-2">
+                    {user?.username || "Peserta"}
+                  </h3>
+                  <p className="text-[10px] text-slate-500 max-w-[80%]">
+                    Telah dinyatakan KOMPETEN dalam bidang{" "}
+                    <span className="font-bold text-slate-700">
+                      {certificatePreview.skemaSertifikasi}
+                    </span>
+                  </p>
+                  <div className="mt-6 flex justify-between w-full px-4 items-end">
+                    <div className="text-left">
+                      <p className="text-[8px] font-bold text-slate-400">
+                        No. Sertifikat
+                      </p>
+                      <p className="text-[10px] font-semibold text-slate-800">
+                        {certificatePreview.noSertifikat}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[8px] font-bold text-slate-400">
+                        Berlaku Hingga
+                      </p>
+                      <p className="text-[10px] font-semibold text-slate-800">
+                        {certificatePreview.tanggalBerlaku}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="p-5 border-t border-slate-100 flex justify-end gap-3 bg-white">
-              <button
-                onClick={() => setCertificatePreview(null)}
-                className="px-4 py-2 font-bold text-sm text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={() => {
-                  showNotification(
-                    `Mengunduh Sertifikat Resmi:\nNo: ${certificatePreview.noSertifikat}\nSkema: ${certificatePreview.skemaSertifikasi}`, "success"
-                  );
-                  setCertificatePreview(null);
-                }}
-                className="px-4 py-2 font-bold text-sm text-white bg-[#008BE3] hover:bg-[#007AC9] rounded-lg shadow-xs transition-colors flex items-center gap-2"
-              >
-                <Download size={16} /> Unduh Sertifikat
-              </button>
+              <div className="p-5 border-t border-slate-100 flex justify-end gap-3 bg-white">
+                <button
+                  onClick={() => setCertificatePreview(null)}
+                  className="px-4 py-2 font-bold text-sm text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    showNotification(
+                      `Mengunduh Sertifikat Resmi:\nNo: ${certificatePreview.noSertifikat}\nSkema: ${certificatePreview.skemaSertifikasi}`, "success"
+                    );
+                    setCertificatePreview(null);
+                  }}
+                  className="px-4 py-2 font-bold text-sm text-white bg-[#008BE3] hover:bg-[#007AC9] rounded-lg shadow-xs transition-colors flex items-center gap-2"
+                >
+                  <Download size={16} /> Unduh Sertifikat
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

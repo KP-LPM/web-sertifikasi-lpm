@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Download,
   X,
+  User,
 } from "lucide-react";
 
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
@@ -72,25 +73,6 @@ interface Breadcrumb {
   onClick?: () => void;
 }
 
-// Interface sementara untuk membaca bentuk JSON dari API Skema
-interface ApiSkemaResponse {
-  id: string | number;
-  kode_skema?: string;
-  kodeSkema?: string;
-  nama_skema?: string;
-  namaSkema?: string;
-  persyaratanDasar?: PersyaratanDasar[];
-  persyaratanAdministrasi?: PersyaratanAdministrasi[];
-  unitKompetensi?: Array<{
-    kodeUnit?: string;
-    kode_unit?: string;
-    judulUnit?: string;
-    judul_unit?: string;
-    elemen?: ElemenKompetensiItem[];
-  }>;
-  [key: string]: unknown;
-}
-
 export default function PengajuanSkemaPage() {
   const { user, setExtraCrumbs, showNotification } = useAppContext();
 
@@ -98,8 +80,6 @@ export default function PengajuanSkemaPage() {
     "list" | "choose-scheme" | "apply-form"
   >("list");
 
-  // STATE BARU: Untuk menyimpan data Skema dari Supabase API
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [schemesData, setSchemesData] = useState<SchemeItem[]>([]);
   const [isLoadingSchemes, setIsLoadingSchemes] = useState(true);
   const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
@@ -245,6 +225,16 @@ export default function PengajuanSkemaPage() {
             memerlukanPenyesuaianWajar?: boolean;
             isBerpengalaman?: boolean;
           };
+          jadwal_asesmen_peserta?: Array<{
+            jadwal_asesmen?: {
+              tanggal?: string | Date;
+              waktu_mulai?: string | Date;
+              tipe_tuk?: string;
+              alamat?: string;
+              link_video?: string;
+              users?: { profil?: { namaLengkap?: string } };
+            };
+          }>;
         }>).map((item) => {
           const dateStr = item.createdAt
             ? new Date(item.createdAt)
@@ -300,6 +290,11 @@ export default function PengajuanSkemaPage() {
             penyesuaianWajar:
               item.dataPribadi?.memerlukanPenyesuaianWajar ?? false,
             berpengalaman: item.dataPribadi?.isBerpengalaman ?? false,
+            asesmenDate: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal
+              ? new Date(item.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal).toISOString()
+              : undefined,
+            asesorName: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.namaLengkap || "",
+            virtualMeeting: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.link_video || "",
           };
         });
         setSubmissions(mappedList);
@@ -1081,13 +1076,28 @@ export default function PengajuanSkemaPage() {
                         <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
                           Skema Sertifikasi
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                          TUK
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                          Alamat
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                           Tanggal Pengajuan
                         </th>
                         <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                          Tanggal Asesmen
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                          Asesor
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                          Virtual Meeting
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
                           Status
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap w-44 sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 top-0">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] z-30 border-l border-white/10 min-w-40 top-0">
                           Aksi
                         </th>
                       </tr>
@@ -1113,10 +1123,10 @@ export default function PengajuanSkemaPage() {
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                    : idx % 3 === 1
-                                      ? "bg-[#84CC16]/10 text-[#73B412]"
-                                      : "bg-slate-100 text-slate-600"
+                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                  : idx % 3 === 1
+                                    ? "bg-[#84CC16]/10 text-[#73B412]"
+                                    : "bg-slate-100 text-slate-600"
                                   }`}
                               >
                                 {idx + 1}
@@ -1134,32 +1144,108 @@ export default function PengajuanSkemaPage() {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium">
+                            <td className="px-6 py-4">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${(item.tipeTuk || "").includes("Sewaktu")
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : (item.tipeTuk || "").includes("Tempat Kerja")
+                                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                                      : (item.tipeTuk || "").includes("Virtual") ||
+                                        (item.tipeTuk || "").includes("Online")
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                        : "bg-orange-50 text-orange-700 border-orange-200"
+                                  }`}
+                              >
+                                {item.tipeTuk || "-"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-xs text-gray-500 font-medium">
+                              {item.status.toUpperCase() === "TERJADWAL" && !item.tipeTuk?.includes("Online") && !item.tipeTuk?.includes("Virtual") ? (item.alamatInstitusi || "-") : "-"}
+                            </td>
+                            <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium whitespace-nowrap">
                               <span className="inline-flex items-center gap-1.5">
                                 <Calendar size={14} className="text-gray-400" />
                                 {formatTanggal(item.date)}
                               </span>
                             </td>
+                            <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium whitespace-nowrap">
+                              {item.status.toUpperCase() === "TERJADWAL" ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Calendar size={14} className="text-gray-400" />
+                                  {item.asesmenDate ? formatTanggal(item.asesmenDate) : "-"}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 font-semibold px-2">-</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold whitespace-nowrap">
+                              {item.status.toUpperCase() === "TERJADWAL" ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <User size={14} className="text-gray-400" />
+                                  {item.asesorName || "-"}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 font-semibold px-2">-</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                              {item.status.toUpperCase() === "TERJADWAL" && (item.tipeTuk?.includes("Online") || item.tipeTuk?.includes("Virtual")) ? (
+                                item.virtualMeeting ? (
+                                  <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                                    <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
+                                    Tersedia
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                                    Belum Tersedia
+                                  </span>
+                                )
+                              ) : (
+                                <span className="text-gray-400 font-semibold px-2">-</span>
+                              )}
+                            </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                               {item.status === "Disetujui" ? (
-                                <span className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
-                                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                                   Disetujui
                                 </span>
+                              ) : item.status.toUpperCase() === "TERJADWAL" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                  Terjadwal
+                                </span>
+                              ) : item.status === "Menunggu Verifikasi" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                                  Menunggu Verifikasi
+                                </span>
                               ) : item.status === "Ditolak" ? (
-                                <span className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
+                                <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                   Ditolak
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold">
-                                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                                <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
                                   {item.status}
                                 </span>
                               )}
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
                               <div className="flex items-center justify-center gap-1.5">
+                                {item.status.toUpperCase() === "TERJADWAL" && item.tipeTuk === "Mandiri (Online)" && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      showNotification("Fitur Ujian Online belum tersedia", "error");
+                                    }}
+                                    className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                                  >
+                                    Mulai Ujian
+                                  </button>
+                                )}
                                 <button
                                   onClick={async (e) => {
                                     e.stopPropagation();
@@ -1188,7 +1274,7 @@ export default function PengajuanSkemaPage() {
                                 >
                                   Detail
                                 </button>
-                                {item.status.includes("Menunggu") && (
+                                {item.status?.toLowerCase().includes("menunggu") && (
                                   <button
                                     onClick={async (e) => {
                                       e.stopPropagation();
@@ -1219,13 +1305,12 @@ export default function PengajuanSkemaPage() {
                                     Batal
                                   </button>
                                 )}
-
                                 {/* Tombol Edit APL 02 khusus jika status mengandung kata "Revisi" */}
                                 {item.status?.toLowerCase().includes("revisi") && (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const scheme = schemesData.find((s) => s.kode === item.kode) || 
+                                      const scheme = schemesData.find((s) => s.kode === item.kode) ||
                                         (AVAILABLE_SCHEMES as unknown as SchemeItem[]).find((s) => s.kode === item.kode);
                                       if (scheme) {
                                         setSelectedScheme(scheme);
@@ -1286,8 +1371,8 @@ export default function PengajuanSkemaPage() {
                           key={page}
                           onClick={() => setSubPage(page)}
                           className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${subPage === page
-                              ? "bg-[#008BE3] text-white border border-[#008BE3]"
-                              : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
+                            ? "bg-[#008BE3] text-white border border-[#008BE3]"
+                            : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
                             }`}
                         >
                           {page}
@@ -1311,7 +1396,7 @@ export default function PengajuanSkemaPage() {
 
           {selectedDetailSubmission && (
             <div className="w-full pt-2 animate-in fade-in zoom-in-95 duration-200">
-              <div className="max-w-225 mx-auto">
+              <div className="w-full">
                 <div className="mb-4">
                   <button
                     onClick={() => setSelectedDetailSubmission(null)}
@@ -1327,7 +1412,7 @@ export default function PengajuanSkemaPage() {
                     <div className="flex justify-between items-start">
                       <div className="min-w-0">
                         <h1 className="font-serif text-xl font-bold text-slate-900">
-                          DETAIL PENGAJUAN
+                          DETAIL PENGAJUAN SKEMA
                         </h1>
                         <h2 className="font-serif text-lg font-bold text-slate-800 uppercase">
                           {selectedDetailSubmission.name}
@@ -1564,46 +1649,64 @@ export default function PengajuanSkemaPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Formulir Resmi */}
                         <div className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between group shadow-sm bg-white">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
-                              <BadgeCheck size={20} />
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex gap-3">
+                              <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
+                                <BadgeCheck size={20} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-800 mb-1">
+                                  FR.APL.01 Permohonan Sertifikasi
+                                </p>
+                                <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                                  Terverifikasi Form
+                                </span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-800 mb-1">
-                                FR.APL.01 Permohonan Sertifikasi
-                              </p>
-                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                                Terverifikasi Form
-                              </span>
-                            </div>
+                            <button
+                              onClick={() => {
+                                window.open(`/api/surat/cetakapl01?id=${selectedDetailSubmission.id}`, "_blank");
+                              }}
+                              className="text-xs font-bold text-blue-600 underline hover:text-blue-800"
+                            >
+                              Unduh PDF
+                            </button>
                           </div>
                         </div>
 
                         <div className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between group shadow-sm bg-white">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
-                              <BadgeCheck size={20} />
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex gap-3">
+                              <div className="w-10 h-10 rounded bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-bold shrink-0">
+                                <BadgeCheck size={20} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-800 mb-1">
+                                  FR.APL.02 Asesmen Mandiri
+                                </p>
+                                <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                                  Terverifikasi Form
+                                </span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-800 mb-1">
-                                FR.APL.02 Asesmen Mandiri
-                              </p>
-                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                                Terverifikasi Form
-                              </span>
-                            </div>
+                            <button
+                              onClick={() => {
+                                window.open(`/api/surat/cetakapl02?id=${selectedDetailSubmission.id}`, "_blank");
+                              }}
+                              className="text-xs font-bold text-blue-600 underline hover:text-blue-800"
+                            >
+                              Unduh PDF
+                            </button>
                           </div>
                         </div>
 
                         {/* Dokumen Lampiran Tambahan dari Backend Database */}
                         {selectedDetailSubmission.dokumenList &&
                           selectedDetailSubmission.dokumenList.map((dok) => (
-                            <a
+                            <div
                               key={dok.id}
-                              href={dok.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm bg-white"
+                              onClick={() => setActiveModalDoc({ isPreview: true, name: dok.namaDokumen, url: dok.fileUrl })}
+                              className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm bg-white cursor-pointer"
                             >
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
@@ -1618,12 +1721,12 @@ export default function PengajuanSkemaPage() {
                                       File Terlampir
                                     </span>
                                     <span className="text-xs text-blue-600 underline group-hover:text-blue-700">
-                                      Buka File
+                                      Pratinjau Dokumen
                                     </span>
                                   </div>
                                 </div>
                               </div>
-                            </a>
+                            </div>
                           ))}
                       </div>
                     </div>
@@ -1632,7 +1735,7 @@ export default function PengajuanSkemaPage() {
                   <div className="p-6 md:p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 mt-auto">
                     <button
                       onClick={() => {
-                        showNotification(`Simulasi Cetak Bukti Pendaftaran`, "success");
+                        window.open(`/api/surat/cetakbukti?id=${selectedDetailSubmission.id}`, "_blank");
                       }}
                       className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm cursor-pointer"
                     >
@@ -1742,10 +1845,10 @@ export default function PengajuanSkemaPage() {
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                    : idx % 3 === 1
-                                      ? "bg-[#84CC16]/10 text-[#73B412]"
-                                      : "bg-slate-100 text-slate-600"
+                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                  : idx % 3 === 1
+                                    ? "bg-[#84CC16]/10 text-[#73B412]"
+                                    : "bg-slate-100 text-slate-600"
                                   }`}
                               >
                                 {idx + 1}
@@ -1856,8 +1959,8 @@ export default function PengajuanSkemaPage() {
                     key={idx}
                     onClick={() => setSchemePage(idx + 1)}
                     className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${schemePage === idx + 1
-                        ? "bg-[#008BE3] text-white"
-                        : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
+                      ? "bg-[#008BE3] text-white"
+                      : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
                       }`}
                   >
                     {idx + 1}
@@ -2062,8 +2165,8 @@ export default function PengajuanSkemaPage() {
                         }
                       }}
                       className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${isActive
-                          ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
-                          : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
+                        ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
+                        : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
                         }`}
                     >
                       {tabLabel}
@@ -2253,8 +2356,8 @@ export default function PengajuanSkemaPage() {
                     }}
                     placeholder="Masukkan alamat lengkap"
                     className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.alamat
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                      : "border-slate-300 focus:border-[#008BE3] bg-white"
                       }`}
                   />
                   {errors.alamat && (
@@ -2813,10 +2916,10 @@ export default function PengajuanSkemaPage() {
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
                 }
                 className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${step === 5 &&
-                    (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
-                      !eFormData["02. FR.APL.02 Asesmen Mandiri"])
-                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                    : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
+                  (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
+                    !eFormData["02. FR.APL.02 Asesmen Mandiri"])
+                  ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                  : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
                   }`}
               >
                 {step === 5 ? "Ajukan" : "Selanjutnya"}
@@ -2829,19 +2932,19 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 4: E-FORM MODAL */}
       {activeModalDoc?.isEForm && (
-        <div className="min-h-screen bg-slate-100 p-4 md:p-8 pb-24 w-full z-50">
-          <div className="w-full max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-200">
+        <div className="min-h-screen bg-slate-100 p-2 md:p-4 pb-24 w-full z-50">
+          <div className="w-full max-w-[98%] mx-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button
                 onClick={() => setActiveModalDoc(null)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-4 mt-0.5"
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-2 mt-0.5"
                 title="Kembali ke Pengajuan Skema"
               >
                 <ArrowLeft size={18} />
               </button>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto bg-white shadow-xl p-8 md:p-12 min-h-200 space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
+            <div className="w-full mx-auto bg-white shadow-xl p-4 md:p-8 min-h-200 space-y-8 relative mb-0 text-slate-800 text-sm rounded-t-lg">
               {activeModalDoc?.name?.includes("APL.01") ? (
                 <EFormApl01
                   formData={{
@@ -2903,21 +3006,23 @@ export default function PengajuanSkemaPage() {
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shadow-xl w-full max-w-6xl mx-auto rounded-b-lg mb-8">
+            <div className="px-4 py-4 md:px-8 border-t border-slate-300 bg-transparent flex justify-end gap-3 w-full mx-auto rounded-b-xl">
               <button
                 onClick={() => {
                   setActiveModalDoc(null);
                   setTempFiles([]);
                 }}
-                className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer shadow-sm"
               >
                 {activeModalDoc?.isPreview ? "Tutup" : "Batal"}
               </button>
               {!activeModalDoc?.isPreview && (
                 <button
                   onClick={() => {
+                    const today = new Date().toISOString().split("T")[0];
                     if (activeModalDoc?.name?.includes("APL.01")) {
                       const tujuanAsesmen = (tempEFormData as Record<string, unknown>)?.tujuan;
+
                       if (!tujuanAsesmen) {
                         showNotification("Harap isi Tujuan Asesmen", "error");
                         window.dispatchEvent(
@@ -2925,49 +3030,10 @@ export default function PengajuanSkemaPage() {
                         );
                         return;
                       }
+                      (tempEFormData as Record<string, unknown>).asesiDate = today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
-                      let firstUnfilled: string | null = null;
-                      const elements: string[] =
-                        selectedScheme?.unitKompetensi?.flatMap(
-                          (u: UnitKompetensiItem, uIdx: number) =>
-                            (u.elemen || []).map(
-                              (e: ElemenKompetensiItem, eIdx: number) => {
-                                const key = `u${uIdx}e${eIdx}`;
-                                if (
-                                  !(
-                                    tempEFormData.kompetensi as Record<
-                                      string,
-                                      unknown
-                                    >
-                                  )?.[key] &&
-                                  !firstUnfilled
-                                ) {
-                                  firstUnfilled = key;
-                                }
-                                return key;
-                              },
-                            ),
-                        ) || [];
-                      const isAllChecked: boolean = elements.every(
-                        (k: string) =>
-                          (
-                            tempEFormData.kompetensi as Record<string, unknown>
-                          )?.[k],
-                      );
-                      const tandaTanganAsesi = (tempEFormData as Record<string, unknown>)?.tandaTanganAsesi;
-                      if (!isAllChecked || !tandaTanganAsesi) {
-                        showNotification(
-                          "Harap beri tanda K atau BK pada seluruh kriteria dan centang Tanda Tangan Asesi!", "error"
-                        );
-                        if (firstUnfilled) {
-                          window.dispatchEvent(
-                            new CustomEvent("scroll-to-unfilled", {
-                              detail: firstUnfilled,
-                            }),
-                          );
-                        }
-                        return;
-                      }
+                      // K/BK is filled by Admin/Assessor. Signature is auto from profile. No Asesi validation needed.
+                      (tempEFormData as Record<string, unknown>).asesiDate = today;
                     }
                     const key = String(activeModalDoc?.name ?? "");
                     setEFormData({ ...eFormData, [key]: tempEFormData });
@@ -2975,7 +3041,7 @@ export default function PengajuanSkemaPage() {
                     setActiveModalDoc(null);
                     setTempFiles([]);
                   }}
-                  className="px-5 py-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold hover:bg-[#0076C2] transition-colors shadow-xs cursor-pointer"
+                  className="px-5 py-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold hover:bg-[#0076C2] transition-colors shadow-sm cursor-pointer"
                 >
                   Simpan Data
                 </button>
@@ -2988,7 +3054,7 @@ export default function PengajuanSkemaPage() {
       {/* VIEW 5: DOCUMENT / UPLOAD MODAL */}
       {activeModalDoc && !activeModalDoc?.isEForm && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc?.isPreview ? 'max-w-4xl' : 'max-w-lg'} overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">
                 {activeModalDoc?.isPreview
@@ -3011,41 +3077,78 @@ export default function PengajuanSkemaPage() {
             <div className="p-6">
               {activeModalDoc?.isPreview ? (
                 <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative aspect-4/3 flex items-center justify-center">
-                    <div className="text-center p-6 opacity-60">
-                      <FileText
-                        size={48}
-                        className="mx-auto text-slate-400 mb-3"
-                      />
-                      <p className="font-bold text-slate-500">
-                        Pratinjau Dokumen
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {activeModalDoc?.name}
-                      </p>
-                    </div>
+                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[65vh] flex items-center justify-center">
+                    {(() => {
+                      const files = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[]) : [];
+                      const file = files?.[0];
+                      const url = (activeModalDoc?.url as string | undefined) || (file ? URL.createObjectURL(file) : null);
+                      const isImg = url?.match(/\.(jpeg|jpg|gif|png)$/i) || file?.type.startsWith("image/");
+
+                      if (url) {
+                        if (isImg) {
+                          return <img src={url} alt="Preview" className="w-full h-full object-contain bg-slate-100" />;
+                        }
+                        return <iframe src={url} className="w-full h-full rounded-lg bg-white" />;
+                      }
+
+                      return (
+                        <div className="text-center p-6 opacity-60">
+                          <FileText
+                            size={48}
+                            className="mx-auto text-slate-400 mb-3"
+                          />
+                          <p className="font-bold text-slate-500">
+                            Pratinjau Dokumen
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {activeModalDoc?.name}
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="flex gap-2 justify-center mt-2 w-full">
                     <button
-                      onClick={() => showNotification("Mengunduh dokumen...", "success")}
+                      onClick={() => {
+                        const files = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[]) : [];
+                        const file = files?.[0];
+                        const url = (activeModalDoc?.url as string | undefined) || (file ? URL.createObjectURL(file) : null);
+
+                        if (url) {
+                          if (file && !activeModalDoc?.url) {
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = file.name || "download";
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                          } else {
+                            window.open(url, "_blank");
+                          }
+                        } else {
+                          showNotification("Dokumen tidak ditemukan.", "error");
+                        }
+                      }}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
                     >
-                      <Download size={16} /> Unduh
+                      {activeModalDoc?.url ? <><FileText size={16} /> Buka File</> : <><Download size={16} /> Unduh</>}
                     </button>
-                    <button
-                      onClick={() => {
-                        const newEFormData = { ...eFormData };
-                        if (typeof activeModalDoc?.name === "string") {
-                          delete newEFormData[activeModalDoc?.name];
-                        }
-                        setEFormData(newEFormData);
-                        setActiveModalDoc(null);
-                        setTempFiles([]);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-500 font-bold rounded-lg text-sm hover:bg-red-50 transition-colors shadow-xs cursor-pointer"
-                    >
-                      <Trash2 size={16} /> Hapus File
-                    </button>
+                    {subView !== "list" && (
+                      <button
+                        onClick={() => {
+                          const newEFormData = { ...eFormData };
+                          if (typeof activeModalDoc?.name === "string") {
+                            delete newEFormData[activeModalDoc?.name];
+                          }
+                          setEFormData(newEFormData);
+                          setActiveModalDoc(null);
+                          setTempFiles([]);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-500 font-bold rounded-lg text-sm hover:bg-red-50 transition-colors shadow-xs cursor-pointer"
+                      >
+                        <Trash2 size={16} /> Hapus File
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

@@ -1062,6 +1062,28 @@ export default function Login() {
           "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
       }}
     >
+      {notification.show && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${notification.type === "success"
+              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+              : "bg-rose-50/90 border-rose-200 text-rose-800"
+            }`}
+        >
+          {notification.type === "success" ? (
+            <BadgeCheck size={20} className="text-emerald-500" />
+          ) : (
+            <X
+              size={20}
+              className="text-rose-500 bg-rose-100 rounded-full p-0.5"
+            />
+          )}
+          <p className="text-sm font-bold tracking-wide">
+            {notification.message}
+          </p>
+        </motion.div>
+      )}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
