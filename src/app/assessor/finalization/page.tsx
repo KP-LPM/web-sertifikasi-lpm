@@ -1,35 +1,74 @@
 "use client";
 import React, { useState } from "react";
-import { Send, CheckCircle, PenTool } from "lucide-react";
+import { Send, CheckCircle, PenTool, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
+import { saveHasilAsesmen } from "@/lib/api";
+
 export default function AssessmentFinalization() {
   const router = useRouter();
-  const { showNotification } = useAppContext();
+  const { showNotification, selectedAsesmen, updateAssessmentItem } = useAppContext();
   const [signed, setSigned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [catatan, setCatatan] = useState("");
 
-  const handleSubmit = () => {
+  const candidateName = selectedAsesmen?.nama || "Anisa Rahmawati";
+  const candidateScheme =
+    selectedAsesmen?.skema || "Jenjang 5 Bidang Kewirausahaan Industri";
+  const candidateInitials = candidateName
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const handleSubmit = async () => {
     if (!signed) {
       showNotification("Harap konfirmasi pernyataan sertifikasi", "error");
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      showNotification("Hasil Difinalisasi!", "success");
-      router.push("/assessor/dashboard");
-    }, 1000);
+    try {
+      if (selectedAsesmen?.id) {
+        await saveHasilAsesmen(Number(selectedAsesmen.id), {
+          hasil: "Kompeten",
+          catatan: catatan || "Kandidat telah menyelesaikan seluruh tahapan asesmen.",
+        });
+
+        updateAssessmentItem(selectedAsesmen.id, {
+          status: "Selesai",
+          hasil: "Kompeten",
+        });
+      }
+
+      showNotification("Hasil Asesmen Berhasil Difinalisasi!", "success");
+      router.push("/assessor/overview");
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Gagal memfinalisasi asesmen";
+      showNotification(msg, "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
-      <div className="mb-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-          Finalisasi Asesmen
-        </h2>
-        <p className="text-gray-500 font-medium mt-1 text-sm">
-          Tinjau ringkasan data evaluasi dan berikan tanda tangan digital Anda.
-        </p>
+      <div className="mb-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+            Finalisasi Asesmen
+          </h2>
+          <p className="text-gray-500 font-medium mt-1 text-sm">
+            Tinjau ringkasan data evaluasi dan berikan tanda tangan digital Anda.
+          </p>
+        </div>
+        <button
+          onClick={() => router.push("/assessor/candidates")}
+          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+        >
+          <ArrowLeft size={14} /> Kembali
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -38,14 +77,14 @@ export default function AssessmentFinalization() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl bg-sky-50 flex items-center justify-center font-black text-2xl text-[#008BE3] border border-sky-100">
-                  AR
+                  {candidateInitials}
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xl font-black text-slate-900">
-                    Anisa Rahmawati
+                    {candidateName}
                   </h3>
                   <p className="text-sm font-medium text-gray-500">
-                    Jenjang 5 Bidang Kewirausahaan Industri
+                    {candidateScheme}
                   </p>
                 </div>
               </div>

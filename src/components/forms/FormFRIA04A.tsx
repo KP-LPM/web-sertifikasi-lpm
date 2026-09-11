@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
+import {
+  getKonfigurasiPertanyaanList,
+  getKonfigurasiPertanyaanDetail,
+  getSkemaDetail,
+} from "@/lib/api";
 
 export interface FormFRIA04AProps {
   asesmenData?: Apl02FormData;
+  skemaId?: number;
+  konfigurasiId?: number;
   umpanBalik?: string;
   onUmpanBalikChange?: (val: string) => void;
   asesiSignature?: string;
@@ -45,6 +52,117 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
   const [isSupervisorSigModalOpen, setIsSupervisorSigModalOpen] =
     useState(false);
+
+  const [apiStep2, setApiStep2] = useState<{
+    skenario?: string;
+    informasi?: string[];
+    lingkup?: string[];
+    perlengkapan?: string;
+    fokus?: string[];
+    waktu?: string;
+  } | null>(null);
+  const [apiUnits, setApiUnits] = useState<{ code: string; title: string }[]>(
+    [],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      try {
+        let conf = null;
+        if (props.konfigurasiId) {
+          conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
+        } else if (props.skemaId) {
+          const list = await getKonfigurasiPertanyaanList({
+            skemaId: props.skemaId,
+          });
+          if (Array.isArray(list) && list.length > 0) conf = list[0];
+        }
+
+        if (isMounted && conf && conf.step2) {
+          const s2 = conf.step2;
+          setApiStep2({
+            skenario: s2.skenario_studi_kasus || undefined,
+            informasi: Array.isArray(s2.informasi_yang_diberikan)
+              ? s2.informasi_yang_diberikan
+              : [],
+            lingkup: Array.isArray(s2.lingkup_bahasan_studi_kasus)
+              ? s2.lingkup_bahasan_studi_kasus
+              : [],
+            perlengkapan: s2.perlengkapan_dan_bahan || undefined,
+            fokus: Array.isArray(s2.fokus_presentasi)
+              ? s2.fokus_presentasi
+              : [],
+            waktu: s2.ketentuan_alokasi_waktu || undefined,
+          });
+        }
+      } catch (err) {
+        console.warn("Using fallback step2 scenario:", err);
+      }
+
+      if (props.skemaId) {
+        try {
+          const skemaRes = await getSkemaDetail(props.skemaId);
+          if (
+            isMounted &&
+            skemaRes?.unitKompetensi &&
+            Array.isArray(skemaRes.unitKompetensi)
+          ) {
+            setApiUnits(
+              skemaRes.unitKompetensi.map((u: Record<string, unknown>) => ({
+                code: (u.kodeUnit as string) || (u.kode as string) || "",
+                title: (u.judulUnit as string) || (u.judul as string) || "",
+              })),
+            );
+          }
+        } catch (err) {
+          console.warn("Using fallback units:", err);
+        }
+      }
+    }
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [props.konfigurasiId, props.skemaId]);
+
+  const displayUnits =
+    apiUnits.length > 0
+      ? apiUnits
+      : props.asesmenData?.schemeDetail?.units &&
+          props.asesmenData.schemeDetail.units.length > 0
+        ? props.asesmenData.schemeDetail.units.map((u) => {
+            const item = u as Record<string, unknown>;
+            return {
+              code:
+                (item.code as string) ||
+                (item.unitCode as string) ||
+                (item.kodeUnit as string) ||
+                "",
+              title:
+                (item.title as string) ||
+                (item.unitTitle as string) ||
+                (item.judulUnit as string) ||
+                "",
+            };
+          })
+        : [
+            {
+              code: "M.74PEN01.002.1",
+              title:
+                "Mencari Makna Kata dan Ungkapan dalam Teks Bahasa Asal Menggunakan Alat Bantu Penerjemahan Konvensional dan Nonkonvensional",
+            },
+            {
+              code: "M.74PEN01.008.1",
+              title:
+                "Memilih Metode yang Tepat Sesuai dengan Teks atau Bagian Teks yang Sedang Diterjemahkan",
+            },
+            {
+              code: "M.74PEN01.009.1",
+              title:
+                "Memilih Teknik Penerjemahan Untuk Kata, Frasa, Klausa, dan Kalimat dalam Teks Asal",
+            },
+          ];
 
   const umpanBalik =
     props.umpanBalik !== undefined ? props.umpanBalik : localUmpanBalik;
@@ -143,40 +261,22 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td
-                  className="border border-slate-300 p-3 text-center align-top font-bold"
-                  rowSpan={5}
-                >
-                  Kelompok Pekerjaan 1
-                </td>
-                <td className="border border-slate-300 p-3 text-center font-mono text-xs">
-                  M.74PEN01.002.1
-                </td>
-                <td className="border border-slate-300 p-3">
-                  Mencari Makna Kata dan Ungkapan dalam Teks Bahasa Asal
-                  Menggunakan Alat Bantu Penerjemahan Konvensional dan
-                  Nonkonvensional
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-slate-300 p-3 text-center font-mono text-xs">
-                  M.74PEN01.008.1
-                </td>
-                <td className="border border-slate-300 p-3">
-                  Memilih Metode yang Tepat Sesuai dengan Teks atau Bagian Teks
-                  yang Sedang Diterjemahkan
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-slate-300 p-3 text-center font-mono text-xs">
-                  M.74PEN01.009.1
-                </td>
-                <td className="border border-slate-300 p-3">
-                  Memilih Teknik Penerjemahan Untuk Kata, Frasa, Klausa, dan
-                  Kalimat dalam Teks Asal
-                </td>
-              </tr>
+              {displayUnits.map((u, idx) => (
+                <tr key={idx}>
+                  {idx === 0 && (
+                    <td
+                      className="border border-slate-300 p-3 text-center align-top font-bold"
+                      rowSpan={displayUnits.length}
+                    >
+                      Kelompok Pekerjaan 1
+                    </td>
+                  )}
+                  <td className="border border-slate-300 p-3 text-center font-mono text-xs">
+                    {u.code}
+                  </td>
+                  <td className="border border-slate-300 p-3">{u.title}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -191,79 +291,104 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                   suatu proyek singkat/ kegiatan terstruktur lainnya
                 </td>
                 <td className="border border-slate-300 p-4 align-top space-y-3">
-                  <p>
-                    Anda seorang asesi mengajukan permohonan uji kompetensi
-                    untuk skema Penerjemah Teks Umum dengan persyaratan telah
-                    menyelesaikan magang atau memiliki pengalaman kerja di
-                    bidang penerjemahan. Sebagai penerjemah, Anda harus memiliki
-                    kompetensi untuk menerjemahkan teks dari bahasa sumber ke
-                    bahasa sasaran dengan akurat dan berterima.
-                  </p>
-                  <p>
-                    Sebuah penerbit buku di Jakarta berencana untuk
-                    menerjemahkan sebuah buku panduan teknis dan artikel ilmiah
-                    populer dari Bahasa Inggris ke Bahasa Indonesia. Proyek ini
-                    membutuhkan akurasi tinggi dan metode penerjemahan yang
-                    sesuai dengan target pembaca umum dan akademisi. Anda
-                    diminta untuk membuat presentasi singkat dalam bentuk studi
-                    kasus terkait proyek penerjemahan ini sebagai Penerjemah
-                    Teks Umum.
-                  </p>
+                  {apiStep2?.skenario ? (
+                    <p className="whitespace-pre-line leading-relaxed text-slate-800">
+                      {apiStep2.skenario}
+                    </p>
+                  ) : (
+                    <>
+                      <p>
+                        Anda seorang asesi mengajukan permohonan uji kompetensi
+                        untuk skema Sertifikasi dengan persyaratan telah
+                        menyelesaikan magang atau memiliki pengalaman kerja di
+                        bidang terkait. Sebagai praktisi, Anda harus memiliki
+                        kompetensi untuk menyelesaikan pekerjaan secara terstruktur,
+                        akurat, dan berterima sesuai standar kompetensi.
+                      </p>
+                      <p>
+                        Sebuah proyek implementasi memerlukan analisis mendalam
+                        dan metode kerja yang sesuai dengan target pengguna dan
+                        kebutuhan operasional. Anda diminta untuk membuat
+                        presentasi singkat dalam bentuk studi kasus terkait proyek
+                        ini di hadapan tim asesor.
+                      </p>
+                    </>
+                  )}
+
                   <div>
                     <span className="font-bold">
                       Informasi yang diberikan kepada anda berupa:
                     </span>
                     <ul className="list-[lower-alpha] list-inside font-normal mt-1 space-y-1 mb-4">
-                      <li>Teks sumber (Bahasa Inggris)</li>
-                      <li>Profil pembaca sasaran</li>
-                      <li>Instruksi penerjemahan dari klien</li>
-                      <li>Glosarium istilah teknis</li>
-                      <li>
-                        Referensi alat bantu penerjemahan (konvensional &
-                        nonkonvensional)
-                      </li>
+                      {apiStep2?.informasi && apiStep2.informasi.length > 0 ? (
+                        apiStep2.informasi.map((info, idx) => (
+                          <li key={idx}>{info}</li>
+                        ))
+                      ) : (
+                        <>
+                          <li>Dokumen acuan dan spesifikasi kerja</li>
+                          <li>Profil pemangku kepentingan / sasaran</li>
+                          <li>Instruksi pelaksanaan dari pengguna jasa/klien</li>
+                          <li>Glosarium dan referensi standar industri</li>
+                          <li>Referensi perangkat lunak / alat bantu</li>
+                        </>
+                      )}
                     </ul>
                   </div>
+
                   <div>
                     <span className="font-bold">
                       Lingkup bahasan studi kasus ini meliputi:
                     </span>
                     <ol className="list-decimal list-inside font-normal mt-1 space-y-1 mb-4">
-                      <li>
-                        Mencari Makna Kata dan Ungkapan menggunakan alat bantu
-                      </li>
-                      <li>Memilih Metode Penerjemahan yang Tepat</li>
-                      <li>
-                        Memilih Teknik Penerjemahan (kata, frasa, klausa,
-                        kalimat)
-                      </li>
+                      {apiStep2?.lingkup && apiStep2.lingkup.length > 0 ? (
+                        apiStep2.lingkup.map((lng, idx) => (
+                          <li key={idx}>{lng}</li>
+                        ))
+                      ) : (
+                        <>
+                          <li>
+                            Identifikasi kebutuhan dan alat bantu kerja
+                          </li>
+                          <li>Pemilihan metode pelaksanaan yang tepat</li>
+                          <li>
+                            Penerapan teknik pemecahan masalah dan standardisasi
+                          </li>
+                        </>
+                      )}
                     </ol>
                   </div>
+
                   <p>
                     Karya tulis studi kasus ini dipresentasikan didepan tim
                     asesor yang ditugaskan LSP. Dalam mempresentasikan karya
                     tulis terkait kasus di atas, anda dilengkapi dengan:
                   </p>
-                  <ol className="list-decimal list-inside font-normal mt-1 space-y-1 mb-4">
-                    <li>
-                      Peralatan : Laptop, LCD dan layar, microphone untuk asesor
-                      dan peserta uji, alat penghitung waktu (Stop watch,
-                      ponsel)
-                    </li>
-                    <li>
-                      Bahan-bahan yang diperlukan untuk presentasi: kertas HVS,
-                      Balpoin, lembar asesmen studi kasus.
-                    </li>
-                  </ol>
+                  {apiStep2?.perlengkapan ? (
+                    <div className="whitespace-pre-line text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                      {apiStep2.perlengkapan}
+                    </div>
+                  ) : (
+                    <ol className="list-decimal list-inside font-normal mt-1 space-y-1 mb-4">
+                      <li>
+                        Peralatan : Laptop, LCD dan layar, microphone untuk asesor
+                        dan peserta uji, alat penghitung waktu (Stop watch,
+                        ponsel)
+                      </li>
+                      <li>
+                        Bahan-bahan yang diperlukan untuk presentasi: kertas HVS,
+                        Balpoin, lembar asesmen studi kasus.
+                      </li>
+                    </ol>
+                  )}
+
                   <p>
-                    Anda diberikan waktu 60 menit untuk mengerjakan studi kasus
-                    di atas dalam bentuk bahan presentasi dalam bentuk power
-                    point (ppt) maksimal 10 halaman
+                    {apiStep2?.waktu ||
+                      "Anda diberikan waktu 60 menit untuk mengerjakan studi kasus di atas dalam bentuk bahan presentasi dalam bentuk power point (ppt) maksimal 10 halaman"}
                   </p>
                   <p>
-                    Hasil dari presentasi adalah penilaian hasil terjemahan,
-                    metode yang digunakan, dan justifikasi pemilihan teknik
-                    penerjemahan.
+                    Hasil dari presentasi adalah penilaian hasil kerja, metode
+                    yang digunakan, dan justifikasi teknik penyelesaian.
                   </p>
                 </td>
               </tr>
@@ -280,11 +405,19 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                     <li>
                       Fokus presentasi saudara adalah:
                       <ul className="list-[lower-alpha] list-inside ml-4 mt-1">
-                        <li>
-                          Pencarian makna kata dan ungkapan dengan alat bantu
-                        </li>
-                        <li>Pemilihan metode penerjemahan berdasarkan teks</li>
-                        <li>Penerapan teknik penerjemahan yang tepat</li>
+                        {apiStep2?.fokus && apiStep2.fokus.length > 0 ? (
+                          apiStep2.fokus.map((fok, idx) => (
+                            <li key={idx}>{fok}</li>
+                          ))
+                        ) : (
+                          <>
+                            <li>
+                              Pemahaman terhadap kebutuhan masalah dan alat kerja
+                            </li>
+                            <li>Pemilihan metode yang relevan</li>
+                            <li>Penerapan teknik yang tepat dan akurat</li>
+                          </>
+                        )}
                       </ul>
                     </li>
                     <li>

@@ -10,8 +10,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useAppContext } from "@/context/context";
+import { saveHasilAsesmen } from "@/lib/api";
 import {
   FormFRAPL02,
   FormFRAK07,
@@ -60,7 +62,7 @@ const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
   SignatureCanvasProps & React.RefAttributes<SignatureCanvasRef>
 >;
 
-export default function AssessmentForm() {
+function AssessmentFormContent() {
   const router = useRouter();
   const { selectedAsesmen, updateAssessmentItem } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
@@ -829,21 +831,35 @@ export default function AssessmentForm() {
     !!asesiSignatureStep4 &&
     !!asesorSignatureStep4;
 
+  const searchParams = useSearchParams();
+  const pengajuanIdParam = searchParams.get("pengajuanId");
+
   const handleSubmit = async () => {
     if (!finalDecision) return;
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+    try {
+      const targetId = Number(pengajuanIdParam || selectedAsesmen?.id);
+      if (targetId) {
+        await saveHasilAsesmen(targetId, {
+          hasil: finalDecision,
+          catatan: catatanAsesor || "Penilaian asesmen telah diselesaikan oleh asesor.",
+        });
+      }
 
-    if (selectedAsesmen) {
-      updateAssessmentItem(selectedAsesmen.id, {
-        status: "Selesai",
-        hasil: finalDecision,
-      });
+      if (selectedAsesmen) {
+        updateAssessmentItem(selectedAsesmen.id, {
+          status: "Selesai",
+          hasil: finalDecision,
+        });
+      }
+
+      router.push("/assessor/candidates");
+    } catch (err: unknown) {
+      console.error("Gagal menyimpan hasil asesmen:", err);
+      router.push("/assessor/candidates");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push("/assessor/candidates");
   };
 
   const renderHeader = (title: string, formCode: string) => (
@@ -1958,5 +1974,19 @@ export default function AssessmentForm() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AssessmentForm() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-slate-500 font-bold">
+          Memuat formulir asesmen...
+        </div>
+      }
+    >
+      <AssessmentFormContent />
+    </Suspense>
   );
 }

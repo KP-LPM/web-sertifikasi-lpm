@@ -205,7 +205,6 @@ export default function PengajuanSkemaPage() {
 
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
-<<<<<<< HEAD
   const [submissions, setSubmissions] = useState<Profile[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
 
@@ -309,34 +308,6 @@ export default function PengajuanSkemaPage() {
       console.error("Gagal memuat daftar pengajuan:", error);
     } finally {
       setIsLoadingSubmissions(false);
-=======
-  const [submissions] = useState<Profile[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("lsp_submissions");
-      let currentData: Profile[] = [];
-      if (saved) {
-        const parsed = JSON.parse(saved) as Profile[];
-        currentData = parsed.filter(
-          (p: Profile) => p.name !== "Pelayanan Pelanggan",
-        );
-      }
-      
-      // Tambahkan data dummy khusus untuk uji coba fitur "revisi"
-      const dummyRevisi: Profile = {
-        id: "dummy-revisi-001",
-        name: "Skema Sertifikasi (Data Dummy)",
-        kode: "000/SKM/LSP-KJN/REVISI",
-        date: "09/09/2026",
-        status: "Revisi Berkas",
-      };
-
-      // Pastikan dummy ini selalu tampil di daftar untuk keperluan demonstrasi
-      if (!currentData.find((item) => item.id === dummyRevisi.id)) {
-        currentData = [dummyRevisi, ...currentData];
-      }
-
-      return currentData;
->>>>>>> 9fdbd7eadcbcde52490726a4445ecc51c913ec0f
     }
   }, []);
 
@@ -446,7 +417,6 @@ export default function PengajuanSkemaPage() {
         if (response.ok) {
           const result = await response.json();
           const mappedSchemes: SchemeItem[] = result.data.map(
-<<<<<<< HEAD
             (skema: Record<string, unknown>) => {
               const kodeSkema = String(
                 skema.kode_skema || skema.kodeSkema || "-",
@@ -594,22 +564,6 @@ export default function PengajuanSkemaPage() {
                         : "",
                     urutan: Number(p.urutan || idx + 1),
                     is_wajib: p.isWajib !== false,
-=======
-            (skema: ApiSkemaResponse) => ({
-              ...skema,
-              id: String(skema.id),
-              code: skema.kode_skema || skema.kodeSkema || "-",
-              name: skema.nama_skema || skema.namaSkema || "-",
-              kode: skema.kode_skema || skema.kodeSkema || "-",
-              nama: skema.nama_skema || skema.namaSkema || "-",
-              status: "Active",
-              kategori: "-",
-              unitKompetensi: Array.isArray(skema.unitKompetensi)
-                ? skema.unitKompetensi.map((unit) => ({
-                    kode: unit.kodeUnit || unit.kode_unit || "-",
-                    judul: unit.judulUnit || unit.judul_unit || "-",
-                    elemen: unit.elemen || [],
->>>>>>> 9fdbd7eadcbcde52490726a4445ecc51c913ec0f
                   }))
                   : (localMatch?.persyaratanDasar || []).map((p, idx) => ({
                     id: idx + 1,
@@ -986,7 +940,6 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
-<<<<<<< HEAD
   const effectiveSchemes =
     schemesData.length > 0
       ? schemesData
@@ -1000,18 +953,6 @@ export default function PengajuanSkemaPage() {
       kode.includes(searchScheme.toLowerCase())
     );
   });
-=======
-  const filteredSchemes = schemesData.filter(
-    (item) => {
-      const name = item.nama?.toLowerCase() ?? "";
-      const kode = item.kode?.toLowerCase() ?? "";
-      return (
-        name.includes(searchScheme.toLowerCase()) ||
-        kode.includes(searchScheme.toLowerCase())
-      );
-    },
-  );
->>>>>>> 9fdbd7eadcbcde52490726a4445ecc51c913ec0f
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const paginatedSubmissions = filteredSubmissions.slice(
@@ -1218,7 +1159,6 @@ export default function PengajuanSkemaPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
-<<<<<<< HEAD
                               <div className="flex items-center justify-center gap-1.5">
                                 <button
                                   onClick={async (e) => {
@@ -1243,19 +1183,11 @@ export default function PengajuanSkemaPage() {
                                     } finally {
                                       setIsLoadingDetail(false);
                                     }
-=======
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedDetailSubmission(item);
->>>>>>> 9fdbd7eadcbcde52490726a4445ecc51c913ec0f
                                   }}
                                   className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
                                 >
                                   Detail
                                 </button>
-<<<<<<< HEAD
                                 {item.status.includes("Menunggu") && (
                                   <button
                                     onClick={async (e) => {
@@ -1285,8 +1217,9 @@ export default function PengajuanSkemaPage() {
                                     title="Batalkan Pengajuan"
                                   >
                                     Batal
-=======
-                                
+                                  </button>
+                                )}
+
                                 {/* Tombol Edit APL 02 khusus jika status mengandung kata "Revisi" */}
                                 {item.status?.toLowerCase().includes("revisi") && (
                                   <button
@@ -1307,7 +1240,6 @@ export default function PengajuanSkemaPage() {
                                     className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
                                   >
                                     Edit Dokumen
->>>>>>> 9fdbd7eadcbcde52490726a4445ecc51c913ec0f
                                   </button>
                                 )}
                               </div>

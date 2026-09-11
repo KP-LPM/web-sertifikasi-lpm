@@ -12,6 +12,7 @@ import {
   FileText
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
+import { getAdminDashboard, getPengajuanList } from "@/lib/api";
 
 export default function AdminOverview() {
   const router = useRouter();
@@ -19,54 +20,35 @@ export default function AdminOverview() {
   
   const adminName = user?.username || user?.username || "Administrator LSP";
 
-  const pendingVerificationList = [
-    {
-      id: "1",
-      asesiName: "Ahmad Hidayat",
-      email: "ahmad.h@student.uin.ac.id",
-      skema: "Software Quality Assurance",
-      berkas: [
-        "FR.APL.01 Permohonan",
-        "FR.APL.02 Asesmen Mandiri",
-        "Pasfoto 3x4",
-        "KTP / KTM",
-        "Transkrip Nilai",
-      ],
-      waktu: "5 menit yang lalu",
-      status: "Menunggu Verifikasi",
-      pembayaran: "Belum Bayar",
-    },
-    {
-      id: "2",
-      asesiName: "Budi Pratama",
-      email: "budi.p@student.uin.ac.id",
-      skema: "Data Science Professional",
-      berkas: [
-        "FR.APL.01 Permohonan",
-        "FR.APL.02 Asesmen Mandiri",
-        "Bukti Pembayaran APBN",
-        "Ijazah Terakhir",
-      ],
-      waktu: "25 menit yang lalu",
-      status: "Menunggu Verifikasi",
-      pembayaran: "Sudah Bayar",
-    },
-    {
-      id: "3",
-      asesiName: "Siti Nurhaliza",
-      email: "siti.n@student.uin.ac.id",
-      skema: "Network Administrator",
-      berkas: [
-        "FR.APL.01 Permohonan",
-        "Sertifikat Pelatihan Jaringan",
-        "KTP",
-        "Pasfoto",
-      ],
-      waktu: "1 jam yang lalu",
-      status: "Menunggu Verifikasi",
-      pembayaran: "Belum Bayar",
-    },
-  ];
+  const [dashboardData, setDashboardData] = React.useState<any>(null);
+  const [pendingVerificationList, setPendingVerificationList] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetchOverviewData();
+  }, []);
+
+  const fetchOverviewData = async () => {
+    setIsLoading(true);
+    try {
+      const [dashData, pengData] = await Promise.all([
+        getAdminDashboard(),
+        getPengajuanList({ status: "Diajukan" }),
+      ]);
+
+      if (dashData) {
+        setDashboardData(dashData?.data && !dashData.verifikasiPending ? dashData.data : dashData);
+      }
+      if (pengData) {
+        const pengList = Array.isArray(pengData) ? pengData : (pengData?.data || []);
+        setPendingVerificationList(pengList.slice(0, 5)); // Show top 5
+      }
+    } catch (error) {
+      console.error("Error fetching overview data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     // Memakai pembungkus yang sama persis dengan Asesi (tanpa padding berlebih)
@@ -142,7 +124,7 @@ export default function AdminOverview() {
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  5
+                  {dashboardData?.verifikasiPending || 0}
                 </span>
                 <span className="text-base font-bold text-sky-700 ml-0.75">
                   Berkas
@@ -165,7 +147,7 @@ export default function AdminOverview() {
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  845
+                  {dashboardData?.pengajuan?.diverifikasi || 0}
                 </span>
                 <span className="text-base font-bold text-emerald-700 ml-0.75">
                   Berkas
@@ -188,7 +170,7 @@ export default function AdminOverview() {
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  5
+                  {dashboardData?.jadwalMendatang || 0}
                 </span>
                 <span className="text-base font-bold text-slate-700 ml-0.75">
                   Jadwal
@@ -249,62 +231,76 @@ export default function AdminOverview() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
-              {pendingVerificationList.map((item, index) => (
-                <tr
-                  key={item.id}
-                  className="group/row hover:bg-[#F9FAFC] transition-colors"
-                >
-                  {/* Kolom No (dengan kotak warna-warni ala Asesi) */}
-                  <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
-                    <div
-                      className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                        index % 3 === 0
-                          ? "bg-[#008BE3]/10 text-[#008BE3]"
-                          : index % 3 === 1
-                            ? "bg-[#84CC16]/10 text-[#73B412]"
-                            : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {index + 1}
-                    </div>
-                  </td>
-
-                  {/* Kolom Nama */}
-                  <td className="px-6 py-4 align-middle">
-                    <p className="font-bold text-slate-900 text-xs md:text-sm truncate">
-                      {item.asesiName}
-                    </p>
-                  </td>
-
-                  {/* Kolom Skema */}
-                  <td className="px-6 py-4 align-middle">
-                    <p className="text-xs md:text-sm font-bold text-[#008BE3] truncate">
-                      {item.skema}
-                    </p>
-                  </td>
-
-                  {/* Kolom Status (Dengan bullet point) */}
-                  <td className="px-6 py-4 text-center align-middle">
-                    <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-                      {item.status}
-                    </span>
-                  </td>
-
-                  {/* Kolom Aksi (Bisa shadow pas di-scroll ke kanan) */}
-                  <td className="px-6 py-4 text-center align-middle sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => router.push("/admin/verifikasiberkas")}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-sky-50 text-[#008BE3] border border-slate-200 hover:border-[#008BE3]/30 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0"
-                      >
-                        <Eye size={14} />
-                        <span>Tinjau</span>
-                      </button>
-                    </div>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium text-sm">
+                    Memuat data aktivitas...
                   </td>
                 </tr>
-              ))}
+              ) : pendingVerificationList.length > 0 ? (
+                pendingVerificationList.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className="group/row hover:bg-[#F9FAFC] transition-colors"
+                  >
+                    {/* Kolom No */}
+                    <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
+                      <div
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                          index % 3 === 0
+                            ? "bg-[#008BE3]/10 text-[#008BE3]"
+                            : index % 3 === 1
+                              ? "bg-[#84CC16]/10 text-[#73B412]"
+                              : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+                    </td>
+
+                    {/* Kolom Nama */}
+                    <td className="px-6 py-4 align-middle">
+                      <p className="font-bold text-slate-900 text-xs md:text-sm truncate">
+                        {item.user?.profil?.nama_lengkap || item.user?.username || "Asesi"}
+                      </p>
+                    </td>
+
+                    {/* Kolom Skema */}
+                    <td className="px-6 py-4 align-middle">
+                      <p className="text-xs md:text-sm font-bold text-[#008BE3] truncate">
+                        {item.skema?.nama_skema || "-"}
+                      </p>
+                    </td>
+
+                    {/* Kolom Status */}
+                    <td className="px-6 py-4 text-center align-middle">
+                      <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                        {item.status}
+                      </span>
+                    </td>
+
+                    {/* Kolom Aksi */}
+                    <td className="px-6 py-4 text-center align-middle sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => router.push("/admin/verifikasiberkas")}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-sky-50 text-[#008BE3] border border-slate-200 hover:border-[#008BE3]/30 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0"
+                        >
+                          <Eye size={14} />
+                          <span>Tinjau</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium text-sm">
+                    Tidak ada berkas yang perlu diverifikasi.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

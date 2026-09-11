@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import {
   FileEdit,
   CheckCircle,
@@ -10,8 +10,12 @@ import {
   ArrowLeft,
   Calendar,
   User,
+  ExternalLink,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAppContext } from "@/context/context";
+import { getPengajuanDetail, getPengajuanList, selesaikanUjian } from "@/lib/api";
+import { JenisMetode } from "@/types/types";
 
 import { FormFRIA04A } from "@/components/forms/FormFRIA04A";
 import { FormFRAK07 } from "@/components/forms/FormFRAK07";
@@ -24,47 +28,174 @@ interface ExamItem {
   canPreview: boolean;
 }
 
-export default function UjianAsesi() {
+const formatDateIndo = (dateVal: string | Date | undefined | null) => {
+  if (!dateVal) return "Menunggu Jadwal";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "Menunggu Jadwal";
+    const months = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  } catch {
+    return "Menunggu Jadwal";
+  }
+};
+
+const formatDateNumeric = (dateVal: string | Date | undefined | null) => {
+  if (!dateVal) return "-";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "-";
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  } catch {
+    return "-";
+  }
+};
+
+interface JadwalPeserta {
+  jadwal_asesmen?: {
+    tanggal?: string | Date;
+    waktu_mulai?: string | Date;
+    tipe_tuk?: string;
+    alamat?: string;
+    link_video?: string;
+    users?: {
+      username?: string;
+      profil?: { namaLengkap?: string };
+    };
+    master_tuk?: { nama?: string; alamat?: string };
+  };
+}
+
+interface PengajuanDetailType {
+  id: number;
+  nomorPengajuan?: string;
+  tuk?: string;
+  status?: string;
+  tglPengajuan?: string | Date;
+  skema?: {
+    id?: number;
+    namaSkema?: string;
+    kodeSkema?: string;
+    unitKompetensi?: Array<{
+      kodeUnit: string;
+      judulUnit: string;
+      elemenKompetensi?: Array<{
+        namaElemen: string;
+        kriteriaUnjukKerja: string;
+      }>;
+    }>;
+  };
+  dataPribadi?: {
+    namaLengkap?: string;
+    nik?: string;
+    tandaTangan?: string;
+  };
+  master_tuk?: { nama?: string; alamat?: string; tipe?: string };
+  hasil_asesmen?: { id?: number; hasil?: string; link_video?: string };
+  apl02_penilaian?: {
+    rekomendasi_apl02?: string;
+    nama_asesor?: string;
+    ttd_asesor?: string;
+    ttd_asesi?: string;
+  };
+  jadwal_asesmen_peserta?: JadwalPeserta[];
+}
+
+function UjianAsesiContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, showNotification } = useAppContext();
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [showConfirmFinish, setShowConfirmFinish] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [pengajuan, setPengajuan] = useState<PengajuanDetailType | null>(null);
+  const [isFinishing, setIsFinishing] = useState<boolean>(false);
 
   const examItems: ExamItem[] = [
     {
       id: "apl02",
-      name: "Asesmen Mandiri",
+      name: "Asesmen Mandiri (FR-APL-02)",
       actionType: "form_apl02",
       canPreview: true,
     },
     {
       id: "penyesuaian",
-      name: "Penyesuaian Wajar dan Beralasan",
+      name: "Penyesuaian Wajar dan Beralasan (FR-AK-07)",
       actionType: "form_penyesuaian",
-      canPreview: false,
+      canPreview: true,
     },
     {
       id: "proyek_a",
-      name: "Penilaian Proyek Singkat",
+      name: "Penilaian Proyek Singkat (FR-IA-04A)",
       actionType: "form_proyek_a",
       canPreview: true,
     },
     {
       id: "lisan",
-      name: "Pertanyaan lisan",
+      name: "Pertanyaan Lisan / Wawancara",
       actionType: "form_lisan",
       canPreview: false,
     },
   ];
 
+  const loadPengajuan = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const queryId = searchParams.get("pengajuanId") || searchParams.get("id");
+      if (queryId) {
+        const detail = await getPengajuanDetail(Number(queryId));
+        if (detail) {
+          setPengajuan(detail as PengajuanDetailType);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Jika tidak ada parameter ID, cari pengajuan berstatus "Terjadwal" atau terbaru
+      const list = await getPengajuanList();
+      if (Array.isArray(list) && list.length > 0) {
+        const scheduled =
+          list.find((p: { status?: string }) => p.status === "Terjadwal") ||
+          list[0];
+        if (scheduled?.id) {
+          const detail = await getPengajuanDetail(scheduled.id);
+          setPengajuan(detail as PengajuanDetailType);
+        }
+      }
+    } catch (error) {
+      console.error("Gagal memuat data ujian pengajuan:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    loadPengajuan();
+  }, [loadPengajuan]);
+
   const handleCloseRequest = () => {
     setActiveModal(null);
   };
 
-  const confirmFinishExam = () => {
-    setShowConfirmFinish(false);
-
-    router.push("/asesi/riwayatasesmen");
+  const confirmFinishExam = async () => {
+    setIsFinishing(true);
+    try {
+      if (pengajuan?.id) {
+        await selesaikanUjian(pengajuan.id);
+      }
+      showNotification("Sesi ujian asesmen Anda berhasil diselesaikan!", "success");
+      setShowConfirmFinish(false);
+      router.push("/asesi/riwayatasesmen");
+    } catch (error) {
+      console.error("Gagal menyelesaikan ujian:", error);
+      showNotification("Terjadi kesalahan saat menyelesaikan ujian", "error");
+    } finally {
+      setIsFinishing(false);
+    }
   };
 
   const activeExam = examItems.find((item) => item.actionType === activeModal);
@@ -79,6 +210,66 @@ export default function UjianAsesi() {
     } else {
       router.push(`/asesi/${destination}`);
     }
+  }
+
+  // Data terolah dari backend
+  const jadwal = pengajuan?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+  const skemaName = pengajuan?.skema?.namaSkema || "Skema Sertifikasi Kompetensi";
+  const skemaCode = pengajuan?.skema?.kodeSkema || "SKM-001";
+  const asesiName =
+    pengajuan?.dataPribadi?.namaLengkap || user?.username || "Asesi";
+  const asesiNik = pengajuan?.dataPribadi?.nik || "";
+  const asesorName =
+    jadwal?.users?.profil?.namaLengkap ||
+    jadwal?.users?.username ||
+    pengajuan?.apl02_penilaian?.nama_asesor ||
+    "Asesor Ditugaskan";
+
+  const rawDate = jadwal?.tanggal || pengajuan?.tglPengajuan;
+  const jadwalTanggalStr = formatDateIndo(rawDate);
+  const numericDate = formatDateNumeric(rawDate);
+  const linkMeeting =
+    jadwal?.link_video || pengajuan?.hasil_asesmen?.link_video || "";
+
+  const tukName =
+    jadwal?.master_tuk?.nama ||
+    pengajuan?.master_tuk?.nama ||
+    jadwal?.tipe_tuk ||
+    pengajuan?.tuk ||
+    "TUK Mandiri";
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <div className="w-8 h-8 border-3 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm font-semibold text-slate-600">
+          Memuat informasi ujian Anda...
+        </p>
+      </div>
+    );
+  }
+
+  if (!pengajuan) {
+    return (
+      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-8 text-center max-w-lg mx-auto mt-12 space-y-4">
+        <div className="w-16 h-16 rounded-full bg-sky-50 text-[#008BE3] flex items-center justify-center mx-auto">
+          <AlertCircle size={32} />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900">
+          Tidak Ada Jadwal Ujian Aktif
+        </h3>
+        <p className="text-sm text-slate-600">
+          Saat ini belum ada jadwal ujian yang terdaftar untuk akun Anda. Silakan
+          ajukan skema sertifikasi baru atau pantau status di dashboard.
+        </p>
+        <button
+          onClick={() => router.push("/asesi/overview")}
+          className="px-6 py-2.5 bg-[#008BE3] text-white text-sm font-bold rounded-lg hover:bg-[#0076C2] transition-colors"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -103,7 +294,7 @@ export default function UjianAsesi() {
                   Ujian & Dokumen Asesmen
                 </h2>
                 <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
-                  Skema: Penerjemah Teks Umum
+                  Skema: {skemaName}
                 </p>
               </div>
             </div>
@@ -120,7 +311,7 @@ export default function UjianAsesi() {
                 </h3>
                 <p className="text-sm text-slate-600">
                   Silakan bergabung ke virtual meeting pada jadwal yang telah
-                  ditentukan.
+                  ditentukan bersama asesor.
                 </p>
               </div>
             </div>
@@ -132,7 +323,7 @@ export default function UjianAsesi() {
                     Jadwal Ujian
                   </p>
                   <p className="text-sm font-bold text-slate-900">
-                    14 Oktober 2026, 08:00 WIB
+                    {jadwalTanggalStr}
                   </p>
                 </div>
               </div>
@@ -143,20 +334,31 @@ export default function UjianAsesi() {
                     Nama Asesor
                   </p>
                   <p className="text-sm font-bold text-slate-900">
-                    Budi Santoso
+                    {asesorName}
                   </p>
                 </div>
               </div>
             </div>
             <div className="flex justify-end">
-              <a
-                href="https://meet.google.com/abc-defg-xyz"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-2.5 bg-[#008BE3] text-white rounded-lg font-bold text-sm hover:bg-[#0076C2] transition-colors flex items-center gap-2"
-              >
-                <Video size={16} /> Bergabung ke Meeting
-              </a>
+              {linkMeeting && linkMeeting !== "-" ? (
+                <a
+                  href={
+                    linkMeeting.startsWith("http")
+                      ? linkMeeting
+                      : `https://${linkMeeting}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-2.5 bg-[#008BE3] text-white rounded-lg font-bold text-sm hover:bg-[#0076C2] transition-colors flex items-center gap-2 shadow-xs"
+                >
+                  <Video size={16} /> Bergabung ke Meeting
+                  <ExternalLink size={14} />
+                </a>
+              ) : (
+                <span className="text-xs text-gray-500 italic bg-gray-100 px-4 py-2 rounded-lg">
+                  Tautan virtual meeting belum disediakan oleh asesor
+                </span>
+              )}
             </div>
           </div>
 
@@ -170,7 +372,7 @@ export default function UjianAsesi() {
 
           <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
             <div className="p-5 border-b border-slate-200 space-y-3">
-              <h3 className="font-bold text-lg text-slate-900">Daftar Ujian</h3>
+              <h3 className="font-bold text-lg text-slate-900">Daftar Dokumen Ujian</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-150">
@@ -180,10 +382,10 @@ export default function UjianAsesi() {
                       No
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
-                      Nama Ujian
+                      Nama Dokumen
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-right whitespace-nowrap sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
-                      Dokumen Wajib Dibaca
+                      Aksi
                     </th>
                   </tr>
                 </thead>
@@ -203,11 +405,15 @@ export default function UjianAsesi() {
                         {item.canPreview ? (
                           <button
                             onClick={() => setActiveModal(item.actionType)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-colors bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-colors bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-xs cursor-pointer"
                           >
                             <Eye size={14} /> Lihat Dokumen
                           </button>
-                        ) : null}
+                        ) : (
+                          <span className="text-xs text-gray-400 font-medium italic">
+                            Diujikan saat meeting
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -227,7 +433,7 @@ export default function UjianAsesi() {
         </div>
       ) : (
         <div className="min-h-screen bg-slate-100 p-4 md:p-8 flex flex-col gap-6">
-          <div className="max-w-5xl mx-auto w-full bg-white rounded-xl shadow-sm border border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-4 z-20 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="max-w-5xl mx-auto w-full bg-white rounded-xl shadow-xs border border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-4 z-20 animate-in fade-in slide-in-from-top-4 duration-300">
             <button
               onClick={handleCloseRequest}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
@@ -244,8 +450,8 @@ export default function UjianAsesi() {
             <AlertCircle size={20} className="text-amber-500 shrink-0" />
             <p className="text-sm leading-relaxed font-semibold">
               {activeModal === "form_apl02"
-                ? "Dokumen ini akan diperiksa oleh asesor pada saat meeting"
-                : "Baca dokumen ini sebelum melakukan presentasi proyek"}
+                ? "Dokumen ini diperiksa oleh asesor pada saat meeting evaluasi mandiri."
+                : "Baca dokumen ini sebelum melakukan verifikasi dan presentasi bersama asesor."}
             </p>
           </div>
 
@@ -255,55 +461,64 @@ export default function UjianAsesi() {
                 {activeModal === "form_apl02" && (
                   <FormFRAPL02
                     asesmenData={{
-                      id: 1,
-                      nama: "Ahmad Supriyadi",
-                      skema: "Penerjemah Teks Umum",
-                      noSkema: "CERT-03",
-                      tuk: "Mandiri",
-                      tanggal: "14/10/2026",
-                      metode: "Mandiri",
-                      status: "Preview",
+                      id: pengajuan.id,
+                      nama: asesiName,
+                      skema: skemaName,
+                      noSkema: skemaCode,
+                      tuk: tukName,
+                      tanggal: numericDate,
+                      metode: jadwal?.tipe_tuk || "Mandiri",
+                      status: pengajuan.status || "Preview",
                     }}
                     readOnly={true}
-                    asesiSignature={"Telah Ditandatangani"}
-                    asesorSignature={"Telah Ditandatangani"}
-                    asesiDate={"14/10/2026"}
-                    asesorDate={"14/10/2026"}
+                    asesiSignature={
+                      pengajuan.dataPribadi?.tandaTangan
+                        ? "Telah Ditandatangani"
+                        : "-"
+                    }
+                    asesorSignature={
+                      pengajuan.apl02_penilaian?.ttd_asesor
+                        ? "Telah Ditandatangani"
+                        : "Telah Ditandatangani"
+                    }
+                    asesiDate={numericDate}
+                    asesorDate={numericDate}
                   />
                 )}
                 {activeModal === "form_penyesuaian" && (
                   <FormFRAK07
                     asesmenData={{
-                      id: 2,
-                      nama: "Ahmad Supriyadi",
-                      skema: "Penerjemah Teks Umum",
-                      noSkema: "CERT-03",
-                      tuk: "Mandiri",
-                      tanggal: "14/10/2026",
-                      metode: "Online",
-                      status: "Preview",
+                      id: pengajuan.id,
+                      nama: asesiName,
+                      skema: skemaName,
+                      noSkema: skemaCode,
+                      tuk: tukName,
+                      tanggal: numericDate,
+                      metode: (jadwal?.tipe_tuk as JenisMetode) || "Offline",
+                      status: pengajuan.status || "Preview",
                     }}
                     readOnly={true}
                     asesiSignature={"Telah Ditandatangani"}
                     asesorSignature={"Telah Ditandatangani"}
-                    asesorName="Budi Santoso"
-                    asesiDate={"14/10/2026"}
-                    asesorDate={"14/10/2026"}
+                    asesorName={asesorName}
+                    asesiName={asesiName}
+                    asesiDate={numericDate}
+                    asesorDate={numericDate}
                   />
                 )}
                 {activeModal === "form_proyek_a" && (
                   <FormFRIA04A
                     asesmenData={{
-                      id: "3",
-                      nama: "Ahmad Supriyadi",
-                      nik: "",
-                      skema: "Penerjemah Teks Umum",
-                      tipeTuk: "Mandiri",
-                      waktu: "08.00 WIB",
-                      hasil: "Kompeten",
-                      tglAsesmen: "14/10/2026",
-                      metode: "Online",
-                      status: "Preview",
+                      id: String(pengajuan.id),
+                      nama: asesiName,
+                      nik: asesiNik,
+                      skema: skemaName,
+                      tipeTuk: tukName,
+                      waktu: "08:00 WIB",
+                      hasil: pengajuan.hasil_asesmen?.hasil || "Kompeten",
+                      tglAsesmen: numericDate,
+                      metode: jadwal?.tipe_tuk || "Mandiri",
+                      status: pengajuan.status || "Preview",
                     }}
                     readOnly={true}
                     asesiSignature={"Telah Ditandatangani"}
@@ -338,26 +553,42 @@ export default function UjianAsesi() {
               <p className="text-slate-600 text-sm">
                 Apakah Anda yakin telah mengikuti seluruh tahapan ujian dengan
                 asesor? Setelah ini Anda akan diarahkan ke halaman Riwayat
-                Asesmen dan tidak dapat kembali ke halaman ini.
+                Asesmen.
               </p>
             </div>
             <div className="p-4 bg-slate-50 flex gap-3 justify-end border-t border-slate-100">
               <button
+                disabled={isFinishing}
                 onClick={() => setShowConfirmFinish(false)}
                 className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
+                disabled={isFinishing}
                 onClick={confirmFinishExam}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors cursor-pointer disabled:opacity-50"
               >
-                Ya, Selesaikan
+                {isFinishing ? "Menyelesaikan..." : "Ya, Selesaikan"}
               </button>
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+export default function UjianAsesi() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="w-8 h-8 border-3 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
+      <UjianAsesiContent />
+    </Suspense>
   );
 }

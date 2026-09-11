@@ -14,6 +14,7 @@ import {
   Briefcase,
   ClipboardCheck,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 import {
   MasterSkemaFormState,
@@ -23,6 +24,7 @@ import {
   PersyaratanAdministrasi,
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
+import { createSkema, updateSkema, getKonfigurasiPertanyaanList } from "@/lib/api";
 import { FormFRAK07 } from "../forms/FormFRAK07";
 import { FormFRIA04A } from "../forms/FormFRIA04A";
 import { FormFRIA04B } from "../forms/FormFRIA04B";
@@ -31,7 +33,7 @@ import { FormFRIA07 } from "../forms/FormFRIA07";
 interface TambahSkemaFormProps {
   onCancel: () => void;
   onSaveSuccess?: (payload: MasterSkemaPayload) => void;
-  initialData?: Partial<MasterSkemaFormState>;
+  initialData?: Partial<MasterSkemaFormState> & { id?: number };
 }
 
 export function TambahSkemaForm({
@@ -113,12 +115,44 @@ export function TambahSkemaForm({
     "frak07" | "fria04a" | "fria04b" | "fria07"
   >("frak07");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedPayload, setSubmittedPayload] =
     useState<MasterSkemaPayload | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [copiedPayload, setCopiedPayload] = useState(false);
+  const [availableConfigs, setAvailableConfigs] = useState(konfigurasiPertanyaan);
 
-  const selectedConfig = konfigurasiPertanyaan.find(
+  useEffect(() => {
+    let isMounted = true;
+    async function loadConfigs() {
+      try {
+        const res = await getKonfigurasiPertanyaanList();
+        if (isMounted && Array.isArray(res) && res.length > 0) {
+          const mapped = res.map((item: Record<string, unknown>) => ({
+            id: Number(item.id),
+            nama: (item.nama as string) || "Konfigurasi Soal",
+            skema: ((item.skema as Record<string, unknown>)?.nama as string) || (item.skema as string) || "Semua Skema",
+            versi: (item.versi as string) || "1.0",
+            status: (item.status as string) || "Draft",
+            penyusun: Array.isArray(item.penyusun) ? item.penyusun : [],
+            step1: Array.isArray(item.step1) ? item.step1 : [],
+            step2: (item.step2 as Record<string, unknown>) || null,
+            step3: Array.isArray(item.step3) ? item.step3 : [],
+            step4: Array.isArray(item.step4) ? item.step4 : [],
+          }));
+          setAvailableConfigs(mapped as unknown as typeof konfigurasiPertanyaan);
+        }
+      } catch (err) {
+        console.warn("Using context konfigurasiPertanyaan fallback:", err);
+      }
+    }
+    loadConfigs();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const selectedConfig = availableConfigs.find(
     (k) => k.id === formState.konfigurasiSoalId,
   );
 
@@ -386,7 +420,7 @@ export function TambahSkemaForm({
   };
 
   // --- Validation & Submit Logic ---
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setValidationError(null);
 
@@ -443,8 +477,9 @@ export function TambahSkemaForm({
       }
     }
 
-    // Construct Supabase-ready JSON payload
+    // Construct Supabase / DB ready payload
     const payload: MasterSkemaPayload = {
+      ...(initialData?.id ? { id: initialData.id } : {}),
       kodeSkema: formState.kodeSkema.trim(),
       namaSkema: formState.namaSkema.trim(),
       nomorSertifikat: formState.nomorSertifikat?.trim() || undefined,
@@ -484,11 +519,36 @@ export function TambahSkemaForm({
       })),
     };
 
-    setSubmittedPayload(payload);
-    setIsSuccessModalOpen(true);
+    setIsSubmitting(true);
+    try {
+      let savedData: MasterSkemaPayload = payload;
+      if (initialData?.id) {
+        const res = await updateSkema(
+          initialData.id,
+          payload as unknown as Record<string, unknown>,
+        );
+        if (res && res.id) savedData = { ...payload, id: res.id };
+      } else {
+        const res = await createSkema(
+          payload as unknown as Record<string, unknown>,
+        );
+        if (res && res.id) savedData = { ...payload, id: res.id };
+      }
+      setSubmittedPayload(savedData);
+      setIsSuccessModalOpen(true);
 
-    if (onSaveSuccess) {
-      onSaveSuccess(payload);
+      if (onSaveSuccess) {
+        onSaveSuccess(savedData);
+      }
+    } catch (err: unknown) {
+      console.error("Gagal simpan skema:", err);
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "Gagal menyimpan skema sertifikasi ke server.";
+      setValidationError(errMsg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -536,10 +596,18 @@ export function TambahSkemaForm({
             </button>
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={() => handleSubmit()}
-              className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-none text-center"
+              className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-60 rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-none text-center"
             >
-              Simpan Skema
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <span>Simpan Skema</span>
+              )}
             </button>
           </div>
         </div>
@@ -1181,7 +1249,7 @@ export function TambahSkemaForm({
               className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold bg-white text-slate-800 outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20 transition-all cursor-pointer"
             >
               <option value="">-- Pilih Konfigurasi Soal Asesor --</option>
-              {konfigurasiPertanyaan.map((item) => (
+              {availableConfigs.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.nama} ({item.skema || "Semua Skema"}) - Versi{" "}
                   {item.versi || "1.0"} [
@@ -1397,11 +1465,21 @@ export function TambahSkemaForm({
           </button>
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={() => handleSubmit()}
-            className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
+            className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-60 rounded-xl transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
           >
-            <CheckSquare size={18} />
-            Simpan Skema
+            {isSubmitting ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <CheckSquare size={18} />
+                <span>Simpan Skema</span>
+              </>
+            )}
           </button>
         </div>
       </div>

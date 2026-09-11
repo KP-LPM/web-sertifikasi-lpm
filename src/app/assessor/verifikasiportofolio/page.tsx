@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -16,10 +16,12 @@ import {
   Calendar,
   Filter,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "@/context/context";
 import { PortfolioItem } from "@/types/types";
+import { getPortfolios, createPortfolio, deletePortfolio } from "@/lib/api";
 
 const AVAILABLE_SCHEMES = [
   "Pemrograman Web",
@@ -30,57 +32,76 @@ const AVAILABLE_SCHEMES = [
   "Kewirausahaan Industri",
 ];
 
+const DEFAULT_PORTFOLIOS: PortfolioItem[] = [
+  {
+    id: 1,
+    skema: "Pemrograman Web",
+    namaDokumen: "Sertifikat Industri Web Developer",
+    statusAsesor: "Asesor dari UIN Bandung",
+    alamatLsp: "UIN Sunan Gunung Djati Bandung",
+    deskripsi:
+      "Sertifikat pelatihan intensif Fullstack Web Development dan uji kompetensi aplikasi web.",
+    tanggal: "25 Jul 2026",
+    fileName: "Sertifikat_Web_Dev.pdf",
+    fileSize: "1.8 MB",
+    fileType: "application/pdf",
+    status: "Terverifikasi",
+    catatanAdmin:
+      "Dokumen lengkap dan memenuhi persyaratan kualifikasi skema.",
+  },
+  {
+    id: 2,
+    skema: "Teknisi Muda Jaringan Komputer",
+    namaDokumen: "Portofolio Implementasi Network Topology",
+    statusAsesor: "Asesor dari Luar",
+    alamatLsp: "LSP Komputer Indonesia, Jl. Gatot Subroto No. 45 Jakarta",
+    deskripsi:
+      "Laporan dokumentasi hasil proyek perancangan dan instalasi jaringan LAN UIN SGD.",
+    tanggal: "26 Jul 2026",
+    fileName: "File_Peminjaman_Asesor_Networking.pdf",
+    filePeminjamanName: "File_Peminjaman_Asesor_Networking.pdf",
+    fileJawabanName: "Konfirmasi_Peminjaman_LSP_Komputer.pdf",
+    fileSize: "3.4 MB",
+    fileType: "application/pdf",
+    status: "Menunggu Verifikasi",
+  },
+];
+
 export default function VerifikasiPortofolio() {
   const { showNotification } = useAppContext();
-  const [portfolios, setPortfolios] = useState<PortfolioItem[]>([
-    {
-      id: 1,
-      skema: "Pemrograman Web",
-      namaDokumen: "Sertifikat Industri Web Developer",
-      statusAsesor: "Asesor dari UIN Bandung",
-      alamatLsp: "UIN Sunan Gunung Djati Bandung",
-      deskripsi:
-        "Sertifikat pelatihan intensif Fullstack Web Development dan uji kompetensi aplikasi web.",
-      tanggal: "25 Jul 2026",
-      fileName: "Sertifikat_Web_Dev.pdf",
-      fileSize: "1.8 MB",
-      fileType: "application/pdf",
-      status: "Terverifikasi",
-      catatanAdmin:
-        "Dokumen lengkap dan memenuhi persyaratan kualifikasi skema.",
-    },
-    {
-      id: 2,
-      skema: "Teknisi Muda Jaringan Komputer",
-      namaDokumen: "Portofolio Implementasi Network Topology",
-      statusAsesor: "Asesor dari Luar",
-      alamatLsp: "LSP Komputer Indonesia, Jl. Gatot Subroto No. 45 Jakarta",
-      deskripsi:
-        "Laporan dokumentasi hasil proyek perancangan dan instalasi jaringan LAN UIN SGD.",
-      tanggal: "26 Jul 2026",
-      fileName: "File_Peminjaman_Asesor_Networking.pdf",
-      filePeminjamanName: "File_Peminjaman_Asesor_Networking.pdf",
-      fileJawabanName: "Konfirmasi_Peminjaman_LSP_Komputer.pdf",
-      fileSize: "3.4 MB",
-      fileType: "application/pdf",
-      status: "Menunggu Verifikasi",
-    },
-    {
-      id: 3,
-      skema: "Desain Grafis",
-      namaDokumen: "Sertifikat Kompetensi Adobe Illustrator",
-      statusAsesor: "Asesor dari UIN Bandung",
-      alamatLsp: "UIN Sunan Gunung Djati Bandung",
-      deskripsi: "Sertifikat lisensi internasional kemampuan desain vektor.",
-      tanggal: "20 Jul 2026",
-      fileName: "Sertifikat_Adobe_Illustrator.pdf",
-      fileSize: "2.1 MB",
-      fileType: "application/pdf",
-      status: "Ditolak",
-      catatanAdmin:
-        "Sertifikat sudah melebihi masa berlaku. Mohon upload sertifikat terbaru yang masih aktif.",
-    },
-  ]);
+  const [portfolios, setPortfolios] = useState<PortfolioItem[]>(DEFAULT_PORTFOLIOS);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchPortfolios = async () => {
+    try {
+      const res = await getPortfolios();
+      if (Array.isArray(res) && res.length > 0) {
+        const mapped: PortfolioItem[] = res.map((p: any) => ({
+          id: p.id,
+          skema: p.master_skema?.namaSkema || "Umum",
+          namaDokumen: p.nama_dokumen,
+          statusAsesor: "Asesor dari UIN Bandung",
+          alamatLsp: "UIN Sunan Gunung Djati Bandung",
+          deskripsi: p.deskripsi || "-",
+          tanggal: p.tanggal ? new Date(p.tanggal).toLocaleDateString("id-ID") : "-",
+          fileName: p.file_name || "Dokumen_Portofolio.pdf",
+          fileSize: p.file_size || "1.5 MB",
+          fileType: p.file_type || "application/pdf",
+          status: p.status || "Menunggu Verifikasi",
+          catatanAdmin: p.catatan_admin || undefined,
+        }));
+        setPortfolios(mapped);
+      }
+    } catch (err) {
+      console.warn("Menggunakan fallback portofolio lokal:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPortfolios();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Semua");
@@ -206,6 +227,14 @@ export default function VerifikasiPortofolio() {
       ? formData.alamatLsp
       : "UIN Sunan Gunung Djati Bandung";
 
+    const fileNameUsed = isLuar
+      ? formData.filePeminjaman?.name ||
+        formData.filePeminjamanPlaceholder ||
+        "File_Peminjaman_Asesor.pdf"
+      : formData.selectedFile?.name ||
+        formData.fileNamePlaceholder ||
+        "Dokumen_Portofolio.pdf";
+
     const newPortfolio: PortfolioItem = {
       id: generatedId,
       skema: formData.skema,
@@ -214,13 +243,7 @@ export default function VerifikasiPortofolio() {
       alamatLsp: finalAlamatLsp,
       deskripsi: formData.deskripsi,
       tanggal: todayStr,
-      fileName: isLuar
-        ? formData.filePeminjaman?.name ||
-          formData.filePeminjamanPlaceholder ||
-          "File_Peminjaman_Asesor.pdf"
-        : formData.selectedFile?.name ||
-          formData.fileNamePlaceholder ||
-          "Dokumen_Portofolio.pdf",
+      fileName: fileNameUsed,
       filePeminjamanName: isLuar
         ? formData.filePeminjaman?.name ||
           formData.filePeminjamanPlaceholder ||
@@ -235,6 +258,23 @@ export default function VerifikasiPortofolio() {
       fileType: "application/pdf",
       status: "Menunggu Verifikasi",
     };
+
+    // Panggil API createPortfolio ke backend
+    createPortfolio({
+      nama_dokumen: formData.namaDokumen,
+      file_name: fileNameUsed,
+      file_size: "2.0 MB",
+      file_type: "application/pdf",
+      deskripsi: formData.deskripsi || "-",
+      skema_id: 1,
+    })
+      .then(() => {
+        showNotification("Portofolio berhasil diunggah ke sistem!", "success");
+        fetchPortfolios();
+      })
+      .catch((err) => {
+        console.warn("Gagal simpan ke backend, gunakan state lokal:", err);
+      });
 
     setPortfolios([newPortfolio, ...portfolios]);
     setIsUploadModalOpen(false);
@@ -304,8 +344,14 @@ export default function VerifikasiPortofolio() {
     resetForm();
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (selectedPortfolio) {
+      try {
+        await deletePortfolio(Number(selectedPortfolio.id));
+        showNotification("Portofolio berhasil dihapus dari sistem.", "success");
+      } catch (err) {
+        console.warn("Gagal hapus di backend, hapus lokal:", err);
+      }
       setPortfolios((prev) =>
         prev.filter((p) => p.id !== selectedPortfolio.id),
       );

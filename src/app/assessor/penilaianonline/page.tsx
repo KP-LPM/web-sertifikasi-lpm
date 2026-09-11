@@ -78,7 +78,13 @@ export default function PenilaianOnline() {
               kompetensi asesi.
             </p>
             <button
-              onClick={() => router.push("/assessor/assessmentform")}
+              onClick={() =>
+                router.push(
+                  selectedAsesmen?.id
+                    ? `/assessor/assessmentform?pengajuanId=${selectedAsesmen.id}`
+                    : "/assessor/assessmentform",
+                )
+              }
               className="w-full sm:w-auto px-8 bg-[#008BE3] hover:bg-[#0076C2] text-white py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
               <FileText size={18} /> Beri Penilaian

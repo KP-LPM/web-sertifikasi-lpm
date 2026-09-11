@@ -35,6 +35,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
+import { getJadwalCompleted, getBatchCompleted } from "@/lib/api";
 import {
   CompletedBatchAsesi,
   CompletedBatchItem,
@@ -43,235 +44,39 @@ import {
   AssessmentItem,
 } from "@/types/types";
 
-const initialCompletedBatches: CompletedBatchItem[] = [
-  {
-    kode: "BATCH-IT-2025-089",
-    nama: "Batch 89 - Auditor Halal Gelombang 3",
-    skema: "Auditor Halal",
-    asesor: "Dr. Aris Thorne",
-    tipeTuk: "Gedung L PTIPD Lab 1 (Sewaktu)",
-    metode: "Offline",
-    tanggal: "12 Sep 2025",
-    waktu: "08:00 - 12:00 WIB",
-    totalAsesi: 20,
-    kompetenCount: 18,
-    belumKompetenCount: 2,
-    status: "Selesai",
-    suratPenugasan: "ST_Penugasan_Batch89.pdf",
-    asesiList: [
-      { nama: "Ahmad Hidayat", nik: "3273012810010001", hasil: "Kompeten" },
-      { nama: "Siti Rohmah", nik: "3273012810020001", hasil: "Kompeten" },
-      {
-        nama: "Budi Pratama",
-        nik: "3273012810030001",
-        hasil: "Belum Kompeten",
-      },
-      { nama: "Dewi Lestari", nik: "3273012810040001", hasil: "Kompeten" },
-      { nama: "Rahmat Hidayat", nik: "3273012810050001", hasil: "Kompeten" },
-    ],
-  },
-  {
-    kode: "BATCH-NET-2025-090",
-    nama: "Batch 90 - Kewirausahaan Industri Online",
-    skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-    asesor: "Budi Santoso, M.Kom",
-    tipeTuk: "Online Meeting (Google Meet)",
-    metode: "Online",
-    tanggal: "20 Sep 2025",
-    waktu: "13:00 - 17:00 WIB",
-    totalAsesi: 15,
-    kompetenCount: 15,
-    belumKompetenCount: 0,
-    status: "Selesai",
-    suratPenugasan: "ST_Penugasan_Batch90.pdf",
-    asesiList: [
-      { nama: "Eko Prasetyo", nik: "3273012810060001", hasil: "Kompeten" },
-      { nama: "Fitriani", nik: "3273012810070001", hasil: "Kompeten" },
-      { nama: "Gitarja", nik: "3273012810080001", hasil: "Kompeten" },
-    ],
-  },
-  {
-    kode: "BATCH-PRG-2025-091",
-    nama: "Batch 91 - Pemangku Kepentingan",
-    skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-    asesor: "Ichsan Taufik, M.T.",
-    tipeTuk: "Ruang Rapat Utama (Tempat Kerja)",
-    metode: "Offline",
-    tanggal: "05 Okt 2025",
-    waktu: "09:00 - 13:00 WIB",
-    totalAsesi: 12,
-    kompetenCount: 11,
-    belumKompetenCount: 1,
-    status: "Selesai",
-    suratPenugasan: "ST_Penugasan_Batch91.pdf",
-    asesiList: [
-      { nama: "Hendra Gunawan", nik: "3273012810090001", hasil: "Kompeten" },
-      {
-        nama: "Iwan Setiawan",
-        nik: "3273012810100001",
-        hasil: "Belum Kompeten",
-      },
-    ],
-  },
-  {
-    kode: "BATCH-SEC-2025-092",
-    nama: "Batch 92 - Penerjemah Teks Umum",
-    skema: "Penerjemah Teks Umum",
-    asesor: "Susanti Ainul Fitri, M.Pd.",
-    tipeTuk: "Gedung C FISIP Lab Bahasa",
-    metode: "Offline",
-    tanggal: "18 Nov 2025",
-    waktu: "08:30 - 12:30 WIB",
-    totalAsesi: 18,
-    kompetenCount: 17,
-    belumKompetenCount: 1,
-    status: "Selesai",
-    suratPenugasan: "ST_Penugasan_Batch92.pdf",
-    asesiList: [
-      { nama: "Joko Widodo", nik: "3273012810110001", hasil: "Kompeten" },
-      { nama: "Kartika Sari", nik: "3273012810120001", hasil: "Kompeten" },
-    ],
-  },
-];
 
-const initialCompletedPleno: PlenoDetailData[] = [
-  {
-    id: 1,
-    batchCode: "BATCH-PRG-2026-003",
-    title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
-    skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-    noSK: "SK/LSP-UIN/PLN/2026/003",
-    tanggal: "2026-10-25",
-    waktu: "10:00 - 12:00 WIB",
-    alamat: "Ruang Rapat Utama (Offline)",
-    detailAlamat: "Ruang Sidang Lt. 3 Gedung Rektorat",
-    linkSuratBeritaPleno:
-      "https://drive.google.com/file/d/berita-pleno-003/view",
-    linkSuratHasil: "https://drive.google.com/file/d/3x4y5z/view",
-    status: "Selesai",
-    asesiList: [
-      {
-        id: 11,
-        nik: "1217050011",
-        nama: "Lani Wijaya",
-        skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-        asesor: "Fitri Pebriani Wahyu, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-      {
-        id: 12,
-        nik: "1217050012",
-        nama: "Muhammad Rizky",
-        skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-        asesor: "Tina Dewi Rosahdi, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-    ],
-    deskripsi:
-      "Sidang Pleno penetapan kelulusan skema Komunikasi Pemangku Kepentingan.",
-    suratPlenoName: "SK_Pleno_Komunikasi_2026.pdf",
-  },
-  {
-    id: 2,
-    batchCode: "BATCH-IT-2025-089",
-    title:
-      "Sidang Pleno Penetapan Hasil Uji Kompetensi Auditor Halal Gelombang 3",
-    skema: "Auditor Halal",
-    noSK: "012/SK-PLENO/LSP-UIN/IX/2025",
-    tanggal: "2025-09-25",
-    waktu: "09:00 - 11:30 WIB",
-    alamat: "Ruang Rapat Utama (OfflinedetailA",
-    detailAlamat: "Ruang Rapat Utama Gedung Rektorat Lt. 2",
-    linkSuratBeritaPleno:
-      "https://drive.google.com/file/d/berita-pleno-001/view",
-    linkSuratHasil: "https://drive.google.com/file/d/1a2b3c4d5e6f7g8h9/view",
-
-    status: "Selesai",
-    asesiList: [
-      {
-        id: 1,
-        nik: "3273012810010001",
-        nama: "Ahmad Hidayat",
-        skema: "Auditor Halal",
-        asesor: "Dr. Aris Thorne",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-        catatan: "Dokumen portofolio lengkap",
-      },
-      {
-        id: 2,
-        nik: "3273012810020001",
-        nama: "Siti Rohmah",
-        skema: "Auditor Halal",
-        asesor: "Dr. Aris Thorne",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-      {
-        id: 3,
-        nik: "3273012810030001",
-        nama: "Budi Pratama",
-        skema: "Auditor Halal",
-        asesor: "Dr. Aris Thorne",
-        rekomendasiAsesor: "BK",
-        statusPleno: "BK",
-        catatan: "Belum melengkapi berkas unit 2",
-      },
-    ],
-    deskripsi:
-      "Sidang Pleno penetapan dan pengesahan hasil uji kompetensi skema Auditor Halal Gelombang 3.",
-    suratPlenoName: "SK_Pleno_Auditor_Halal_2025.pdf",
-  },
-  {
-    id: 3,
-    batchCode: "BATCH-NET-2025-090",
-    title: "Sidang Pleno Penetapan Hasil Kewirausahaan Industri Gelombang 1",
-    skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-    noSK: "015/SK-PLENO/LSP-UIN/X/2025",
-    tanggal: "2025-10-02",
-    waktu: "13:30 - 15:30 WIB",
-    alamat: "Ruang Rapat Utama (Offline)",
-    detailAlamat: "Zoom Meeting Room 1 (Online)",
-    linkSuratBeritaPleno:
-      "https://drive.google.com/file/d/berita-pleno-002/view",
-    linkSuratHasil: "https://drive.google.com/file/d/sk-pleno-002/view",
-
-    status: "Selesai",
-    asesiList: [
-      {
-        id: 7,
-        nik: "3273012810060001",
-        nama: "Eko Prasetyo",
-        skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-        asesor: "Budi Santoso, M.Kom",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-      {
-        id: 8,
-        nik: "3273012810070001",
-        nama: "Fitriani",
-        skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-        asesor: "Budi Santoso, M.Kom",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-    ],
-    deskripsi:
-      "Pengesahan hasil asesmen skema Kewirausahaan Industri Angkatan 2025.",
-    suratPlenoName: "SK_Pleno_Kewirausahaan_2025.pdf",
-  },
-];
 
 export default function RiwayatAsesmenAdmin() {
   const { AssessmentItems, plenoSessions } = useAppContext();
 
-  // Page Option Tab State
-  const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">(
-    "asesmen",
-  );
+  const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">("asesmen");
+  const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
+  const [completedPleno, setCompletedPleno] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetchHistoryData();
+  }, []);
+
+  const fetchHistoryData = async () => {
+    setIsLoading(true);
+    try {
+      const [batchData, plenoData] = await Promise.all([
+        getJadwalCompleted(),
+        getBatchCompleted(),
+      ]);
+
+      const batchList = Array.isArray(batchData) ? batchData : (batchData?.data && Array.isArray(batchData.data) ? batchData.data : []);
+      const plenoList = Array.isArray(plenoData) ? plenoData : (plenoData?.data && Array.isArray(plenoData.data) ? plenoData.data : []);
+
+      setCompletedBatches(batchList);
+      setCompletedPleno(plenoList);
+    } catch (error) {
+      console.error("Error fetching history data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Asesmen Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -371,71 +176,23 @@ export default function RiwayatAsesmenAdmin() {
   });
 
   // Filtered Batches
-  const filteredBatches = initialCompletedBatches.filter((b) => {
-    if (batchTypeFilter !== "Semua" && b.metode !== batchTypeFilter)
-      return false;
-    if (!searchTerm) return true;
-    const query = searchTerm.toLowerCase();
-    return (
-      b.kode.toLowerCase().includes(query) ||
-      b.nama.toLowerCase().includes(query) ||
-      b.skema.toLowerCase().includes(query) ||
-      b.asesor.toLowerCase().includes(query)
-    );
+  const filteredBatches = completedBatches.filter((batch) => {
+    const matchType =
+      batchTypeFilter === "Semua" || batch.metode === batchTypeFilter;
+    const matchSearch =
+      batch.kode?.toLowerCase().includes(batchSearchTerm.toLowerCase()) ||
+      batch.nama?.toLowerCase().includes(batchSearchTerm.toLowerCase()) ||
+      batch.skema?.toLowerCase().includes(batchSearchTerm.toLowerCase()) ||
+      batch.asesor?.toLowerCase().includes(batchSearchTerm.toLowerCase());
+    return matchType && matchSearch;
   });
 
-  // Filtered Pleno Sessions (Only Completed/Selesai)
-  const completedPlenoList: PlenoDetailData[] = [
-    ...initialCompletedPleno,
-    ...plenoSessions
-      .filter(
-        (p) =>
-          p.status === "Selesai" &&
-          !initialCompletedPleno.some((i) => i.id === p.id),
-      )
-      .map((p) => ({
-        id: p.id,
-        batchCode: `BATCH-${p.id}`,
-        title: `Sidang Pleno ${p.skema}`,
-        skema: p.skema,
-        noSK: `SK-${p.id}`,
-        // "notulis" DIHAPUS — field ini tidak ada di interface PlenoDetailData
-        tanggal: p.tanggal,
-        waktu: p.waktu,
-        alamat: p.alamat,
-        detailAlamat: p.detailAlamat,
-        linkSuratBeritaPleno:
-          p.suratPlenoUrl ||
-          "https://drive.google.com/file/d/berita-pleno/view",
-        linkSuratHasil:
-          p.suratPlenoUrl || "https://drive.google.com/file/d/hasil-pleno/view",
-        status: "Selesai" as const,
-        asesiList: (p.asesiList || []).map((name: string, idx: number) => ({
-          id: idx + 1,
-          nik: `121705${1000 + idx}`,
-          nama:
-            typeof name === "string"
-              ? name
-              : (name as { nama?: string }).nama || `Asesi ${idx + 1}`,
-          skema: p.skema,
-          asesor: "Asesor LSP", // ← diganti dari "asesor" jadi "asesor"
-          rekomendasiAsesor: "K" as const,
-          statusPleno: "K" as const,
-        })),
-        deskripsi:
-          p.deskripsi || "Sidang pleno pengesahan hasil uji kompetensi.",
-        suratPlenoName: p.suratPlenoName || "SK_Pleno_Hasil.pdf",
-      })),
-  ];
-
-  const filteredPleno = completedPlenoList.filter((p) => {
-    if (p.status !== "Selesai") return false;
-    if (!searchTerm) return true;
-    const query = searchTerm.toLowerCase();
-    return (
-      (p.title && p.title.toLowerCase().includes(query)) ||
-      String(p.id).toLowerCase().includes(query)
-    );
+  const filteredPleno = completedPleno.filter((pleno) => {
+    const matchSearch =
+      pleno.batchCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pleno.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (Array.isArray(pleno.skemaList) && pleno.skemaList.some((s: string) => s.toLowerCase().includes(searchTerm.toLowerCase())));
+    return matchSearch;
   });
 
   // If detail view of individual assessment is open
@@ -1318,12 +1075,12 @@ export default function RiwayatAsesmenAdmin() {
                     className="w-full appearance-none pl-10 pr-9 py-2.5 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
                   >
                     <option value="Semua">
-                      Semua Batch ({initialCompletedBatches.length})
+                      Semua Batch ({completedBatches.length})
                     </option>
                     <option value="Offline">
                       Offline Batch (
                       {
-                        initialCompletedBatches.filter(
+                        completedBatches.filter(
                           (b) => b.metode.toLowerCase() === "offline",
                         ).length
                       }
@@ -1332,7 +1089,7 @@ export default function RiwayatAsesmenAdmin() {
                     <option value="Online">
                       Online Batch (
                       {
-                        initialCompletedBatches.filter(
+                        completedBatches.filter(
                           (b) => b.metode.toLowerCase() === "online",
                         ).length
                       }
@@ -1359,7 +1116,11 @@ export default function RiwayatAsesmenAdmin() {
               </div>
 
               {/* BATCH GRID CARDS */}
-              {filteredBatches.length > 0 ? (
+              {isLoading ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 font-medium shadow-2xs">
+                  Memuat data batch...
+                </div>
+              ) : filteredBatches.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredBatches.map((batch) => {
                     const isOnline = batch.metode.toLowerCase() === "online";

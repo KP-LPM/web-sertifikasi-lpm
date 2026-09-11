@@ -645,9 +645,9 @@ export interface Candidate {
   tipeTuk?: string;
   statusAPL02?: "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
   statusPortofolio?:
-    "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
+  "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
   statusAsesmen?:
-    "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | "Proses" | string;
+  "Kompeten" | "Belum Kompeten" | "Belum Dinilai" | "Proses" | string;
   linkVideo?: string;
   avatar?: string;
 }
@@ -818,7 +818,7 @@ export interface AppealRecord {
   asesmen: string;
   skemaSertifikasi: string;
   status:
-    "Menunggu Verifikasi" | "Disetujui" | "Ditolak" | "Dalam Penyelidikan";
+  "Menunggu Verifikasi" | "Disetujui" | "Ditolak" | "Dalam Penyelidikan";
   alasan: string;
   penjelasan: string;
   keputusanAdmin?: string;

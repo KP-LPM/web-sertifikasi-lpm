@@ -10,15 +10,24 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 
+import { updateJadwal } from "@/lib/api";
+
 export default function JadwalkanOnline() {
   const router = useRouter();
   const { selectedAsesmen, updateAssessmentItem, showNotification } = useAppContext();
   const [tanggal, setTanggal] = useState("");
   const [waktu, setWaktu] = useState("");
   const [linkMeet, setLinkMeet] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSimpan = () => {
-    if (selectedAsesmen) {
+  const handleSimpan = async () => {
+    if (!tanggal || !linkMeet) {
+      showNotification("Tanggal dan link meeting wajib diisi", "error");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
       let formattedTime = waktu;
       if (waktu) {
         const [hours, minutes] = waktu.split(":");
@@ -32,32 +41,46 @@ export default function JadwalkanOnline() {
       if (tanggal) {
         const dateObj = new Date(tanggal);
         const months = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "Mei",
-          "Jun",
-          "Jul",
-          "Agt",
-          "Sep",
-          "Okt",
-          "Nov",
-          "Des",
+          "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+          "Jul", "Agt", "Sep", "Okt", "Nov", "Des",
         ];
         formattedDate = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
       }
 
-      updateAssessmentItem(selectedAsesmen.id, {
-        waktu: formattedTime,
-        alamat: linkMeet,
-        tglAsesmen: formattedDate,
-      });
+      if (selectedAsesmen) {
+        // Panggil updateJadwal backend
+        try {
+          await updateJadwal(Number(selectedAsesmen.id), {
+            link_video: linkMeet,
+            tanggal: new Date(tanggal),
+            alamat: linkMeet,
+            metode: "Online",
+            tipe_tuk: "Online",
+          });
+        } catch (apiErr) {
+          console.warn("Update backend jadwal:", apiErr);
+        }
+
+        updateAssessmentItem(selectedAsesmen.id, {
+          waktu: formattedTime,
+          alamat: linkMeet,
+          linkVideo: linkMeet,
+          tglAsesmen: formattedDate,
+          metode: "Online",
+        });
+      }
+
+      showNotification(
+        `Jadwal presentasi online berhasil disimpan untuk ${selectedAsesmen?.nama || "Asesi"}`,
+        "success",
+      );
+      router.push("/assessor/candidates");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal menyimpan jadwal";
+      showNotification(msg, "error");
+    } finally {
+      setIsSaving(false);
     }
-    showNotification(
-      `Jadwal presentasi online berhasil disimpan untuk ${selectedAsesmen?.nama}\nTanggal: ${tanggal}\nWaktu: ${waktu}\nLink: ${linkMeet}`, "success"
-    );
-    router.push("/assessor/candidates");
   };
 
   return (

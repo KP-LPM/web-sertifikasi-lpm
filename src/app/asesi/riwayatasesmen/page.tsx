@@ -18,92 +18,108 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 
 // IMPORT DARI types.ts
-import type { AssessmentHistory, AppealRecord } from "@/types/types";
+import type { AssessmentHistory, AppealRecord, TipeTuk } from "@/types/types";
+import { getPengajuanList, createBanding } from "@/lib/api";
 
-const ASSESSMENT_HISTORY_DATA: AssessmentHistory[] = [
-  {
-    id: 1,
-    asesmen: "Uji Kompetensi",
-    skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
-    tipeTuk: "Mandiri",
-    metodePelaksanaan: "Offline",
-    jenisBukti: "Portofolio & Praktik",
-    noSertifikat: "SER/2026/07/0423",
-    tanggalBerlaku: "15/07/2029",
-    rekomendasi: "Kompeten",
-    statusAsesmen: "Selesai",
-    tanggalPenilaian: "02/08/2026",
-  },
-  {
-    id: 2,
-    asesmen: "Uji Teori & Praktik",
-    skemaSertifikasi: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-    tipeTuk: "Sewaktu",
-    metodePelaksanaan: "Offline",
-    jenisBukti: "Praktik & Tes Lisan",
-    noSertifikat: "-",
-    tanggalBerlaku: "-",
-    rekomendasi: "Belum Kompeten",
-    statusAsesmen: "Selesai",
-    tanggalPenilaian: "05/08/2026",
-  },
-  {
-    id: 3,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Penerjemah Teks Umum",
-    tipeTuk: "Mandiri",
-    metodePelaksanaan: "Online",
-    jenisBukti: "Portofolio",
-    noSertifikat: "Menunggu Terbit",
-    tanggalBerlaku: "Menunggu Terbit",
-    rekomendasi: "Kompeten",
-    statusAsesmen: "Selesai",
-    tanggalPenilaian: "04/08/2026",
-  },
-  {
-    id: 4,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Auditor Halal",
-    tipeTuk: "Mandiri B",
-    metodePelaksanaan: "Offline",
-    jenisBukti: "Praktik",
-    noSertifikat: "-",
-    tanggalBerlaku: "-",
-    rekomendasi: "Belum Kompeten",
-    statusAsesmen: "Selesai",
-    tanggalPenilaian: "05/08/2026",
-  },
-  {
-    id: 5,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Penyelia Halal",
-    tipeTuk: "Mandiri",
-    metodePelaksanaan: "Online",
-    jenisBukti: "Portofolio",
-    noSertifikat: "-",
-    tanggalBerlaku: "-",
-    rekomendasi: "Belum Kompeten",
-    statusAsesmen: "Selesai",
-    tanggalPenilaian: "04/08/2026",
-  },
-  {
-    id: 6,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
-    tipeTuk: "Mandiri B",
-    metodePelaksanaan: "Offline",
-    jenisBukti: "Portofolio",
-    noSertifikat: "Menunggu Terbit",
-    tanggalBerlaku: "Menunggu Terbit",
-    rekomendasi: "Kompeten",
-    statusAsesmen: "Selesai",
-    tanggalPenilaian: "05/08/2026",
-  },
-];
+const formatDateID = (dateVal: string | Date | undefined | null) => {
+  if (!dateVal) return "-";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "-";
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  } catch {
+    return "-";
+  }
+};
 
 export default function AsesiHistoryPage() {
   const { user, setExtraCrumbs, showNotification } = useAppContext();
   const router = useRouter();
+
+  const [historyData, setHistoryData] = useState<AssessmentHistory[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Tarik data riwayat asesmen dari backend
+  const fetchHistory = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getPengajuanList();
+      if (Array.isArray(data)) {
+        interface RawPengajuan {
+          id: number;
+          jenisAsesmen?: string;
+          tuk?: string;
+          status?: string;
+          createdAt?: string | Date;
+          tglPengajuan?: string | Date;
+          skema?: { namaSkema?: string };
+          master_tuk?: { nama?: string; alamat?: string; tipe?: string };
+          hasil_asesmen?: { id?: number; hasil?: string; link_video?: string; created_at?: string | Date };
+          sertifikat?: { nomor_sertifikat?: string; tanggal_kadaluarsa?: string | Date; status?: string };
+          apl02_penilaian?: { rekomendasi_apl02?: string; nama_asesor?: string };
+          jadwal_asesmen_peserta?: Array<{
+            jadwal_asesmen?: {
+              tanggal?: string | Date;
+              tipe_tuk?: string;
+              alamat?: string;
+              users?: { username?: string; profil?: { namaLengkap?: string } };
+            };
+          }>;
+        }
+
+        const mapped: AssessmentHistory[] = (data as RawPengajuan[]).map((item) => {
+          const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+          const tipeTuk = (jadwal?.tipe_tuk ||
+            item.master_tuk?.tipe ||
+            item.tuk ||
+            "Mandiri") as TipeTuk;
+          const isOnline =
+            String(tipeTuk).toLowerCase().includes("online") ||
+            String(tipeTuk).toLowerCase().includes("virtual");
+          const metodePelaksanaan = isOnline ? "Online" : "Offline";
+          const noSertifikat =
+            item.sertifikat?.nomor_sertifikat ||
+            (item.status === "Selesai" && item.hasil_asesmen?.hasil === "Kompeten"
+              ? "Menunggu Terbit"
+              : "-");
+          const rawExpiry = item.sertifikat?.tanggal_kadaluarsa;
+          const tanggalBerlaku = rawExpiry
+            ? formatDateID(rawExpiry)
+            : item.sertifikat?.nomor_sertifikat
+              ? "-"
+              : item.status === "Selesai" && item.hasil_asesmen?.hasil === "Kompeten"
+                ? "Menunggu Terbit"
+                : "-";
+          const rawPenilaian = item.hasil_asesmen?.created_at || jadwal?.tanggal || item.createdAt;
+          const tanggalPenilaian = formatDateID(rawPenilaian);
+
+          return {
+            id: item.id,
+            asesmen: item.jenisAsesmen || "Uji Kompetensi",
+            skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
+            tipeTuk,
+            metodePelaksanaan,
+            jenisBukti: "Portofolio & Praktik",
+            noSertifikat,
+            tanggalBerlaku,
+            rekomendasi: item.hasil_asesmen?.hasil || item.apl02_penilaian?.rekomendasi_apl02 || "-",
+            statusAsesmen: item.status || "Menunggu Verifikasi",
+            tanggalPenilaian,
+          };
+        });
+
+        setHistoryData(mapped);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil riwayat asesmen:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
@@ -159,7 +175,7 @@ export default function AsesiHistoryPage() {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, dateFilter]);
 
-  const filteredHistory = ASSESSMENT_HISTORY_DATA.filter((item) => {
+  const filteredHistory = historyData.filter((item) => {
     const matchesSearch =
       item.asesmen.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.skemaSertifikasi.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -222,47 +238,66 @@ export default function AsesiHistoryPage() {
   };
 
   // Metrics specifically for the history view
-  const totalSertifikat = ASSESSMENT_HISTORY_DATA.filter(
+  const totalSertifikat = historyData.filter(
     (item) =>
       item.noSertifikat !== "-" && item.noSertifikat !== "Menunggu Terbit",
   ).length;
-  const totalAsesmenSelesai = ASSESSMENT_HISTORY_DATA.filter(
-    (item) => item.statusAsesmen === "Selesai",
+  const totalAsesmenSelesai = historyData.filter(
+    (item) => item.statusAsesmen === "Selesai" || item.rekomendasi === "Kompeten",
   ).length;
 
-  const handleSubmitBanding = () => {
-    // Memastikan parse menggunakan tipe AppealRecord[]
-    const savedAppeals = JSON.parse(
-      localStorage.getItem("appeals") || "[]",
-    ) as AppealRecord[];
+  const [isSubmittingBanding, setIsSubmittingBanding] = useState(false);
 
-    // Objek ini sudah menyesuaikan bentuk AppealRecord
-    const newAppeal: AppealRecord = {
-      id: Date.now(),
-      tanggalPengajuan: new Date().toLocaleDateString("en-GB"),
-      namaAsesi: user?.username || "Asesi",
-      asesmen: selectedAssessment?.asesmen || "",
-      skemaSertifikasi: selectedAssessment?.skemaSertifikasi || "",
-      status: "Menunggu Verifikasi",
-      alasan: bandingForm.alasan,
-      penjelasan: bandingForm.alasan,
-      dijelaskan: bandingForm.dijelaskan ?? false,
-      didiskusikan: bandingForm.didiskusikan ?? false,
-      melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
-      namaAsesor: bandingForm.namaAsesor,
-      ttdAsesi: bandingForm.ttdAsesi,
-    };
+  const handleSubmitBanding = async () => {
+    setIsSubmittingBanding(true);
+    try {
+      await createBanding({
+        pengajuanId: selectedAssessment?.id,
+        alasan: bandingForm.alasan,
+        penjelasan: bandingForm.alasan,
+        dijelaskan: bandingForm.dijelaskan ?? false,
+        didiskusikan: bandingForm.didiskusikan ?? false,
+        melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
+        ttdAsesi: bandingForm.ttdAsesi,
+      });
 
-    localStorage.setItem(
-      "appeals",
-      JSON.stringify([newAppeal, ...savedAppeals]),
-    );
+      // Objek ini juga disimpan ke localStorage sebagai sinkronisasi
+      const savedAppeals = JSON.parse(
+        localStorage.getItem("appeals") || "[]",
+      ) as AppealRecord[];
 
-    showNotification("Banding berhasil diajukan!", "success");
-    setShowSubmitModal(false);
-    setIsBandingFormOpen(false);
-    setSelectedAssessment(null);
-    router.push("/asesi/banding");
+      const newAppeal: AppealRecord = {
+        id: Date.now(),
+        tanggalPengajuan: new Date().toLocaleDateString("en-GB"),
+        namaAsesi: user?.username || "Asesi",
+        asesmen: selectedAssessment?.asesmen || "",
+        skemaSertifikasi: selectedAssessment?.skemaSertifikasi || "",
+        status: "Menunggu Verifikasi",
+        alasan: bandingForm.alasan,
+        penjelasan: bandingForm.alasan,
+        dijelaskan: bandingForm.dijelaskan ?? false,
+        didiskusikan: bandingForm.didiskusikan ?? false,
+        melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
+        namaAsesor: bandingForm.namaAsesor,
+        ttdAsesi: bandingForm.ttdAsesi,
+      };
+
+      localStorage.setItem(
+        "appeals",
+        JSON.stringify([newAppeal, ...savedAppeals]),
+      );
+
+      showNotification("Banding berhasil diajukan!", "success");
+      setShowSubmitModal(false);
+      setIsBandingFormOpen(false);
+      setSelectedAssessment(null);
+      router.push("/asesi/banding");
+    } catch (error) {
+      console.error("Gagal mengirim banding:", error);
+      showNotification("Gagal mengirim pengajuan banding ke server", "error");
+    } finally {
+      setIsSubmittingBanding(false);
+    }
   };
 
   if (selectedAssessment && isBandingFormOpen) {
@@ -671,7 +706,7 @@ export default function AsesiHistoryPage() {
             </span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-black text-slate-900 tracking-tight">
-                {ASSESSMENT_HISTORY_DATA.length}
+                {historyData.length}
               </span>
               <span className="text-base font-bold text-slate-600 ml-0.75">
                 Terdaftar
@@ -769,7 +804,19 @@ export default function AsesiHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
-              {filteredHistory.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-6 py-12 text-center text-xs md:text-sm text-gray-500 font-medium"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+                      <span>Memuat riwayat asesmen Anda...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredHistory.length > 0 ? (
                 currentRecords.map((item, idx) => (
                   <tr
                     key={item.id}
@@ -777,13 +824,12 @@ export default function AsesiHistoryPage() {
                   >
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
                       <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          idx % 3 === 0
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
                             ? "bg-[#008BE3]/10 text-[#008BE3]"
                             : idx % 3 === 1
                               ? "bg-[#84CC16]/10 text-[#73B412]"
                               : "bg-slate-100 text-slate-600"
-                        }`}
+                          }`}
                       >
                         {(currentPage - 1) * itemsPerPage + idx + 1}
                       </div>
@@ -800,16 +846,15 @@ export default function AsesiHistoryPage() {
                     {/* Column 3: TUK */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          item.tipeTuk.includes("Sewaktu")
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk.includes("Sewaktu")
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : item.tipeTuk.includes("Tempat Kerja")
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : item.tipeTuk.includes("Virtual") ||
-                                  item.tipeTuk.includes("Online")
+                                item.tipeTuk.includes("Online")
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-orange-50 text-orange-700 border-orange-200"
-                        }`}
+                          }`}
                       >
                         {item.tipeTuk}
                       </span>
@@ -818,11 +863,10 @@ export default function AsesiHistoryPage() {
                     {/* Column 4: Metode Pelaksanaan */}
                     <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs border ${
-                          item.metodePelaksanaan === "Online"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs border ${item.metodePelaksanaan === "Online"
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : "bg-stone-50 text-stone-700 border-stone-200"
-                        }`}
+                          }`}
                       >
                         {item.metodePelaksanaan === "Online"
                           ? "Online (Virtual)"
@@ -852,13 +896,12 @@ export default function AsesiHistoryPage() {
                     {/* Column 8: Status */}
                     <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          item.rekomendasi === "Kompeten"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.rekomendasi === "Kompeten"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : item.rekomendasi === "Belum Kompeten"
                               ? "bg-red-50 text-red-700 border-red-200"
                               : "bg-slate-100 text-slate-600 border-slate-200"
-                        }`}
+                          }`}
                       >
                         {item.rekomendasi === "Kompeten" ? (
                           <CheckCircle size={12} />
@@ -955,11 +998,10 @@ export default function AsesiHistoryPage() {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
-                        currentPage === page
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === page
                           ? "bg-[#008BE3] text-white border border-[#008BE3]"
                           : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
@@ -1044,13 +1086,12 @@ export default function AsesiHistoryPage() {
                 </span>
                 <span className="col-span-2">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                      selectedAssessment.rekomendasi === "Kompeten"
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${selectedAssessment.rekomendasi === "Kompeten"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : selectedAssessment.rekomendasi === "Belum Kompeten"
                           ? "bg-red-50 text-red-700 border-red-200"
                           : "bg-slate-100 text-slate-600 border-slate-200"
-                    }`}
+                      }`}
                   >
                     {selectedAssessment.rekomendasi === "Kompeten" ? (
                       <CheckCircle size={12} />

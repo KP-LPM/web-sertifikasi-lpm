@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { ClientError } from "@/error/index";
+import { dashboardService } from "@/services/dashboard.service";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -17,58 +18,33 @@ export async function GET(request: NextRequest) {
     });
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "asesor") {
-      return sendResponse(403, "Akses ditolak. Hanya asesor yang dapat melihat dashboard ini.");
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya asesor yang dapat melihat dashboard ini.",
+      );
     }
 
     const asesorId = parseInt(session.user.id, 10);
     if (isNaN(asesorId)) return sendResponse(400, "ID asesor tidak valid.");
 
-    // 1. Jadwal Asesor Mendatang
-    const jadwalMendatang = await db.jadwal_asesmen.count({
-      where: {
-        asesor_id: asesorId,
-        tanggal: { gte: new Date() },
-        status: "Terjadwal",
-      },
-    });
+    const data = await dashboardService.getAsesorDashboard(asesorId);
 
-    // 2. Kandidat siap dinilai (peserta dari jadwal milik asesor yang hasil asesmen-nya "Belum Dinilai")
-    const kandidatSiapDinilai = await db.jadwal_asesmen_peserta.count({
-      where: {
-        jadwal_asesmen: {
-          asesor_id: asesorId,
-          status: "Terjadwal",
-        },
-        pengajuan_skema: {
-          hasil_asesmen: {
-            hasil: "Belum Dinilai",
-          },
-        },
-      },
-    });
-
-    // 3. Banding masuk untuk asesor ini
-    const bandingMasuk = await db.pengajuan_banding.count({
-      where: {
-        status: "Menunggu Verifikasi",
-        hasil_asesmen: {
-          jadwal_asesmen: {
-            asesor_id: asesorId,
-          },
-        },
-      },
-    });
-
-    return sendResponse(200, "Berhasil mengambil data dashboard asesor", {
-      jadwalMendatang,
-      kandidatSiapDinilai,
-      bandingMasuk,
-    });
+    return sendResponse(
+      200,
+      "Berhasil mengambil data dashboard asesor",
+      data,
+    );
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
     console.error("[GET /api/dashboard/asesor]", error);
-    return sendResponse(500, "Terjadi kesalahan saat mengambil data dashboard asesor");
+    return sendResponse(
+      500,
+      "Terjadi kesalahan saat mengambil data dashboard asesor",
+    );
   }
 }

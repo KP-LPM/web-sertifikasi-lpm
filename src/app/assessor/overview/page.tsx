@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronRight,
   CheckCircle,
@@ -10,6 +10,7 @@ import {
   ArrowRight,
   AlertCircle,
   Layers,
+  Loader2,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -22,53 +23,113 @@ import {
   StatCardProps,
   Candidate,
 } from "@/types/types";
+import {
+  getAsesorDashboard,
+  getCandidatesList,
+  getJadwalList,
+  getBandingList,
+  getCurrentProfile,
+} from "@/lib/api";
 
 export default function AssessorOverview() {
-  const router = useRouter(); // Gunakan router jika nanti untuk navigasi, atau hapus jika benar-benar tidak dipakai
-  const { AssessmentItems, setSelectedAsesmen } = useAppContext();
+  const router = useRouter();
+  const { AssessmentItems, setSelectedAsesmen, user } = useAppContext();
 
-  // Tambahkan state ini jika belum ada untuk menghindari error "completedBatchCodes is not defined"
-  const completedBatchCodes: string[] = [];
-
-  const batchMap = new Map<string, BatchDetail>();
-
-  (AssessmentItems || []).forEach((item: AssessmentItem) => {
-    // Berikan fallback string kosong '' untuk mencegah error undefined pada substring
-    const skemaVal = item.skema || "Umum";
-    const code =
-      item.kodeBatch ||
-      `BATCH-${skemaVal.substring(0, 3).toUpperCase()}-${item.id}`;
-
-    const name = item.namaBatch || `Batch Asesmen ${skemaVal}`;
-
-    if (!batchMap.has(code)) {
-      batchMap.set(code, {
-        id: item.id,
-        status: item.status || "",
-        kodeBatch: code,
-        namaBatch: name,
-        skema: skemaVal, // Pastikan tipe data string aman
-        metode: item.metode as JenisMetode,
-        tipeTuk: item.tipeTuk as TipeTuk,
-        alamat: item.alamat || "Gedung UIN SGD",
-        tanggal: item.tglAsesmen || "05 Okt 2023",
-        waktuMulai: item.waktu || "08:00 - 12:00 WIB",
-        linkVideo: item.linkVideo || "-",
-        candidates: [],
-      });
-    }
-    const batch = batchMap.get(code)!;
-    batch.candidates.push({ ...item });
+  const [isLoading, setIsLoading] = useState(true);
+  const [profileName, setProfileName] = useState("Asesor");
+  const [dashboardMetrics, setDashboardMetrics] = useState({
+    jadwalMendatang: 0,
+    kandidatSiapDinilai: 0,
+    bandingMasuk: 0,
   });
+  const [realBatches, setRealBatches] = useState<BatchDetail[]>([]);
+  const [realBanding, setRealBanding] = useState<any[]>([]);
 
-  const availableBatches = Array.from(batchMap.values()).filter(
-    (b) => !completedBatchCodes.includes(b.kodeBatch as string),
-  );
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [dashRes, profileRes, candidatesRes, jadwalRes, bandingRes] =
+          await Promise.allSettled([
+            getAsesorDashboard(),
+            getCurrentProfile(),
+            getCandidatesList(),
+            getJadwalList(),
+            getBandingList(),
+          ]);
 
-  // 2. Perbaiki tipe 'any' menjadi 'AssessmentItem'
-  const bandingItems = (AssessmentItems || []).filter(
-    (item: AssessmentItem) => item.hasil === "Belum Kompeten" && item.isBanding,
-  );
+        if (profileRes.status === "fulfilled" && profileRes.value) {
+          setProfileName(
+            profileRes.value.profil?.namaLengkap ||
+              profileRes.value.username ||
+              user?.username ||
+              "Asesor",
+          );
+        } else if (user?.username) {
+          setProfileName(user.username);
+        }
+
+        if (dashRes.status === "fulfilled" && dashRes.value) {
+          setDashboardMetrics(dashRes.value);
+        }
+
+        // Olah Batch dari Jadwal & Kandidat
+        const candidates =
+          candidatesRes.status === "fulfilled" && Array.isArray(candidatesRes.value)
+            ? candidatesRes.value
+            : [];
+
+        const jadwals =
+          jadwalRes.status === "fulfilled" && Array.isArray(jadwalRes.value)
+            ? jadwalRes.value
+            : [];
+
+        if (jadwals.length > 0) {
+          const mapped = jadwals.map((j: any) => {
+            const batchCand = candidates.filter(
+              (c: any) => c.jadwalId === j.id,
+            );
+            return {
+              id: j.id,
+              status: j.status || "Terjadwal",
+              kodeBatch: j.kode_batch || `BATCH-${j.id}`,
+              namaBatch: j.nama_batch || `Batch Asesmen #${j.id}`,
+              skema: j.master_skema?.namaSkema || "Skema Sertifikasi",
+              metode: (j.metode || (j.tipe_tuk === "Online" ? "Online" : "Offline")) as JenisMetode,
+              tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
+              alamat: j.alamat || j.master_tuk?.nama_tuk || "TUK Terdaftar",
+              tanggal: j.tanggal ? new Date(j.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-",
+              waktuMulai: j.waktu_mulai ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "08:00 WIB",
+              linkVideo: j.link_video || "-",
+              candidates: batchCand.map((c: any) => ({
+                id: c.pengajuanId,
+                nama: c.namaLengkap || "Asesi",
+                skema: j.master_skema?.namaSkema || "Skema Sertifikasi",
+                status: c.hasilAsesmen !== "Belum Dinilai" ? "Selesai" : "Belum Selesai",
+                statusAsesmen: c.hasilAsesmen !== "Belum Dinilai" ? "Selesai" : "Belum Selesai",
+              })),
+            };
+          });
+          setRealBatches(mapped);
+        }
+
+        if (bandingRes.status === "fulfilled" && Array.isArray(bandingRes.value)) {
+          setRealBanding(bandingRes.value);
+        }
+      } catch (err) {
+        console.error("Gagal memuat overview asesor:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, [user]);
+
+  // Fallback ke local context jika belum ada data backend
+  const displayBatches = realBatches.length > 0 ? realBatches : [];
+  const displayBandingCount =
+    dashboardMetrics.bandingMasuk || realBanding.length;
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
@@ -91,7 +152,7 @@ export default function AssessorOverview() {
       <div className="bg-[#E6F4FF] rounded-lg border border-sky-200 p-4 md:p-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 overflow-hidden relative shadow-2xs">
         <div className="space-y-2 z-10 max-w-xl">
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none">
-            Selamat Datang, Dr. Aris Thorne
+            Selamat Datang, {profileName}
           </h2>
           <p className="text-slate-700 text-xs md:text-sm font-medium leading-relaxed">
             Kelola daftar batch asesmen aktif yang siap dinilai dan pantau
@@ -99,7 +160,7 @@ export default function AssessorOverview() {
           </p>
           <div className="pt-0.5">
             <span className="inline-flex items-center gap-1.5 bg-[#008BE3] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-xs">
-              ID Asesor: ASESOR-10824
+              Peran: Asesor Sertifikasi
             </span>
           </div>
         </div>
@@ -108,18 +169,26 @@ export default function AssessorOverview() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title="Batch Asesmen Tersedia"
-          value={availableBatches.length.toString().padStart(2, "0")}
-          icon={Layers}
+          title="Jadwal Asesmen"
+          value={dashboardMetrics.jadwalMendatang.toString().padStart(2, "0")}
+          icon={Calendar}
           theme="sky"
-          subtext="Siap Dinilai & Dikelola"
+          subtext="Jadwal Mendatang"
           onClick={() => router.push("/assessor/candidates")}
         />
         <StatCard
-          title="Pengajuan Banding Asesi"
-          value={bandingItems.length.toString().padStart(2, "0")}
+          title="Kandidat Siap Dinilai"
+          value={dashboardMetrics.kandidatSiapDinilai.toString().padStart(2, "0")}
+          icon={Users}
+          theme="emerald"
+          subtext="Asesi Terdaftar"
+          onClick={() => router.push("/assessor/candidates")}
+        />
+        <StatCard
+          title="Pengajuan Banding"
+          value={displayBandingCount.toString().padStart(2, "0")}
           icon={Scale}
           theme="amber"
           subtext="Membutuhkan Verifikasi"
@@ -154,8 +223,8 @@ export default function AssessorOverview() {
           </div>
 
           <div className="p-4 space-y-3 flex-1">
-            {availableBatches.length > 0 ? (
-              availableBatches.slice(0, 2).map((batch: BatchDetail) => {
+            {displayBatches.length > 0 ? (
+              displayBatches.slice(0, 3).map((batch: BatchDetail) => {
                 const completedCount = batch.candidates.filter(
                   (c: Candidate) => c.statusAsesmen === "Selesai",
                 ).length;
@@ -234,7 +303,7 @@ export default function AssessorOverview() {
               </div>
             </div>
             <button
-              onClick={() => router.push("/assessor/verifikasi-banding")}
+              onClick={() => router.push("/assessor/verifikasibanding")}
               className="text-xs font-bold text-[#008BE3] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
             >
               Lihat Semua <ArrowRight size={14} />
@@ -242,8 +311,61 @@ export default function AssessorOverview() {
           </div>
 
           <div className="p-4 space-y-3 flex-1">
-            {bandingItems.length > 0 ? (
-              bandingItems.slice(0, 2).map((item: AssessmentItem) => (
+            {realBanding.length > 0 ? (
+              realBanding.slice(0, 3).map((item: any) => {
+                const asesiName =
+                  item.hasil_asesmen?.pengajuan_skema?.dataPribadi?.namaLengkap ||
+                  item.hasil_asesmen?.pengajuan_skema?.user?.username ||
+                  "Asesi";
+                const skemaName =
+                  item.hasil_asesmen?.pengajuan_skema?.skema?.namaSkema ||
+                  "Skema Asesmen";
+                const tgl = item.tanggal_pengajuan
+                  ? new Date(item.tanggal_pengajuan).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "-";
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      router.push("/assessor/verifikasibanding");
+                    }}
+                    className="p-3.5 border border-gray-100 rounded-lg hover:border-amber-200 hover:bg-amber-50/30 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md uppercase flex items-center gap-1">
+                          <AlertCircle size={10} /> {item.status || "Banding Diajukan"}
+                        </span>
+                        <span className="text-xs text-gray-400 font-medium">
+                          • {tgl}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-amber-700 transition-colors truncate">
+                        {asesiName}
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium truncate">
+                        {skemaName}
+                      </p>
+                      <p className="text-[11px] text-gray-500 line-clamp-1">
+                        Alasan: {item.alasan}
+                      </p>
+                    </div>
+                    <div className="shrink-0 flex items-center justify-end sm:justify-center">
+                      <span className="text-xs font-bold text-amber-700 group-hover:translate-x-1 transition-transform flex items-center gap-1 bg-white border border-amber-200 px-3 py-1.5 rounded-lg shadow-2xs">
+                        Verifikasi <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : AssessmentItems.filter((i) => i.hasil === "Belum Kompeten").length > 0 ? (
+              AssessmentItems.filter((i) => i.hasil === "Belum Kompeten")
+                .slice(0, 2)
+                .map((item: AssessmentItem) => (
                 <div
                   key={item.id}
                   onClick={() => {

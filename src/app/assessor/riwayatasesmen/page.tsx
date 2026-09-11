@@ -1,8 +1,10 @@
 "use client";
-import React, { useState } from "react";
-import { Search, History, CheckCircle, FileText, Inbox, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, History, CheckCircle, FileText, Inbox, X, Loader2 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { useRouter } from "next/navigation";
+import { getCandidatesList } from "@/lib/api";
+import { TipeTuk, JenisMetode, AssessmentItem } from "@/types/types";
 
 export default function RiwayatAsesmen() {
   const router = useRouter();
@@ -10,6 +12,56 @@ export default function RiwayatAsesmen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [hasilFilter, setHasilFilter] = useState("");
   const [tanggalFilter, setTanggalFilter] = useState("");
+  const [items, setItems] = useState<AssessmentItem[]>(AssessmentItems);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        const res = await getCandidatesList();
+        if (Array.isArray(res)) {
+          const completed = res.filter(
+            (c: any) =>
+              (c.hasilAsesmen && c.hasilAsesmen !== "Belum Dinilai") ||
+              c.statusPengajuan === "Selesai" ||
+              c.statusPengajuan === "Menunggu Pleno",
+          );
+          if (completed.length > 0) {
+            const mapped: AssessmentItem[] = completed.map((c: any) => ({
+              id: c.pengajuanId,
+              nik: c.nik || "3204010000000000",
+              nama: c.namaLengkap || c.nik || "Asesi",
+              skema: c.namaSkema || "Skema Sertifikasi",
+              tipeTuk: "Sewaktu" as TipeTuk,
+              metode: "Online" as JenisMetode,
+              waktu: "09:00 - 12:00 WIB",
+              tglAsesmen: c.tanggalJadwal
+                ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "10 Sep 2026",
+              hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
+              status: "Selesai",
+              alamat: "UIN Sunan Gunung Djati Bandung",
+              noSkema: c.kodeSkema || "SKM-01",
+              tuk: "Lab Komputer Terpadu",
+              metodeAsesmen: "Online",
+              asesor: c.namaAsesor || "Asesor Penguji",
+            }));
+            setItems(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn("Menggunakan data histori lokal:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, [AssessmentItems]);
 
   // Dummy data - we filter only 'Selesai'
   const parseDateToISO = (dateStr: string): string => {
@@ -62,7 +114,7 @@ export default function RiwayatAsesmen() {
     return "";
   };
 
-  const filteredAssessments = AssessmentItems.filter((item) => {
+  const filteredAssessments = items.filter((item) => {
     if (item.status !== "Selesai") return false;
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (

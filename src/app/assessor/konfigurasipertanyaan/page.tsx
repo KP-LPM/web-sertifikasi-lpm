@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  getKonfigurasiPertanyaanList,
+  deleteKonfigurasiPertanyaan as deleteKonfigurasiAPI,
+} from "@/lib/api";
 
 export default function KonfigurasiPertanyaan() {
   const router = useRouter();
@@ -20,10 +24,40 @@ export default function KonfigurasiPertanyaan() {
     konfigurasiPertanyaan,
     deleteKonfigurasiPertanyaan,
     setSelectedKonfigurasiId,
+    addKonfigurasiPertanyaan,
   } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadBackendData() {
+      try {
+        const res = await getKonfigurasiPertanyaanList();
+        if (Array.isArray(res) && res.length > 0) {
+          res.forEach((item: any) => {
+            const exists = konfigurasiPertanyaan.some((k) => k.id === item.id);
+            if (!exists) {
+              addKonfigurasiPertanyaan({
+                nama: item.nama_konfigurasi,
+                skema: item.skema?.namaSkema || "Skema Sertifikasi",
+                tipeForm: item.tipe_form || "Multi-Step Wizard",
+                versi: item.versi || "1.0",
+                penyusun: [{ value: "asesor_lsp", label: "Asesor LSP" }],
+                validator: [{ value: "validator_lsp", label: "Validator LSP" }],
+                status: item.status || "Terbit",
+                isDefault: false,
+                subPertanyaans: [],
+              });
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Menggunakan konfigurasi pertanyaan lokal:", err);
+      }
+    }
+    loadBackendData();
+  }, []);
 
   const konfigurasiData = konfigurasiPertanyaan;
 
@@ -269,8 +303,13 @@ export default function KonfigurasiPertanyaan() {
                   Batal
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (itemToDelete) {
+                      try {
+                        await deleteKonfigurasiAPI(itemToDelete);
+                      } catch (err) {
+                        console.warn("Gagal hapus konfigurasi di backend:", err);
+                      }
                       deleteKonfigurasiPertanyaan(itemToDelete);
                     }
                     setIsDeleteModalOpen(false);

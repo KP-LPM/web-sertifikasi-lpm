@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
+import {
+  getKonfigurasiPertanyaanList,
+  getKonfigurasiPertanyaanDetail,
+} from "@/lib/api";
 
 export const DEFAULT_STEP4_QUESTIONS = [
   {
@@ -48,6 +52,8 @@ export const DEFAULT_STEP4_QUESTIONS = [
 
 export interface FormFRIA07Props {
   asesmenData?: Apl02FormData;
+  skemaId?: number;
+  konfigurasiId?: number;
   questions?: typeof DEFAULT_STEP4_QUESTIONS;
   step4Questions?: typeof DEFAULT_STEP4_QUESTIONS;
   answers?: Record<string, { answer: string; achievement: boolean | null }>;
@@ -115,8 +121,57 @@ export interface FormFRIA07Props {
 }
 
 export function FormFRIA07(props: FormFRIA07Props) {
+  const [apiQuestions, setApiQuestions] = useState<
+    typeof DEFAULT_STEP4_QUESTIONS | null
+  >(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadQuestions() {
+      try {
+        let conf = null;
+        if (props.konfigurasiId) {
+          conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
+        } else if (props.skemaId) {
+          const list = await getKonfigurasiPertanyaanList({
+            skemaId: props.skemaId,
+          });
+          if (Array.isArray(list) && list.length > 0) conf = list[0];
+        }
+
+        if (
+          isMounted &&
+          conf &&
+          Array.isArray(conf.step4) &&
+          conf.step4.length > 0
+        ) {
+          const mappedQuestions = conf.step4.map(
+            (p: Record<string, unknown>, idx: number) => ({
+              id: `s4_${(p.id as string | number) || idx}`,
+              pertanyaan: (p.pertanyaan_lisan as string) || "",
+              elemen: (p.kode_kuk_ref as string) || "-",
+              kunci: (p.kunci_jawaban as string) || "",
+            }),
+          );
+          if (mappedQuestions.length > 0) {
+            setApiQuestions(mappedQuestions);
+          }
+        }
+      } catch (err) {
+        console.warn("Using fallback step4 questions:", err);
+      }
+    }
+    loadQuestions();
+    return () => {
+      isMounted = false;
+    };
+  }, [props.konfigurasiId, props.skemaId]);
+
   const questions =
-    props.step4Questions || props.questions || DEFAULT_STEP4_QUESTIONS;
+    props.step4Questions ||
+    props.questions ||
+    apiQuestions ||
+    DEFAULT_STEP4_QUESTIONS;
 
   const [localAnswers, setLocalAnswers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>

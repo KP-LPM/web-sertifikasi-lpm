@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { ClientError } from "@/error/index";
+import { portfolioService } from "@/services/portfolio.service";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -34,15 +35,7 @@ export async function GET(request: NextRequest, context: Context) {
       );
     }
 
-    const portfolios = await db.portfolio_asesor.findMany({
-      where: { asesor_id: asesorId },
-      include: {
-        master_skema: {
-          select: { namaSkema: true, kodeSkema: true },
-        },
-      },
-      orderBy: { created_at: "desc" },
-    });
+    const portfolios = await portfolioService.getByAsesorId(asesorId);
 
     return sendResponse(200, "Berhasil mengambil portfolio asesor", portfolios);
   } catch (error) {
@@ -51,6 +44,9 @@ export async function GET(request: NextRequest, context: Context) {
         error.status,
         "Terlalu banyak permintaan. Silakan coba lagi nanti.",
       );
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
     }
     console.error("[GET /api/asesor/:id/portfolio]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil portfolio");

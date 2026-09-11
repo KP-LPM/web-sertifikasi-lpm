@@ -11,6 +11,13 @@ export class UserRepository {
         username: true,
         email: true,
         role: true,
+        isActive: true,
+        isVerified: true,
+        profil: {
+          select: {
+            namaLengkap: true,
+          },
+        },
       },
     });
     return user;

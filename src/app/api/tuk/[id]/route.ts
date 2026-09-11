@@ -6,47 +6,49 @@
 import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
-import { db } from "@/lib/db";
-import { sendResponse } from "@/lib/response";
+import { z } from "zod";
 import { authOptions } from "@/lib/auth-options";
+import { sendResponse } from "@/lib/response";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { ClientError } from "@/error/index";
+import { UpdateTukSchema } from "@/schemas/tuk.schema";
+import { tukService } from "@/services/tuk.service";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
-interface RouteParams {
+type Context = {
   params: Promise<{ id: string }>;
-}
+};
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, context: Context) {
   try {
     rateLimitApi(_request, {
       limit: 60,
       windowMs: 60 * 1000,
       key: "get-tuk-detail",
     });
-    const { id } = await params;
+
+    const { id } = await context.params;
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tuk = await db.master_tuk.findUnique({
-      where: { id: tukId },
-      include: { master_tuk_inventaris: true },
-    });
-
-    if (!tuk) return sendResponse(404, "TUK tidak ditemukan.");
+    const tuk = await tukService.getById(tukId);
 
     return sendResponse(200, "Berhasil mengambil detail TUK", tuk);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
     console.error("[GET /api/tuk/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil detail TUK");
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, context: Context) {
   try {
     rateLimitApi(request, {
       limit: 20,
@@ -56,31 +58,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
-      return sendResponse(403, "Akses ditolak. Hanya admin yang dapat mengubah TUK.");
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya admin yang dapat mengubah TUK.",
+      );
     }
 
-    const { id } = await params;
+    const { id } = await context.params;
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tukExisting = await db.master_tuk.findUnique({ where: { id: tukId } });
-    if (!tukExisting) return sendResponse(404, "TUK tidak ditemukan.");
-
     const body = await request.json();
-    const { nama, keterangan, tipe, alamat, kapasitas, penanggung_jawab, status } = body;
+    const validatedData = UpdateTukSchema.parse(body);
 
-    const tukUpdated = await db.master_tuk.update({
-      where: { id: tukId },
-      data: {
-        ...(nama !== undefined && { nama }),
-        ...(keterangan !== undefined && { keterangan }),
-        ...(tipe !== undefined && { tipe }),
-        ...(alamat !== undefined && { alamat }),
-        ...(kapasitas !== undefined && { kapasitas: Number(kapasitas) }),
-        ...(penanggung_jawab !== undefined && { penanggung_jawab }),
-        ...(status !== undefined && { status }),
-      },
-    });
+    const tukUpdated = await tukService.update(tukId, validatedData);
 
     revalidatePath("/api/tuk");
 
@@ -89,12 +80,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
+    if (error instanceof z.ZodError) {
+      return sendResponse(400, "Validasi payload gagal", error.flatten());
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
+    }
     console.error("[PATCH /api/tuk/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat memperbarui TUK");
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, context: Context) {
   try {
     rateLimitApi(_request, {
       limit: 20,
@@ -104,21 +101,17 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "admin") {
-      return sendResponse(403, "Akses ditolak. Hanya admin yang dapat menonaktifkan TUK.");
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya admin yang dapat menonaktifkan TUK.",
+      );
     }
 
-    const { id } = await params;
+    const { id } = await context.params;
     const tukId = parseInt(id, 10);
     if (isNaN(tukId)) return sendResponse(400, "ID TUK tidak valid.");
 
-    const tukExisting = await db.master_tuk.findUnique({ where: { id: tukId } });
-    if (!tukExisting) return sendResponse(404, "TUK tidak ditemukan.");
-
-    // Soft-delete: ubah status menjadi Nonaktif
-    await db.master_tuk.update({
-      where: { id: tukId },
-      data: { status: "Nonaktif" },
-    });
+    await tukService.softDelete(tukId);
 
     revalidatePath("/api/tuk");
 
@@ -126,6 +119,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
     }
     console.error("[DELETE /api/tuk/:id]", error);
     return sendResponse(500, "Terjadi kesalahan saat menonaktifkan TUK");

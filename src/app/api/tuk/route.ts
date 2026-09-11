@@ -1,10 +1,13 @@
 import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
-import { db } from "@/lib/db";
-import { sendResponse } from "@/lib/response";
+import { z } from "zod";
 import { authOptions } from "@/lib/auth-options";
+import { sendResponse } from "@/lib/response";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { ClientError } from "@/error/index";
+import { CreateTukSchema } from "@/schemas/tuk.schema";
+import { tukService } from "@/services/tuk.service";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -16,23 +19,19 @@ export async function GET(request: NextRequest) {
       windowMs: 60 * 1000,
       key: "get-all-tuk",
     });
+
     const { searchParams } = new URL(request.url);
-    const statusParam = searchParams.get("status");
+    const statusParam = searchParams.get("status") ?? undefined;
 
-    const where = statusParam === "all" ? {} : { status: "Aktif" };
-
-    const tukList = await db.master_tuk.findMany({
-      where,
-      include: {
-        master_tuk_inventaris: true,
-      },
-      orderBy: { id: "asc" },
-    });
+    const tukList = await tukService.getAll(statusParam);
 
     return sendResponse(200, "Berhasil mengambil data TUK", tukList);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
     }
     console.error("[GET /api/tuk]", error);
     return sendResponse(500, "Terjadi kesalahan saat mengambil data TUK");
@@ -56,24 +55,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nama, keterangan, tipe, alamat, kapasitas, penanggung_jawab } =
-      body;
+    const validatedData = CreateTukSchema.parse(body);
 
-    if (!nama) {
-      return sendResponse(400, "Field 'nama' wajib diisi.");
-    }
-
-    const tukBaru = await db.master_tuk.create({
-      data: {
-        nama,
-        keterangan: keterangan ?? null,
-        tipe: tipe ?? null,
-        alamat: alamat ?? null,
-        kapasitas: kapasitas ? Number(kapasitas) : null,
-        penanggung_jawab: penanggung_jawab ?? null,
-        status: "Aktif",
-      },
-    });
+    const tukBaru = await tukService.create(validatedData);
 
     revalidatePath("/api/tuk");
 
@@ -81,6 +65,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
+    }
+    if (error instanceof z.ZodError) {
+      return sendResponse(400, "Validasi payload gagal", error.flatten());
+    }
+    if (error instanceof ClientError) {
+      return sendResponse(error.statusCode, error.message);
     }
     console.error("[POST /api/tuk]", error);
     return sendResponse(500, "Terjadi kesalahan saat menambah TUK");

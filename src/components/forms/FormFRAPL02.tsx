@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Eye, CheckCircle, AlertTriangle, FastForward } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Eye, CheckCircle, AlertTriangle, FastForward, Loader2 } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
@@ -8,6 +8,7 @@ import {
   EvidenceFileItem,
   PenyusunValidatorItem,
 } from "@/types/types";
+import { getSkemaDetail, getPengajuanDetail, savePenilaianApl02 } from "@/lib/api";
 
 export const DEFAULT_APL02_UNITS = [
   {
@@ -47,6 +48,8 @@ export const DEFAULT_APL02_UNITS = [
 
 export interface FormFRAPL02Props {
   asesmenData?: Apl02FormData;
+  skemaId?: number;
+  pengajuanId?: number;
   units?: Array<{
     code: string;
     title: string;
@@ -90,6 +93,71 @@ export interface FormFRAPL02Props {
 }
 
 export function FormFRAPL02(props: FormFRAPL02Props) {
+  const [apiUnits, setApiUnits] = useState<typeof props.units | null>(null);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(false);
+
+  useEffect(() => {
+    async function loadUnitsFromApi() {
+      if (props.units && props.units.length > 0) return;
+
+      const targetSkemaId = props.skemaId || (props.asesmenData as any)?.skemaId;
+      const targetPengajuanId = props.pengajuanId || props.asesmenData?.id;
+
+      try {
+        if (targetSkemaId) {
+          setIsLoadingUnits(true);
+          const data = await getSkemaDetail(Number(targetSkemaId));
+          if (data && Array.isArray(data.unitKompetensi) && data.unitKompetensi.length > 0) {
+            const mapped = data.unitKompetensi.map((u: any) => ({
+              code: u.kodeUnit || u.kode || "",
+              title: u.judulUnit || u.judul || "",
+              elemen: (u.elemen || []).map((e: any) => ({
+                title: e.namaElemen || e.nama || "",
+                kuk: typeof e.kriteriaUnjukKerja === "string"
+                  ? e.kriteriaUnjukKerja.split("\n").filter(Boolean)
+                  : Array.isArray(e.kriteriaUnjukKerja)
+                    ? e.kriteriaUnjukKerja
+                    : [],
+              })),
+            }));
+            setApiUnits(mapped);
+            return;
+          }
+        }
+
+        if (targetPengajuanId) {
+          setIsLoadingUnits(true);
+          const pengajuan = await getPengajuanDetail(Number(targetPengajuanId));
+          if (pengajuan?.skemaId) {
+            const data = await getSkemaDetail(Number(pengajuan.skemaId));
+            if (data && Array.isArray(data.unitKompetensi) && data.unitKompetensi.length > 0) {
+              const mapped = data.unitKompetensi.map((u: any) => ({
+                code: u.kodeUnit || u.kode || "",
+                title: u.judulUnit || u.judul || "",
+                elemen: (u.elemen || []).map((e: any) => ({
+                  title: e.namaElemen || e.nama || "",
+                  kuk: typeof e.kriteriaUnjukKerja === "string"
+                    ? e.kriteriaUnjukKerja.split("\n").filter(Boolean)
+                    : Array.isArray(e.kriteriaUnjukKerja)
+                      ? e.kriteriaUnjukKerja
+                      : [],
+                })),
+              }));
+              setApiUnits(mapped);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Gagal memuat unit kompetensi dari API, gunakan fallback lokal:", err);
+      } finally {
+        setIsLoadingUnits(false);
+      }
+    }
+
+    loadUnitsFromApi();
+  }, [props.units, props.skemaId, props.pengajuanId, props.asesmenData]);
+
   React.useEffect(() => {
     const handleScroll = (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -124,6 +192,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     }) || AVAILABLE_SCHEMES[0];
   const units =
     props.units ||
+    apiUnits ||
     (props.asesmenData?.schemeDetail as { units?: typeof DEFAULT_APL02_UNITS })
       ?.units ||
     matchedScheme?.units ||

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -23,9 +23,11 @@ import {
   Globe,
   Mail,
   X,
+  Loader2,
 } from "lucide-react";
-import { AssessmentItem, BatchDetail, JenisMetode } from "@/types/types";
+import { AssessmentItem, BatchDetail, JenisMetode, TipeTuk } from "@/types/types";
 import { useAppContext } from "@/context/context";
+import { getCandidatesList, getJadwalList } from "@/lib/api";
 
 export default function AsesiList() {
   const router = useRouter();
@@ -52,8 +54,126 @@ export default function AsesiList() {
   const [successNotification, setSuccessNotification] = useState<string | null>(
     null,
   );
+  const [isLoading, setIsLoading] = useState(true);
+  const [backendBatches, setBackendBatches] = useState<BatchDetail[]>([]);
 
-  // 1. Group assessments into Batches
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [candidatesRes, jadwalRes] = await Promise.allSettled([
+          getCandidatesList(),
+          getJadwalList(),
+        ]);
+
+        const candidates =
+          candidatesRes.status === "fulfilled" && Array.isArray(candidatesRes.value)
+            ? candidatesRes.value
+            : [];
+
+        const jadwals =
+          jadwalRes.status === "fulfilled" && Array.isArray(jadwalRes.value)
+            ? jadwalRes.value
+            : [];
+
+        if (jadwals.length > 0) {
+          const mapped: BatchDetail[] = jadwals.map((j: any) => {
+            const batchCand = candidates.filter(
+              (c: any) => c.jadwalId === j.id,
+            );
+            return {
+              id: j.id,
+              status: j.status || "Terjadwal",
+              kodeBatch: j.kode_batch || `BATCH-${j.id}`,
+              namaBatch: j.nama_batch || `Batch Asesmen #${j.id}`,
+              skema: j.master_skema?.namaSkema || "Skema Sertifikasi",
+              metode: (j.metode || (j.tipe_tuk === "Online" ? "Online" : "Offline")) as JenisMetode,
+              tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
+              alamat: j.alamat || j.master_tuk?.nama_tuk || "TUK Terdaftar",
+              tanggal: j.tanggal ? new Date(j.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-",
+              waktuMulai: j.waktu_mulai ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "09:00 WIB",
+              linkVideo: j.link_video || "-",
+              candidates:
+                batchCand.length > 0
+                  ? batchCand.map((c: any) => ({
+                      id: c.pengajuanId,
+                      nik: c.nik || `32730128${c.pengajuanId}0001`,
+                      nama: c.namaLengkap || "Asesi",
+                      skema:
+                        c.namaSkema ||
+                        j.master_skema?.namaSkema ||
+                        "Skema Sertifikasi",
+                      tglAsesmen: j.tanggal
+                        ? new Date(j.tanggal).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-",
+                      waktu: j.waktu_mulai
+                        ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "09:00 WIB",
+                      tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
+                      metode: (j.metode ||
+                        (j.tipe_tuk === "Online"
+                          ? "Online"
+                          : "Offline")) as JenisMetode,
+                      status:
+                        c.hasilAsesmen !== "Belum Dinilai"
+                          ? "Selesai"
+                          : "Belum Selesai",
+                      statusAsesmen: c.hasilAsesmen || "Belum Dinilai",
+                      statusAPL02: "APL-01 & APL-02 Terverifikasi",
+                    }))
+                  : AssessmentItems.slice(0, 3).map((item, idx) => ({
+                      id: 1000 + idx,
+                      nik: item.nik || `32730128100${idx}0001`,
+                      nama: item.nama || `Asesi Kandidat ${idx + 1}`,
+                      skema:
+                        j.master_skema?.namaSkema ||
+                        item.skema ||
+                        "Skema Sertifikasi",
+                      tglAsesmen: j.tanggal
+                        ? new Date(j.tanggal).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-",
+                      waktu: j.waktu_mulai
+                        ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "09:00 WIB",
+                      tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
+                      metode: (j.metode ||
+                        (j.tipe_tuk === "Online"
+                          ? "Online"
+                          : "Offline")) as JenisMetode,
+                      status: item.status || "Belum Selesai",
+                      statusAsesmen: item.hasil || "Belum Dinilai",
+                      statusAPL02:
+                        item.statusApl || "APL-01 & APL-02 Terverifikasi",
+                    })),
+            };
+          });
+          setBackendBatches(mapped);
+        }
+      } catch (err) {
+        console.error("Gagal memuat kandidat:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, [AssessmentItems]);
+
+  // 1. Group assessments into Batches (Fallback from Context)
   const batchMap = new Map<string, BatchDetail>();
   AssessmentItems.forEach((item: AssessmentItem) => {
     const skemaNama = item.skema || "Skema Asesmen";
@@ -83,9 +203,14 @@ export default function AsesiList() {
     });
   });
 
-  const allBatches = Array.from(batchMap.values()).filter(
+  const fallbackBatches = Array.from(batchMap.values()).filter(
     (b) => !completedBatchCodes.includes(b.kodeBatch as string),
   );
+
+  const allBatches =
+    backendBatches.length > 0
+      ? [...backendBatches, ...fallbackBatches]
+      : fallbackBatches;
 
   // 2. Filter batches according to active tab and search query
   const filteredBatches = allBatches.filter((batch) => {
@@ -746,7 +871,9 @@ export default function AsesiList() {
                                   hasil:
                                     candidate.statusAsesmen ?? "Belum Dinilai",
                                 });
-                                router.push("/assessor/assessmentform");
+                                router.push(
+                                  `/assessor/assessmentform?pengajuanId=${candidate.id}`,
+                                );
                               }}
                               className="bg-slate-900 text-white hover:bg-slate-800 px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                             >

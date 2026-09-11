@@ -13,235 +13,60 @@ import {
   Calendar,
   FileSpreadsheet,
 } from "lucide-react";
+import { getSuratList, createSurat } from "@/lib/api";
 import { SuratItem, KategoriSurat, SubJenisSurat } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
-// Initial Mock Data for Generated Documents & Certificates
-const INITIAL_SURAT_DATA: SuratItem[] = [
-  {
-    id: 1,
-    nomorSurat: "BA/014/PLENO-LSP/VIII/2026",
-    judul: "Berita Acara Sidang Pleno Penetapan Asesmen Gelombang VIII 2026",
-    kategori: "surat_masuk",
-    jenisSurat: "berita_acara_pleno",
-    namaJenisSurat: "Surat Berita Acara Pleno",
-    tanggalDibuat: "2026-08-25",
-    tanggalTerbit: "2026-08-25",
-    penerbit: "Komite Teknis Sidang Pleno LSP",
-    penerima: "Direktur LSP UIN Sunan Gunung Djati",
-    skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-    jumlahAsesi: 12,
-    status: "Terbit",
-    pimpinanSidang: "Dr. H. Ahmad Fauzi, M.Kom.",
-    notulis: "Rahmat Hidayat, S.T.",
-    lokasi: "Ruang Rapat Utama LSP UIN Sunan Gunung Djati Bandung",
-    catatan: "Berita Acara Penetapan 12 Asesi Kompeten.",
-    urlGdrive: "https://drive.google.com/file/d/BA_Pleno_Aug2026/view",
-  },
-  {
-    id: 2,
-    nomorSurat: "SK/088/DIR-LSP/VIII/2026",
-    judul:
-      "Surat Keputusan Direktur LSP tentang Hasil Kelulusan Asesmen Sertifikasi Periode Agustus 2026",
-    kategori: "surat_masuk",
-    jenisSurat: "keputusan_pleno",
-    namaJenisSurat: "Surat Hasil Keputusan Pleno",
-    tanggalDibuat: "2026-08-26",
-    tanggalTerbit: "2026-08-26",
-    penerbit: "Direktur LSP UIN Sunan Gunung Djati",
-    penerima: "Ketua Komite Sertifikasi & Arsip Internal",
-    skemaSertifikasi:
-      "Multi Skema (Mobile Developer, Web Developer, Auditor Halal)",
-    jumlahAsesi: 28,
-    status: "Terbit",
-    noSK: "SK-DIR/088/LSP-SGD/VIII/2026",
-    pimpinanSidang: "Dr. H. Ahmad Fauzi, M.Kom.",
-    catatan: "Keputusan resmi kelulusan pleno 28 asesi.",
-    urlGdrive: "https://drive.google.com/file/d/SK_Hasil_Pleno_2026/view",
-  },
-  {
-    id: 3,
-    nomorSurat: "BA/012/PLENO-LSP/VII/2026",
-    judul:
-      "Berita Acara Sidang Pleno Hasil Rekomendasi Asesmen Gelombang VII 2026",
-    kategori: "surat_masuk",
-    jenisSurat: "berita_acara_pleno",
-    namaJenisSurat: "Surat Berita Acara Pleno",
-    tanggalDibuat: "2026-07-20",
-    tanggalTerbit: "2026-07-20",
-    penerbit: "Komite Teknis Pleno",
-    penerima: "Direktur LSP UIN Sunan Gunung Djati",
-    skemaSertifikasi: "Network Administrator",
-    jumlahAsesi: 15,
-    status: "Terbit",
-    pimpinanSidang: "Drs. H. Hendra Wijaya, M.T.",
-    notulis: "Siti Aminah, S.Kom.",
-    urlGdrive: "https://drive.google.com/file/d/BA_Pleno_Jul2026/view",
-  },
-  {
-    id: 4,
-    nomorSurat: "ST/105/LSP-SGD/VIII/2026",
-    judul: "Surat Penugasan Asesor Kompetensi Uji Sertifikasi Mobile Developer",
-    kategori: "surat_keluar",
-    jenisSurat: "penugasan_asesor",
-    namaJenisSurat: "Surat Penugasan Asesor",
-    tanggalDibuat: "2026-08-10",
-    tanggalTerbit: "2026-08-10",
-    penerbit: "Ketua LSP UIN Sunan Gunung Djati",
-    penerima: "Drs. Ir. M. Nurhadi, M.T. (Asesor MET.000.003412)",
-    namaAsesor: "Drs. Ir. M. Nurhadi, M.T.",
-    noMetAsesor: "MET.000.003412",
-    skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-    jumlahAsesi: 8,
-    status: "Terbit",
-    lokasi: "TUK Lab Komputer Terpadu Saintek",
-    urlGdrive: "https://drive.google.com/file/d/ST_Asesor_Nurhadi_Aug2026/view",
-  },
-  {
-    id: 5,
-    nomorSurat: "BNSP/410/LSP-SGD/VIII/2026",
-    judul:
-      "Surat Permohonan & Laporan Permintaan Blanko Sertifikat BNSP Gelombang VIII",
-    kategori: "surat_keluar",
-    jenisSurat: "blanko_bnsp",
-    namaJenisSurat: "Surat Blanko BNSP",
-    tanggalDibuat: "2026-08-27",
-    tanggalTerbit: "2026-08-27",
-    penerbit: "Manajer Operasional LSP UIN Sunan Gunung Djati",
-    penerima: "Ketua Badan Nasional Sertifikasi Profesi (BNSP) Jakarta",
-    skemaSertifikasi: "Pemrogram Mobil Pertama & Junior Web Developer",
-    jumlahAsesi: 25,
-    status: "Disetujui",
-    catatan: "Permohonan 25 lembar blanko sertifikat BNSP.",
-    urlGdrive: "https://drive.google.com/file/d/BNSP_Blanko_Req_Aug2026/view",
-  },
-  {
-    id: 6,
-    nomorSurat: "ST/098/LSP-SGD/VII/2026",
-    judul: "Surat Penugasan Asesor Asesmen Kompetensi Auditor Halal",
-    kategori: "surat_keluar",
-    jenisSurat: "penugasan_asesor",
-    namaJenisSurat: "Surat Penugasan Asesor",
-    tanggalDibuat: "2026-07-15",
-    tanggalTerbit: "2026-07-15",
-    penerbit: "Ketua LSP UIN Sunan Gunung Djati",
-    penerima: "Dr. Hj. Fitriani, M.Ag. (Asesor MET.000.004891)",
-    namaAsesor: "Dr. Hj. Fitriani, M.Ag.",
-    noMetAsesor: "MET.000.004891",
-    skemaSertifikasi: "Auditor Halal",
-    jumlahAsesi: 10,
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/ST_Asesor_Fitriani_Jul2026/view",
-  },
-  {
-    id: 7,
-    nomorSurat: "SP/042/LSP-SGD/VIII/2026",
-    judul:
-      "Surat Permohonan Peminjaman Asesor Kompetensi Bidang Pemrograman Mobil",
-    kategori: "surat_keluar",
-    jenisSurat: "peminjaman_asesor",
-    namaJenisSurat: "Surat Peminjaman Asesor",
-    tanggalDibuat: "2026-08-20",
-    tanggalTerbit: "2026-08-20",
-    penerbit: "Direktur LSP UIN Sunan Gunung Djati",
-    penerima: "Ketua LSP P1 Politeknik Negeri Bandung",
-    namaAsesor: "Drs. Ir. M. Nurhadi, M.T.",
-    skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/SP_Peminjaman_Asesor_Aug2026/view",
-  },
-  {
-    id: 8,
-    nomorSurat: "50012/LSP-SGD/VIII/2026",
-    judul: "Sertifikat Kompetensi BNSP - Ahmad Rizki",
-    kategori: "sertifikat",
-    jenisSurat: "sertifikat_kompetensi",
-    namaJenisSurat: "Sertifikat Kompetensi BNSP",
-    tanggalDibuat: "2026-08-16",
-    tanggalTerbit: "2026-08-16",
-    penerbit: "LSP UIN Sunan Gunung Djati & BNSP",
-    penerima: "Ahmad Rizki (NIM: 1197050001)",
-    skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/1A2b3C4d5E6f7G8h9I0j_Cert1/view",
-    catatan: "Telah terverifikasi BNSP",
-  },
-  {
-    id: 9,
-    nomorSurat: "50013/LSP-SGD/VIII/2026",
-    judul: "Sertifikat Kompetensi BNSP - Siti Nurhaliza",
-    kategori: "sertifikat",
-    jenisSurat: "sertifikat_kompetensi",
-    namaJenisSurat: "Sertifikat Kompetensi BNSP",
-    tanggalDibuat: "2026-08-16",
-    tanggalTerbit: "2026-08-16",
-    penerbit: "LSP UIN Sunan Gunung Djati & BNSP",
-    penerima: "Siti Nurhaliza (NIM: 1197050012)",
-    skemaSertifikasi: "Junior Web Developer",
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/2B3c4D5e6F7g8H9i0J1k_Cert2/view",
-    catatan: "Dokumen diunggah ke GDrive LSP",
-  },
-  {
-    id: 10,
-    nomorSurat: "50014/LSP-SGD/VIII/2026",
-    judul: "Sertifikat Kompetensi BNSP - Dewi Anggraini",
-    kategori: "sertifikat",
-    jenisSurat: "sertifikat_kompetensi",
-    namaJenisSurat: "Sertifikat Kompetensi BNSP",
-    tanggalDibuat: "2026-08-16",
-    tanggalTerbit: "2026-08-16",
-    penerbit: "LSP UIN Sunan Gunung Djati & BNSP",
-    penerima: "Dewi Anggraini (NIM: 1197050031)",
-    skemaSertifikasi: "Junior Web Developer",
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/3C4d5E6f7G8h9I0j1K2l_Cert3/view",
-  },
-  {
-    id: 11,
-    nomorSurat: "50020/LSP-SGD/VIII/2026",
-    judul: "Sertifikat Kompetensi BNSP - Dewi Lestari",
-    kategori: "sertifikat",
-    jenisSurat: "sertifikat_kompetensi",
-    namaJenisSurat: "Sertifikat Kompetensi BNSP",
-    tanggalDibuat: "2026-08-18",
-    tanggalTerbit: "2026-08-18",
-    penerbit: "LSP UIN Sunan Gunung Djati & BNSP",
-    penerima: "Dewi Lestari (NIM: 1197050044)",
-    skemaSertifikasi: "Junior Web Developer",
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/4D5e6F7g8H9i0J1k2L3m_Cert4/view",
-    catatan: "Lulus Sidang Pleno",
-  },
-  {
-    id: 12,
-    nomorSurat: "50021/LSP-SGD/VIII/2026",
-    judul: "Sertifikat Kompetensi BNSP - Hendra Wijaya",
-    kategori: "sertifikat",
-    jenisSurat: "sertifikat_kompetensi",
-    namaJenisSurat: "Sertifikat Kompetensi BNSP",
-    tanggalDibuat: "2026-08-18",
-    tanggalTerbit: "2026-08-18",
-    penerbit: "LSP UIN Sunan Gunung Djati & BNSP",
-    penerima: "Hendra Wijaya (NIM: 1197050070)",
-    skemaSertifikasi: "Auditor Halal",
-    status: "Terbit",
-    urlGdrive:
-      "https://drive.google.com/file/d/5E6f7G8h9I0j1K2l3M4n_Cert5/view",
-  },
-];
+const TAB_OPTIONS = ["Semua", "SK", "ST", "Sertifikat", "Berita Acara"];
 
 export default function KelolaSurat() {
   const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
 
-  const [documents, setDocuments] = useState<SuratItem[]>(INITIAL_SURAT_DATA);
+  const [documents, setDocuments] = useState<SuratItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getSuratList();
+      const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+      if (list && list.length >= 0) {
+        const mapped = list.map((item: any) => ({
+          id: item.id,
+          nomorSurat: item.nomor_surat,
+          judul: item.judul,
+          kategori: item.kategori,
+          jenisSurat: item.jenis_surat,
+          namaJenisSurat: item.nama_jenis_surat || item.judul,
+          tanggalDibuat: item.created_at ? new Date(item.created_at).toISOString().split("T")[0] : "",
+          tanggalTerbit: item.tanggal_terbit ? new Date(item.tanggal_terbit).toISOString().split("T")[0] : "",
+          penerbit: item.penerbit || "LSP UIN Sunan Gunung Djati",
+          penerima: item.penerima || "Umum",
+          skemaSertifikasi: item.skema?.nama_skema || "-",
+          jumlahAsesi: item.jumlah_asesi || 0,
+          status: item.status,
+          noSK: item.no_sk || "",
+          pimpinanSidang: item.pimpinan_sidang || "",
+          notulis: item.notulis || "",
+          namaAsesor: item.nama_asesor || "",
+          noMetAsesor: item.no_met_asesor || "",
+          lokasi: item.lokasi || "",
+          catatan: item.catatan || "",
+          urlGdrive: item.url_gdrive || "",
+        }));
+        setDocuments(mapped);
+      }
+    } catch (error) {
+      console.error("Error fetching surat:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const [activeCategory, setActiveCategory] = useState<"all" | KategoriSurat>(
     "all",
   );
@@ -325,7 +150,7 @@ export default function KelolaSurat() {
     return { total, suratMasuk, suratKeluar, sertifikat };
   }, [documents]);
 
-  const handleCreateDocument = (e: React.FormEvent) => {
+  const handleCreateDocument = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nomorSurat) {
       showNotification("Mohon isi Nomor Surat terlebih dahulu.", "error");
@@ -343,44 +168,50 @@ export default function KelolaSurat() {
     if (formData.jenisSurat === "sertifikat_kompetensi")
       namaJenis = "Sertifikat Kompetensi BNSP";
 
-    const newDoc: SuratItem = {
-      id: Date.now(),
-      nomorSurat: formData.nomorSurat,
+    const payload = {
+      nomor_surat: formData.nomorSurat,
       judul: namaJenis,
       kategori: formData.kategori || "surat_masuk",
-      jenisSurat: formData.jenisSurat || "berita_acara_pleno",
-      namaJenisSurat: namaJenis,
-      tanggalDibuat:
-        formData.tanggalDibuat || new Date().toISOString().split("T")[0],
-      tanggalTerbit:
-        formData.tanggalTerbit || new Date().toISOString().split("T")[0],
+      jenis_surat: formData.jenisSurat || "berita_acara_pleno",
+      nama_jenis_surat: namaJenis,
+      tanggal_terbit: formData.tanggalTerbit ? new Date(formData.tanggalTerbit).toISOString() : new Date().toISOString(),
       penerbit: formData.penerbit || "LSP UIN Sunan Gunung Djati",
       penerima: formData.penerima || "Umum",
-      skemaSertifikasi: formData.skemaSertifikasi || "-",
       status: formData.status || "Terbit",
-      urlGdrive: formData.urlGdrive || "",
+      url_gdrive: formData.urlGdrive || "",
       catatan: formData.catatan || "",
     };
 
-    setDocuments([newDoc, ...documents]);
-    setIsCreateModalOpen(false);
-    showNotification(
-      `Dokumen "${newDoc.nomorSurat}" berhasil didaftarkan dan disimpan.`, "success"
-    );
-    setFormData({
-      nomorSurat: "",
-      judul: "",
-      kategori: "surat_masuk",
-      jenisSurat: "berita_acara_pleno",
-      tanggalDibuat: new Date().toISOString().split("T")[0],
-      tanggalTerbit: new Date().toISOString().split("T")[0],
-      penerbit: "LSP UIN Sunan Gunung Djati Bandung",
-      penerima: "",
-      skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-      status: "Terbit",
-      urlGdrive: "",
-      catatan: "",
-    });
+    try {
+      const result = await createSurat(payload);
+
+      if (result) {
+        showNotification(
+          `Dokumen "${payload.nomor_surat}" berhasil didaftarkan dan disimpan.`, "success"
+        );
+        fetchDocuments();
+        setIsCreateModalOpen(false);
+        setFormData({
+          nomorSurat: "",
+          judul: "",
+          kategori: "surat_masuk",
+          jenisSurat: "berita_acara_pleno",
+          tanggalDibuat: new Date().toISOString().split("T")[0],
+          tanggalTerbit: new Date().toISOString().split("T")[0],
+          penerbit: "LSP UIN Sunan Gunung Djati Bandung",
+          penerima: "",
+          skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
+          status: "Terbit",
+          urlGdrive: "",
+          catatan: "",
+        });
+      } else {
+        showNotification(result.message || "Gagal membuat surat.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showNotification("Terjadi kesalahan server saat menyimpan dokumen.", "error");
+    }
   };
 
   const handleCopyLink = (url?: string, nomor?: string) => {
@@ -432,11 +263,10 @@ export default function KelolaSurat() {
               setActiveCategory("all");
               setSelectedSubJenis("all");
             }}
-            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
-              activeCategory === "all"
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "all"
                 ? "bg-[#E6F4FF] border-[#008BE3] ring-2 ring-offset-1 ring-[#008BE3]/30"
                 : "bg-[#E6F4FF] border-[#BCE0FD]"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-black text-sky-800 uppercase tracking-wider block">
@@ -463,11 +293,10 @@ export default function KelolaSurat() {
               setActiveCategory("surat_masuk");
               setSelectedSubJenis("all");
             }}
-            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
-              activeCategory === "surat_masuk"
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "surat_masuk"
                 ? "bg-[#F4FBF7] border-[#84CC16] ring-2 ring-offset-1 ring-[#84CC16]/30"
                 : "bg-[#F4FBF7] border-[#A7F3D0]"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">
@@ -494,11 +323,10 @@ export default function KelolaSurat() {
               setActiveCategory("surat_keluar");
               setSelectedSubJenis("all");
             }}
-            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
-              activeCategory === "surat_keluar"
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "surat_keluar"
                 ? "bg-[#F1F5F9] border-slate-500 ring-2 ring-offset-1 ring-slate-500/30"
                 : "bg-[#F1F5F9] border-[#CBD5E1]"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider block">
@@ -525,11 +353,10 @@ export default function KelolaSurat() {
               setActiveCategory("sertifikat");
               setSelectedSubJenis("all");
             }}
-            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
-              activeCategory === "sertifikat"
+            className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "sertifikat"
                 ? "bg-[#FFFBEB] border-amber-500 ring-2 ring-offset-1 ring-amber-500/30"
                 : "bg-[#FFFBEB] border-[#FDE68A]"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">
@@ -560,11 +387,10 @@ export default function KelolaSurat() {
             setActiveCategory("all");
             setSelectedSubJenis("all");
           }}
-          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-            activeCategory === "all"
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "all"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-          }`}
+            }`}
         >
           <FileSpreadsheet size={15} />
           <span>Semua Dokumen ({stats.total})</span>
@@ -575,11 +401,10 @@ export default function KelolaSurat() {
             setActiveCategory("surat_masuk");
             setSelectedSubJenis("all");
           }}
-          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-            activeCategory === "surat_masuk"
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "surat_masuk"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-          }`}
+            }`}
         >
           <Inbox size={15} />
           <span>Surat Masuk ({stats.suratMasuk})</span>
@@ -590,11 +415,10 @@ export default function KelolaSurat() {
             setActiveCategory("surat_keluar");
             setSelectedSubJenis("all");
           }}
-          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-            activeCategory === "surat_keluar"
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "surat_keluar"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-          }`}
+            }`}
         >
           <Send size={15} />
           <span>Surat Keluar ({stats.suratKeluar})</span>
@@ -605,11 +429,10 @@ export default function KelolaSurat() {
             setActiveCategory("sertifikat");
             setSelectedSubJenis("all");
           }}
-          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-            activeCategory === "sertifikat"
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "sertifikat"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-          }`}
+            }`}
         >
           <Award size={15} />
           <span>Sertifikat ({stats.sertifikat})</span>
@@ -644,27 +467,27 @@ export default function KelolaSurat() {
               <option value="all">Semua Jenis Surat</option>
               {(activeCategory === "all" ||
                 activeCategory === "surat_masuk") && (
-                <>
-                  <option value="berita_acara_pleno">
-                    Surat Berita Acara Pleno
-                  </option>
-                  <option value="keputusan_pleno">
-                    Surat Hasil Keputusan Pleno
-                  </option>
-                </>
-              )}
+                  <>
+                    <option value="berita_acara_pleno">
+                      Surat Berita Acara Pleno
+                    </option>
+                    <option value="keputusan_pleno">
+                      Surat Hasil Keputusan Pleno
+                    </option>
+                  </>
+                )}
               {(activeCategory === "all" ||
                 activeCategory === "surat_keluar") && (
-                <>
-                  <option value="blanko_bnsp">Surat Blanko BNSP</option>
-                  <option value="penugasan_asesor">
-                    Surat Penugasan Asesor
-                  </option>
-                  <option value="peminjaman_asesor">
-                    Surat Peminjaman Asesor
-                  </option>
-                </>
-              )}
+                  <>
+                    <option value="blanko_bnsp">Surat Blanko BNSP</option>
+                    <option value="penugasan_asesor">
+                      Surat Penugasan Asesor
+                    </option>
+                    <option value="peminjaman_asesor">
+                      Surat Peminjaman Asesor
+                    </option>
+                  </>
+                )}
               {(activeCategory === "all" || activeCategory === "sertifikat") && (
                 <option value="sertifikat_kompetensi">
                   Sertifikat Kompetensi BNSP
@@ -707,7 +530,13 @@ export default function KelolaSurat() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
-              {filteredDocuments.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium">
+                    Memuat data surat...
+                  </td>
+                </tr>
+              ) : filteredDocuments.length > 0 ? (
                 filteredDocuments.map((doc) => (
                   <tr
                     key={doc.id}

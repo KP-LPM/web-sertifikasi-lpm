@@ -17,75 +17,19 @@ import {
 import { useAppContext } from "@/context/context";
 
 // IMPORT DARI types.ts
-import type { RegisteredAssessment } from "@/types/types";
+import type { RegisteredAssessment, TipeTuk } from "@/types/types";
+import { getPengajuanList, getCurrentProfile } from "@/lib/api";
 
-const REGISTERED_ASSESSMENTS: RegisteredAssessment[] = [
-  {
-    id: 1,
-    asesmen: "Uji Kompetensi",
-    skemaSertifikasi: "Jenjang 5 Bidang Kewirausahaan Industri",
-    tipeTuk: "Mandiri",
-    alamat: "Jl. Ahmad Yani No. 123, Bandung",
-    tanggalAsesmen: "13/07/2026",
-    linkVirtualMeeting: "-",
-    asesor: "Dr. Hendra",
-    jenisBukti: "Portofolio & Praktik",
-    rekomendasi: "Kompeten",
-    statusAsesmen: "Selesai",
-  },
-  {
-    id: 2,
-    asesmen: "Uji Teori & Praktik",
-    skemaSertifikasi: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-    tipeTuk: "Sewaktu",
-    alamat: "Gedung A, Lt. 2, Kampus Utama",
-    tanggalAsesmen: "05/08/2026",
-    linkVirtualMeeting: "-",
-    asesor: "Asesor Budi",
-    jenisBukti: "Praktik & Tes Lisan",
-    rekomendasi: "Belum Kompeten",
-    statusAsesmen: "Selesai",
-  },
-  {
-    id: 3,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Penerjemah Teks Umum",
-    tipeTuk: "Mandiri",
-    alamat: "Online",
-    tanggalAsesmen: "22/10/2026",
-    linkVirtualMeeting: "https://meet.google.com/abc-defg-hij",
-    asesor: "Asesor Siti",
-    jenisBukti: "Portofolio",
-    rekomendasi: "-",
-    statusAsesmen: "Terjadwal",
-  },
-  {
-    id: 4,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Auditor Halal",
-    tipeTuk: "Mandiri",
-    alamat: "Online",
-    tanggalAsesmen: "24/10/2026",
-    linkVirtualMeeting: "https://meet.google.com/xyz-abcd-efg",
-    asesor: "Asesor Anton",
-    jenisBukti: "Portofolio",
-    rekomendasi: "-",
-    statusAsesmen: "Terjadwal",
-  },
-  {
-    id: 5,
-    asesmen: "Asesmen Mandiri",
-    skemaSertifikasi: "Penyelia Halal",
-    tipeTuk: "Mandiri",
-    alamat: "Online",
-    tanggalAsesmen: "-",
-    linkVirtualMeeting: "-",
-    asesor: "Belum Ditugaskan",
-    jenisBukti: "Portofolio",
-    rekomendasi: "-",
-    statusAsesmen: "Menunggu Verifikasi",
-  },
-];
+const formatDateID = (dateVal: string | Date | undefined | null) => {
+  if (!dateVal) return "-";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "-";
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  } catch {
+    return "-";
+  }
+};
 
 export default function AsesiOverviewPage() {
   const { user } = useAppContext();
@@ -94,21 +38,15 @@ export default function AsesiOverviewPage() {
   // 1. Siapkan state untuk menampung nama dan ID
   const [namaLengkap, setNamaLengkap] = useState<string>("Asesi");
   const [asesiId, setAsesiId] = useState<string>("ASESI-0000");
+  const [assessments, setAssessments] = useState<RegisteredAssessment[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // 2. Pasang Radar buat narik data dari database
   React.useEffect(() => {
     const fetchProfil = async () => {
       try {
-        const response = await fetch("/api/profile");
-        if (response.ok) {
-          // Type assertion untuk menghindari 'any' type
-          const data = (await response.json()) as {
-            namaLengkap?: string;
-            id?: string;
-            userId?: string | number;
-          };
-
-          // Set Nama: Prioritas dari database (namaLengkap) -> Session (name/email) -> "Asesi"
+        const data = await getCurrentProfile();
+        if (data) {
           if (data.namaLengkap) {
             setNamaLengkap(data.namaLengkap);
           } else if (user?.username) {
@@ -117,7 +55,6 @@ export default function AsesiOverviewPage() {
             setNamaLengkap(user.email);
           }
 
-          // Set ID: Ambil dari database.
           if (data.id && data.userId) {
             setAsesiId(`ASESI-${String(data.userId).padStart(4, "0")}`);
           } else if (user?.id) {
@@ -126,19 +63,102 @@ export default function AsesiOverviewPage() {
           }
         }
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(
-            "Gagal mengambil profil untuk dashboard:",
-            error.message,
-          );
-        } else {
-          console.error("Gagal mengambil profil untuk dashboard:", error);
+        if (user?.username) setNamaLengkap(user.username);
+        else if (user?.email) setNamaLengkap(user.email);
+        if (user?.id) {
+          const numericId = String(user.id).replace(/[^0-9]/g, "");
+          setAsesiId(`ASESI-${numericId.padStart(4, "0")}`);
         }
       }
     };
 
     fetchProfil();
   }, [user]);
+
+  // 3. Tarik data pengajuan asesmen riil dari backend
+  const fetchAssessments = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getPengajuanList();
+      if (Array.isArray(data)) {
+        interface RawPengajuan {
+          id: number;
+          jenisAsesmen?: string;
+          tuk?: string;
+          status?: string;
+          tglPengajuan?: string | Date;
+          createdAt?: string | Date;
+          skema?: { namaSkema?: string };
+          master_tuk?: { nama?: string; alamat?: string; tipe?: string };
+          hasil_asesmen?: { hasil?: string; link_video?: string };
+          apl02_penilaian?: { rekomendasi_apl02?: string; nama_asesor?: string };
+          jadwal_asesmen_peserta?: Array<{
+            jadwal_asesmen?: {
+              tanggal?: string | Date;
+              tipe_tuk?: string;
+              alamat?: string;
+              link_video?: string;
+              users?: { username?: string; profil?: { namaLengkap?: string } };
+              master_tuk?: { nama?: string; alamat?: string };
+            };
+          }>;
+        }
+
+        const mapped: RegisteredAssessment[] = (data as RawPengajuan[]).map((item) => {
+          const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+          const asesorName =
+            jadwal?.users?.profil?.namaLengkap ||
+            jadwal?.users?.username ||
+            item.apl02_penilaian?.nama_asesor ||
+            "Belum Ditugaskan";
+          const rawDate = jadwal?.tanggal || item.tglPengajuan || item.createdAt;
+          const formattedDate = formatDateID(rawDate);
+          const tipeTuk = (jadwal?.tipe_tuk ||
+            item.master_tuk?.tipe ||
+            item.tuk ||
+            "Mandiri") as TipeTuk;
+          const alamat =
+            jadwal?.alamat ||
+            jadwal?.master_tuk?.alamat ||
+            item.master_tuk?.alamat ||
+            (String(tipeTuk).toLowerCase().includes("online") ||
+            String(tipeTuk).toLowerCase().includes("virtual")
+              ? "Online"
+              : "-");
+          const linkMeeting =
+            jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
+          const rekomendasi =
+            item.hasil_asesmen?.hasil ||
+            item.apl02_penilaian?.rekomendasi_apl02 ||
+            "-";
+
+          return {
+            id: item.id,
+            asesmen: item.jenisAsesmen || "Uji Kompetensi",
+            skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
+            tipeTuk,
+            alamat,
+            tanggalAsesmen: formattedDate,
+            linkVirtualMeeting: linkMeeting,
+            asesor: asesorName,
+            jenisBukti: "Portofolio & Praktik",
+            rekomendasi,
+            statusAsesmen: item.status || "Menunggu Verifikasi",
+          };
+        });
+
+        setAssessments(mapped);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data asesmen:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchAssessments();
+  }, [fetchAssessments]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
@@ -152,7 +172,7 @@ export default function AsesiOverviewPage() {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, dateFilter]);
 
-  const filteredAssessments = REGISTERED_ASSESSMENTS.filter((item) => {
+  const filteredAssessments = assessments.filter((item) => {
     const matchesSearch =
       item.asesmen.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.skemaSertifikasi.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -236,9 +256,9 @@ export default function AsesiOverviewPage() {
     }
   };
 
-  const totalAsesmen = REGISTERED_ASSESSMENTS.length;
-  const selesaiCount = REGISTERED_ASSESSMENTS.filter(
-    (a) => a.statusAsesmen === "Selesai",
+  const totalAsesmen = assessments.length;
+  const selesaiCount = assessments.filter(
+    (a) => a.statusAsesmen === "Selesai" || a.rekomendasi === "Kompeten",
   ).length;
   const inProgressCount = totalAsesmen - selesaiCount;
 
@@ -509,7 +529,19 @@ export default function AsesiOverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
-              {filteredAssessments.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={10}
+                    className="px-6 py-12 text-center text-xs md:text-sm text-gray-500 font-medium"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+                      <span>Memuat data asesmen Anda...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredAssessments.length > 0 ? (
                 currentRecords.map((item, idx) => (
                   <tr
                     key={item.id}
@@ -600,24 +632,19 @@ export default function AsesiOverviewPage() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => {
-                            if (
-                              item.tipeTuk === "Mandiri" &&
-                              item.statusAsesmen === "Terjadwal"
-                            ) {
-                              router.push("/asesi/ujian");
+                            if (item.statusAsesmen === "Terjadwal") {
+                              router.push(`/asesi/ujian?pengajuanId=${item.id}`);
                             } else {
                               setSelectedAssessment(item);
                             }
                           }}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${
-                            item.tipeTuk === "Mandiri" &&
                             item.statusAsesmen === "Terjadwal"
                               ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
                               : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
                           }`}
                         >
-                          {item.tipeTuk === "Mandiri" &&
-                          item.statusAsesmen === "Terjadwal" ? (
+                          {item.statusAsesmen === "Terjadwal" ? (
                             <>
                               <FileEdit size={14} /> Mulai Ujian
                             </>

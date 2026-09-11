@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   ArrowLeft,
@@ -18,9 +18,11 @@ import {
   Scale,
   Video,
   Building2,
+  Loader2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { AssessmentItem, HasilAsesmen } from "@/types/types";
+import { getBandingList, verifikasiBanding } from "@/lib/api";
 
 export default function VerifikasiBanding() {
   const [mode, setMode] = useState<"list" | "detail">("list");
@@ -51,11 +53,70 @@ function VerifikasiBandingList({
   const { AssessmentItems } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [displayedCount, setDisplayedCount] = useState(10);
+  const [realBandingItems, setRealBandingItems] = useState<AssessmentItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBanding() {
+      setIsLoading(true);
+      try {
+        const res = await getBandingList();
+        if (Array.isArray(res) && res.length > 0) {
+          const mapped: AssessmentItem[] = res.map((item: any) => {
+            const pengajuan = item.hasil_asesmen?.pengajuan_skema;
+            const jadwal = item.hasil_asesmen?.jadwal_asesmen;
+            const asesiName =
+              pengajuan?.dataPribadi?.namaLengkap ||
+              pengajuan?.user?.username ||
+              "Asesi";
+            const skemaName =
+              pengajuan?.skema?.namaSkema || "Skema Asesmen";
+            const tgl = item.tanggal_pengajuan
+              ? new Date(item.tanggal_pengajuan).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "-";
+
+            return {
+              id: item.id,
+              nik: pengajuan?.dataPribadi?.nik || "",
+              nama: asesiName,
+              skema: skemaName,
+              hasil: (item.hasil_asesmen?.hasil || "Belum Kompeten") as HasilAsesmen,
+              isBanding: true,
+              statusBanding: item.status || "Menunggu Verifikasi",
+              tglAsesmen: tgl,
+              waktu: "08:00 WIB",
+              metode: jadwal?.tipe_tuk === "Online" ? "Online" : "Offline",
+              tipeTuk: jadwal?.tipe_tuk || "Sewaktu",
+              alamat: jadwal?.alamat || "TUK Terdaftar",
+              catatan: item.penjelasan || item.alasan || "",
+              alasanBanding: item.alasan,
+              bandingId: item.id,
+            } as AssessmentItem & { bandingId?: number; alasanBanding?: string };
+          });
+          setRealBandingItems(mapped);
+        }
+      } catch (err) {
+        console.error("Gagal memuat daftar banding:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadBanding();
+  }, []);
 
   // Filter only AssessmentItems that are 'Belum Kompeten' and have been appealed by Asesi
-  const filteredAssessments = AssessmentItems.filter((item) => {
-    if (item.hasil !== "Belum Kompeten" || !item.isBanding) return false;
+  const sourceAssessments =
+    realBandingItems.length > 0
+      ? realBandingItems
+      : AssessmentItems.filter(
+          (item) => item.hasil === "Belum Kompeten" && item.isBanding,
+        );
 
+  const filteredAssessments = sourceAssessments.filter((item) => {
     const matchesSearch =
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.skema || "").toLowerCase().includes(searchTerm.toLowerCase());
@@ -235,11 +296,19 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const handleConfirmModal = () => {
+  const handleConfirmModal = async () => {
     if (!catatanBaru.trim()) return;
     setLoadingSubmit(true);
 
-    setTimeout(() => {
+    try {
+      const targetBandingId = Number((selectedAsesmen as any).bandingId || selectedAsesmen.id);
+      if (targetBandingId) {
+        await verifikasiBanding(targetBandingId, {
+          status: modalAction === "approve" ? "Disetujui" : "Ditolak",
+          keputusanAdmin: catatanBaru.trim(),
+        });
+      }
+
       const updatedData =
         modalAction === "approve"
           ? {
@@ -263,13 +332,18 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
       const actionText =
         modalAction === "approve" ? "Banding Disetujui" : "Banding Ditolak";
       showNotification(
-        `Status & catatan asesor berhasil diperbarui: ${actionText}`, "success"
+        `Status & keputusan banding berhasil diperbarui: ${actionText}`,
+        "success",
       );
 
       setTimeout(() => {
         onBack();
       }, 1200);
-    }, 800);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal memverifikasi banding";
+      showNotification(msg, "error");
+      setLoadingSubmit(false);
+    }
   };
 
   return (

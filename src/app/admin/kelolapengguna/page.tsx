@@ -16,6 +16,15 @@ import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
 import { Role, UserItem } from "@/types/types";
 export type { UserItem };
+import {
+  getAllUsers,
+  createUserAdmin,
+  updateUserAdmin,
+  deleteUserAdmin,
+  verifyUserAdmin
+} from "@/lib/api";
+
+type RoleType = "admin" | "asesor" | "asesi";
 
 const ROLE_OPTIONS = [
   "admin",
@@ -31,81 +40,44 @@ export default function KelolaPengguna() {
   const { user } = useAppContext();
   const readOnly = user?.role === "direktur" || user?.role === "manajer";
 
-  // Data dummy sudah ditambahkan 'username'
-  const [users, setUsers] = useState<UserItem[]>([
-    {
-      id: 1,
-      username: "mahmud_dr",
-      namaLengkap: "Prof. Dr. H. Mahmud, M.Ag",
-      email: "mahmud@uin.ac.id",
-      role: "direktur",
-      status: "Aktif",
-    },
-    {
-      id: 2,
-      username: "bambang_s",
-      namaLengkap: "Bambang Sugianto, M.M.",
-      email: "bambang.s@lsp.uin.ac.id",
-      role: "manajer",
-      status: "Aktif",
-    },
-    {
-      id: 3,
-      username: "mzaini",
-      namaLengkap: "Dr. Ir. H. Muhammad Zaini, M.T.",
-      email: "m.zaini@uin.ac.id",
-      role: "manajer",
-      status: "Aktif",
-    },
-    {
-      id: 4,
-      username: "sitifatimah",
-      namaLengkap: "Dra. Hj. Siti Fatimah, M.Si",
-      email: "siti.fatimah@uin.ac.id",
-      role: "manajer",
-      status: "Aktif",
-    },
-    {
-      id: 5,
-      username: "dian_w",
-      namaLengkap: "Dr. Eng. Dian Wahyudi, S.T., M.T.",
-      email: "dian.w@uin.ac.id",
-      role: "manajer",
-      status: "Aktif",
-    },
-    {
-      id: 6,
-      username: "rahmat_h",
-      namaLengkap: "Rahmat Hidayat, M.T.",
-      email: "rahmat.h@uin.ac.id",
-      role: "manajer",
-      status: "Aktif",
-    },
-    {
-      id: 7,
-      username: "aditya_admin",
-      namaLengkap: "Aditya Rahman, S.Kom",
-      email: "admin.lsp@uin.ac.id",
-      role: "admin",
-      status: "Aktif",
-    },
-    {
-      id: 8,
-      username: "siti_rohmah",
-      namaLengkap: "Dr. Siti Rohmah, M.Kom",
-      email: "siti.r@lecturer.uin.ac.id",
-      role: "asesor",
-      status: "Aktif",
-    },
-    {
-      id: 9,
-      username: "ahmad_hidayat",
-      namaLengkap: "Ahmad Hidayat",
-      email: "ahmad.h@student.uin.ac.id",
-      role: "asesi",
-      status: "Nonaktif",
-    },
-  ]);
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getAllUsers();
+      const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+      if (list && list.length >= 0) {
+        const formattedUsers = list.map((u: any) => {
+          let statusStr = "Nonaktif";
+          if (u.isActive) {
+            statusStr = u.isVerified ? "Terverifikasi" : "Menunggu Verifikasi";
+            if (u.role !== "asesi") {
+              statusStr = "Aktif";
+            }
+          }
+          return {
+            id: u.id,
+            username: u.username,
+            email: u.email,
+            role: u.role,
+            namaLengkap: u.profil?.namaLengkap || u.username || "-",
+            status: statusStr,
+          };
+        });
+        setUsers(formattedUsers);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>("Semua");
@@ -152,7 +124,7 @@ export default function KelolaPengguna() {
     setIsModalOpen(true);
   };
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !formData.namaLengkap.trim() ||
@@ -161,18 +133,25 @@ export default function KelolaPengguna() {
     )
       return;
 
-    const newUser: UserItem = {
-      id: Date.now(),
-      username: formData.username.trim(),
-      namaLengkap: formData.namaLengkap.trim(),
-      email: formData.email.trim(),
-      role: formData.role as Role,
-      status: formData.status,
-      tempPassword: formData.tempPassword.trim() || undefined,
-    };
+    try {
+      const payload = {
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        password: formData.tempPassword,
+        role: formData.role,
+        isActive: formData.status !== "Nonaktif",
+      };
+      const result = await createUserAdmin(payload);
 
-    setUsers([newUser, ...users]);
-    setIsModalOpen(false);
+      if (result) {
+        fetchUsers();
+        setIsModalOpen(false);
+      } else {
+        alert("Gagal menambah user");
+      }
+    } catch (error: any) {
+      alert(error.message || "Terjadi kesalahan saat menambah user");
+    }
   };
 
   const handleOpenEditModal = (userItem: UserItem) => {
@@ -189,31 +168,69 @@ export default function KelolaPengguna() {
     setIsEditModalOpen(true);
   };
 
-  const handleEditUser = (e: React.FormEvent) => {
+  const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
 
-    setUsers(
-      users.map((u) =>
-        u.id === selectedUser.id
-          ? {
-              ...u,
-              status: formData.status,
-            }
-          : u,
-      ),
-    );
+    let isActive = false;
+    let isVerified = false;
 
-    setIsEditModalOpen(false);
-    setSelectedUser(null);
+    if (formData.status === "Aktif" || formData.status === "Terverifikasi") {
+      isActive = true;
+      isVerified = true;
+    } else if (formData.status === "Menunggu Verifikasi") {
+      isActive = true;
+      isVerified = false;
+    } else {
+      isActive = false;
+      isVerified = false;
+    }
+
+    try {
+      const updateData: any = { isActive };
+
+      const data = await updateUserAdmin(Number(selectedUser.id), updateData);
+
+      if (formData.role === "asesi") {
+        await verifyUserAdmin(Number(selectedUser.id), isVerified ? "Setuju" : "Tolak");
+      }
+
+      if (data) {
+        setUsers(
+          users.map((u) =>
+            u.id === selectedUser.id
+              ? {
+                ...u,
+                status: formData.status,
+                role: formData.role,
+                email: formData.email,
+                username: formData.username,
+                isVerified: isVerified,
+                isActive: isActive,
+              }
+              : u,
+          ),
+        );
+        setIsEditModalOpen(false);
+        setSelectedUser(null);
+      } else {
+        alert("Gagal mengupdate user");
+      }
+    } catch (error: any) {
+      alert(error.message || "Terjadi kesalahan saat mengupdate user");
+    }
   };
 
-  const handleDeleteUser = () => {
-    if (selectedUser) {
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    try {
+      await deleteUserAdmin(Number(selectedUser.id));
       setUsers(users.filter((u) => u.id !== selectedUser.id));
+      setIsDeleteModalOpen(false);
+      setSelectedUser(null);
+    } catch (error: any) {
+      alert(error.message || "Terjadi kesalahan saat menghapus user");
     }
-    setIsDeleteModalOpen(false);
-    setSelectedUser(null);
   };
 
   const getRoleBadgeStyle = (role: string) => {
@@ -326,7 +343,13 @@ export default function KelolaPengguna() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
-              {filteredUsers.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500 font-medium">
+                    Memuat data pengguna...
+                  </td>
+                </tr>
+              ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((u, index) => (
                   <tr
                     key={u.id}
@@ -335,13 +358,12 @@ export default function KelolaPengguna() {
                     {/* Kolom No */}
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
                       <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          index % 3 === 0
-                            ? "bg-[#008BE3]/10 text-[#008BE3]"
-                            : index % 3 === 1
-                              ? "bg-[#84CC16]/10 text-[#73B412]"
-                              : "bg-slate-100 text-slate-600"
-                        }`}
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${index % 3 === 0
+                          ? "bg-[#008BE3]/10 text-[#008BE3]"
+                          : index % 3 === 1
+                            ? "bg-[#84CC16]/10 text-[#73B412]"
+                            : "bg-slate-100 text-slate-600"
+                          }`}
                       >
                         {index + 1}
                       </div>
@@ -370,11 +392,10 @@ export default function KelolaPengguna() {
                     </td>
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${
-                          u.status === "Aktif"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : "bg-amber-50 text-amber-700 border-amber-200"
-                        }`}
+                        className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${u.status === "Aktif"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}
                       >
                         {u.status === "Aktif" ? (
                           <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
@@ -548,11 +569,10 @@ export default function KelolaPengguna() {
                             namaLengkap: e.target.value,
                           })
                         }
-                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
-                          readOnly
-                            ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                            : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                        }`}
+                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${readOnly
+                          ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                          : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                          }`}
                       />
                     </div>
 
@@ -570,11 +590,10 @@ export default function KelolaPengguna() {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
-                          readOnly
-                            ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                            : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
-                        }`}
+                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${readOnly
+                          ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                          : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                          }`}
                       />
                     </div>
 
@@ -649,11 +668,10 @@ export default function KelolaPengguna() {
                         onChange={(e) =>
                           setFormData({ ...formData, role: e.target.value })
                         }
-                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
-                          readOnly
-                            ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                            : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
-                        }`}
+                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${readOnly
+                          ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                          : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
+                          }`}
                       >
                         {ROLE_OPTIONS.map((roleOption, idx) => (
                           <option key={idx} value={roleOption}>
@@ -676,11 +694,10 @@ export default function KelolaPengguna() {
                             status: e.target.value as UserItem["status"],
                           })
                         }
-                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
-                          readOnly
-                            ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                            : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
-                        }`}
+                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${readOnly
+                          ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                          : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
+                          }`}
                       >
                         <option value="Aktif">Aktif</option>
                         <option value="Terverifikasi">Terverifikasi</option>

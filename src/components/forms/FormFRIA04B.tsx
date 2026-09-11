@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
+import {
+  getKonfigurasiPertanyaanList,
+  getKonfigurasiPertanyaanDetail,
+} from "@/lib/api";
 
 export const DEFAULT_STEP3_QUESTIONS = [
   {
@@ -41,6 +45,8 @@ export const DEFAULT_STEP3_QUESTIONS = [
 
 export interface FormFRIA04BProps {
   asesmenData?: Apl02FormData;
+  skemaId?: number;
+  konfigurasiId?: number;
   questions?: typeof DEFAULT_STEP3_QUESTIONS;
   step3Questions?: typeof DEFAULT_STEP3_QUESTIONS;
   answers?: Record<string, { answer: string; achievement: boolean | null }>;
@@ -107,8 +113,69 @@ export interface FormFRIA04BProps {
 }
 
 export function FormFRIA04B(props: FormFRIA04BProps) {
+  const [apiQuestions, setApiQuestions] = useState<
+    typeof DEFAULT_STEP3_QUESTIONS | null
+  >(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadQuestions() {
+      try {
+        let conf = null;
+        if (props.konfigurasiId) {
+          conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
+        } else if (props.skemaId) {
+          const list = await getKonfigurasiPertanyaanList({
+            skemaId: props.skemaId,
+          });
+          if (Array.isArray(list) && list.length > 0) conf = list[0];
+        }
+
+        if (
+          isMounted &&
+          conf &&
+          Array.isArray(conf.step3) &&
+          conf.step3.length > 0
+        ) {
+          const mappedQuestions = conf.step3.flatMap(
+            (lingkup: Record<string, unknown>, lIdx: number) => {
+              const subList = Array.isArray(lingkup.sub_pertanyaan)
+                ? (lingkup.sub_pertanyaan as Record<string, unknown>[])
+                : [];
+              return subList.map((sp, spIdx: number) => ({
+                id: `s3_${(lingkup.id as string | number) || lIdx}_${(sp.id as string | number) || spIdx}`,
+                skenario:
+                  (sp.skenario_pertanyaan as string) ||
+                  (lingkup.nama_lingkup as string) ||
+                  "",
+                pertanyaan: (sp.skenario_pertanyaan as string) || "",
+                elemen: Array.isArray(sp.kode_kuk)
+                  ? sp.kode_kuk.join("; ")
+                  : typeof sp.kode_kuk === "string"
+                    ? sp.kode_kuk
+                    : "-",
+              }));
+            },
+          );
+          if (mappedQuestions.length > 0) {
+            setApiQuestions(mappedQuestions);
+          }
+        }
+      } catch (err) {
+        console.warn("Using fallback step3 questions:", err);
+      }
+    }
+    loadQuestions();
+    return () => {
+      isMounted = false;
+    };
+  }, [props.konfigurasiId, props.skemaId]);
+
   const questions =
-    props.step3Questions || props.questions || DEFAULT_STEP3_QUESTIONS;
+    props.step3Questions ||
+    props.questions ||
+    apiQuestions ||
+    DEFAULT_STEP3_QUESTIONS;
 
   const [localAnswers, setLocalAnswers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>

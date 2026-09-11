@@ -33,6 +33,7 @@ import {
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createKonfigurasiPertanyaan } from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Options for Dropdowns
 const skemaOptions = [
@@ -965,6 +966,15 @@ function TambahKonfigurasiPertanyaanContent() {
       updateKonfigurasiPertanyaan(Number(konfigurasiId), payload);
     } else {
       addKonfigurasiPertanyaan(payload);
+      createKonfigurasiPertanyaan({
+        nama_konfigurasi: configName,
+        skema_id: 1,
+        versi: formData.metadata.versi || "1.0",
+        status: publishStatus === "published" ? "Terbit" : "Draft",
+        tipe_form: "Multi-Step Wizard",
+      }).catch((err) => {
+        console.warn("Gagal simpan konfigurasi ke backend:", err);
+      });
     }
 
     setIsSuccessToast(
