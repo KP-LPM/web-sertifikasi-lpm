@@ -71,7 +71,9 @@ export default function AsesiHistoryPage() {
           }>;
         }
 
-        const mapped: AssessmentHistory[] = (data as RawPengajuan[]).map((item) => {
+        const mapped: AssessmentHistory[] = (data as RawPengajuan[])
+          .filter(item => item.status === "Selesai")
+          .map((item) => {
           const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
           const asesorName =
             jadwal?.users?.profil?.namaLengkap ||
@@ -905,17 +907,16 @@ export default function AsesiHistoryPage() {
                       </span>
                     </td>
 
-                    {/* Column 4: Metode Pelaksanaan */}
-                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs border ${item.tipeTuk === "Online"
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-stone-50 text-stone-700 border-stone-200"
-                          }`}
-                      >
-                        {item.tipeTuk === "Online"
-                          ? "Online (Virtual)"
-                          : "Offline (Luring)"}
+                    {/* Column 4: Alamat */}
+                    <td className="px-6 py-4 text-xs md:text-sm">
+                      {item.alamat || "-"}
+                    </td>
+
+                    {/* Column 5: Tanggal Asesmen */}
+                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap text-gray-600 font-medium">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Calendar size={14} className="text-gray-400" />
+                        {item.tanggalAsesmen || "-"}
                       </span>
                     </td>
 

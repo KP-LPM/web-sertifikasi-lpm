@@ -432,8 +432,9 @@ function UjianAsesiContent() {
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-slate-100 p-4 md:p-8 flex flex-col gap-6">
-          <div className="max-w-5xl mx-auto w-full bg-white rounded-xl shadow-xs border border-slate-200 px-6 py-4 flex items-center gap-4 sticky top-4 z-20 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="min-h-screen bg-white flex flex-col">
+          <div className="w-full border-b border-slate-200 rounded-xl shadow-md overflow-hidden animate-in fade-in duration-300 flex flex-col mx-auto">
+          <div className="w-full bg-white border-b border-slate-200 rounded-t-xl px-6 py-4 flex items-center gap-4 sticky top-0 z-20">
             <button
               onClick={handleCloseRequest}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
@@ -446,7 +447,7 @@ function UjianAsesiContent() {
             </h3>
           </div>
 
-          <div className="max-w-5xl mx-auto w-full bg-[#FFFBE6] border border-[#FFE58F] rounded-lg p-3 flex items-center gap-3 text-amber-900 shadow-3xs">
+          <div className="w-full bg-[#FFFBE6] border-b border-[#FFE58F] px-6 py-3 flex items-center gap-3 text-amber-900">
             <AlertCircle size={20} className="text-amber-500 shrink-0" />
             <p className="text-sm leading-relaxed font-semibold">
               {activeModal === "form_apl02"
@@ -455,7 +456,7 @@ function UjianAsesiContent() {
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto w-full bg-white rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="w-full bg-white flex-1 overflow-hidden rounded-b-xl">
             <div className="p-6 md:p-10">
               <>
                 {activeModal === "form_apl02" && (
@@ -536,7 +537,9 @@ function UjianAsesiContent() {
               </>
             </div>
           </div>
+          </div>
         </div>
+
       )}
 
       {/* Confirm Finish All Modal */}
