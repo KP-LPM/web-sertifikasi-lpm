@@ -121,6 +121,8 @@ export default function AssessmentFinalization() {
               <textarea
                 rows={3}
                 placeholder="Tuliskan catatan dari asesor..."
+                value={catatan}
+                onChange={(e) => setCatatan(e.target.value)}
                 className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#008BE3] focus:outline-none bg-slate-50 focus:bg-white transition-colors"
               />
             </div>

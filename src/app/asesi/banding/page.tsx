@@ -99,11 +99,11 @@ export default function AsesiAppeals() {
   
   React.useEffect(() => {
     // Mencegah any dari JSON.parse
-    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]') as any[];
+    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]') as Partial<AppealRecord>[];
     if (savedAppeals.length > 0) {
       const migratedAppeals = savedAppeals.map(appeal => ({
         ...appeal,
-        status: appeal.status === 'Menunggu Verifikasi' ? 'Dalam Penyelidikan' : appeal.status
+        status: appeal.status === 'Menunggu Verifikasi' ? 'Dalam Penyelidikan' : (appeal.status || 'Dalam Penyelidikan')
       })) as AppealRecord[];
       setAppeals([...migratedAppeals, ...INITIAL_APPEALS]);
     }

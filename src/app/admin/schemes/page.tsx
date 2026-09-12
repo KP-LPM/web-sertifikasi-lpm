@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -12,28 +12,29 @@ import {
   Eye,
   ArrowLeft,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { schemesData as initialSchemesData } from "../../data";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  MasterSkemaPayload,
-  MasterSkemaUnitPayload,
-  MasterSkemaElemenPayload,
   MasterSkemaFormState,
   ElemenKompetensiItem,
   UnitKompetensiItem,
+  PersyaratanDasar,
   SchemeItem,
   StatCardProps,
   SchemeCardProps,
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { TambahSkemaForm } from "@/components/forms/TambahSkemaForm";
+import { getSkemaList, updateSkema } from "@/lib/api";
 
 export default function ManageSchemes() {
-  const { user } = useAppContext();
+  const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [schemes, setSchemes] = useState<SchemeItem[]>(() => {
     return initialSchemesData
       .filter((s) => s.status !== "Draft")
@@ -112,6 +113,106 @@ export default function ManageSchemes() {
         };
       });
   });
+
+interface BackendElemen {
+  id?: number;
+  namaElemen: string;
+  kriteriaUnjukKerja?: string[] | string;
+  urutan?: number;
+  is_wajib?: boolean;
+}
+
+interface BackendUnitKompetensi {
+  id?: number;
+  kodeUnit: string;
+  judulUnit: string;
+  urutan?: number;
+  elemenKompetensi?: BackendElemen[];
+}
+
+interface BackendBuktiAdministratif {
+  id: number;
+  namaDokumen: string;
+  deskripsi?: string;
+  isWajib: boolean;
+  isAktif: boolean;
+}
+
+interface BackendSkemaItem {
+  id: number;
+  kodeSkema?: string;
+  kode?: string;
+  namaSkema?: string;
+  nama?: string;
+  kategori?: string;
+  _count?: { pengajuan?: number };
+  totalPendaftar?: number;
+  statusAktif?: boolean;
+  status?: string;
+  nomor_sertifikat?: string;
+  nomorSertifikat?: string;
+  nomor_registrasi?: string;
+  nomorRegistrasi?: string;
+  unitKompetensi?: BackendUnitKompetensi[];
+  persyaratanDasar?: PersyaratanDasar[];
+  master_bukti_administratif?: BackendBuktiAdministratif[];
+}
+
+  const fetchSchemes = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getSkemaList();
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped: SchemeItem[] = (data as BackendSkemaItem[]).map((s) => ({
+          id: s.id,
+          kode: s.kodeSkema || s.kode || "",
+          nama: s.namaSkema || s.nama || "",
+          kategori: s.kategori || "IT & Software",
+          totalPendaftar: s._count?.pengajuan || s.totalPendaftar || 0,
+          status: s.statusAktif ? "Active" : s.status || "Archived",
+          nomorSertifikat: s.nomor_sertifikat || s.nomorSertifikat || "",
+          nomorRegistrasi: s.nomor_registrasi || s.nomorRegistrasi || "",
+          unitKompetensi: s.unitKompetensi?.map((u, idx: number) => ({
+            kodeUnit: u.kodeUnit,
+            judulUnit: u.judulUnit,
+            urutan: u.urutan || idx + 1,
+            elemen: u.elemenKompetensi?.map((e, eIdx: number) => ({
+              namaElemen: e.namaElemen,
+              kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
+                ? e.kriteriaUnjukKerja
+                : typeof e.kriteriaUnjukKerja === "string"
+                  ? e.kriteriaUnjukKerja.split("\n")
+                  : [""],
+              urutan: e.urutan || eIdx + 1,
+              isWajib: e.is_wajib ?? true,
+            })) || [],
+          })) || [],
+          persyaratanDasar: s.persyaratanDasar?.map((p, idx) => ({
+            namaDokumen: p.namaDokumen || "",
+            deskripsi: p.deskripsi || "",
+            urutan: p.urutan || idx + 1,
+            is_wajib: p.is_wajib ?? true,
+          })),
+          persyaratanAdministrasi: s.master_bukti_administratif?.map((b, idx) => ({
+            id: b.id || idx + 1,
+            namaDokumen: b.namaDokumen || "",
+            deskripsi: b.deskripsi || "",
+            isWajib: b.isWajib ?? true,
+            isAktif: b.isAktif ?? true,
+          })),
+        }));
+        setSchemes(mapped);
+      }
+    } catch (err: unknown) {
+      console.error("Gagal memuat skema:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchemes();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua Status");
@@ -257,13 +358,24 @@ export default function ManageSchemes() {
     setIsArchiveModalOpen(true);
   };
 
-  const handleArchiveScheme = () => {
+  const handleArchiveScheme = async () => {
     if (selectedScheme) {
-      setSchemes(
-        schemes.map((s) =>
-          s.id === selectedScheme.id ? { ...s, status: "Archived" } : s,
-        ),
-      );
+      try {
+        await updateSkema(selectedScheme.id, {
+          statusAktif: selectedScheme.status !== "Active",
+        });
+        await fetchSchemes();
+        showNotification?.(
+          selectedScheme.status === "Active"
+            ? "Skema berhasil diarsipkan"
+            : "Skema berhasil diaktifkan",
+          "success",
+        );
+      } catch (err: unknown) {
+        console.error("Gagal mengarsipkan skema:", err);
+        const msg = err instanceof Error ? err.message : "Gagal mengubah status skema";
+        showNotification?.(msg, "error");
+      }
     }
     setIsArchiveModalOpen(false);
     setSelectedScheme(null);
@@ -383,40 +495,10 @@ export default function ManageSchemes() {
     return (
       <TambahSkemaForm
         onCancel={() => setIsModalOpen(false)}
-        onSaveSuccess={(payload: MasterSkemaPayload) => {
-          const newScheme: SchemeItem = {
-            id: Date.now(),
-            nama: payload.namaSkema,
-            kode: payload.kodeSkema,
-            nomorSertifikat: payload.nomorSertifikat,
-            nomorRegistrasi: payload.nomorRegistrasi,
-            kategori: "IT & Software",
-            status: payload.statusAktif ? "Active" : "Draft",
-            totalPendaftar: 0,
-            unitKompetensi: payload.unitKompetensi?.map(
-              (u: MasterSkemaUnitPayload, uIdx: number) => ({
-                kodeUnit: u.kodeUnit,
-                judulUnit: u.judulUnit,
-                urutan: u.urutan || uIdx + 1,
-                elemen:
-                  u.elemen?.map(
-                    (e: MasterSkemaElemenPayload, eIdx: number) => ({
-                      namaElemen: e.namaElemen,
-                      kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
-                        ? e.kriteriaUnjukKerja
-                        : e.kriteriaUnjukKerja
-                          ? (e.kriteriaUnjukKerja as string).split("\n")
-                          : e.kuk || [""],
-                      urutan: e.urutan || eIdx + 1,
-                      isWajib: e.is_wajib ?? true,
-                    }),
-                  ) || [],
-              }),
-            ),
-            persyaratanDasar: payload.persyaratanDasar,
-          };
-          setSchemes((prev) => [newScheme, ...prev]);
+        onSaveSuccess={async () => {
+          await fetchSchemes();
           setIsModalOpen(false);
+          showNotification?.("Skema baru berhasil ditambahkan!", "success");
         }}
       />
     );
@@ -429,7 +511,12 @@ export default function ManageSchemes() {
       nomorSertifikat: selectedScheme.nomorSertifikat || "",
       nomorRegistrasi: selectedScheme.nomorRegistrasi || "",
       statusAktif: selectedScheme.status === "Active",
-      persyaratanDasar: selectedScheme.persyaratanDasar || [
+      persyaratanDasar: selectedScheme.persyaratanDasar?.map((p, idx) => ({
+        namaDokumen: p.namaDokumen || "",
+        deskripsi: p.deskripsi || "",
+        urutan: p.urutan || idx + 1,
+        is_wajib: p.is_wajib ?? true,
+      })) || [
         {
           namaDokumen: "Transkrip Nilai Semester 5",
           deskripsi:
@@ -438,7 +525,13 @@ export default function ManageSchemes() {
           is_wajib: true,
         },
       ],
-      persyaratanAdministrasi: selectedScheme.persyaratanAdministrasi || [
+      persyaratanAdministrasi: selectedScheme.persyaratanAdministrasi?.map((b, idx) => ({
+        id: b.id || idx + 1,
+        namaDokumen: b.namaDokumen || "",
+        deskripsi: b.deskripsi || "",
+        isWajib: b.isWajib ?? true,
+        isAktif: b.isAktif ?? true,
+      })) || [
         {
           id: selectedScheme.id,
           namaDokumen: "Kartu Tanda Penduduk (KTP)",
@@ -475,44 +568,11 @@ export default function ManageSchemes() {
           setSelectedScheme(null);
         }}
         initialData={initialData}
-        onSaveSuccess={(payload: MasterSkemaPayload) => {
-          setSchemes(
-            schemes.map((s) =>
-              s.id === selectedScheme.id
-                ? {
-                    ...s,
-                    nama: payload.namaSkema,
-                    kode: payload.kodeSkema,
-                    nomorSertifikat: payload.nomorSertifikat,
-                    nomorRegistrasi: payload.nomorRegistrasi,
-                    status: payload.statusAktif ? "Active" : "Draft",
-                    persyaratanDasar: payload.persyaratanDasar,
-                    persyaratanAdministrasi: payload.persyaratanAdministrasi,
-                    unitKompetensi: payload.unitKompetensi?.map(
-                      (u: MasterSkemaUnitPayload, uIdx: number) => ({
-                        kodeUnit: u.kodeUnit,
-                        judulUnit: u.judulUnit,
-                        urutan: u.urutan || uIdx + 1,
-                        elemen: u.elemen?.map(
-                          (e: MasterSkemaElemenPayload, eIdx: number) => ({
-                            namaElemen: e.namaElemen,
-                            kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
-                              ? e.kriteriaUnjukKerja
-                              : e.kriteriaUnjukKerja
-                                ? (e.kriteriaUnjukKerja as string).split("\n")
-                                : e.kuk || [""],
-                            urutan: e.urutan || eIdx + 1,
-                            isWajib: e.is_wajib ?? true,
-                          }),
-                        ) || [],
-                      }),
-                    ),
-                  }
-                : s,
-            ),
-          );
+        onSaveSuccess={async () => {
+          await fetchSchemes();
           setIsEditModalOpen(false);
           setSelectedScheme(null);
+          showNotification?.("Skema berhasil diperbarui!", "success");
         }}
       />
     );
@@ -782,24 +842,33 @@ export default function ManageSchemes() {
         </div>
 
         <div className="p-6 space-y-4 bg-slate-50/30">
-          {filteredSchemes.map((scheme, i) => (
-            <SchemeCard
-              key={scheme.id}
-              scheme={scheme}
-              index={i}
-              onEdit={() => openEditModal(scheme)}
-              onPreview={() => openPreviewModal(scheme)}
-              onArchive={() => openArchiveModal(scheme)}
-              readOnly={readOnly}
-            />
-          ))}
-          
-          {filteredSchemes.length === 0 && (
-            <div className="text-center py-12">
-              <FolderTree size={38} className="mx-auto text-slate-300 mb-3" />
-              <p className="text-sm font-bold text-slate-700">Skema tidak ditemukan</p>
-              <p className="text-xs text-slate-400 mt-1">Coba ubah kata kunci pencarian atau filter status.</p>
+          {isLoading ? (
+            <div className="py-16 flex flex-col items-center justify-center text-slate-400 gap-3">
+              <Loader2 className="animate-spin text-[#008BE3]" size={32} />
+              <p className="text-sm font-semibold">Memuat daftar skema...</p>
             </div>
+          ) : (
+            <>
+              {filteredSchemes.map((scheme, i) => (
+                <SchemeCard
+                  key={scheme.id}
+                  scheme={scheme}
+                  index={i}
+                  onEdit={() => openEditModal(scheme)}
+                  onPreview={() => openPreviewModal(scheme)}
+                  onArchive={() => openArchiveModal(scheme)}
+                  readOnly={readOnly}
+                />
+              ))}
+
+              {filteredSchemes.length === 0 && (
+                <div className="text-center py-12">
+                  <FolderTree size={38} className="mx-auto text-slate-300 mb-3" />
+                  <p className="text-sm font-bold text-slate-700">Skema tidak ditemukan</p>
+                  <p className="text-xs text-slate-400 mt-1">Coba ubah kata kunci pencarian atau filter status.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

@@ -744,7 +744,7 @@ export async function getAllUsers() {
   return json.data !== undefined ? json.data : json;
 }
 
-export async function createUserAdmin(data: any) {
+export async function createUserAdmin(data: Record<string, unknown>) {
   const res = await fetch(`${BASE_URL}/users`, {
     method: "POST",
     credentials: "include",
@@ -756,7 +756,7 @@ export async function createUserAdmin(data: any) {
   return json.data !== undefined ? json.data : json;
 }
 
-export async function updateUserAdmin(id: number, data: any) {
+export async function updateUserAdmin(id: number, data: Record<string, unknown>) {
   const res = await fetch(`${BASE_URL}/users/${id}`, {
     method: "PATCH",
     credentials: "include",
@@ -801,7 +801,7 @@ export async function getSuratList() {
   return json.data !== undefined ? json.data : json;
 }
 
-export async function createSurat(data: any) {
+export async function createSurat(data: Record<string, unknown>) {
   const res = await fetch(`${BASE_URL}/surat`, {
     method: "POST",
     credentials: "include",
@@ -852,3 +852,276 @@ export async function getBatchCompleted() {
   if (!res.ok) throw new Error(json.message || "Gagal mengambil daftar batch pleno selesai");
   return json.data !== undefined ? json.data : json;
 }
+
+// ============================================================
+// SCHEDULE / JADWAL CRUD
+// ============================================================
+
+export async function createJadwal(data: Record<string, unknown>) {
+  const res = await fetch(`${BASE_URL}/jadwal`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal membuat jadwal asesmen");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function deleteJadwal(id: number) {
+  const res = await fetch(`${BASE_URL}/jadwal/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menghapus jadwal asesmen");
+  return json.data !== undefined ? json.data : json;
+}
+
+// ============================================================
+// TUK (TEMPAT UJI KOMPETENSI) API FUNCTIONS
+// ============================================================
+
+export async function getTukList(status?: string) {
+  const query = status ? `?status=${status}` : "?status=all";
+  const res = await fetch(`${BASE_URL}/tuk${query}`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal mengambil daftar TUK");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function getTukDetail(id: number) {
+  const res = await fetch(`${BASE_URL}/tuk/${id}`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal mengambil detail TUK");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function createTuk(data: Record<string, unknown>) {
+  const res = await fetch(`${BASE_URL}/tuk`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menambahkan data TUK");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function updateTuk(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${BASE_URL}/tuk/${id}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal memperbarui data TUK");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function deleteTuk(id: number) {
+  const res = await fetch(`${BASE_URL}/tuk/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menonaktifkan TUK");
+  return json.data !== undefined ? json.data : json;
+}
+
+// ============================================================
+// SIDANG PLENO API FUNCTIONS
+// ============================================================
+
+export async function getPlenoList() {
+  const res = await fetch(`${BASE_URL}/pleno`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal mengambil daftar sidang pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function getPlenoDetail(id: number) {
+  const res = await fetch(`${BASE_URL}/pleno/${id}`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal mengambil detail sidang pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function createPleno(data: Record<string, unknown>) {
+  const res = await fetch(`${BASE_URL}/pleno`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal membuat jadwal sidang pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function updatePleno(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${BASE_URL}/pleno/${id}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal memperbarui data sidang pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function deletePleno(id: number) {
+  const res = await fetch(`${BASE_URL}/pleno/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal membatalkan sidang pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function addPlenoAsesi(id: number, pengajuanIds: number[]) {
+  const res = await fetch(`${BASE_URL}/pleno/${id}/asesi`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pengajuan_ids: pengajuanIds }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menambahkan asesi ke sidang pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function updatePlenoAsesiStatus(
+  plenoId: number,
+  asesiId: number,
+  data: { status_pleno: string; catatan?: string },
+) {
+  const res = await fetch(`${BASE_URL}/pleno/${plenoId}/asesi/${asesiId}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal memperbarui status asesi pleno");
+  return json.data !== undefined ? json.data : json;
+}
+
+// ============================================================
+// SERTIFIKAT API FUNCTIONS
+// ============================================================
+
+export async function getAllSertifikat(filters?: {
+  status?: string;
+  skemaId?: number;
+  tanggal?: string;
+}) {
+  const params = new URLSearchParams();
+  if (filters?.status) params.append("status", filters.status);
+  if (filters?.skemaId) params.append("skema_id", String(filters.skemaId));
+  if (filters?.tanggal) params.append("tanggal", filters.tanggal);
+
+  const url = `${BASE_URL}/sertifikat${params.toString() ? `?${params.toString()}` : ""}`;
+  const res = await fetch(url, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal mengambil daftar sertifikat");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function updateSertifikat(
+  pengajuanId: number,
+  data: {
+    no_sertifikat?: string;
+    no_registrasi?: string;
+    tanggal_terbit?: string | Date;
+    tanggal_berlaku?: string | Date;
+    gdrive_url?: string;
+  },
+) {
+  const res = await fetch(`${BASE_URL}/pengajuanskema/${pengajuanId}/sertifikat`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menyimpan data sertifikat");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function terbitkanSertifikat(pengajuanId: number) {
+  const res = await fetch(
+    `${BASE_URL}/pengajuanskema/${pengajuanId}/sertifikat/terbitkan`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menerbitkan sertifikat");
+  return json.data !== undefined ? json.data : json;
+}
+
+// ============================================================
+// VERIFIKASI BERKAS API FUNCTIONS
+// ============================================================
+
+export async function verifyPengajuanApl01(
+  id: number,
+  data: {
+    rekomendasi: "Diterima" | "Ditolak";
+    catatan?: string | null;
+    statusPembayaran?: string | null;
+    sumberAnggaran?: string | null;
+    adminSignatureUrl?: string | null;
+    lspSignatureUrl?: string | null;
+    assignedAsesorId?: number | null;
+  },
+) {
+  const res = await fetch(`${BASE_URL}/pengajuanskema/${id}/verifikasi`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal memverifikasi berkas APL-01");
+  return json.data !== undefined ? json.data : json;
+}
+
+export async function verifyUser(id: number, isVerified: boolean) {
+  const res = await fetch(`${BASE_URL}/users/${id}/verifikasi`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isVerified }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal memverifikasi pengguna");
+  return json.data !== undefined ? json.data : json;
+}
+

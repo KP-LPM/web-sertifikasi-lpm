@@ -1,10 +1,22 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, History, CheckCircle, FileText, Inbox, X, Loader2 } from "lucide-react";
+import { Search, History, CheckCircle, FileText, Inbox, X } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { useRouter } from "next/navigation";
 import { getCandidatesList } from "@/lib/api";
 import { TipeTuk, JenisMetode, AssessmentItem } from "@/types/types";
+
+interface CandidateCandidateItem {
+  pengajuanId: number;
+  nik?: string;
+  namaLengkap?: string;
+  namaSkema?: string;
+  kodeSkema?: string;
+  namaAsesor?: string;
+  hasilAsesmen?: string;
+  statusPengajuan?: string;
+  tanggalJadwal?: string;
+}
 
 export default function RiwayatAsesmen() {
   const router = useRouter();
@@ -21,14 +33,14 @@ export default function RiwayatAsesmen() {
         setIsLoading(true);
         const res = await getCandidatesList();
         if (Array.isArray(res)) {
-          const completed = res.filter(
-            (c: any) =>
+          const completed = (res as unknown as CandidateCandidateItem[]).filter(
+            (c) =>
               (c.hasilAsesmen && c.hasilAsesmen !== "Belum Dinilai") ||
               c.statusPengajuan === "Selesai" ||
               c.statusPengajuan === "Menunggu Pleno",
           );
           if (completed.length > 0) {
-            const mapped: AssessmentItem[] = completed.map((c: any) => ({
+            const mapped: AssessmentItem[] = completed.map((c) => ({
               id: c.pengajuanId,
               nik: c.nik || "3204010000000000",
               nama: c.namaLengkap || c.nik || "Asesi",
@@ -238,7 +250,13 @@ export default function RiwayatAsesmen() {
                 </tr>
               </thead>
               <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-                {filteredAssessments.length > 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500 font-semibold text-xs">
+                      Memuat data riwayat asesmen...
+                    </td>
+                  </tr>
+                ) : filteredAssessments.length > 0 ? (
                   filteredAssessments.map((item, idx) => (
                     <tr
                       key={item.id}

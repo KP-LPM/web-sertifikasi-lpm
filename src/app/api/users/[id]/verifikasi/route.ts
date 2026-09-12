@@ -24,8 +24,16 @@ export async function PATCH(
     }
 
     const body = await request.json();
+    const isVerified =
+      typeof body.isVerified === "boolean"
+        ? body.isVerified
+        : body.action === "tolak"
+          ? false
+          : true;
 
-    const updatedUser = await userService.updateUserVerifyStatus(userId, body);
+    const updatedUser = await userService.updateUserVerifyStatus(userId, {
+      isVerified,
+    });
 
     revalidatePath("/api/users");
 
@@ -43,4 +51,6 @@ export async function PATCH(
     return sendResponse(500, "Internal server error");
   }
 }
+
+export const POST = PATCH;
 

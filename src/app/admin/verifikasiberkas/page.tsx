@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Trash2,
@@ -11,15 +11,21 @@ import {
   CreditCard,
   XCircle,
   FileCheck,
- 
   GraduationCap,
   Award,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
 import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { useAppContext } from "@/context/context";
 import { UserItem, Apl01FormData, Apl02FormData } from "@/types/types";
+import {
+  getPengajuanList,
+  getAllUsers,
+  verifyPengajuanApl01,
+  verifyUser,
+} from "@/lib/api";
 
 export default function UsersManagement() {
   const { user } = useAppContext();
@@ -134,12 +140,157 @@ export default function UsersManagement() {
     },
   ]);
 
+interface BackendDataPribadi {
+  nik?: string;
+  namaLengkap?: string;
+}
+
+interface BackendVerifikasiPengajuan {
+  rekomendasi?: string | null;
+  catatan?: string | null;
+  status_pembayaran?: string | null;
+  sumber_anggaran?: string | null;
+  admin_signature_url?: string | null;
+  lsp_signature_url?: string | null;
+  assigned_asesor_id?: number | null;
+}
+
+interface BackendPengajuanItem {
+  id: number;
+  status?: string;
+  user?: { username?: string; email?: string };
+  dataPribadi?: BackendDataPribadi[] | BackendDataPribadi;
+  skema?: { namaSkema?: string };
+  verifikasi_pengajuan?: BackendVerifikasiPengajuan;
+  apl02_penilaian?: { rekomendasi_apl02?: string | null };
+}
+
+interface BackendProfilPengguna {
+  namaLengkap?: string;
+  institusiPerusahaan?: string;
+}
+
+interface BackendUserRecord {
+  id: number;
+  username: string;
+  email?: string;
+  role: string;
+  is_verified?: boolean;
+  nomor_registrasi_met?: string;
+  profil?: BackendProfilPengguna[] | BackendProfilPengguna;
+}
+
+  // Backend Integration State
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
+
+  const fetchUsersData = async () => {
+    try {
+      setIsDataLoading(true);
+      const [pengajuanRes, usersRes] = await Promise.allSettled([
+        getPengajuanList(),
+        getAllUsers(),
+      ]);
+
+      const rawPengajuan =
+        pengajuanRes.status === "fulfilled" && Array.isArray(pengajuanRes.value)
+          ? (pengajuanRes.value as BackendPengajuanItem[])
+          : [];
+      const rawUsers =
+        usersRes.status === "fulfilled" && Array.isArray(usersRes.value)
+          ? (usersRes.value as BackendUserRecord[])
+          : [];
+
+      const mappedAsesi: UserItem[] = rawPengajuan.map((p) => {
+        const dp = Array.isArray(p.dataPribadi)
+          ? p.dataPribadi[0]
+          : p.dataPribadi;
+        const namaLengkap =
+          dp?.namaLengkap || p.user?.username || `Asesi #${p.id}`;
+        const email = p.user?.email || "-";
+        const status =
+          p.status === "Terverifikasi"
+            ? "Terverifikasi"
+            : p.status === "Ditolak"
+              ? "Ditolak"
+              : "Menunggu Verifikasi";
+
+        return {
+          id: p.id,
+          username: p.user?.username || `asesi_${p.id}`,
+          namaLengkap,
+          email,
+          role: "asesi",
+          status,
+          verificationData: {
+            rekomendasi: p.verifikasi_pengajuan?.rekomendasi || "Diterima",
+            catatan: p.verifikasi_pengajuan?.catatan || "",
+            statusPembayaran:
+              (p.verifikasi_pengajuan?.status_pembayaran as "Sudah" | "Belum") ||
+              "Belum",
+            sumberAnggaran:
+              p.verifikasi_pengajuan?.sumber_anggaran ||
+              "Sumber Anggaran Biaya Mandiri",
+            adminSignatureUrl:
+              p.verifikasi_pengajuan?.admin_signature_url || null,
+            lspSignatureUrl: p.verifikasi_pengajuan?.lsp_signature_url || null,
+            rekomendasiApl02:
+              p.apl02_penilaian?.rekomendasi_apl02 || "Dapat dilanjutkan",
+            assignedAsesorId:
+              p.verifikasi_pengajuan?.assigned_asesor_id || undefined,
+            skema: p.skema?.namaSkema || "-",
+          },
+        };
+      });
+
+      const asesorUsersRaw = rawUsers.filter((u) => u.role === "asesor");
+      const mappedAsesor: UserItem[] = asesorUsersRaw.map((u) => {
+        const profil = Array.isArray(u.profil) ? u.profil[0] : u.profil;
+        const namaLengkap = profil?.namaLengkap || u.username;
+
+        return {
+          id: u.id,
+          username: u.username,
+          namaLengkap,
+          email: u.email || "-",
+          role: "asesor",
+          status: u.is_verified ? "Terverifikasi" : "Menunggu Verifikasi",
+          verificationData: {
+            rekomendasi: "Diterima",
+            catatan: "",
+            asalAsesor: profil?.institusiPerusahaan
+              ?.toLowerCase()
+              .includes("uin")
+              ? "Internal"
+              : "Eksternal",
+            instansi: profil?.institusiPerusahaan || "LSP UIN SGD",
+            skema: "Semua Skema",
+            noReg: u.nomor_registrasi_met || "MET.000.12345.2024",
+          },
+        };
+      });
+
+      if (mappedAsesi.length > 0 || mappedAsesor.length > 0) {
+        setUsers([...mappedAsesi, ...mappedAsesor]);
+      }
+    } catch (err) {
+      console.error("Gagal memuat data verifikasi berkas:", err);
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsersData();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [userToVerify, setUserToVerify] = useState<UserItem | null>(null);
-  const [activeVerifyTab, setActiveVerifyTab] = useState<"apl01" | "apl02">("apl01");
+  const [activeVerifyTab, setActiveVerifyTab] = useState<"apl01" | "apl02">(
+    "apl01",
+  );
 
   const [verificationForm, setVerificationForm] = useState({
     rekomendasi: "Diterima",
@@ -155,7 +306,9 @@ export default function UsersManagement() {
   const [selectedAsesorId, setSelectedAsesorId] = useState<string>("");
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [userToEditPayment, setUserToEditPayment] = useState<UserItem | null>(null);
+  const [userToEditPayment, setUserToEditPayment] = useState<UserItem | null>(
+    null,
+  );
   const [paymentFormData, setPaymentFormData] = useState({
     statusPembayaran: "Belum" as "Sudah" | "Belum",
     sumberAnggaran: "Sumber Anggaran Biaya Mandiri",
@@ -174,8 +327,22 @@ export default function UsersManagement() {
     setIsPaymentModalOpen(true);
   };
 
-  const handleSavePayment = () => {
+  const handleSavePayment = async () => {
     if (!userToEditPayment) return;
+
+    try {
+      await verifyPengajuanApl01(userToEditPayment.id!, {
+        rekomendasi:
+          (userToEditPayment.verificationData?.rekomendasi as
+            | "Diterima"
+            | "Ditolak") || "Diterima",
+        statusPembayaran: paymentFormData.statusPembayaran,
+        sumberAnggaran: paymentFormData.sumberAnggaran,
+      });
+    } catch (err) {
+      console.error("Gagal menyimpan pembayaran ke backend:", err);
+    }
+
     setUsers(
       users.map((u) =>
         u.id === userToEditPayment.id
@@ -224,10 +391,55 @@ export default function UsersManagement() {
     setSelectedUser(null);
   };
 
-  const confirmVerify = () => {
+  const confirmVerify = async () => {
     if (userToVerify) {
-      let currentAdminUrl = userToVerify.verificationData?.adminSignatureUrl || null;
-      const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
+      if (userToVerify.role === "asesor") {
+        try {
+          await verifyUser(userToVerify.id!, true);
+        } catch (err) {
+          console.error("Gagal memverifikasi user asesor:", err);
+        }
+      } else {
+        let currentAdminUrl =
+          userToVerify.verificationData?.adminSignatureUrl || null;
+        const currentLspUrl =
+          userToVerify.verificationData?.lspSignatureUrl || null;
+
+        if (activeVerifyTab === "apl01") {
+          currentAdminUrl = apl01FormData.ttdAdmin || null;
+        }
+
+        try {
+          await verifyPengajuanApl01(userToVerify.id!, {
+            rekomendasi: (activeVerifyTab === "apl01"
+              ? apl01FormData.rekomendasi || "Diterima"
+              : verificationForm.rekomendasi) as "Diterima" | "Ditolak",
+            catatan:
+              activeVerifyTab === "apl01"
+                ? apl01FormData.catatan || ""
+                : verificationForm.catatan,
+            statusPembayaran: (apl01FormData.statusPembayaran ||
+              userToVerify.verificationData?.statusPembayaran ||
+              "Sudah") as "Sudah" | "Belum",
+            sumberAnggaran:
+              apl01FormData.sumberAnggaran ||
+              userToVerify.verificationData?.sumberAnggaran ||
+              "Sumber Anggaran Biaya Mandiri",
+            adminSignatureUrl: currentAdminUrl || undefined,
+            lspSignatureUrl: currentLspUrl || undefined,
+            assignedAsesorId: selectedAsesorId
+              ? Number(selectedAsesorId)
+              : undefined,
+          });
+        } catch (err) {
+          console.error("Gagal memverifikasi pengajuan asesi:", err);
+        }
+      }
+
+      let currentAdminUrl =
+        userToVerify.verificationData?.adminSignatureUrl || null;
+      const currentLspUrl =
+        userToVerify.verificationData?.lspSignatureUrl || null;
 
       if (activeVerifyTab === "apl01") {
         currentAdminUrl = apl01FormData.ttdAdmin || null;
@@ -260,7 +472,9 @@ export default function UsersManagement() {
               asesorReg: apl02FormData.asesorReg,
               penyusun: apl02FormData.penyusun,
               validator: apl02FormData.validator,
-              assignedAsesorId: selectedAsesorId,
+              assignedAsesorId: selectedAsesorId
+                ? Number(selectedAsesorId)
+                : undefined,
             }
           : {
               rekomendasiApl02: userToVerify.verificationData?.rekomendasiApl02,
@@ -289,14 +503,27 @@ export default function UsersManagement() {
     setUserToVerify(null);
   };
 
-  const handleAssignAsesor = () => {
+  const handleAssignAsesor = async () => {
     if (!userToVerify || !selectedAsesorId) return;
 
-    let currentAdminUrl = userToVerify.verificationData?.adminSignatureUrl || null;
-    const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
+    let currentAdminUrl =
+      userToVerify.verificationData?.adminSignatureUrl || null;
+    const currentLspUrl =
+      userToVerify.verificationData?.lspSignatureUrl || null;
 
     if (activeVerifyTab === "apl01") {
       currentAdminUrl = apl01FormData.ttdAdmin || null;
+    }
+
+    try {
+      await verifyPengajuanApl01(userToVerify.id!, {
+        rekomendasi: (activeVerifyTab === "apl01"
+          ? apl01FormData.rekomendasi || "Diterima"
+          : verificationForm.rekomendasi) as "Diterima" | "Ditolak",
+        assignedAsesorId: Number(selectedAsesorId),
+      });
+    } catch (err) {
+      console.error("Gagal assign asesor ke pengajuan:", err);
     }
 
     const newVerificationData = {
@@ -324,7 +551,9 @@ export default function UsersManagement() {
       asesorReg: userToVerify.verificationData?.asesorReg,
       penyusun: userToVerify.verificationData?.penyusun,
       validator: userToVerify.verificationData?.validator,
-      assignedAsesorId: selectedAsesorId ? Number(selectedAsesorId) : undefined,
+      assignedAsesorId: selectedAsesorId
+        ? Number(selectedAsesorId)
+        : undefined,
     };
 
     setUsers(
@@ -834,7 +1063,21 @@ export default function UsersManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/60">
-              {filteredUsers.length === 0 ? (
+              {isDataLoading ? (
+                <tr>
+                  <td
+                    colSpan={mainTab === "asesi" ? 7 : 6}
+                    className="px-6 py-16 text-center text-slate-400"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <Loader2 className="animate-spin text-[#008BE3]" size={32} />
+                      <p className="text-sm font-semibold text-slate-600">
+                        Memuat data verifikasi berkas...
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td
                     colSpan={mainTab === "asesi" ? 7 : 6}

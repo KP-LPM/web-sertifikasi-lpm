@@ -20,10 +20,17 @@ import {
   Check,
   MapPin,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
-import { AsesiPlenoItem, PlenoDetailData } from "@/types/types";
+import { AsesiPlenoItem, PlenoDetailData, Role } from "@/types/types";
+import {
+  getPlenoList,
+  getPlenoDetail,
+  updatePleno,
+  updatePlenoAsesiStatus,
+} from "@/lib/api";
 
 const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
   {
@@ -217,9 +224,7 @@ export default function SidangPleno() {
   const readOnly = user?.role !== "admin";
 
   // List State
-  const [sessions, setSessions] = useState<PlenoDetailData[]>(() =>
-    DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"),
-  );
+  const [sessions, setSessions] = useState<PlenoDetailData[]>([]);
   // Selected Pleno for Detail/Edit View
   const [selectedPlenoId, setSelectedPlenoId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -231,17 +236,142 @@ export default function SidangPleno() {
     null,
   );
   const [formData, setFormData] = useState<PlenoDetailData | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Dirty & Saved State Management for Save / Generate requirements
   const [isDirty, setIsDirty] = useState<boolean>(false);
+interface BackendPlenoSkema {
+  master_skema?: { namaSkema?: string };
+}
+
+interface BackendPlenoAsesi {
+  id: number;
+  nama?: string;
+  rekomendasi_asesor?: string;
+  status_pleno?: string;
+  catatan?: string;
+  pengajuan_skema?: {
+    dataPribadi?: { nik?: string; namaLengkap?: string };
+    skema?: { namaSkema?: string };
+  };
+  users?: {
+    username?: string;
+    profil?: { namaLengkap?: string };
+  };
+}
+
+interface BackendPlenoAttendee {
+  role: Role;
+  nama: string;
+}
+
+interface BackendPlenoDetail {
+  id: number;
+  batch_code?: string;
+  title?: string;
+  no_sk?: string;
+  tanggal?: string | Date;
+  waktu?: string | Date;
+  alamat?: string;
+  detail_alamat?: string;
+  surat_pleno_url?: string;
+  link_surat_hasil?: string;
+  link_surat_berita_pleno?: string;
+  link_surat_keputusan_direktur?: string;
+  link_surat_blanko_bnsp?: string;
+  status?: string;
+  pleno_batch_skema?: BackendPlenoSkema[];
+  pleno_asesi?: BackendPlenoAsesi[];
+  pleno_attendee?: BackendPlenoAttendee[];
+}
+
   const [hasSavedAtLeastOnce, setHasSavedAtLeastOnce] = useState<boolean>(true);
   const [showSaveToast, setShowSaveToast] = useState<boolean>(false);
   const [toastText, setToastText] = useState<{ title: string; desc: string }>({
     title: "Data Sidang Pleno Berhasil Disimpan!",
     desc: "Tombol Generate Surat kini aktif dan siap digunakan.",
   });
+
+  const mapBackendPleno = (p: BackendPlenoDetail): PlenoDetailData => {
+    const skemaList =
+      p.pleno_batch_skema
+        ?.map((s) => s.master_skema?.namaSkema)
+        .filter(Boolean) as string[] || [];
+    const skemaStr = skemaList.join(", ") || "Semua Skema";
+
+    const asesiList: AsesiPlenoItem[] =
+      p.pleno_asesi?.map((a) => ({
+        id: a.id,
+        nik: a.pengajuan_skema?.dataPribadi?.nik || `121705${a.id}`,
+        nama:
+          a.pengajuan_skema?.dataPribadi?.namaLengkap || a.nama || `Asesi ${a.id}`,
+        skema: a.pengajuan_skema?.skema?.namaSkema || skemaStr,
+        asesor:
+          a.users?.profil?.namaLengkap || a.users?.username || "Asesor LSP",
+        rekomendasiAsesor: a.rekomendasi_asesor || "K",
+        statusPleno: a.status_pleno || "K",
+        catatan: a.catatan || "",
+      })) || [];
+
+    const attendees =
+      p.pleno_attendee?.map((att) => ({
+        role: att.role,
+        nama: att.nama,
+      })) || [];
+
+    return {
+      id: p.id,
+      batchCode: p.batch_code || `BATCH-${p.id}`,
+      title: p.title || "Sidang Pleno",
+      skema: skemaStr,
+      noSK: p.no_sk || "",
+      tanggal: p.tanggal ? new Date(p.tanggal).toLocaleDateString("id-ID") : "",
+      waktu: p.waktu
+        ? new Date(p.waktu).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "",
+      alamat: p.alamat || "Ruang Rapat Utama (Offline)",
+      detailAlamat: p.detail_alamat || "",
+      linkSuratBeritaPleno: p.link_surat_berita_pleno || "",
+      linkSuratKeputusanDirektur: p.link_surat_keputusan_direktur || "",
+      linkSuratBlankoBNSP: p.link_surat_blanko_bnsp || "",
+      linkSuratHasil: p.link_surat_hasil || "",
+      status: p.status || "Belum Ditetapkan",
+      plenoAttendees:
+        attendees.length > 0
+          ? attendees
+          : [
+              { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
+              { role: "komite_skema", nama: "Komite Skema LSP" },
+            ],
+      asesiList: asesiList,
+    };
+  };
+
+  const fetchPlenoSessions = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getPlenoList();
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped = data.map(mapBackendPleno);
+        setSessions(mapped);
+      } else {
+        setSessions(DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"));
+      }
+    } catch (err) {
+      console.error("Gagal memuat jadwal pleno:", err);
+      setSessions(DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlenoSessions();
+  }, []);
 
   // Modal Input states for document generation
   const [isBeritaAcaraModalOpen, setIsBeritaAcaraModalOpen] =
@@ -651,7 +781,14 @@ export default function SidangPleno() {
 
   // Load session into formData when selectedPlenoId changes
   useEffect(() => {
-    if (selectedPlenoId) {
+    let isMounted = true;
+    const loadDetail = async () => {
+      if (!selectedPlenoId) {
+        setActiveSession(null);
+        setFormData(null);
+        setIsDirty(false);
+        return;
+      }
       const found = sessions.find((s) => s.id === selectedPlenoId);
       if (found) {
         const clone = JSON.parse(JSON.stringify(found));
@@ -660,12 +797,22 @@ export default function SidangPleno() {
         setIsDirty(false);
         setHasSavedAtLeastOnce(true);
       }
-    } else {
-      setActiveSession(null);
-      setFormData(null);
-      setIsDirty(false);
-    }
-  }, [selectedPlenoId, sessions]);
+      try {
+        const detail = await getPlenoDetail(selectedPlenoId);
+        if (detail && isMounted) {
+          const mapped = mapBackendPleno(detail);
+          setActiveSession(mapped);
+          setFormData(mapped);
+        }
+      } catch {
+        // use local clone
+      }
+    };
+    loadDetail();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedPlenoId]);
 
   // Handle Form Inputs Change
   const handleInputChange = <K extends keyof PlenoDetailData>(
@@ -712,40 +859,77 @@ export default function SidangPleno() {
   };
 
   // Save Functionality
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData) return;
 
-    // Update session list
-    const updatedSessions = sessions.map((s) =>
-      s.id === formData.id ? { ...formData } : s,
-    );
-    setSessions(updatedSessions);
-    setActiveSession(JSON.parse(JSON.stringify(formData)));
+    try {
+      setIsSubmitting(true);
+      await updatePleno(formData.id, {
+        no_sk: formData.noSK,
+        link_surat_berita_pleno: formData.linkSuratBeritaPleno,
+        link_surat_keputusan_direktur: formData.linkSuratKeputusanDirektur,
+        link_surat_blanko_bnsp: formData.linkSuratBlankoBNSP,
+        link_surat_hasil: formData.linkSuratHasil,
+        status: formData.status,
+      });
 
-    setIsDirty(false);
-    setHasSavedAtLeastOnce(true);
+      // Update asesi statuses in background
+      if (formData.asesiList && formData.asesiList.length > 0) {
+        for (const asesi of formData.asesiList) {
+          if (asesi.id) {
+            try {
+              await updatePlenoAsesiStatus(formData.id, asesi.id, {
+                status_pleno: asesi.statusPleno,
+                catatan: asesi.catatan,
+              });
+            } catch {
+              // ignore individual mock asesi errors
+            }
+          }
+        }
+      }
 
-    // Show Toast
-    setToastText({
-      title: "Data Sidang Pleno Berhasil Disimpan!",
-      desc: "Tombol Generate Surat kini aktif dan siap digunakan.",
-    });
-    setShowSaveToast(true);
-    setTimeout(() => setShowSaveToast(false), 3500);
+      await fetchPlenoSessions();
+      setActiveSession(JSON.parse(JSON.stringify(formData)));
+
+      setIsDirty(false);
+      setHasSavedAtLeastOnce(true);
+
+      // Show Toast
+      setToastText({
+        title: "Data Sidang Pleno Berhasil Disimpan!",
+        desc: "Perubahan telah tersimpan di server.",
+      });
+      setShowSaveToast(true);
+      setTimeout(() => setShowSaveToast(false), 3500);
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : "Gagal menyimpan data sidang pleno";
+      showNotification?.(msg, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Quick Action to complete plenary session directly from table
-  const handleCompletePlenoSession = (sessionId: number) => {
-    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    if (selectedPlenoId === sessionId) {
-      setSelectedPlenoId(null);
+  const handleCompletePlenoSession = async (sessionId: number) => {
+    try {
+      await updatePleno(sessionId, { status: "Selesai" });
+      await fetchPlenoSessions();
+      if (selectedPlenoId === sessionId) {
+        setSelectedPlenoId(null);
+      }
+      setToastText({
+        title: "Sidang Pleno Berhasil Diselesaikan!",
+        desc: "Status sidang pleno telah diperbarui menjadi Selesai.",
+      });
+      setShowSaveToast(true);
+      setTimeout(() => setShowSaveToast(false), 3500);
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : "Gagal menyelesaikan sidang pleno";
+      showNotification?.(msg, "error");
     }
-    setToastText({
-      title: "Sidang Pleno Berhasil Diselesaikan!",
-      desc: "Status sidang pleno telah diperbarui menjadi Selesai.",
-    });
-    setShowSaveToast(true);
-    setTimeout(() => setShowSaveToast(false), 3500);
   };
 
   // Filtered Sessions for Table List
@@ -885,7 +1069,21 @@ export default function SidangPleno() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {filteredSessions.length === 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-6 py-16 text-center text-slate-400"
+                      >
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <Loader2 className="animate-spin text-[#008BE3]" size={32} />
+                          <p className="text-sm font-semibold text-slate-600">
+                            Memuat data Sidang Pleno...
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredSessions.length === 0 ? (
                     <tr>
                       <td
                         colSpan={7}
@@ -1594,9 +1792,9 @@ export default function SidangPleno() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={!isDirty}
+                  disabled={!isDirty || isSubmitting}
                   className={`px-6 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                    isDirty
+                    isDirty && !isSubmitting
                       ? "bg-[#008BE3] text-white hover:bg-[#0076C2] shadow-md shadow-[#008BE3]/20"
                       : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
                   }`}
@@ -1607,7 +1805,7 @@ export default function SidangPleno() {
                   }
                 >
                   <Save size={16} />
-                  <span>Simpan Perubahan</span>
+                  <span>{isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}</span>
                 </button>
               </div>
             </div>

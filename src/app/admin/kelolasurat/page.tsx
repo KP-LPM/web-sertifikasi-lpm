@@ -17,7 +17,29 @@ import { getSuratList, createSurat } from "@/lib/api";
 import { SuratItem, KategoriSurat, SubJenisSurat } from "@/types/types";
 import { useAppContext } from "@/context/context";
 
-const TAB_OPTIONS = ["Semua", "SK", "ST", "Sertifikat", "Berita Acara"];
+interface BackendSuratItem {
+  id: number;
+  nomor_surat?: string;
+  judul: string;
+  kategori: KategoriSurat;
+  jenis_surat: SubJenisSurat;
+  nama_jenis_surat?: string;
+  created_at?: string;
+  tanggal_terbit?: string;
+  penerbit?: string;
+  penerima?: string;
+  skema?: { nama_skema?: string };
+  jumlah_asesi?: number;
+  status: "Draft" | "Published" | "Archived";
+  no_sk?: string;
+  pimpinan_sidang?: string;
+  notulis?: string;
+  nama_asesor?: string;
+  no_met_asesor?: string;
+  lokasi?: string;
+  catatan?: string;
+  url_gdrive?: string;
+}
 
 export default function KelolaSurat() {
   const { user, showNotification } = useAppContext();
@@ -34,11 +56,15 @@ export default function KelolaSurat() {
     setIsLoading(true);
     try {
       const data = await getSuratList();
-      const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+      const list = Array.isArray(data)
+        ? data
+        : data && typeof data === "object" && "data" in data && Array.isArray((data as { data: unknown[] }).data)
+          ? (data as { data: unknown[] }).data
+          : [];
       if (list && list.length >= 0) {
-        const mapped = list.map((item: any) => ({
+        const mapped = (list as BackendSuratItem[]).map((item) => ({
           id: item.id,
-          nomorSurat: item.nomor_surat,
+          nomorSurat: item.nomor_surat || "",
           judul: item.judul,
           kategori: item.kategori,
           jenisSurat: item.jenis_surat,

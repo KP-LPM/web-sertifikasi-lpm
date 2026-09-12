@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -14,10 +14,12 @@ import {
   User,
   Filter,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
 import { TukItem, TukInventarisItem } from "@/types/types";
+import { getTukList, createTuk, updateTuk, deleteTuk } from "@/lib/api";
 
 const UIN_BUILDINGS = [
   "Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik",
@@ -79,10 +81,12 @@ const INITIAL_TUK_DATA: TukItem[] = [
 ];
 
 export default function TukManagement() {
-  const { user } = useAppContext();
+  const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
 
-  const [tukData, setTukData] = useState<TukItem[]>(INITIAL_TUK_DATA);
+  const [tukData, setTukData] = useState<TukItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [tipeFilter, settipeFilter] = useState("Semua tipe");
   const [statusFilter, setStatusFilter] = useState("Semua Status");
@@ -109,7 +113,68 @@ export default function TukManagement() {
     ],
   };
 
+interface BackendTukInventaris {
+  id?: number;
+  nama: string;
+  jumlah: number;
+}
+
+interface BackendTukItem {
+  id: number;
+  nama: string;
+  keterangan?: string | null;
+  tipe?: string | null;
+  alamat?: string | null;
+  status: string;
+  kapasitas?: number | null;
+  penanggung_jawab?: string | null;
+  master_tuk_inventaris?: BackendTukInventaris[];
+}
+
   const [formData, setFormData] = useState<TukItem>(DEFAULT_FORM_DATA);
+
+  const fetchTukData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getTukList("all");
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped: TukItem[] = (data as BackendTukItem[]).map((item) => ({
+          id: item.id,
+          nama: item.nama,
+          keterangan: item.keterangan || "",
+          tipe: item.tipe || "Sewaktu",
+          alamat: item.alamat || DEFAULT_ADDRESS,
+          status: item.status || "Aktif",
+          kapasitas: item.kapasitas || 0,
+          penanggungJawab: item.penanggung_jawab || "",
+          inventaris:
+            item.master_tuk_inventaris && item.master_tuk_inventaris.length > 0
+              ? item.master_tuk_inventaris.map((inv) => ({
+                  nama: inv.nama,
+                  jumlah: inv.jumlah,
+                }))
+              : [
+                  { nama: "Meja", jumlah: 0 },
+                  { nama: "Kursi", jumlah: 0 },
+                  { nama: "Lemari", jumlah: 0 },
+                ],
+        }));
+        setTukData(mapped);
+      } else {
+        // Fallback to initial data if DB empty
+        setTukData(INITIAL_TUK_DATA);
+      }
+    } catch (err: unknown) {
+      console.error("Gagal memuat data TUK:", err);
+      setTukData(INITIAL_TUK_DATA);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTukData();
+  }, []);
 
   // Filter
   const filteredTuk = tukData.filter((tuk) => {
@@ -145,25 +210,71 @@ export default function TukManagement() {
     setIsDetailModalOpen(true);
   };
 
-  const saveEdit = () => {
-    setTukData(tukData.map((t) => (t.id === formData.id ? formData : t)));
-    setIsEditModalOpen(false);
+  const saveEdit = async () => {
+    try {
+      setIsSubmitting(true);
+      await updateTuk(formData.id, {
+        nama: formData.nama,
+        keterangan: formData.keterangan,
+        tipe: formData.tipe,
+        alamat: formData.alamat,
+        kapasitas: Number(formData.kapasitas),
+        penanggung_jawab: formData.penanggungJawab,
+        status: formData.status,
+      });
+      await fetchTukData();
+      setIsEditModalOpen(false);
+      showNotification?.("Data TUK berhasil diperbarui", "success");
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : "Gagal memperbarui data TUK";
+      showNotification?.(msg, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const saveAdd = () => {
-    const newTuk: TukItem = {
-      ...formData,
-      id: Date.now(),
-    };
-    setTukData([...tukData, newTuk]);
-    setIsModalOpen(false);
-    setFormData(DEFAULT_FORM_DATA);
+  const saveAdd = async () => {
+    try {
+      setIsSubmitting(true);
+      await createTuk({
+        nama: formData.nama,
+        keterangan: formData.keterangan,
+        tipe: formData.tipe,
+        alamat: formData.alamat,
+        kapasitas: Number(formData.kapasitas),
+        penanggung_jawab: formData.penanggungJawab,
+        status: formData.status,
+      });
+      await fetchTukData();
+      setIsModalOpen(false);
+      setFormData(DEFAULT_FORM_DATA);
+      showNotification?.("TUK baru berhasil ditambahkan", "success");
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : "Gagal menambahkan TUK baru";
+      showNotification?.(msg, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedTuk) {
-      setTukData(tukData.filter((t) => t.id !== selectedTuk.id));
-      setIsDeleteModalOpen(false);
+      try {
+        setIsSubmitting(true);
+        await deleteTuk(selectedTuk.id);
+        await fetchTukData();
+        setIsDeleteModalOpen(false);
+        setSelectedTuk(null);
+        showNotification?.("TUK berhasil dinonaktifkan", "success");
+      } catch (err: unknown) {
+        console.error(err);
+        const msg = err instanceof Error ? err.message : "Gagal menghapus TUK";
+        showNotification?.(msg, "error");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -271,9 +382,20 @@ export default function TukManagement() {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {filteredTuk.map((tuk) => (
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
+              <Loader2 className="animate-spin text-[#008BE3]" size={32} />
+              <p className="text-sm font-semibold">Memuat data TUK...</p>
+            </div>
+          ) : filteredTuk.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-2 border border-dashed border-slate-200 rounded-2xl">
+              <Building2 size={36} className="text-slate-300" />
+              <p className="text-sm font-semibold text-slate-500">Tidak ada data TUK yang ditemukan</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {filteredTuk.map((tuk) => (
                 <motion.div
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -356,20 +478,7 @@ export default function TukManagement() {
               ))}
             </AnimatePresence>
           </div>
-
-          {filteredTuk.length === 0 && (
-            <div className="text-center py-16 bg-white rounded-xl border border-gray-100 border-dashed">
-              <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">
-                Tidak ada TUK ditemukan
-              </h3>
-              <p className="text-gray-500 text-sm">
-                Coba sesuaikan kata kunci pencarian atau filter Anda.
-              </p>
-            </div>
-          )}
+        )}
         </>
       ) : (
         /* FORM VIEW */
@@ -591,9 +700,10 @@ export default function TukManagement() {
               </button>
               <button
                 onClick={isEditModalOpen ? saveEdit : saveAdd}
-                className="px-4 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-lg transition-colors shadow-xs cursor-pointer"
+                disabled={isSubmitting}
+                className="px-4 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-50 rounded-lg transition-colors shadow-xs cursor-pointer"
               >
-                Simpan TUK
+                {isSubmitting ? "Menyimpan..." : "Simpan TUK"}
               </button>
             </div>
           </div>

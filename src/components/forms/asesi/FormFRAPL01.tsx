@@ -64,7 +64,7 @@ export function EFormApl01({
 
     window.addEventListener("scroll-to-apl01-error", handleScrollTujuan);
     window.addEventListener("scroll-to-apl01-signature-error", handleScrollTtd);
-    
+
     return () => {
       window.removeEventListener("scroll-to-apl01-error", handleScrollTujuan);
       window.removeEventListener("scroll-to-apl01-signature-error", handleScrollTtd);
@@ -200,7 +200,7 @@ export function EFormApl01({
                   Judul :
                 </td>
                 <td className="border border-slate-300 p-2 whitespace-nowrap font-medium text-slate-800">
-                  Pengelolaan Pinjaman / Pembiayaan
+                  {(formData?.judulSkema as string) || ""}
                 </td>
               </tr>
               <tr>
@@ -208,7 +208,7 @@ export function EFormApl01({
                   Nomor :
                 </td>
                 <td className="border border-slate-300 p-2">
-                  006/SKM/LSP-KJN/II/2023
+                  {(formData?.nomorSkema as string) || ""}
                 </td>
               </tr>
 
@@ -223,7 +223,7 @@ export function EFormApl01({
               >
                 <td
                   className={`border border-slate-300 p-2 font-semibold bg-white ${highlightTujuan && !formData.tujuan ? "text-red-600 border-l-4 border-l-red-500" : ""}`}
-                  rowSpan={4}
+                  rowSpan={5}
                 >
                   Tujuan Asesmen{" "}
                   {formData?.readOnly ? (
@@ -243,6 +243,22 @@ export function EFormApl01({
                   />
                 </td>
                 <td className="border border-slate-300 p-2">Sertifikasi</td>
+              </tr>
+              <tr
+                className={
+                  highlightTujuan && !formData.tujuan ? "bg-red-50" : ""
+                }
+              >
+                <td className="border border-slate-300 p-2 text-center">
+                  <input
+                    type="radio"
+                    disabled={formData?.readOnly || formData?.isAdmin}
+                    name="tujuan"
+                    checked={formData.tujuan === "Sertifikasi Ulang"}
+                    onChange={() => handleChangeTujuan("Sertifikasi Ulang")}
+                  />
+                </td>
+                <td className="border border-slate-300 p-2">Sertifikasi Ulang</td>
               </tr>
               <tr
                 className={
@@ -351,9 +367,9 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                            typeof req === "string"
-                              ? req
-                              : req.namaDokumen || ""
+                          typeof req === "string"
+                            ? req
+                            : req.namaDokumen || ""
                           ] === "memenuhi"
                         }
                         onChange={() =>
@@ -373,9 +389,9 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                            typeof req === "string"
-                              ? req
-                              : req.namaDokumen || ""
+                          typeof req === "string"
+                            ? req
+                            : req.namaDokumen || ""
                           ] === "tidak memenuhi"
                         }
                         onChange={() =>
@@ -577,11 +593,11 @@ export function EFormApl01({
                         formData.ttdAsesi
                           ? getSignatureValue(formData.ttdAsesi)
                           : {
-                              type: formData.signature ? "upload" : "auto",
-                              data: formData.signature as string,
-                            }
+                            type: formData.signature ? "upload" : "auto",
+                            data: formData.signature as string,
+                          }
                       }
-                      onChange={() => {}}
+                      onChange={() => { }}
                       readOnly={true}
                       fallbackName={
                         (formData.signature as string) ||

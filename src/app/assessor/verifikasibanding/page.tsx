@@ -18,11 +18,43 @@ import {
   Scale,
   Video,
   Building2,
-  Loader2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { AssessmentItem, HasilAsesmen } from "@/types/types";
 import { getBandingList, verifikasiBanding } from "@/lib/api";
+
+interface BackendBandingRecord {
+  id: number;
+  tanggal_pengajuan?: string;
+  status?: string;
+  status_banding?: string;
+  alasan?: string;
+  penjelasan?: string;
+  dijelaskan?: boolean;
+  didiskusikan?: boolean;
+  melibatkanOrangLain?: boolean;
+  hasil_asesmen?: {
+    hasil?: string;
+    pengajuan_skema?: {
+      dataPribadi?: {
+        namaLengkap?: string;
+        nik?: string;
+      };
+      user?: {
+        username?: string;
+      };
+      skema?: {
+        namaSkema?: string;
+        kodeSkema?: string;
+      };
+    };
+    jadwal_asesmen?: {
+      tipe_tuk?: string;
+      metode?: string;
+      alamat?: string;
+    };
+  };
+}
 
 export default function VerifikasiBanding() {
   const [mode, setMode] = useState<"list" | "detail">("list");
@@ -58,11 +90,11 @@ function VerifikasiBandingList({
 
   useEffect(() => {
     async function loadBanding() {
-      setIsLoading(true);
       try {
+        setIsLoading(true);
         const res = await getBandingList();
         if (Array.isArray(res) && res.length > 0) {
-          const mapped: AssessmentItem[] = res.map((item: any) => {
+          const mapped: AssessmentItem[] = (res as unknown as BackendBandingRecord[]).map((item) => {
             const pengajuan = item.hasil_asesmen?.pengajuan_skema;
             const jadwal = item.hasil_asesmen?.jadwal_asesmen;
             const asesiName =
@@ -188,7 +220,13 @@ function VerifikasiBandingList({
               </tr>
             </thead>
             <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-              {displayedAssessments.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-10 text-center text-gray-500 font-semibold text-xs">
+                    Memuat daftar banding...
+                  </td>
+                </tr>
+              ) : displayedAssessments.length > 0 ? (
                 displayedAssessments.map((item, idx) => (
                   <tr
                     key={item.id}
@@ -301,7 +339,10 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
     setLoadingSubmit(true);
 
     try {
-      const targetBandingId = Number((selectedAsesmen as any).bandingId || selectedAsesmen.id);
+      const targetBandingId = Number(
+        (selectedAsesmen as AssessmentItem & { bandingId?: number }).bandingId ||
+          selectedAsesmen.id,
+      );
       if (targetBandingId) {
         await verifikasiBanding(targetBandingId, {
           status: modalAction === "approve" ? "Disetujui" : "Ditolak",

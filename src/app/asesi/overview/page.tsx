@@ -62,7 +62,7 @@ export default function AsesiOverviewPage() {
             setAsesiId(`ASESI-${numericId.padStart(4, "0")}`);
           }
         }
-      } catch (error: unknown) {
+      } catch {
         if (user?.username) setNamaLengkap(user.username);
         else if (user?.email) setNamaLengkap(user.email);
         if (user?.id) {
@@ -91,7 +91,10 @@ export default function AsesiOverviewPage() {
           skema?: { namaSkema?: string };
           master_tuk?: { nama?: string; alamat?: string; tipe?: string };
           hasil_asesmen?: { hasil?: string; link_video?: string };
-          apl02_penilaian?: { rekomendasi_apl02?: string; nama_asesor?: string };
+          apl02_penilaian?: {
+            rekomendasi_apl02?: string;
+            nama_asesor?: string;
+          };
           jadwal_asesmen_peserta?: Array<{
             jadwal_asesmen?: {
               tanggal?: string | Date;
@@ -104,48 +107,51 @@ export default function AsesiOverviewPage() {
           }>;
         }
 
-        const mapped: RegisteredAssessment[] = (data as RawPengajuan[]).map((item) => {
-          const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
-          const asesorName =
-            jadwal?.users?.profil?.namaLengkap ||
-            jadwal?.users?.username ||
-            item.apl02_penilaian?.nama_asesor ||
-            "Belum Ditugaskan";
-          const rawDate = jadwal?.tanggal || item.tglPengajuan || item.createdAt;
-          const formattedDate = formatDateID(rawDate);
-          const tipeTuk = (jadwal?.tipe_tuk ||
-            item.master_tuk?.tipe ||
-            item.tuk ||
-            "Mandiri") as TipeTuk;
-          const alamat =
-            jadwal?.alamat ||
-            jadwal?.master_tuk?.alamat ||
-            item.master_tuk?.alamat ||
-            (String(tipeTuk).toLowerCase().includes("online") ||
+        const mapped: RegisteredAssessment[] = (data as RawPengajuan[]).map(
+          (item) => {
+            const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+            const asesorName =
+              jadwal?.users?.profil?.namaLengkap ||
+              jadwal?.users?.username ||
+              item.apl02_penilaian?.nama_asesor ||
+              "Belum Ditugaskan";
+            const rawDate =
+              jadwal?.tanggal || item.tglPengajuan || item.createdAt;
+            const formattedDate = formatDateID(rawDate);
+            const tipeTuk = (jadwal?.tipe_tuk ||
+              item.master_tuk?.tipe ||
+              item.tuk ||
+              "Mandiri") as TipeTuk;
+            const alamat =
+              jadwal?.alamat ||
+              jadwal?.master_tuk?.alamat ||
+              item.master_tuk?.alamat ||
+              (String(tipeTuk).toLowerCase().includes("online") ||
               String(tipeTuk).toLowerCase().includes("virtual")
-              ? "Online"
-              : "-");
-          const linkMeeting =
-            jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
-          const rekomendasi =
-            item.hasil_asesmen?.hasil ||
-            item.apl02_penilaian?.rekomendasi_apl02 ||
-            "-";
+                ? "Online"
+                : "-");
+            const linkMeeting =
+              jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
+            const rekomendasi =
+              item.hasil_asesmen?.hasil ||
+              item.apl02_penilaian?.rekomendasi_apl02 ||
+              "-";
 
-          return {
-            id: item.id,
-            asesmen: item.jenisAsesmen || "Uji Kompetensi",
-            skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
-            tipeTuk,
-            alamat,
-            tanggalAsesmen: formattedDate,
-            linkVirtualMeeting: linkMeeting,
-            asesor: asesorName,
-            jenisBukti: "Portofolio & Praktik",
-            rekomendasi,
-            statusAsesmen: item.status || "Menunggu Verifikasi",
-          };
-        });
+            return {
+              id: item.id,
+              asesmen: item.jenisAsesmen || "Uji Kompetensi",
+              skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
+              tipeTuk,
+              alamat,
+              tanggalAsesmen: formattedDate,
+              linkVirtualMeeting: linkMeeting,
+              asesor: asesorName,
+              jenisBukti: "Portofolio & Praktik",
+              rekomendasi,
+              statusAsesmen: item.status || "Menunggu Verifikasi",
+            };
+          },
+        );
 
         setAssessments(mapped);
       }
@@ -549,12 +555,13 @@ export default function AsesiOverviewPage() {
                   >
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
                       <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
+                          idx % 3 === 0
                             ? "bg-[#008BE3]/10 text-[#008BE3]"
                             : idx % 3 === 1
                               ? "bg-[#84CC16]/10 text-[#73B412]"
                               : "bg-slate-100 text-slate-600"
-                          }`}
+                        }`}
                       >
                         {(currentPage - 1) * itemsPerPage + idx + 1}
                       </div>
@@ -573,15 +580,16 @@ export default function AsesiOverviewPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk.includes("Sewaktu")
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                          item.tipeTuk.includes("Sewaktu")
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : item.tipeTuk.includes("Tempat Kerja")
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : item.tipeTuk.includes("Virtual") ||
-                                item.tipeTuk.includes("Online")
+                                  item.tipeTuk.includes("Online")
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-orange-50 text-orange-700 border-orange-200"
-                          }`}
+                        }`}
                       >
                         {item.tipeTuk}
                       </span>
@@ -606,7 +614,7 @@ export default function AsesiOverviewPage() {
                     </td>
                     <td className="px-6 py-4 text-xs md:text-sm">
                       {item.linkVirtualMeeting &&
-                        item.linkVirtualMeeting !== "-" ? (
+                      item.linkVirtualMeeting !== "-" ? (
                         <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
                           <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
                           Tersedia
@@ -636,15 +644,18 @@ export default function AsesiOverviewPage() {
                         <button
                           onClick={() => {
                             if (item.statusAsesmen === "Terjadwal") {
-                              router.push(`/asesi/ujian?pengajuanId=${item.id}`);
+                              router.push(
+                                `/asesi/ujian?pengajuanId=${item.id}`,
+                              );
                             } else {
                               setSelectedAssessment(item);
                             }
                           }}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${item.statusAsesmen === "Terjadwal"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${
+                            item.statusAsesmen === "Terjadwal"
                               ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
                               : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
-                            }`}
+                          }`}
                         >
                           {item.statusAsesmen === "Terjadwal" ? (
                             <>
@@ -709,10 +720,11 @@ export default function AsesiOverviewPage() {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === page
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                        currentPage === page
                           ? "bg-[#008BE3] text-white border border-[#008BE3]"
                           : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                        }`}
+                      }`}
                     >
                       {page}
                     </button>
@@ -795,7 +807,7 @@ export default function AsesiOverviewPage() {
                 </span>
                 <span className="col-span-2 text-slate-900">
                   {selectedAssessment.linkVirtualMeeting &&
-                    selectedAssessment.linkVirtualMeeting !== "-" ? (
+                  selectedAssessment.linkVirtualMeeting !== "-" ? (
                     <a
                       href={selectedAssessment.linkVirtualMeeting}
                       target="_blank"

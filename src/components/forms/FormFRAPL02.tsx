@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Eye, CheckCircle, AlertTriangle, FastForward, Loader2 } from "lucide-react";
+import { Eye, CheckCircle, AlertTriangle, FastForward } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
@@ -8,7 +8,21 @@ import {
   EvidenceFileItem,
   PenyusunValidatorItem,
 } from "@/types/types";
-import { getSkemaDetail, getPengajuanDetail, savePenilaianApl02 } from "@/lib/api";
+import { getSkemaDetail, getPengajuanDetail } from "@/lib/api";
+
+interface ApiElemenKompetensi {
+  namaElemen?: string;
+  nama?: string;
+  kriteriaUnjukKerja?: string | string[];
+}
+
+interface ApiUnitKompetensi {
+  kodeUnit?: string;
+  kode?: string;
+  judulUnit?: string;
+  judul?: string;
+  elemen?: ApiElemenKompetensi[];
+}
 
 export const DEFAULT_APL02_UNITS = [
   {
@@ -94,24 +108,24 @@ export interface FormFRAPL02Props {
 
 export function FormFRAPL02(props: FormFRAPL02Props) {
   const [apiUnits, setApiUnits] = useState<typeof props.units | null>(null);
-  const [isLoadingUnits, setIsLoadingUnits] = useState(false);
 
   useEffect(() => {
     async function loadUnitsFromApi() {
       if (props.units && props.units.length > 0) return;
 
-      const targetSkemaId = props.skemaId || (props.asesmenData as any)?.skemaId;
+      const targetSkemaId =
+        props.skemaId ||
+        (props.asesmenData as unknown as { skemaId?: number })?.skemaId;
       const targetPengajuanId = props.pengajuanId || props.asesmenData?.id;
 
       try {
         if (targetSkemaId) {
-          setIsLoadingUnits(true);
           const data = await getSkemaDetail(Number(targetSkemaId));
           if (data && Array.isArray(data.unitKompetensi) && data.unitKompetensi.length > 0) {
-            const mapped = data.unitKompetensi.map((u: any) => ({
+            const mapped = (data.unitKompetensi as unknown as ApiUnitKompetensi[]).map((u) => ({
               code: u.kodeUnit || u.kode || "",
               title: u.judulUnit || u.judul || "",
-              elemen: (u.elemen || []).map((e: any) => ({
+              elemen: (u.elemen || []).map((e) => ({
                 title: e.namaElemen || e.nama || "",
                 kuk: typeof e.kriteriaUnjukKerja === "string"
                   ? e.kriteriaUnjukKerja.split("\n").filter(Boolean)
@@ -126,15 +140,14 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
         }
 
         if (targetPengajuanId) {
-          setIsLoadingUnits(true);
           const pengajuan = await getPengajuanDetail(Number(targetPengajuanId));
           if (pengajuan?.skemaId) {
             const data = await getSkemaDetail(Number(pengajuan.skemaId));
             if (data && Array.isArray(data.unitKompetensi) && data.unitKompetensi.length > 0) {
-              const mapped = data.unitKompetensi.map((u: any) => ({
+              const mapped = (data.unitKompetensi as unknown as ApiUnitKompetensi[]).map((u) => ({
                 code: u.kodeUnit || u.kode || "",
                 title: u.judulUnit || u.judul || "",
-                elemen: (u.elemen || []).map((e: any) => ({
+                elemen: (u.elemen || []).map((e) => ({
                   title: e.namaElemen || e.nama || "",
                   kuk: typeof e.kriteriaUnjukKerja === "string"
                     ? e.kriteriaUnjukKerja.split("\n").filter(Boolean)
@@ -150,8 +163,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
         }
       } catch (err) {
         console.warn("Gagal memuat unit kompetensi dari API, gunakan fallback lokal:", err);
-      } finally {
-        setIsLoadingUnits(false);
       }
     }
 
@@ -209,11 +220,11 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const [localAsesiSig, setLocalAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState(
     props.asesmenData?.tglAsesmen ||
-      new Date().toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
+    new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
   );
 
   const [localAsesorName, setLocalAsesorName] = useState(
@@ -225,11 +236,11 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const [localAsesorSig, setLocalAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState(
     props.asesmenData?.tglAsesmen ||
-      new Date().toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
+    new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
   );
 
   const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
@@ -413,14 +424,14 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   const fileObj =
                     props.evidenceFiles?.[fileKey] ||
                     (props.evidenceFiles &&
-                    Object.keys(props.evidenceFiles).length > 0
+                      Object.keys(props.evidenceFiles).length > 0
                       ? null
                       : [
-                          {
-                            name: `Bukti_Portofolio_${unit.code}_${eIdx + 1}.pdf`,
-                            url: "#",
-                          },
-                        ]);
+                        {
+                          name: `Bukti_Portofolio_${unit.code}_${eIdx + 1}.pdf`,
+                          url: "#",
+                        },
+                      ]);
                   return (
                     <tr
                       key={eIdx}
@@ -505,8 +516,8 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                                     } else {
                                       const fileName =
                                         f &&
-                                        typeof f === "object" &&
-                                        "name" in f
+                                          typeof f === "object" &&
+                                          "name" in f
                                           ? String(f.name)
                                           : "File Bukti";
                                       alert("Pratinjau dokumen: " + fileName);
@@ -687,9 +698,9 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                 </div>
               )
             ) : (
-                <div className="h-20 flex items-center justify-center text-gray-400 text-sm">
-                  Belum ada tanda tangan
-                </div>
+              <div className="h-20 flex items-center justify-center text-gray-400 text-sm">
+                Belum ada tanda tangan
+              </div>
             )}
           </div>
           <div className="w-full">

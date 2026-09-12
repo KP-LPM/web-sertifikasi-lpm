@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Award,
   Search,
@@ -26,9 +26,16 @@ import {
   Eye,
   FileText,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { AsesiPlenoRecord, PlenoGroup } from "@/types/types";
+import {
+  getAllSertifikat,
+  updateSertifikat,
+  getPlenoList,
+  getPlenoDetail,
+} from "@/lib/api";
 
 export type { AsesiPlenoRecord };
 
@@ -343,6 +350,157 @@ export default function UploadSertifikat() {
   // Copy notification state
   const [copiedId, setCopiedId] = useState<string | number | null>(null);
 
+interface BackendSertifikatRecord {
+  id?: number;
+  pengajuan_id?: number;
+  pleno_asesi_id?: number;
+  no_sertifikat?: string;
+  tanggal_terbit?: string | Date;
+  gdrive_url?: string;
+  status?: string;
+  notes?: string;
+}
+
+interface BackendPlenoSkemaUpload {
+  master_skema?: { namaSkema?: string };
+}
+
+interface BackendPlenoAsesiUpload {
+  id: number;
+  pengajuan_id?: number;
+  nama?: string;
+  nik?: string;
+  pengajuan_skema?: {
+    dataPribadi?: Array<{ nik?: string; namaLengkap?: string }>;
+    user?: { username?: string };
+    skema?: { namaSkema?: string };
+  };
+}
+
+interface BackendPlenoUploadItem {
+  id: number;
+  batch_code?: string;
+  skema?: string;
+  tanggal?: string | Date;
+  waktu?: string | Date;
+  alamat?: string;
+  status?: string;
+  pleno_batch_skema?: BackendPlenoSkemaUpload[];
+  pleno_asesi?: BackendPlenoAsesiUpload[];
+}
+
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
+
+  const fetchData = async () => {
+    try {
+      setIsDataLoading(true);
+      const [plenoRes, sertifikatRes] = await Promise.allSettled([
+        getPlenoList(),
+        getAllSertifikat(),
+      ]);
+
+      const rawPlenos =
+        plenoRes.status === "fulfilled" && Array.isArray(plenoRes.value)
+          ? (plenoRes.value as BackendPlenoUploadItem[])
+          : [];
+      const rawSertifikats =
+        sertifikatRes.status === "fulfilled" && Array.isArray(sertifikatRes.value)
+          ? (sertifikatRes.value as BackendSertifikatRecord[])
+          : [];
+
+      if (rawPlenos.length > 0) {
+        // Fetch detailed info for each pleno
+        const detailedPlenos: BackendPlenoUploadItem[] = await Promise.all(
+          rawPlenos.map(async (p) => {
+            try {
+              const detail = await getPlenoDetail(p.id);
+              return (detail as BackendPlenoUploadItem) || p;
+            } catch {
+              return p;
+            }
+          }),
+        );
+
+        const mapped: PlenoGroup[] = detailedPlenos.map((p) => {
+          const asesiList: AsesiPlenoRecord[] = (p.pleno_asesi || []).map(
+            (pa) => {
+              const cert = rawSertifikats.find(
+                (s) =>
+                  s.pengajuan_id === pa.pengajuan_id ||
+                  s.pleno_asesi_id === pa.id,
+              );
+              const nama =
+                pa.pengajuan_skema?.dataPribadi?.[0]?.namaLengkap ||
+                pa.pengajuan_skema?.user?.username ||
+                pa.nama ||
+                `Asesi ${pa.id}`;
+              const nik =
+                pa.pengajuan_skema?.dataPribadi?.[0]?.nik || pa.nik || "-";
+              const skema =
+                pa.pengajuan_skema?.skema?.namaSkema ||
+                p.pleno_batch_skema?.[0]?.master_skema?.namaSkema ||
+                p.skema ||
+                "-";
+
+              return {
+                id: pa.pengajuan_id || pa.id,
+                nama,
+                nik,
+                skema,
+                noSertifikat: cert?.no_sertifikat || "",
+                issueDate: cert?.tanggal_terbit
+                  ? new Date(cert.tanggal_terbit).toISOString().split("T")[0]
+                  : "",
+                gdriveUrl: cert?.gdrive_url || "",
+                status:
+                  cert?.gdrive_url || cert?.status === "Terbit"
+                    ? "Terbit"
+                    : "Belum Upload",
+                notes: cert?.notes || "",
+              };
+            },
+          );
+
+          return {
+            plenoId: p.id,
+            plenoTitle: p.batch_code
+              ? `Sidang Pleno ${p.batch_code}`
+              : `Sidang Pleno Batch ${p.id}`,
+            skemaList:
+              (p.pleno_batch_skema
+                ?.map((s) => s.master_skema?.namaSkema)
+                .filter(Boolean) as string[]) || [],
+            tanggal: p.tanggal
+              ? new Date(p.tanggal).toLocaleDateString("id-ID")
+              : "-",
+            waktu: p.waktu
+              ? new Date(p.waktu).toLocaleTimeString("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }) + " WIB"
+              : "09:00 - 12:00 WIB",
+            lokasi: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
+            isOnline: false,
+            status: p.status || "Belum Selesai",
+            asesiList,
+          };
+        });
+
+        if (mapped.length > 0) {
+          setPlenoGroups(mapped);
+        }
+      }
+    } catch (err) {
+      console.error("Gagal memuat data pleno / sertifikat:", err);
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   // Modal State for inputting/editing GDrive link for an asesi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAsesi, setEditingAsesi] = useState<{
@@ -383,7 +541,7 @@ export default function UploadSertifikat() {
   };
 
   // Save GDrive link and info for asesi
-  const handleSaveGDriveLink = (e: React.FormEvent) => {
+  const handleSaveGDriveLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingAsesi) return;
 
@@ -394,17 +552,30 @@ export default function UploadSertifikat() {
 
     const { plenoId, asesi } = editingAsesi;
 
+    try {
+      await updateSertifikat(asesi.id, {
+        no_sertifikat: inputForm.n,
+        tanggal_terbit: inputForm.issueDate
+          ? new Date(inputForm.issueDate)
+          : undefined,
+        gdrive_url: inputForm.gdriveUrl.trim(),
+      });
+      showNotification("Tautan Google Drive sertifikat berhasil disimpan.", "success");
+    } catch (err) {
+      console.error("Gagal mengupdate sertifikat ke backend:", err);
+      showNotification("Tersimpan secara lokal. Gagal menyinkronkan ke database.", "error");
+    }
+
     setPlenoGroups((prev) =>
       prev.map((group) => {
         if (group.plenoId === plenoId) {
           return {
             ...group,
-            // Hapus .length, langsung gunakan .map() pada array
             asesiList: group.asesiList.map((item) => {
               if (item.id === asesi.id) {
                 return {
                   ...item,
-                  n: inputForm.n, // Catatan: Pastikan 'n' memang ada di interface AsesiPlenoRecord Anda (atau gunakan noSertifikat)
+                  noSertifikat: inputForm.n,
                   issueDate: inputForm.issueDate,
                   gdriveUrl: inputForm.gdriveUrl.trim(),
                   status: "Terbit",
@@ -632,7 +803,14 @@ export default function UploadSertifikat() {
           </div>
 
           {/* Grid Cards per Sidang Pleno */}
-          {filteredPlenoGroups.length > 0 ? (
+          {isDataLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="animate-spin text-[#008BE3]" size={36} />
+              <p className="text-sm font-semibold text-slate-600">
+                Memuat data sidang pleno dan sertifikat...
+              </p>
+            </div>
+          ) : filteredPlenoGroups.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPlenoGroups.map((pleno) => {
                 const totalAsesi = pleno.asesiList.length;

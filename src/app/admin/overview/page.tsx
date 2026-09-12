@@ -14,14 +14,36 @@ import {
 import { useAppContext } from "@/context/context";
 import { getAdminDashboard, getPengajuanList } from "@/lib/api";
 
+interface OverviewDashboardData {
+  verifikasiPending?: number;
+  jadwalMendatang?: number;
+  pengajuan?: {
+    diverifikasi?: number;
+  };
+}
+
+interface OverviewPendingItem {
+  id: number;
+  status: string;
+  user?: {
+    username?: string;
+    profil?: {
+      nama_lengkap?: string;
+    };
+  };
+  skema?: {
+    nama_skema?: string;
+  };
+}
+
 export default function AdminOverview() {
   const router = useRouter();
   const { user } = useAppContext();
   
-  const adminName = user?.username || user?.username || "Administrator LSP";
+  const adminName = user?.username || "Administrator LSP";
 
-  const [dashboardData, setDashboardData] = React.useState<any>(null);
-  const [pendingVerificationList, setPendingVerificationList] = React.useState<any[]>([]);
+  const [dashboardData, setDashboardData] = React.useState<OverviewDashboardData | null>(null);
+  const [pendingVerificationList, setPendingVerificationList] = React.useState<OverviewPendingItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -37,11 +59,14 @@ export default function AdminOverview() {
       ]);
 
       if (dashData) {
-        setDashboardData(dashData?.data && !dashData.verifikasiPending ? dashData.data : dashData);
+        const rawDash = dashData as unknown as { data?: OverviewDashboardData; verifikasiPending?: number };
+        setDashboardData(rawDash?.data && !rawDash.verifikasiPending ? rawDash.data : (dashData as unknown as OverviewDashboardData));
       }
       if (pengData) {
-        const pengList = Array.isArray(pengData) ? pengData : (pengData?.data || []);
-        setPendingVerificationList(pengList.slice(0, 5)); // Show top 5
+        const pengList = Array.isArray(pengData)
+          ? pengData
+          : (pengData as unknown as { data?: OverviewPendingItem[] })?.data || [];
+        setPendingVerificationList((pengList as OverviewPendingItem[]).slice(0, 5)); // Show top 5
       }
     } catch (error) {
       console.error("Error fetching overview data:", error);

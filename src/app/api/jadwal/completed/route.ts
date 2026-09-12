@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       let kompetenCount = 0;
       let belumKompetenCount = 0;
 
-      const asesiList = batch.hasil_asesmen.map((hasil: any) => {
+      const asesiList = batch.hasil_asesmen.map((hasil) => {
         const h = hasil.hasil || "";
         if (h.toLowerCase() === "kompeten") kompetenCount++;
         else if (h.toLowerCase() === "belum kompeten" || h.toLowerCase() === "tidak kompeten") belumKompetenCount++;

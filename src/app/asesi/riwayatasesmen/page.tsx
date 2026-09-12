@@ -403,10 +403,11 @@ export default function AsesiHistoryPage() {
                   Batal
                 </button>
                 <button
+                  disabled={isSubmittingBanding}
                   onClick={handleSubmitBanding}
-                  className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] transition-colors disabled:opacity-50"
                 >
-                  Ya, Kirim
+                  {isSubmittingBanding ? "Mengirim..." : "Ya, Kirim"}
                 </button>
               </div>
             </div>

@@ -27,24 +27,30 @@ import { CustomTooltipProps, TooltipPayloadEntry } from "@/types/types";
 
 const COLORS = ["#10B981", "#EF4444"]; // Emerald for Kompeten, Red for Belum Kompeten
 
+interface AdminReportItem {
+  id?: number | string;
+  skema: string;
+  tahun: string | number;
+  bulan: string;
+  kompeten: number;
+  belumKompeten: number;
+  total?: number;
+}
+
 export default function Reports() {
-  const [reportData, setReportData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [reportData, setReportData] = useState<AdminReportItem[]>([]);
 
   React.useEffect(() => {
     fetchReportData();
   }, []);
 
   const fetchReportData = async () => {
-    setIsLoading(true);
     try {
       const data = await getAdminReports();
       const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
-      setReportData(list);
+      setReportData(list as AdminReportItem[]);
     } catch (error) {
       console.error("Error fetching report data:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

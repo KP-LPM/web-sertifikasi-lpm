@@ -33,7 +33,16 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const reportMap = new Map<string, any>();
+    interface ReportEntry {
+      skema: string;
+      tahun: string;
+      bulan: string;
+      bulanIdx: number;
+      kompeten: number;
+      belumKompeten: number;
+    }
+
+    const reportMap = new Map<string, ReportEntry>();
 
     const monthNames = [
       "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -63,13 +72,13 @@ export async function GET(request: NextRequest) {
       }
 
       const reportData = reportMap.get(key);
-      const result = h.hasil?.toLowerCase() || "";
-      if (result === "kompeten") {
-        reportData.kompeten += 1;
-      } else if (result === "belum kompeten" || result === "tidak kompeten") {
-        reportData.belumKompeten += 1;
-      } else {
-        // You can handle other statuses if needed, maybe exclude them
+      if (reportData) {
+        const result = h.hasil?.toLowerCase() || "";
+        if (result === "kompeten") {
+          reportData.kompeten += 1;
+        } else if (result === "belum kompeten" || result === "tidak kompeten") {
+          reportData.belumKompeten += 1;
+        }
       }
     }
 
@@ -77,7 +86,13 @@ export async function GET(request: NextRequest) {
     data.sort((a, b) => a.tahun.localeCompare(b.tahun) || a.bulanIdx - b.bulanIdx);
 
     // Remove bulanIdx before returning
-    const finalData = data.map(({ bulanIdx, ...rest }) => rest);
+    const finalData = data.map((item) => ({
+      skema: item.skema,
+      tahun: item.tahun,
+      bulan: item.bulan,
+      kompeten: item.kompeten,
+      belumKompeten: item.belumKompeten,
+    }));
 
     return sendResponse(
       200,

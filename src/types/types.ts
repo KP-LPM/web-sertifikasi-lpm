@@ -338,6 +338,7 @@ export interface ScheduleItem {
   waktuMulai?: string;
   tipeTuk: TipeTuk;
   alamat?: string;
+  tuk?: string;
   linkVideo?: string;
   totalKandidat?: number;
   namaAsesor?: string;

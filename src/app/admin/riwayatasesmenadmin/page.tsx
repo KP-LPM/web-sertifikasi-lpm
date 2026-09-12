@@ -47,11 +47,11 @@ import {
 
 
 export default function RiwayatAsesmenAdmin() {
-  const { AssessmentItems, plenoSessions } = useAppContext();
+  const { AssessmentItems } = useAppContext();
 
   const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">("asesmen");
   const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
-  const [completedPleno, setCompletedPleno] = useState<any[]>([]);
+  const [completedPleno, setCompletedPleno] = useState<PlenoDetailData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   React.useEffect(() => {
@@ -191,7 +191,7 @@ export default function RiwayatAsesmenAdmin() {
     const matchSearch =
       pleno.batchCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pleno.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (Array.isArray(pleno.skemaList) && pleno.skemaList.some((s: string) => s.toLowerCase().includes(searchTerm.toLowerCase())));
+      pleno.skema?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchSearch;
   });
 

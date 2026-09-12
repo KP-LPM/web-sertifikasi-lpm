@@ -64,7 +64,13 @@ export function TambahSkemaForm({
       (konfigurasiPertanyaan.length > 0 ? konfigurasiPertanyaan[0].id : undefined),
     persyaratanDasar:
       initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
-        ? initialData.persyaratanDasar
+        ? initialData.persyaratanDasar.map((p, idx) => ({
+            ...p,
+            namaDokumen: p.namaDokumen || "",
+            deskripsi: p.deskripsi || "",
+            urutan: p.urutan || idx + 1,
+            is_wajib: p.is_wajib ?? true,
+          }))
         : [
             {
               namaDokumen: "Transkrip Nilai Semester 5",
@@ -77,7 +83,14 @@ export function TambahSkemaForm({
     persyaratanAdministrasi:
       initialData?.persyaratanAdministrasi &&
       initialData.persyaratanAdministrasi.length > 0
-        ? initialData.persyaratanAdministrasi
+        ? initialData.persyaratanAdministrasi.map((p, idx) => ({
+            ...p,
+            id: p.id || idx + 1,
+            namaDokumen: p.namaDokumen || "",
+            deskripsi: p.deskripsi || "",
+            isWajib: p.isWajib ?? true,
+            isAktif: p.isAktif ?? true,
+          }))
         : [
             {
               id: 1,
@@ -90,7 +103,21 @@ export function TambahSkemaForm({
           ],
     unitKompetensi:
       initialData?.unitKompetensi && initialData.unitKompetensi.length > 0
-        ? initialData.unitKompetensi
+        ? initialData.unitKompetensi.map((u, idx) => ({
+            ...u,
+            kodeUnit: u.kodeUnit || "",
+            judulUnit: u.judulUnit || "",
+            urutan: u.urutan || idx + 1,
+            elemen: (u.elemen || []).map((e, eIdx) => ({
+              ...e,
+              namaElemen: e.namaElemen || "",
+              urutan: e.urutan || eIdx + 1,
+              isWajib: e.isWajib ?? true,
+              kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
+                ? e.kriteriaUnjukKerja.map((k) => k || "")
+                : [""],
+            })),
+          }))
         : [
             {
               kodeUnit: "J.611000.001.01",
@@ -652,7 +679,7 @@ export function TambahSkemaForm({
                 <input
                   type="text"
                   placeholder="06/LSPUINBdg/XI/2023"
-                  value={formState.kodeSkema}
+                  value={formState.kodeSkema || ""}
                   onChange={(e) =>
                     handleMainInfoChange("kodeSkema", e.target.value)
                   }
@@ -672,7 +699,7 @@ export function TambahSkemaForm({
                 <input
                   type="text"
                   placeholder="Masukkan nama skema"
-                  value={formState.namaSkema}
+                  value={formState.namaSkema || ""}
                   onChange={(e) =>
                     handleMainInfoChange("namaSkema", e.target.value)
                   }
@@ -814,7 +841,7 @@ export function TambahSkemaForm({
                     <input
                       type="text"
                       placeholder="Contoh: Transkrip Nilai Semester 5"
-                      value={item.namaDokumen}
+                      value={item.namaDokumen || ""}
                       onChange={(e) =>
                         handleUpdatePersyaratan(
                           index,
@@ -833,7 +860,7 @@ export function TambahSkemaForm({
                     </label>
                     <textarea
                       placeholder="Contoh: Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah..."
-                      value={item.deskripsi}
+                      value={item.deskripsi || ""}
                       onChange={(e) =>
                         handleUpdatePersyaratan(
                           index,
@@ -930,7 +957,7 @@ export function TambahSkemaForm({
                     <input
                       type="text"
                       placeholder="Contoh: Kartu Tanda Penduduk (KTP)"
-                      value={item.namaDokumen}
+                      value={item.namaDokumen || ""}
                       onChange={(e) =>
                         handleUpdatePersyaratanAdministrasi(
                           index,
@@ -949,7 +976,7 @@ export function TambahSkemaForm({
                     </label>
                     <textarea
                       placeholder="Contoh: Scan KTP asli yang masih berlaku..."
-                      value={item.deskripsi}
+                      value={item.deskripsi || ""}
                       onChange={(e) =>
                         handleUpdatePersyaratanAdministrasi(
                           index,
@@ -1028,7 +1055,7 @@ export function TambahSkemaForm({
                       <input
                         type="text"
                         placeholder="Contoh: J.611000.001.01"
-                        value={unit.kodeUnit}
+                        value={unit.kodeUnit || ""}
                         onChange={(e) =>
                           handleUpdateUnit(uIdx, "kodeUnit", e.target.value)
                         }
@@ -1045,7 +1072,7 @@ export function TambahSkemaForm({
                       <input
                         type="text"
                         placeholder="Contoh: Merancang Topologi Jaringan"
-                        value={unit.judulUnit}
+                        value={unit.judulUnit || ""}
                         onChange={(e) =>
                           handleUpdateUnit(uIdx, "judulUnit", e.target.value)
                         }
@@ -1099,7 +1126,7 @@ export function TambahSkemaForm({
                           <input
                             type="text"
                             placeholder="Contoh: Menyiapkan perancangan topologi"
-                            value={el.namaElemen}
+                            value={el.namaElemen || ""}
                             onChange={(e) =>
                               handleUpdateElemen(
                                 uIdx,
@@ -1149,7 +1176,7 @@ export function TambahSkemaForm({
                               <input
                                 type="text"
                                 placeholder={`Contoh: ${eIdx + 1}.${kIdx + 1} Kebutuhan pengguna diidentifikasi.`}
-                                value={kukStr}
+                                value={kukStr || ""}
                                 onChange={(e) =>
                                   handleUpdateKUK(
                                     uIdx,

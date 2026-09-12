@@ -10,8 +10,6 @@ import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/pengajuanskema
-// List pengajuan (asesi: miliknya; admin: semua, filter status/skema)
 export async function GET(request: NextRequest) {
   try {
     rateLimitApi(request, {

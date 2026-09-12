@@ -164,10 +164,10 @@ export default function JadwalkanOnline() {
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
             <button
               onClick={handleSimpan}
-              disabled={!tanggal || !waktu || !linkMeet}
+              disabled={isSaving || !tanggal || !waktu || !linkMeet}
               className="bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 shadow-sm"
             >
-              <CheckCircle size={18} /> Simpan Jadwal
+              <CheckCircle size={18} /> {isSaving ? "Menyimpan..." : "Simpan Jadwal"}
             </button>
           </div>
         </div>

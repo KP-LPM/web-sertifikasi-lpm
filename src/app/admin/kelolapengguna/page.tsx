@@ -24,7 +24,17 @@ import {
   verifyUserAdmin
 } from "@/lib/api";
 
-type RoleType = "admin" | "asesor" | "asesi";
+interface BackendUserItem {
+  id: number | string;
+  username?: string;
+  email?: string;
+  role?: string;
+  isActive?: boolean;
+  isVerified?: boolean;
+  profil?: {
+    namaLengkap?: string;
+  };
+}
 
 const ROLE_OPTIONS = [
   "admin",
@@ -51,9 +61,13 @@ export default function KelolaPengguna() {
     setIsLoading(true);
     try {
       const data = await getAllUsers();
-      const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+      const list = Array.isArray(data)
+        ? data
+        : data && typeof data === "object" && "data" in data && Array.isArray((data as { data: unknown[] }).data)
+          ? (data as { data: unknown[] }).data
+          : [];
       if (list && list.length >= 0) {
-        const formattedUsers = list.map((u: any) => {
+        const formattedUsers: UserItem[] = (list as BackendUserItem[]).map((u) => {
           let statusStr = "Nonaktif";
           if (u.isActive) {
             statusStr = u.isVerified ? "Terverifikasi" : "Menunggu Verifikasi";
@@ -62,10 +76,10 @@ export default function KelolaPengguna() {
             }
           }
           return {
-            id: u.id,
-            username: u.username,
-            email: u.email,
-            role: u.role,
+            id: Number(u.id),
+            username: u.username || "",
+            email: u.email || "",
+            role: (u.role as Role) || "asesi",
             namaLengkap: u.profil?.namaLengkap || u.username || "-",
             status: statusStr,
           };
@@ -149,8 +163,8 @@ export default function KelolaPengguna() {
       } else {
         alert("Gagal menambah user");
       }
-    } catch (error: any) {
-      alert(error.message || "Terjadi kesalahan saat menambah user");
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat menambah user");
     }
   };
 
@@ -187,7 +201,7 @@ export default function KelolaPengguna() {
     }
 
     try {
-      const updateData: any = { isActive };
+      const updateData: Record<string, unknown> = { isActive };
 
       const data = await updateUserAdmin(Number(selectedUser.id), updateData);
 
@@ -216,8 +230,8 @@ export default function KelolaPengguna() {
       } else {
         alert("Gagal mengupdate user");
       }
-    } catch (error: any) {
-      alert(error.message || "Terjadi kesalahan saat mengupdate user");
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat mengupdate user");
     }
   };
 
@@ -228,8 +242,8 @@ export default function KelolaPengguna() {
       setUsers(users.filter((u) => u.id !== selectedUser.id));
       setIsDeleteModalOpen(false);
       setSelectedUser(null);
-    } catch (error: any) {
-      alert(error.message || "Terjadi kesalahan saat menghapus user");
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat menghapus user");
     }
   };
 

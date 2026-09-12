@@ -16,12 +16,24 @@ import {
   Calendar,
   Filter,
   ChevronDown,
-  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "@/context/context";
 import { PortfolioItem } from "@/types/types";
 import { getPortfolios, createPortfolio, deletePortfolio } from "@/lib/api";
+
+interface BackendPortfolio {
+  id: number;
+  master_skema?: { namaSkema?: string };
+  nama_dokumen: string;
+  deskripsi?: string;
+  tanggal?: string;
+  file_name?: string;
+  file_size?: string;
+  file_type?: string;
+  status?: string;
+  catatan_admin?: string;
+}
 
 const AVAILABLE_SCHEMES = [
   "Pemrograman Web",
@@ -74,22 +86,29 @@ export default function VerifikasiPortofolio() {
 
   const fetchPortfolios = async () => {
     try {
+      setIsLoading(true);
       const res = await getPortfolios();
       if (Array.isArray(res) && res.length > 0) {
-        const mapped: PortfolioItem[] = res.map((p: any) => ({
-          id: p.id,
-          skema: p.master_skema?.namaSkema || "Umum",
-          namaDokumen: p.nama_dokumen,
-          statusAsesor: "Asesor dari UIN Bandung",
-          alamatLsp: "UIN Sunan Gunung Djati Bandung",
-          deskripsi: p.deskripsi || "-",
-          tanggal: p.tanggal ? new Date(p.tanggal).toLocaleDateString("id-ID") : "-",
-          fileName: p.file_name || "Dokumen_Portofolio.pdf",
-          fileSize: p.file_size || "1.5 MB",
-          fileType: p.file_type || "application/pdf",
-          status: p.status || "Menunggu Verifikasi",
-          catatanAdmin: p.catatan_admin || undefined,
-        }));
+        const mapped: PortfolioItem[] = (res as unknown as BackendPortfolio[]).map((p) => {
+          let statusTyped: "Terverifikasi" | "Menunggu Verifikasi" | "Ditolak" = "Menunggu Verifikasi";
+          if (p.status === "Terverifikasi" || p.status === "Ditolak") {
+            statusTyped = p.status;
+          }
+          return {
+            id: p.id,
+            skema: p.master_skema?.namaSkema || "Umum",
+            namaDokumen: p.nama_dokumen,
+            statusAsesor: "Asesor dari UIN Bandung",
+            alamatLsp: "UIN Sunan Gunung Djati Bandung",
+            deskripsi: p.deskripsi || "-",
+            tanggal: p.tanggal ? new Date(p.tanggal).toLocaleDateString("id-ID") : "-",
+            fileName: p.file_name || "Dokumen_Portofolio.pdf",
+            fileSize: p.file_size || "1.5 MB",
+            fileType: p.file_type || "application/pdf",
+            status: statusTyped,
+            catatanAdmin: p.catatan_admin || undefined,
+          };
+        });
         setPortfolios(mapped);
       }
     } catch (err) {
@@ -577,7 +596,13 @@ export default function VerifikasiPortofolio() {
               </tr>
             </thead>
             <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-              {filteredPortfolios.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500 font-semibold text-xs">
+                    Memuat data portofolio...
+                  </td>
+                </tr>
+              ) : filteredPortfolios.length === 0 ? (
                 <tr>
                   <td
                     colSpan={8}

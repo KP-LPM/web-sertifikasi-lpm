@@ -10,7 +10,6 @@ import {
   ArrowRight,
   AlertCircle,
   Layers,
-  Loader2,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -31,6 +30,49 @@ import {
   getCurrentProfile,
 } from "@/lib/api";
 
+interface BackendOverviewJadwal {
+  id: number;
+  status?: string;
+  kode_batch?: string;
+  nama_batch?: string;
+  master_skema?: { namaSkema?: string };
+  metode?: string;
+  tipe_tuk?: string;
+  alamat?: string;
+  master_tuk?: { nama_tuk?: string };
+  tanggal?: string;
+  waktu_mulai?: string;
+  link_video?: string;
+}
+
+interface BackendOverviewCandidate {
+  pengajuanId: number;
+  jadwalId?: number;
+  namaLengkap?: string;
+  hasilAsesmen?: string;
+}
+
+interface BackendOverviewBanding {
+  id: number;
+  tanggal_pengajuan?: string;
+  status_banding?: string;
+  status?: string;
+  alasan?: string;
+  hasil_asesmen?: {
+    pengajuan_skema?: {
+      dataPribadi?: {
+        namaLengkap?: string;
+      };
+      user?: {
+        username?: string;
+      };
+      skema?: {
+        namaSkema?: string;
+      };
+    };
+  };
+}
+
 export default function AssessorOverview() {
   const router = useRouter();
   const { AssessmentItems, setSelectedAsesmen, user } = useAppContext();
@@ -43,7 +85,7 @@ export default function AssessorOverview() {
     bandingMasuk: 0,
   });
   const [realBatches, setRealBatches] = useState<BatchDetail[]>([]);
-  const [realBanding, setRealBanding] = useState<any[]>([]);
+  const [realBanding, setRealBanding] = useState<BackendOverviewBanding[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -76,18 +118,18 @@ export default function AssessorOverview() {
         // Olah Batch dari Jadwal & Kandidat
         const candidates =
           candidatesRes.status === "fulfilled" && Array.isArray(candidatesRes.value)
-            ? candidatesRes.value
+            ? (candidatesRes.value as unknown as BackendOverviewCandidate[])
             : [];
 
         const jadwals =
           jadwalRes.status === "fulfilled" && Array.isArray(jadwalRes.value)
-            ? jadwalRes.value
+            ? (jadwalRes.value as unknown as BackendOverviewJadwal[])
             : [];
 
         if (jadwals.length > 0) {
-          const mapped = jadwals.map((j: any) => {
+          const mapped: BatchDetail[] = jadwals.map((j) => {
             const batchCand = candidates.filter(
-              (c: any) => c.jadwalId === j.id,
+              (c) => c.jadwalId === j.id,
             );
             return {
               id: j.id,
@@ -101,7 +143,7 @@ export default function AssessorOverview() {
               tanggal: j.tanggal ? new Date(j.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-",
               waktuMulai: j.waktu_mulai ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "08:00 WIB",
               linkVideo: j.link_video || "-",
-              candidates: batchCand.map((c: any) => ({
+              candidates: batchCand.map((c) => ({
                 id: c.pengajuanId,
                 nama: c.namaLengkap || "Asesi",
                 skema: j.master_skema?.namaSkema || "Skema Sertifikasi",
@@ -114,7 +156,7 @@ export default function AssessorOverview() {
         }
 
         if (bandingRes.status === "fulfilled" && Array.isArray(bandingRes.value)) {
-          setRealBanding(bandingRes.value);
+          setRealBanding(bandingRes.value as unknown as BackendOverviewBanding[]);
         }
       } catch (err) {
         console.error("Gagal memuat overview asesor:", err);
@@ -223,7 +265,11 @@ export default function AssessorOverview() {
           </div>
 
           <div className="p-4 space-y-3 flex-1">
-            {displayBatches.length > 0 ? (
+            {isLoading ? (
+              <div className="p-6 text-center text-xs font-semibold text-gray-500">
+                Memuat data batch asesmen...
+              </div>
+            ) : displayBatches.length > 0 ? (
               displayBatches.slice(0, 3).map((batch: BatchDetail) => {
                 const completedCount = batch.candidates.filter(
                   (c: Candidate) => c.statusAsesmen === "Selesai",
@@ -312,7 +358,7 @@ export default function AssessorOverview() {
 
           <div className="p-4 space-y-3 flex-1">
             {realBanding.length > 0 ? (
-              realBanding.slice(0, 3).map((item: any) => {
+              realBanding.slice(0, 3).map((item) => {
                 const asesiName =
                   item.hasil_asesmen?.pengajuan_skema?.dataPribadi?.namaLengkap ||
                   item.hasil_asesmen?.pengajuan_skema?.user?.username ||

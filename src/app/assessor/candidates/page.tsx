@@ -23,11 +23,37 @@ import {
   Globe,
   Mail,
   X,
-  Loader2,
 } from "lucide-react";
 import { AssessmentItem, BatchDetail, JenisMetode, TipeTuk } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { getCandidatesList, getJadwalList } from "@/lib/api";
+
+interface BackendJadwal {
+  id: number;
+  status?: string;
+  kode_batch?: string;
+  nama_batch?: string;
+  master_skema?: { namaSkema?: string };
+  metode?: string;
+  tipe_tuk?: string;
+  alamat?: string;
+  master_tuk?: { nama_tuk?: string };
+  tanggal?: string;
+  waktu_mulai?: string;
+  link_video?: string;
+}
+
+interface BackendCandidate {
+  pengajuanId: number;
+  jadwalId?: number;
+  nik?: string;
+  namaLengkap?: string;
+  namaSkema?: string;
+  telepon?: string;
+  email?: string;
+  statusPenilaian?: string;
+  hasilAsesmen?: string;
+}
 
 export default function AsesiList() {
   const router = useRouter();
@@ -59,7 +85,6 @@ export default function AsesiList() {
 
   useEffect(() => {
     async function loadData() {
-      setIsLoading(true);
       try {
         const [candidatesRes, jadwalRes] = await Promise.allSettled([
           getCandidatesList(),
@@ -68,18 +93,18 @@ export default function AsesiList() {
 
         const candidates =
           candidatesRes.status === "fulfilled" && Array.isArray(candidatesRes.value)
-            ? candidatesRes.value
+            ? (candidatesRes.value as unknown as BackendCandidate[])
             : [];
 
         const jadwals =
           jadwalRes.status === "fulfilled" && Array.isArray(jadwalRes.value)
-            ? jadwalRes.value
+            ? (jadwalRes.value as unknown as BackendJadwal[])
             : [];
 
         if (jadwals.length > 0) {
-          const mapped: BatchDetail[] = jadwals.map((j: any) => {
+          const mapped: BatchDetail[] = jadwals.map((j) => {
             const batchCand = candidates.filter(
-              (c: any) => c.jadwalId === j.id,
+              (c) => c.jadwalId === j.id,
             );
             return {
               id: j.id,
@@ -95,7 +120,7 @@ export default function AsesiList() {
               linkVideo: j.link_video || "-",
               candidates:
                 batchCand.length > 0
-                  ? batchCand.map((c: any) => ({
+                  ? batchCand.map((c) => ({
                       id: c.pengajuanId,
                       nik: c.nik || `32730128${c.pengajuanId}0001`,
                       nama: c.namaLengkap || "Asesi",
@@ -406,7 +431,11 @@ export default function AsesiList() {
           </div>
 
           {/* Batch Cards Grid */}
-          {filteredBatches.length > 0 ? (
+          {isLoading ? (
+            <div className="p-8 text-center text-sm font-semibold text-gray-500 bg-white rounded-xl border border-gray-100">
+              Memuat data batch asesmen...
+            </div>
+          ) : filteredBatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBatches.map((batch) => {
                 const isOnline = batch.metode?.toLowerCase() === "online";

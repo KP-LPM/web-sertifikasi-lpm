@@ -18,7 +18,16 @@ import {
   deleteKonfigurasiPertanyaan as deleteKonfigurasiAPI,
 } from "@/lib/api";
 
-export default function KonfigurasiPertanyaan() {
+interface BackendKonfigurasiPertanyaan {
+  id: number;
+  nama_konfigurasi: string;
+  skema?: { namaSkema?: string };
+  tipe_form?: string;
+  versi?: string;
+  status?: string;
+}
+
+export default function KonfigurasiPertanyaanList() {
   const router = useRouter();
   const {
     konfigurasiPertanyaan,
@@ -35,7 +44,7 @@ export default function KonfigurasiPertanyaan() {
       try {
         const res = await getKonfigurasiPertanyaanList();
         if (Array.isArray(res) && res.length > 0) {
-          res.forEach((item: any) => {
+          (res as BackendKonfigurasiPertanyaan[]).forEach((item) => {
             const exists = konfigurasiPertanyaan.some((k) => k.id === item.id);
             if (!exists) {
               addKonfigurasiPertanyaan({
