@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
     }
 
-    // Build Unit Rows
+// Build Unit Rows
     let unitsHtml = "";
     units.forEach((unit, idx) => {
       let elemenHtml = "";
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
           kukLines = el.kriteriaUnjukKerja.split("\n").filter(k => k.trim());
         }
 
-        const kukListHtml = kukLines.map((kuk, kIdx) => `<li>${kIdx + 1}.${kIdx + 1} ${kuk}</li>`).join("");
+        const kukListHtml = kukLines.map((kuk) => `<li>${kuk}</li>`).join("");
 
         elemenHtml += `
           <tr>
@@ -71,8 +71,9 @@ export async function GET(req: NextRequest) {
                 ${kukListHtml}
               </ul>
             </td>
-            <td class="text-center">[  ]</td>
-            <td class="text-center">[  ]</td>
+            <!-- Menggunakan karakter kotak unicode dengan ukuran sedikit lebih besar biar jelas -->
+            <td class="text-center" style="font-size: 16px;">&#9744;</td>
+            <td class="text-center" style="font-size: 16px;">&#9744;</td>
             <td class="text-center">Bukti Portofolio ${unit.kodeUnit}</td>
           </tr>
         `;
@@ -104,23 +105,26 @@ export async function GET(req: NextRequest) {
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: 'Arial', sans-serif; padding: 40px; color: #000; font-size: 13px; line-height: 1.5; }
+          body { font-family: 'Arial', sans-serif; padding: 40px; color: #000; font-size: 12px; line-height: 1.5; }
           .header { display: flex; align-items: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
           .header img { max-width: 80px; margin-right: 20px; }
           .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
           .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          .table th, .table td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+          .table th, .table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px; }
           .table th { background-color: #f0f0f0; text-align: left; }
           .text-center { text-align: center; }
-          .unit-title { font-weight: bold; font-size: 14px; margin-top: 20px; margin-bottom: 5px; }
+          .unit-title { font-weight: bold; font-size: 12px; margin-top: 20px; margin-bottom: 5px; }
           .td-content { padding: 10px; }
-          .signature-box { float: right; width: 300px; text-align: left; margin-top: 40px; }
+          
+          /* Perbaikan Tanda Tangan */
+          .signature-container { display: flex; justify-content: flex-end; margin-top: 30px; page-break-inside: avoid; break-inside: avoid; width: 100%; }
+          .signature-box { width: 300px; text-align: left; }
           .signature-box .date { margin-bottom: 40px; }
           .signature-box .name { font-weight: bold; text-decoration: underline; }
-          .clearfix::after { content: ""; clear: both; display: table; }
-          .info-table { border: none; margin-bottom: 20px; }
-          .info-table td { border: none; padding: 4px; }
-          .instructions { border: 1px solid #000; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; }
+          
+          .info-table { border: none; margin-bottom: 20px; width: 100%; }
+          .info-table td { border: none; padding: 4px; font-size: 12px; }
+          .instructions { border: 1px solid #000; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9; font-size: 12px; }
           .instructions ul { margin: 0; padding-left: 20px; }
         </style>
       </head>
@@ -133,7 +137,7 @@ export async function GET(req: NextRequest) {
         </div>
 
         <table class="info-table">
-          <tr><td width="150px">Skema Sertifikasi</td><td>:</td><td>${pengajuan.skema?.namaSkema || ''}</td></tr>
+          <tr><td width="150px">Skema Sertifikasi</td><td width="10px">:</td><td>${pengajuan.skema?.namaSkema || ''}</td></tr>
           <tr><td>Nomor</td><td>:</td><td>${pengajuan.skema?.kodeSkema || ''}</td></tr>
         </table>
 
@@ -149,7 +153,8 @@ export async function GET(req: NextRequest) {
 
         ${unitsHtml}
 
-        <div class="clearfix">
+        <!-- Pembungkus Tanda Tangan Anti-Offside -->
+        <div class="signature-container">
           <div class="signature-box">
             <div class="date">Tanggal: ${new Date().toLocaleDateString('id-ID')}</div>
             <div class="name">${data?.namaLengkap || user?.username || '_______________________'}</div>

@@ -6,7 +6,6 @@ import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import {
   Apl02FormData,
   EvidenceFileItem,
-  PenyusunValidatorItem,
 } from "@/types/types";
 import { getSkemaDetail, getPengajuanDetail } from "@/lib/api";
 
@@ -94,10 +93,6 @@ export interface FormFRAPL02Props {
   onAsesorSignatureChange?: (val: string) => void;
   asesorDate?: string;
   onAsesorDateChange?: (val: string) => void;
-  penyusun?: PenyusunValidatorItem[];
-  onPenyusunChange?: (penyusun: PenyusunValidatorItem[]) => void;
-  validator?: PenyusunValidatorItem[];
-  onValidatorChange?: (validator: PenyusunValidatorItem[]) => void;
   readOnly?: boolean;
   showHeader?: boolean;
   onNext?: () => void;
@@ -243,13 +238,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     }),
   );
 
-  const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
-    [],
-  );
-  const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
-    [],
-  );
-
   const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
 
@@ -272,8 +260,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
       : localAsesorSig;
   const asesorDate =
     props.asesorDate !== undefined ? props.asesorDate : localAsesorDate;
-  const penyusun = props.penyusun || localPenyusun;
-  const validator = props.validator || localValidator;
 
   const allElementKeys: string[] = [];
   units.forEach((unit, idx) => {
@@ -304,34 +290,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
       props.onRekomendasiChange(val);
     } else {
       setLocalRekomendasi(val);
-    }
-  };
-
-  const handlePenyusunChangeInternal = (
-    index: number,
-    field: "nama" | "noMet" | "ttdTanggal",
-    value: string,
-  ) => {
-    const updated = [...penyusun];
-    updated[index] = { ...updated[index], [field]: value };
-    if (props.onPenyusunChange) {
-      props.onPenyusunChange(updated);
-    } else {
-      setLocalPenyusun(updated);
-    }
-  };
-
-  const handleValidatorChangeInternal = (
-    index: number,
-    field: "nama" | "noMet" | "ttdTanggal",
-    value: string,
-  ) => {
-    const updated = [...validator];
-    updated[index] = { ...updated[index], [field]: value };
-    if (props.onValidatorChange) {
-      props.onValidatorChange(updated);
-    } else {
-      setLocalValidator(updated);
     }
   };
 
@@ -717,151 +675,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
               className="w-full border-b border-slate-300 outline-none focus:border-slate-800 bg-transparent text-sm font-medium py-1"
             />
           </div>
-        </div>
-      </div>
-
-      {/* Penyusun & Validator */}
-      <div className="mb-6">
-        <h3 className="font-bold mb-2 text-xs sm:text-sm">
-          PENYUSUN DAN VALIDATOR
-        </h3>
-        <div className="border border-slate-300 overflow-x-auto">
-          <table className="w-full border-collapse text-center text-xs sm:text-sm min-w-137.5">
-            <thead>
-              <tr className="bg-white border-b border-slate-300 font-bold">
-                <th className="border-r border-slate-300 p-2">STATUS</th>
-                <th className="border-r border-slate-300 p-2 w-12">NO</th>
-                <th className="border-r border-slate-300 p-2">NAMA</th>
-                <th className="border-r border-slate-300 p-2">NOMOR MET</th>
-                <th className="p-2">TANDA TANGAN DAN TANGGAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {penyusun.map((p, idx) => (
-                <tr key={"p-" + idx} className="border-b border-slate-300">
-                  {idx === 0 && (
-                    <td
-                      className="border-r border-slate-300 p-2 font-bold"
-                      rowSpan={penyusun.length}
-                    >
-                      PENYUSUN
-                    </td>
-                  )}
-                  <td className="border-r border-slate-300 p-2">{idx + 1}</td>
-                  <td className="border-r border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={props.readOnly || props.isAsesi}
-                      className="w-full outline-none bg-transparent"
-                      value={String(p.nama)}
-                      onChange={(e) =>
-                        handlePenyusunChangeInternal(
-                          idx,
-                          "nama",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="border-r border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={props.readOnly || props.isAsesi}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={String(p.noMet)}
-                      onChange={(e) =>
-                        handlePenyusunChangeInternal(
-                          idx,
-                          "noMet",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="p-2 text-center">
-                    <input
-                      type="text"
-                      disabled={props.readOnly || props.isAsesi}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={String(p.ttdTanggal)}
-                      onChange={(e) =>
-                        handlePenyusunChangeInternal(
-                          idx,
-                          "ttdTanggal",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                </tr>
-              ))}
-              {validator.map((v, idx) => (
-                <tr
-                  key={"v-" + idx}
-                  className={
-                    idx === validator.length - 1
-                      ? ""
-                      : "border-b border-slate-300"
-                  }
-                >
-                  {idx === 0 && (
-                    <td
-                      className="border-r border-slate-300 p-2 font-bold"
-                      rowSpan={validator.length}
-                    >
-                      VALIDATOR
-                    </td>
-                  )}
-                  <td className="border-r border-slate-300 p-2">{idx + 1}</td>
-                  <td className="border-r border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={props.readOnly || props.isAsesi}
-                      className="w-full outline-none bg-transparent"
-                      value={v.nama}
-                      onChange={(e) =>
-                        handleValidatorChangeInternal(
-                          idx,
-                          "nama",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="border-r border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={props.readOnly || props.isAsesi}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={v.noMet}
-                      onChange={(e) =>
-                        handleValidatorChangeInternal(
-                          idx,
-                          "noMet",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="p-2 text-center">
-                    <input
-                      type="text"
-                      disabled={props.readOnly || props.isAsesi}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={v.ttdTanggal}
-                      onChange={(e) =>
-                        handleValidatorChangeInternal(
-                          idx,
-                          "ttdTanggal",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
 

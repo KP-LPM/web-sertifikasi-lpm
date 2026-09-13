@@ -73,6 +73,9 @@ interface Breadcrumb {
   onClick?: () => void;
 }
 
+// Tambahkan tipe statusPembayaran ke Profile agar ESLint tidak protes
+type SubmissionProfile = Profile & { statusPembayaran?: string };
+
 export default function PengajuanSkemaPage() {
   const { user, setExtraCrumbs, showNotification } = useAppContext();
 
@@ -85,6 +88,8 @@ export default function PengajuanSkemaPage() {
   const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
 
   const [showExitWarning, setShowExitWarning] = useState(false);
+  const [cancelItemId, setCancelItemId] = useState<number | null>(null);
+
   const [exitDestination, setExitDestination] = useState<
     "list" | "choose-scheme" | null
   >(null);
@@ -104,12 +109,12 @@ export default function PengajuanSkemaPage() {
   const [selectedDetailSubmission, setSelectedDetailSubmission] =
     useState<
       | (Profile & {
-        dokumenList?: Array<{
-          id: number;
-          namaDokumen: string;
-          fileUrl: string;
-        }>;
-      })
+          dokumenList?: Array<{
+            id: number;
+            namaDokumen: string;
+            fileUrl: string;
+          }>;
+        })
       | null
     >(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
@@ -167,7 +172,6 @@ export default function PengajuanSkemaPage() {
   const [tempEFormData, setTempEFormData] = useState<Record<string, unknown>>(
     {},
   );
-  // removed showAlert
 
   React.useEffect(() => {
     if (
@@ -185,7 +189,8 @@ export default function PengajuanSkemaPage() {
 
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
-  const [submissions, setSubmissions] = useState<Profile[]>([]);
+  // Gunakan tipe SubmissionProfile yang sudah kita buat
+  const [submissions, setSubmissions] = useState<SubmissionProfile[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
 
   const fetchSubmissions = React.useCallback(async () => {
@@ -193,12 +198,14 @@ export default function PengajuanSkemaPage() {
     try {
       const data = await getPengajuanList();
       if (Array.isArray(data)) {
-        const mappedList: Profile[] = (data as Array<{
+        // Deklarasikan status_pembayaran di dalam tipe parameter
+        const mappedList: SubmissionProfile[] = (data as Array<{
           id: number;
           nomorPengajuan?: string;
           status: string;
           tuk?: string;
           createdAt: string | Date;
+          status_pembayaran?: string | boolean;
           skema?: { id?: number; namaSkema?: string; kodeSkema?: string };
           user?: { username?: string; email?: string };
           dataPribadi?: {
@@ -238,12 +245,12 @@ export default function PengajuanSkemaPage() {
         }>).map((item) => {
           const dateStr = item.createdAt
             ? new Date(item.createdAt)
-              .toLocaleDateString("id-ID", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-              .replace(/\//g, "-")
+                .toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+                .replace(/\//g, "-")
             : "-";
 
           return {
@@ -257,8 +264,8 @@ export default function PengajuanSkemaPage() {
             tempatLahir: item.dataPribadi?.tempatLahir || "",
             tanggalLahir: item.dataPribadi?.tanggalLahir
               ? new Date(item.dataPribadi.tanggalLahir)
-                .toISOString()
-                .split("T")[0]
+                  .toISOString()
+                  .split("T")[0]
               : "",
             jenisKelamin:
               item.dataPribadi?.jenisKelamin === "Laki_laki"
@@ -290,6 +297,9 @@ export default function PengajuanSkemaPage() {
             penyesuaianWajar:
               item.dataPribadi?.memerlukanPenyesuaianWajar ?? false,
             berpengalaman: item.dataPribadi?.isBerpengalaman ?? false,
+            statusPembayaran: item.status_pembayaran === "Sudah Bayar" || item.status_pembayaran === true
+              ? "Sudah Bayar"
+              : "Belum Bayar",
             asesmenDate: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal
               ? new Date(item.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal).toISOString()
               : undefined,
@@ -346,7 +356,6 @@ export default function PengajuanSkemaPage() {
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
-  // FETCH PROFIL USER MENGGUNAKAN getUsersProfile
   React.useEffect(() => {
     const fetchProfil = async () => {
       const userId = Number(user?.id);
@@ -367,8 +376,8 @@ export default function PengajuanSkemaPage() {
           [
             dataProfil.tanggalLahir
               ? new Date(String(dataProfil.tanggalLahir))
-                .toISOString()
-                .split("T")[0]
+                  .toISOString()
+                  .split("T")[0]
               : null,
             setTanggalLahir,
           ],
@@ -403,7 +412,6 @@ export default function PengajuanSkemaPage() {
     fetchProfil();
   }, [user?.id]);
 
-  // FETCH MASTER SKEMA DARI BACKEND
   React.useEffect(() => {
     const fetchSchemes = async () => {
       setIsLoadingSchemes(true);
@@ -420,7 +428,6 @@ export default function PengajuanSkemaPage() {
                 skema.nama_skema || skema.namaSkema || "-",
               );
 
-              // Cari template data lokal jika di database ada bagian relasi yang belum lengkap
               const localMatch = (
                 AVAILABLE_SCHEMES as unknown as Array<{
                   code?: string;
@@ -447,9 +454,9 @@ export default function PengajuanSkemaPage() {
                   buktiAdministratif?: Array<
                     | string
                     | {
-                      namaDokumen?: string;
-                      name?: string;
-                    }
+                        namaDokumen?: string;
+                        name?: string;
+                      }
                   >;
                 }>
               ).find(
@@ -460,123 +467,120 @@ export default function PengajuanSkemaPage() {
                   s.name === namaSkema,
               );
 
-              // 1. UNIT KOMPETENSI
               const rawUnits = Array.isArray(skema.unitKompetensi)
                 ? (skema.unitKompetensi as Array<Record<string, unknown>>)
                 : [];
               const units: UnitKompetensiItem[] =
                 rawUnits.length > 0
                   ? rawUnits.map((u, uIdx) => {
-                    const rawElemen = Array.isArray(u.elemenKompetensi)
-                      ? (u.elemenKompetensi as Array<Record<string, unknown>>)
-                      : Array.isArray(u.elemen)
-                        ? (u.elemen as Array<Record<string, unknown>>)
-                        : [];
+                      const rawElemen = Array.isArray(u.elemenKompetensi)
+                        ? (u.elemenKompetensi as Array<Record<string, unknown>>)
+                        : Array.isArray(u.elemen)
+                          ? (u.elemen as Array<Record<string, unknown>>)
+                          : [];
 
-                    const elemen = rawElemen.map((el, eIdx) => {
-                      let kukList: string[] = [];
-                      if (Array.isArray(el.kriteriaUnjukKerja)) {
-                        kukList = el.kriteriaUnjukKerja as string[];
-                      } else if (Array.isArray(el.kuk)) {
-                        kukList = el.kuk as string[];
-                      } else if (typeof el.kriteriaUnjukKerja === "string") {
-                        try {
-                          const parsed = JSON.parse(el.kriteriaUnjukKerja);
-                          kukList = Array.isArray(parsed)
-                            ? parsed
-                            : [el.kriteriaUnjukKerja];
-                        } catch {
-                          kukList = el.kriteriaUnjukKerja
-                            .split("\n")
-                            .filter(Boolean);
+                      const elemen = rawElemen.map((el, eIdx) => {
+                        let kukList: string[] = [];
+                        if (Array.isArray(el.kriteriaUnjukKerja)) {
+                          kukList = el.kriteriaUnjukKerja as string[];
+                        } else if (Array.isArray(el.kuk)) {
+                          kukList = el.kuk as string[];
+                        } else if (typeof el.kriteriaUnjukKerja === "string") {
+                          try {
+                            const parsed = JSON.parse(el.kriteriaUnjukKerja);
+                            kukList = Array.isArray(parsed)
+                              ? parsed
+                              : [el.kriteriaUnjukKerja];
+                          } catch {
+                            kukList = el.kriteriaUnjukKerja
+                              .split("\n")
+                              .filter(Boolean);
+                          }
                         }
-                      }
+
+                        return {
+                          id: Number(el.id || eIdx + 1),
+                          namaElemen: String(
+                            el.namaElemen ||
+                              el.nama_elemen ||
+                              el.title ||
+                              el.nama ||
+                              `Elemen ${eIdx + 1}`,
+                          ),
+                          kriteriaUnjukKerja: kukList,
+                          urutan: Number(el.urutan || eIdx + 1),
+                          isWajib: el.isWajib !== false,
+                        };
+                      });
 
                       return {
-                        id: Number(el.id || eIdx + 1),
-                        namaElemen: String(
-                          el.namaElemen ||
-                          el.nama_elemen ||
-                          el.title ||
-                          el.nama ||
-                          `Elemen ${eIdx + 1}`,
+                        id: Number(u.id || uIdx + 1),
+                        kodeUnit: String(
+                          u.kodeUnit ||
+                            u.kode_unit ||
+                            u.code ||
+                            u.kode ||
+                            "-",
                         ),
-                        kriteriaUnjukKerja: kukList,
-                        urutan: Number(el.urutan || eIdx + 1),
-                        isWajib: el.isWajib !== false,
+                        judulUnit: String(
+                          u.judulUnit ||
+                            u.judul_unit ||
+                            u.title ||
+                            u.judul ||
+                            "-",
+                        ),
+                        urutan: Number(u.urutan || uIdx + 1),
+                        elemen,
                       };
-                    });
-
-                    return {
-                      id: Number(u.id || uIdx + 1),
-                      kodeUnit: String(
-                        u.kodeUnit ||
-                        u.kode_unit ||
-                        u.code ||
-                        u.kode ||
-                        "-",
-                      ),
-                      judulUnit: String(
-                        u.judulUnit ||
-                        u.judul_unit ||
-                        u.title ||
-                        u.judul ||
-                        "-",
-                      ),
-                      urutan: Number(u.urutan || uIdx + 1),
-                      elemen,
-                    };
-                  })
+                    })
                   : (localMatch?.units || []).map((u, uIdx) => ({
-                    id: uIdx + 1,
-                    kodeUnit: u.code || u.kode || "-",
-                    judulUnit: u.title || u.judul || "-",
-                    urutan: uIdx + 1,
-                    elemen: (u.elemen || []).map((el, eIdx) => ({
-                      id: eIdx + 1,
-                      namaElemen: el.title || el.nama || `Elemen ${eIdx + 1}`,
-                      kriteriaUnjukKerja: el.kuk || [],
-                      urutan: eIdx + 1,
-                      isWajib: true,
-                    })),
-                  }));
+                      id: uIdx + 1,
+                      kodeUnit: u.code || u.kode || "-",
+                      judulUnit: u.title || u.judul || "-",
+                      urutan: uIdx + 1,
+                      elemen: (u.elemen || []).map((el, eIdx) => ({
+                        id: eIdx + 1,
+                        namaElemen: el.title || el.nama || `Elemen ${eIdx + 1}`,
+                        kriteriaUnjukKerja: el.kuk || [],
+                        urutan: eIdx + 1,
+                        isWajib: true,
+                      })),
+                    }));
 
-              // 2. PERSYARATAN DASAR
               const rawPersyaratanDasar = Array.isArray(skema.persyaratanDasar)
                 ? (skema.persyaratanDasar as Array<Record<string, unknown>>)
                 : [];
               const persyaratanDasar: PersyaratanDasar[] =
                 rawPersyaratanDasar.length > 0
                   ? rawPersyaratanDasar.map((p, idx) => ({
-                    id: Number(p.id || idx + 1),
-                    namaDokumen: String(
-                      p.namaDokumen || p.name || p.nama || "Dokumen",
-                    ),
-                    deskripsi: p.deskripsi
-                      ? String(p.deskripsi)
-                      : p.description
-                        ? String(p.description)
-                        : "",
-                    urutan: Number(p.urutan || idx + 1),
-                    is_wajib: p.isWajib !== false,
-                  }))
+                      id: Number(p.id || idx + 1),
+                      namaDokumen: String(
+                        p.namaDokumen || p.name || p.nama || "Dokumen",
+                      ),
+                      deskripsi: p.deskripsi
+                        ? String(p.deskripsi)
+                        : p.description
+                          ? String(p.description)
+                          : "",
+                      urutan: Number(p.urutan || idx + 1),
+                      is_wajib: p.isWajib !== false,
+                    }))
                   : (localMatch?.persyaratanDasar || []).map((p, idx) => ({
-                    id: idx + 1,
-                    namaDokumen: p.name || p.namaDokumen || "Dokumen",
-                    deskripsi: p.description || p.deskripsi || "",
-                    urutan: idx + 1,
-                    is_wajib: true,
-                  }));
+                      id: idx + 1,
+                      namaDokumen: p.name || p.namaDokumen || "Dokumen",
+                      deskripsi: p.description || p.deskripsi || "",
+                      urutan: idx + 1,
+                      is_wajib: true,
+                    }));
 
-              // 3. BUKTI ADMINISTRATIF
               const rawAdm = Array.isArray(skema.master_bukti_administratif)
                 ? (skema.master_bukti_administratif as Array<
-                  Record<string, unknown>
-                >)
-                : Array.isArray(skema.persyaratanAdministrasi)
-                  ? (skema.persyaratanAdministrasi as Array<
                     Record<string, unknown>
                   >)
+                : Array.isArray(skema.persyaratanAdministrasi)
+                  ? (skema.persyaratanAdministrasi as Array<
+                      Record<string, unknown>
+                    >)
                   : [];
 
               const defaultBuktiAdm = [
@@ -598,26 +602,26 @@ export default function PengajuanSkemaPage() {
               const persyaratanAdministrasi: PersyaratanAdministrasi[] =
                 rawAdm.length > 0
                   ? rawAdm.map((a, idx) => ({
-                    id: Number(a.id || idx + 1),
-                    namaDokumen: String(
-                      a.namaDokumen || a.name || a.nama || "Dokumen",
-                    ),
-                    deskripsi: a.deskripsi ? String(a.deskripsi) : "",
-                    isWajib: a.isWajib !== false,
-                    isAktif: a.isAktif !== false,
-                  }))
-                  : localMatch?.buktiAdministratif &&
-                    localMatch.buktiAdministratif.length > 0
-                    ? localMatch.buktiAdministratif.map((item, idx) => ({
-                      id: idx + 1,
-                      namaDokumen:
-                        typeof item === "string"
-                          ? item
-                          : item.namaDokumen || item.name || "Dokumen",
-                      deskripsi: "",
-                      isWajib: true,
-                      isAktif: true,
+                      id: Number(a.id || idx + 1),
+                      namaDokumen: String(
+                        a.namaDokumen || a.name || a.nama || "Dokumen",
+                      ),
+                      deskripsi: a.deskripsi ? String(a.deskripsi) : "",
+                      isWajib: a.isWajib !== false,
+                      isAktif: a.isAktif !== false,
                     }))
+                  : localMatch?.buktiAdministratif &&
+                      localMatch.buktiAdministratif.length > 0
+                    ? localMatch.buktiAdministratif.map((item, idx) => ({
+                        id: idx + 1,
+                        namaDokumen:
+                          typeof item === "string"
+                            ? item
+                            : item.namaDokumen || item.name || "Dokumen",
+                        deskripsi: "",
+                        isWajib: true,
+                        isAktif: true,
+                      }))
                     : defaultBuktiAdm;
 
               return {
@@ -634,7 +638,6 @@ export default function PengajuanSkemaPage() {
             },
           );
 
-          console.log("MAPPED SCHEMES:", mappedSchemes);
           setSchemesData(mappedSchemes);
         }
       } catch (error) {
@@ -787,7 +790,6 @@ export default function PengajuanSkemaPage() {
     try {
       showNotification("Mengunggah dokumen dan memproses pengajuan...", "success");
 
-      // Tipe eksplisit agar bebas dari omelan implicit any
       const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> =
         [];
 
@@ -964,20 +966,18 @@ export default function PengajuanSkemaPage() {
   const totalSchemePages =
     Math.ceil(filteredSchemes.length / itemsPerPage) || 1;
 
-  // Pemetaan yang rapi dan Type-Safe tanpa 'any'
   const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme
     ? {
-      ...selectedScheme,
-      nama: selectedScheme.nama,
-      units: selectedScheme.unitKompetensi,
-      persyaratanDasar: selectedScheme.persyaratanDasar,
-      buktiAdministratif: selectedScheme.persyaratanAdministrasi,
-    }
+        ...selectedScheme,
+        nama: selectedScheme.nama,
+        units: selectedScheme.unitKompetensi,
+        persyaratanDasar: selectedScheme.persyaratanDasar,
+        buktiAdministratif: selectedScheme.persyaratanAdministrasi,
+      }
     : undefined;
 
   return (
     <>
-
       {/* VIEW 1: LIST SUBMISSIONS */}
       {subView === "list" && !activeModalDoc && (
         <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
@@ -1044,11 +1044,11 @@ export default function PengajuanSkemaPage() {
                       className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10 outline-none text-gray-700 cursor-pointer font-bold"
                     >
                       <option value="Semua">Semua Status</option>
-                      <option value="Menunggu Verifikasi">
-                        Menunggu Verifikasi
-                      </option>
-                      <option value="Disetujui">Disetujui</option>
-                      <option value="Ditolak">Ditolak</option>
+                      <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                      <option value="Terverifikasi">Terverifikasi</option>
+                      <option value="Terjadwal">Terjadwal</option>
+                      <option value="Revisi">Revisi</option>
+                      <option value="Selesai">Selesai</option>
                     </select>
 
                     <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10 w-full sm:w-48 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
@@ -1094,6 +1094,9 @@ export default function PengajuanSkemaPage() {
                         <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                           Virtual Meeting
                         </th>
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                          Status Pembayaran
+                        </th>
                         <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
                           Status
                         </th>
@@ -1105,7 +1108,7 @@ export default function PengajuanSkemaPage() {
                     <tbody className="divide-y divide-gray-100/60 font-medium">
                       {isLoadingSubmissions ? (
                         <tr>
-                          <td colSpan={5} className="px-6 py-12 text-center">
+                          <td colSpan={11} className="px-6 py-12 text-center">
                             <div className="flex flex-col items-center justify-center gap-3 text-slate-500">
                               <div className="w-6 h-6 rounded-full border-2 border-[#008BE3] border-t-transparent animate-spin"></div>
                               <span className="font-bold text-sm">
@@ -1122,12 +1125,13 @@ export default function PengajuanSkemaPage() {
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                  : idx % 3 === 1
-                                    ? "bg-[#84CC16]/10 text-[#73B412]"
-                                    : "bg-slate-100 text-slate-600"
-                                  }`}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                    : idx % 3 === 1
+                                      ? "bg-[#84CC16]/10 text-[#73B412]"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
                               >
                                 {idx + 1}
                               </div>
@@ -1146,15 +1150,16 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="px-6 py-4">
                               <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${(item.tipeTuk || "").includes("Sewaktu")
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                  (item.tipeTuk || "").includes("Sewaktu")
                                     ? "bg-blue-50 text-blue-700 border-blue-200"
                                     : (item.tipeTuk || "").includes("Tempat Kerja")
                                       ? "bg-purple-50 text-purple-700 border-purple-200"
                                       : (item.tipeTuk || "").includes("Virtual") ||
-                                        (item.tipeTuk || "").includes("Online")
+                                          (item.tipeTuk || "").includes("Online")
                                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                         : "bg-orange-50 text-orange-700 border-orange-200"
-                                  }`}
+                                }`}
                               >
                                 {item.tipeTuk || "-"}
                               </span>
@@ -1206,30 +1211,48 @@ export default function PengajuanSkemaPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                              {item.status === "Disetujui" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-                                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                                  Disetujui
+                              {item.statusPembayaran === "Sudah Bayar" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                  Sudah Bayar
                                 </span>
-                              ) : item.status.toUpperCase() === "TERJADWAL" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-                                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                                  Terjadwal
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                                  Belum Bayar
                                 </span>
-                              ) : item.status === "Menunggu Verifikasi" ? (
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                              {item.status?.toLowerCase() === "menunggu verifikasi" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
                                   Menunggu Verifikasi
                                 </span>
-                              ) : item.status === "Ditolak" ? (
+                              ) : item.status?.toLowerCase() === "terverifikasi" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                  Terverifikasi
+                                </span>
+                              ) : item.status?.toLowerCase() === "terjadwal" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                  Terjadwal
+                                </span>
+                              ) : item.status?.toLowerCase() === "revisi" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                                  Ditolak
+                                  Revisi
+                                </span>
+                              ) : item.status?.toLowerCase() === "selesai" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                  Selesai
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                                  {item.status}
+                                  {item.status || "Tidak Diketahui"}
                                 </span>
                               )}
                             </td>
@@ -1276,28 +1299,9 @@ export default function PengajuanSkemaPage() {
                                 </button>
                                 {item.status?.toLowerCase().includes("menunggu") && (
                                   <button
-                                    onClick={async (e) => {
+                                    onClick={(e) => {
                                       e.stopPropagation();
-                                      if (
-                                        window.confirm(
-                                          `Apakah Anda yakin ingin membatalkan pengajuan ${item.name}?`,
-                                        )
-                                      ) {
-                                        try {
-                                          await deletePengajuan(item.id);
-                                          showNotification(
-                                            "Pengajuan berhasil dibatalkan",
-                                            "success",
-                                          );
-                                          await fetchSubmissions();
-                                        } catch (err: unknown) {
-                                          const msg =
-                                            err instanceof Error
-                                              ? err.message
-                                              : "Gagal membatalkan pengajuan";
-                                          showNotification(msg, "error");
-                                        }
-                                      }
+                                      setCancelItemId(item.id);
                                     }}
                                     className="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
                                     title="Batalkan Pengajuan"
@@ -1305,7 +1309,6 @@ export default function PengajuanSkemaPage() {
                                     Batal
                                   </button>
                                 )}
-                                {/* Tombol Edit APL 02 khusus jika status mengandung kata "Revisi" */}
                                 {item.status?.toLowerCase().includes("revisi") && (
                                   <button
                                     onClick={(e) => {
@@ -1334,7 +1337,7 @@ export default function PengajuanSkemaPage() {
                       ) : (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={11}
                             className="px-6 py-8 text-center text-gray-500 font-medium"
                           >
                             Belum ada permohonan sertifikasi.
@@ -1370,10 +1373,11 @@ export default function PengajuanSkemaPage() {
                         <button
                           key={page}
                           onClick={() => setSubPage(page)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${subPage === page
-                            ? "bg-[#008BE3] text-white border border-[#008BE3]"
-                            : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                            }`}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                            subPage === page
+                              ? "bg-[#008BE3] text-white border border-[#008BE3]"
+                              : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
+                          }`}
                         >
                           {page}
                         </button>
@@ -1497,7 +1501,6 @@ export default function PengajuanSkemaPage() {
                               Provinsi & Kota
                             </td>
                             <td className="p-3">
-                              {/* Menggabungkan kota dan provinsi secara dinamis */}
                               {[
                                 selectedDetailSubmission.kota,
                                 selectedDetailSubmission.provinsi,
@@ -1647,7 +1650,6 @@ export default function PengajuanSkemaPage() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Formulir Resmi */}
                         <div className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between group shadow-sm bg-white">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex gap-3">
@@ -1700,7 +1702,6 @@ export default function PengajuanSkemaPage() {
                           </div>
                         </div>
 
-                        {/* Dokumen Lampiran Tambahan dari Backend Database */}
                         {selectedDetailSubmission.dokumenList &&
                           selectedDetailSubmission.dokumenList.map((dok) => (
                             <div
@@ -1844,12 +1845,13 @@ export default function PengajuanSkemaPage() {
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                  : idx % 3 === 1
-                                    ? "bg-[#84CC16]/10 text-[#73B412]"
-                                    : "bg-slate-100 text-slate-600"
-                                  }`}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                    : idx % 3 === 1
+                                      ? "bg-[#84CC16]/10 text-[#73B412]"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
                               >
                                 {idx + 1}
                               </div>
@@ -1958,10 +1960,11 @@ export default function PengajuanSkemaPage() {
                   <button
                     key={idx}
                     onClick={() => setSchemePage(idx + 1)}
-                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${schemePage === idx + 1
-                      ? "bg-[#008BE3] text-white"
-                      : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
-                      }`}
+                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${
+                      schemePage === idx + 1
+                        ? "bg-[#008BE3] text-white"
+                        : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
+                    }`}
                   >
                     {idx + 1}
                   </button>
@@ -2094,9 +2097,9 @@ export default function PengajuanSkemaPage() {
                               const fileVal = key ? eFormData[key] : null;
                               return Boolean(
                                 fileVal &&
-                                (Array.isArray(fileVal)
-                                  ? fileVal.length > 0
-                                  : true),
+                                  (Array.isArray(fileVal)
+                                    ? fileVal.length > 0
+                                    : true),
                               );
                             });
                           if (!valid) {
@@ -2121,9 +2124,9 @@ export default function PengajuanSkemaPage() {
                                 const fileVal = key ? eFormData[key] : null;
                                 return Boolean(
                                   fileVal &&
-                                  (Array.isArray(fileVal)
-                                    ? fileVal.length > 0
-                                    : true),
+                                    (Array.isArray(fileVal)
+                                      ? fileVal.length > 0
+                                      : true),
                                 );
                               });
                             if (!admValid) {
@@ -2145,9 +2148,9 @@ export default function PengajuanSkemaPage() {
                               const fileVal = key ? eFormData[key] : null;
                               return Boolean(
                                 fileVal &&
-                                (Array.isArray(fileVal)
-                                  ? fileVal.length > 0
-                                  : true),
+                                  (Array.isArray(fileVal)
+                                    ? fileVal.length > 0
+                                    : true),
                               );
                             });
                           if (!valid) {
@@ -2164,10 +2167,11 @@ export default function PengajuanSkemaPage() {
                           setStep(tabStep);
                         }
                       }}
-                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${isActive
-                        ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
-                        : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
-                        }`}
+                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
+                        isActive
+                          ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
+                          : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
+                      }`}
                     >
                       {tabLabel}
                     </button>
@@ -2208,7 +2212,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.tempatLahir)
                           setErrors({ ...errors, tempatLahir: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.tempatLahir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.tempatLahir
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.tempatLahir ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2232,7 +2240,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.tanggalLahir)
                           setErrors({ ...errors, tanggalLahir: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${errors.tanggalLahir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${
+                        errors.tanggalLahir
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.tanggalLahir && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2245,7 +2257,11 @@ export default function PengajuanSkemaPage() {
                       <span className="text-red-500">*</span> Jenis Kelamin
                     </label>
                     <div
-                      className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${errors.jenisKelamin ? "border-red-400 bg-red-50/10" : "border-transparent"}`}
+                      className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${
+                        errors.jenisKelamin
+                          ? "border-red-400 bg-red-50/10"
+                          : "border-transparent"
+                      }`}
                     >
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
                         <input
@@ -2296,7 +2312,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.provinsi)
                           setErrors({ ...errors, provinsi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"} cursor-pointer`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.provinsi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      } cursor-pointer`}
                     >
                       <option value="">Pilih Provinsi</option>
                       {provinsis.map((prov) => (
@@ -2322,7 +2342,15 @@ export default function PengajuanSkemaPage() {
                         if (errors.kota) setErrors({ ...errors, kota: false });
                       }}
                       disabled={!provinsi}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${!provinsi ? "bg-slate-100 cursor-not-allowed" : "bg-white cursor-pointer"} ${errors.kota ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        !provinsi
+                          ? "bg-slate-100 cursor-not-allowed"
+                          : "bg-white cursor-pointer"
+                      } ${
+                        errors.kota
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     >
                       <option value="">Pilih Kota/Kabupaten</option>
                       {kotas
@@ -2355,10 +2383,11 @@ export default function PengajuanSkemaPage() {
                         setErrors({ ...errors, alamat: false });
                     }}
                     placeholder="Masukkan alamat lengkap"
-                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.alamat
-                      ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                      : "border-slate-300 focus:border-[#008BE3] bg-white"
-                      }`}
+                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                      errors.alamat
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
+                    }`}
                   />
                   {errors.alamat && (
                     <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2379,7 +2408,11 @@ export default function PengajuanSkemaPage() {
                         setNik(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.nik) setErrors({ ...errors, nik: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.nik ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.nik
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.nik ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2416,7 +2449,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.kodePos)
                           setErrors({ ...errors, kodePos: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kodePos ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3]"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.kodePos
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.kodePos ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2440,7 +2477,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.noTelp)
                           setErrors({ ...errors, noTelp: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.noTelp ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.noTelp
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.noTelp && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2471,7 +2512,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.pendidikanTerakhir)
                           setErrors({ ...errors, pendidikanTerakhir: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pendidikanTerakhir ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.pendidikanTerakhir
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Pendidikan
@@ -2510,7 +2555,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.pekerjaan)
                           setErrors({ ...errors, pekerjaan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pekerjaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.pekerjaan
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Pekerjaan
@@ -2539,7 +2588,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.institusiPerusahaan)
                           setErrors({ ...errors, institusiPerusahaan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.institusiPerusahaan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.institusiPerusahaan
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Institusi/Perusahaan
@@ -2568,7 +2621,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.jabatan)
                           setErrors({ ...errors, jabatan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.jabatan ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.jabatan
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.jabatan && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2589,7 +2646,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.emailInstitusi)
                           setErrors({ ...errors, emailInstitusi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.emailInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.emailInstitusi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.emailInstitusi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2625,7 +2686,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.telpInstitusi)
                           setErrors({ ...errors, telpInstitusi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.telpInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.telpInstitusi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.telpInstitusi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2645,7 +2710,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.alamatInstitusi)
                           setErrors({ ...errors, alamatInstitusi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${errors.alamatInstitusi ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${
+                        errors.alamatInstitusi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.alamatInstitusi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2688,7 +2757,11 @@ export default function PengajuanSkemaPage() {
                         setTuk(e.target.value);
                         if (errors.tuk) setErrors({ ...errors, tuk: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.tuk
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih TUK
@@ -2716,7 +2789,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.metode)
                           setErrors({ ...errors, metode: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.metode ? "border-red-400 bg-red-50/10 focus:border-red-500" : "border-slate-300 focus:border-[#008BE3] bg-white"}`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.metode
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Metode
@@ -2758,10 +2835,14 @@ export default function PengajuanSkemaPage() {
                     <button
                       type="button"
                       onClick={() => setBerpengalaman(!berpengalaman)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${berpengalaman ? "bg-[#005C46]" : "bg-slate-200"}`}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        berpengalaman ? "bg-[#005C46]" : "bg-slate-200"
+                      }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${berpengalaman ? "translate-x-5" : "translate-x-0"}`}
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                          berpengalaman ? "translate-x-5" : "translate-x-0"
+                        }`}
                       />
                     </button>
                   </div>
@@ -2888,22 +2969,22 @@ export default function PengajuanSkemaPage() {
 
                 {(!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                   !eFormData["02. FR.APL.02 Asesmen Mandiri"]) && (
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
-                      <AlertTriangle
-                        size={16}
-                        className="shrink-0 text-amber-500 mt-0.5"
-                      />
-                      <div className="min-w-0">
-                        <span className="font-bold block mb-1">Perhatian</span>
-                        Anda harus mengisi dan menyimpan (
-                        <span className="font-semibold text-amber-900">
-                          Simpan Data
-                        </span>
-                        ) kedua E-Form di atas sebelum dapat men-submit pengajuan
-                        skema ini.
-                      </div>
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
+                    <AlertTriangle
+                      size={16}
+                      className="shrink-0 text-amber-500 mt-0.5"
+                    />
+                    <div className="min-w-0">
+                      <span className="font-bold block mb-1">Perhatian</span>
+                      Anda harus mengisi dan menyimpan (
+                      <span className="font-semibold text-amber-900">
+                        Simpan Data
+                      </span>
+                      ) kedua E-Form di atas sebelum dapat men-submit pengajuan
+                      skema ini.
                     </div>
-                  )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -2915,12 +2996,13 @@ export default function PengajuanSkemaPage() {
                   (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
                 }
-                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${step === 5 &&
+                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${
+                  step === 5 &&
                   (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
-                  ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                  : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
-                  }`}
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
+                }`}
               >
                 {step === 5 ? "Ajukan" : "Selanjutnya"}
                 <ArrowRight size={14} />
@@ -3032,7 +3114,6 @@ export default function PengajuanSkemaPage() {
                       }
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
-                      // K/BK is filled by Admin/Assessor. Signature is auto from profile. No Asesi validation needed.
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     }
                     const key = String(activeModalDoc?.name ?? "");
@@ -3299,7 +3380,7 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 6: EXIT WARNING MODAL */}
       {showExitWarning && (
-        <div className="fixed inset-0 z-200 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <h3 className="font-black text-slate-800 text-lg">Peringatan</h3>
@@ -3332,6 +3413,53 @@ export default function PengajuanSkemaPage() {
                 className="px-4 py-2 font-bold text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors cursor-pointer"
               >
                 Ya, Kembali
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 7: CANCEL WARNING MODAL (NEW) */}
+      {cancelItemId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="font-black text-slate-800 text-lg">Peringatan</h3>
+              <button
+                onClick={() => setCancelItemId(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-5 flex flex-col items-center justify-center text-center bg-white">
+              <AlertTriangle size={48} className="text-orange-500 mb-4" />
+              <p className="text-slate-600 font-medium">
+                Apakah Anda yakin ingin membatalkan pengajuan ini? Data tidak dapat dikembalikan.
+              </p>
+            </div>
+            <div className="p-5 border-t border-slate-100 flex justify-end gap-3 bg-gray-50">
+              <button
+                onClick={() => setCancelItemId(null)}
+                className="px-4 py-2 font-bold text-sm text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Kembali
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await deletePengajuan(cancelItemId);
+                    showNotification("Pengajuan berhasil dibatalkan", "success");
+                    setCancelItemId(null);
+                    await fetchSubmissions();
+                  } catch (err: unknown) {
+                    const msg = err instanceof Error ? err.message : "Gagal membatalkan pengajuan";
+                    showNotification(msg, "error");
+                  }
+                }}
+                className="px-4 py-2 font-bold text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+              >
+                Ya, Batalkan
               </button>
             </div>
           </div>

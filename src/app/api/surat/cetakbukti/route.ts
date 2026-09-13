@@ -34,32 +34,39 @@ export async function GET(req: NextRequest) {
       logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
     }
 
-    const htmlContent = `
+const htmlContent = `
       <!DOCTYPE html>
       <html lang="id">
       <head>
         <meta charset="UTF-8">
         <title>Bukti Pendaftaran Sertifikasi</title>
         <style>
-          body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 40px; color: #333; }
+          /* Set font 12px dan spasi 1.5 */
+          body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 40px; color: #333; font-size: 12px; line-height: 1.5; }
           .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
           .header img { max-width: 100px; margin-bottom: 10px; }
-          .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
-          .header h2 { margin: 5px 0 0 0; font-size: 16px; font-weight: normal; }
-          .content { line-height: 1.6; }
-          .title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 30px; text-decoration: underline; }
+          .header h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
+          .header h2 { margin: 5px 0 0 0; font-size: 14px; font-weight: normal; }
+          .content { line-height: 1.5; }
+          .title { text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 30px; text-decoration: underline; }
+          
+          /* Baris Data */
           .row { display: flex; margin-bottom: 10px; }
           .label { width: 200px; font-weight: bold; }
           .value { flex: 1; }
-          .footer { margin-top: 50px; text-align: right; }
-          .signature-box { display: inline-block; text-align: center; width: 250px; margin-top: 20px; }
+          
+          h3 { font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+
+          /* Perbaikan Tanda Tangan Anti-Offside */
+          .signature-container { display: flex; justify-content: flex-end; margin-top: 50px; page-break-inside: avoid; break-inside: avoid; width: 100%; }
+          .signature-box { text-align: center; width: 250px; }
           .signature-box .name { font-weight: bold; text-decoration: underline; margin-top: 60px; }
         </style>
       </head>
       <body>
         <div class="header">
           ${logoBase64 ? `<img src="${logoBase64}" alt="Logo LSP" />` : ""}
-          <h1>LSP UIN SUNAN GUNUNG DJATI BANDUNG</h1>
+          <h1>LSP P1 UIN SUNAN GUNUNG DJATI</h1>
           <h2>Jl. A.H. Nasution No. 105, Cibiru, Bandung Raya</h2>
         </div>
         <div class="content">
@@ -105,10 +112,11 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        <div class="footer">
-          <div>Bandung, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        <!-- Pembungkus Tanda Tangan -->
+        <div class="signature-container">
           <div class="signature-box">
-            <div>Asesi,</div>
+            <div>Bandung, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            <div style="margin-top: 5px;">Asesi,</div>
             <div class="name">${pengajuan.dataPribadi?.namaLengkap || pengajuan.user?.username || '_______________________'}</div>
           </div>
         </div>
