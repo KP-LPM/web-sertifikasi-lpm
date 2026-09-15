@@ -38,6 +38,15 @@ export class TukRepository {
         kapasitas: data.kapasitas ?? null,
         penanggung_jawab: data.penanggung_jawab ?? null,
         status: data.status || "Aktif",
+        master_tuk_inventaris:
+          data.inventaris && data.inventaris.length > 0
+            ? {
+                create: data.inventaris.map((i) => ({
+                  nama: i.nama,
+                  jumlah: i.jumlah,
+                })),
+              }
+            : undefined,
       },
     });
   }
@@ -55,6 +64,15 @@ export class TukRepository {
           penanggung_jawab: data.penanggung_jawab,
         }),
         ...(data.status !== undefined && { status: data.status }),
+        ...(data.inventaris !== undefined && {
+          master_tuk_inventaris: {
+            deleteMany: {},
+            create: data.inventaris.map((i) => ({
+              nama: i.nama,
+              jumlah: i.jumlah,
+            })),
+          },
+        }),
       },
     });
   }

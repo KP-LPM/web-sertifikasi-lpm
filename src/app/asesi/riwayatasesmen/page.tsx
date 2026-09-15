@@ -49,7 +49,7 @@ export default function AsesiHistoryPage() {
       if (Array.isArray(data)) {
         interface RawPengajuan {
           id: number;
-          jenisAsesmen?: string;
+          jenisMetode?: string;
           tuk?: string;
           status?: string;
           createdAt?: string | Date;
@@ -115,7 +115,7 @@ export default function AsesiHistoryPage() {
 
           return {
             id: item.id,
-            asesmen: item.jenisAsesmen || "Uji Kompetensi",
+            asesmen: item.jenisMetode || "Offline",
             skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
             tipeTuk,
             alamat,

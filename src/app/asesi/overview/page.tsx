@@ -83,7 +83,7 @@ export default function AsesiOverviewPage() {
       if (Array.isArray(data)) {
         interface RawPengajuan {
           id: number;
-          jenisAsesmen?: string;
+          jenisMetode?: string;
           tuk?: string;
           status?: string;
           tglPengajuan?: string | Date;
@@ -139,7 +139,7 @@ export default function AsesiOverviewPage() {
 
             return {
               id: item.id,
-              asesmen: item.jenisAsesmen || "Uji Kompetensi",
+              asesmen: item.jenisMetode || "Offline",
               skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
               tipeTuk,
               alamat,
@@ -643,7 +643,7 @@ export default function AsesiOverviewPage() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => {
-                            if (item.statusAsesmen === "Terjadwal") {
+                            if (item.statusAsesmen === "Terjadwal" && item.asesmen === "Online") {
                               router.push(
                                 `/asesi/ujian?pengajuanId=${item.id}`,
                               );
@@ -652,12 +652,12 @@ export default function AsesiOverviewPage() {
                             }
                           }}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${
-                            item.statusAsesmen === "Terjadwal"
+                            item.statusAsesmen === "Terjadwal" && item.asesmen === "Online"
                               ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
                               : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
                           }`}
                         >
-                          {item.statusAsesmen === "Terjadwal" ? (
+                          {item.statusAsesmen === "Terjadwal" && item.asesmen === "Online" ? (
                             <>
                               <FileEdit size={14} /> Mulai Ujian
                             </>

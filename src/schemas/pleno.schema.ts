@@ -1,23 +1,14 @@
 import { z } from "zod";
 
 export const CreatePlenoSchema = z.object({
-  batch_code: z.string().optional().nullable(),
   title: z.string().optional().nullable(),
-  no_sk: z.string().optional().nullable(),
-  tanggal: z.coerce.date().optional().nullable(),
-  waktu: z.coerce.date().optional().nullable(),
+  tanggal: z.string().optional().nullable(),
   alamat: z.string().optional().nullable(),
-  detail_alamat: z.string().optional().nullable(),
-  deskripsi: z.string().optional().nullable(),
-  status: z.string().default("Belum"),
-  // Array ID Skema untuk relasi pleno_batch_skema
+  status: z.string().default("Terjadwal"),
   skema_ids: z.array(z.number().int()).default([]),
 });
 
 export const UpdatePlenoSchema = CreatePlenoSchema.partial().extend({
-  surat_pleno_name: z.string().optional().nullable(),
-  surat_pleno_url: z.string().optional().nullable(),
-  link_surat_hasil: z.string().optional().nullable(),
   link_surat_berita_pleno: z.string().optional().nullable(),
   link_surat_keputusan_direktur: z.string().optional().nullable(),
   link_surat_blanko_bnsp: z.string().optional().nullable(),

@@ -19,6 +19,7 @@ import {
   Sparkles,
   Printer,
   Loader2,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
@@ -28,7 +29,7 @@ import {
   PlenoDetailData,
   PlenoAttendee,
   Role,
-  PlenoSchedule,
+  AssessmentItem,
 } from "@/types/types";
 import {
   getJadwalList,
@@ -39,37 +40,15 @@ import {
   getTukList,
   getAllUsers,
   getPengajuanList,
+  downloadSuratTugas,
+  addPesertaJadwal,
+  createPleno,
+  updatePleno,
+  addPlenoAsesi,
+  addPlenoAttendee,
 } from "@/lib/api";
 
-const TUK_LIST = [
-  { id: "GD-001", nama: "Gedung Al-Jamiah (Auditorium Utama)", kapasitas: 200 },
-  {
-    id: "GD-002",
-    nama: "Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik",
-    kapasitas: 50,
-  },
-  {
-    id: "GD-003",
-    nama: "Gedung D: Gedung Abjan Soelaiman (Auditorium)",
-    kapasitas: 150,
-  },
-  {
-    id: "GD-004",
-    nama: "Gedung Lab Komputer Fak. Sains & Teknologi",
-    kapasitas: 40,
-  },
-  { id: "GD-005", nama: "Gedung Pascasarjana Lantai 3", kapasitas: 60 },
-];
 
-const getTukRuangSpec = (tukValue?: string) => {
-  if (!tukValue) return "Gedung Al-Jamiah (Auditorium Utama)";
-  const found = TUK_LIST.find((t) => t.id === tukValue || t.nama === tukValue);
-  if (found) return found.nama;
-  if (tukValue === "1") return "Gedung Al-Jamiah (Auditorium Utama)";
-  if (tukValue === "2") return "Gedung Lab Komputer Fak. Sains & Teknologi";
-  if (tukValue === "3") return "Gedung Pascasarjana Lantai 3";
-  return tukValue;
-};
 
 const getDocumentPreviewUrl = (name?: string, url?: string) => {
   if (url && url.trim().length > 0) return url;
@@ -77,93 +56,14 @@ const getDocumentPreviewUrl = (name?: string, url?: string) => {
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" fill="none"><rect width="600" height="800" fill="white" rx="16"/><rect x="40" y="40" width="520" height="720" fill="%23F8FAFC" stroke="%23E2E8F0" stroke-width="2" rx="12"/><rect x="70" y="70" width="100" height="36" fill="%23008BE3" rx="6"/><text x="185" y="93" font-family="sans-serif" font-weight="bold" font-size="18" fill="%230F172A">SURAT KEPUTUSAN SIDANG PLENO</text><text x="185" y="115" font-family="sans-serif" font-size="13" fill="%2364748B">LSP SERTIFIKASI PROFESI INDONESIA</text><line x1="70" y1="135" x2="530" y2="135" stroke="%23008BE3" stroke-width="2"/><text x="70" y="180" font-family="sans-serif" font-weight="bold" font-size="15" fill="%231E293B">BERITA ACARA &amp; HASIL KEPUTUSAN SIDANG</text><text x="70" y="210" font-family="sans-serif" font-size="13" fill="%23008BE3">Lampiran Dokumen: ${safeName}</text><rect x="70" y="235" width="460" height="150" fill="%23F1F5F9" rx="8" stroke="%23CBD5E1"/><text x="90" y="270" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23334155">Detail Pengesahan Hasil Asesmen:</text><text x="90" y="300" font-family="sans-serif" font-size="12" fill="%23475569">1. Penetapan Keputusan Sertifikasi Asesi Terdaftar</text><text x="90" y="325" font-family="sans-serif" font-size="12" fill="%23475569">2. Verifikasi Berkas Rekam Jejak Asesmen Asesor</text><text x="90" y="350" font-family="sans-serif" font-size="12" fill="%23475569">3. Persetujuan dewan_pengarah dan komite_skema</text><rect x="70" y="415" width="460" height="1" fill="%23E2E8F0"/><text x="70" y="450" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23059669">STATUS DOKUMEN: RESMI, SAH &amp; TERVERIFIKASI</text><rect x="70" y="520" width="180" height="90" fill="%23F0F9FF" rx="8" stroke="%23008BE3"/><text x="85" y="555" font-family="sans-serif" font-weight="bold" font-size="12" fill="%23008BE3">LSP SERTIFIKASI PROFESI</text><text x="85" y="580" font-family="sans-serif" font-size="11" fill="%230284C7">[ CAP STAMPEL &amp; TTD ]</text><text x="340" y="555" font-family="sans-serif" font-size="11" fill="%2364748B">Ketua Komite Sidang Pleno</text><line x1="340" y1="590" x2="510" y2="590" stroke="%2394A3B8" stroke-dasharray="2 2"/></svg>`;
 };
 
-const ALL_PLENO_USERS = [
-  // Asesor
-  { id: "p-usr-1", nama: "Ichsan Taufik", role: "Asesor" },
-  { id: "p-usr-2", nama: "Aceng Abdul Kodir", role: "Asesor" },
-  { id: "p-usr-3", nama: "Susanti Ainul Fitri", role: "Asesor" },
-  { id: "p-usr-4", nama: "M Sandi Marta", role: "Asesor" },
-  { id: "p-usr-5", nama: "Gina Sakinah", role: "Asesor" },
-  { id: "p-usr-6", nama: "Elis Ratna Wulan", role: "Asesor" },
-  { id: "p-usr-7", nama: "Asep Abdul Sahid", role: "Asesor" },
-  { id: "p-usr-8", nama: "Siti Alia", role: "Asesor" },
-  { id: "p-usr-9", nama: "Azmi Fasa", role: "Asesor" },
-  { id: "p-usr-10", nama: "Cucu Susilawati", role: "Asesor" },
-  { id: "p-usr-11", nama: "Fitri Pebriani Wahyu", role: "Asesor" },
-  { id: "p-usr-12", nama: "Tina Dewi Rosahdi", role: "Asesor" },
-  { id: "p-usr-13", nama: "Ucu Julita", role: "Asesor" },
-  { id: "p-usr-14", nama: "Acep Muslim", role: "Asesor" },
-  {
-    id: "p-usr-15",
-    nama: "Izzah Faizah Siti Rusydati Khaerani",
-    role: "Asesor",
-  },
-  { id: "p-usr-16", nama: "Muhammad Alfan", role: "Asesor" },
-  { id: "p-usr-17", nama: "Erlan Aditya Ardiansyah", role: "Asesor" },
-  { id: "p-usr-18", nama: "Dian Rachmat Gumelar", role: "Asesor" },
-  { id: "p-usr-19", nama: "Reza Fauzi Nazar", role: "Asesor" },
-  { id: "p-usr-20", nama: "Rini Sulastri", role: "Asesor" },
-  { id: "p-usr-21", nama: "Yadi Mardiansyah", role: "Asesor" },
-  { id: "p-usr-22", nama: "Dayudin", role: "Asesor" },
-  { id: "p-usr-23", nama: "Wisnu Uriawan", role: "Asesor" },
-  { id: "p-usr-24", nama: "M. Ridha Taufiq Rahman", role: "Asesor" },
-
-  // Direktur
-  { id: "p-usr-25", nama: "Gitarja, S.T., M.T.", role: "Direktur" },
-
-  // dewan_pengarah
-  {
-    id: "p-usr-26",
-    nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
-    role: "dewan_pengarah",
-  },
-  {
-    id: "p-usr-27",
-    nama: "Prof. Dr. Ir. Hj. Endang Suhartini",
-    role: "dewan_pengarah",
-  },
-
-  // komite_skema
-  { id: "p-usr-28", nama: "Drs. Hendra Gunawan, M.Kom.", role: "komite_skema" },
-  { id: "p-usr-29", nama: "Rina Fitriani, S.Kom., M.T.", role: "komite_skema" },
-
-  // Manajer Administrasi dan Keuangan
-  {
-    id: "p-usr-30",
-    nama: "Ahmad Syahputra, S.E., M.M.",
-    role: "Manajer Administrasi dan Keuangan",
-  },
-
-  // Manajer Standardisasi
-  {
-    id: "p-usr-31",
-    nama: "Budi Santoso, S.T., M.Eng.",
-    role: "Manajer Standardisasi",
-  },
-
-  // Manajer Manajemen Mutu
-  {
-    id: "p-usr-32",
-    nama: "Dr. Hj. Nurhayati, M.Pd.",
-    role: "Manajer Manajemen Mutu",
-  },
-
-  // Manajer Sertifikasi
-  {
-    id: "p-usr-33",
-    nama: "Dedi Kurniawan, S.T., M.T.",
-    role: "Manajer Sertifikasi",
-  },
-];
-
 export default function AssessmentSchedule() {
   const {
     user,
     plenoSessions,
-    addPlenoSession,
     AssessmentItems,
     updatePlenoSession,
     deletePlenoSession,
+    showNotification,
   } = useAppContext();
   const isPlenoOnlyRole =
     user?.role === "direktur" ||
@@ -185,6 +85,7 @@ export default function AssessmentSchedule() {
   const [editId, setEditId] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [, setIsSubmitting] = useState(false);
 
   const handlePreviewAsesmen = (item: ScheduleItem) => {
     setIsPreviewMode(true);
@@ -193,61 +94,69 @@ export default function AssessmentSchedule() {
       namaBatch: item.namaBatch || "",
       nomorSurat: item.nomorSurat || "",
       skema: item.skema || "",
-      metode: item.metode || "Luring",
-      tipeTuk: item.tipeTuk,
-      tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
+      metode: item.metode || "Offline",
+      tipeTuk: item.tipeTuk || "Sewaktu",
+      tuk: item.tuk || "TUK Sewaktu Kantor LSP",
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
-      namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
-      suratPenugasanName: item.suratPenugasanName || "",
-      totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
+      namaAsesor: item.namaAsesor || "",
+      suratTugasUrl: item.suratTugasUrl || "",
+      totalKandidat: item.totalKandidat || 0,
       status: item.status || "Terjadwal",
     });
 
-    setSelectedAsesiForJadwal(item.asesiList || []);
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
 
   const handleDownloadSuratTugas = async (selectedSchedule: ScheduleItem) => {
     try {
+      const asesorInfo = availableAsesors.find(
+        (a) =>
+          a.profil?.namaLengkap === selectedSchedule.namaAsesor ||
+          a.username === selectedSchedule.namaAsesor,
+      );
+
+      const currentAsesiList = selectedSchedule.asesiList?.length
+        ? selectedSchedule.asesiList
+        : selectedAsesiForJadwal;
+      const direkturInfo = availableUsers.find(
+        (u) => u.role === "direktur" || u.role === "Direktur",
+      );
+      const namaDirektur =
+        direkturInfo?.profil?.namaLengkap ||
+        direkturInfo?.nama ||
+        direkturInfo?.username ||
+        "Direktur LSP";
+
       const payload = {
-        nomorSurat: selectedSchedule.nomorSurat,
-        namaAsesor: selectedSchedule.namaAsesor,
-        noRegMet: selectedSchedule.noRegMet,
-        bidangSkema: selectedSchedule.skema,
-        namaTuk: selectedSchedule.tuk,
-        alamatTuk: selectedSchedule.alamat,
-        hariTanggal: selectedSchedule.tanggal,
-        waktuMulai: selectedSchedule.waktuMulai,
-        jumlahPeserta: selectedSchedule.totalKandidat,
-        jumlahSkema: selectedSchedule.jumlahSkema,
-        namaAsesi: selectedSchedule.namaAsesor,
-        spesifikasiRuangTuk: selectedSchedule.tuk,
-        kegiatanPengujian: "witness",
-        kotaSurat: selectedSchedule.kota,
-        tanggalSurat: selectedSchedule.tanggal,
-        namaDirektur: selectedSchedule.namaDirektur,
+        nomorSurat: selectedSchedule.nomorSurat || "-",
+        namaAsesor: selectedSchedule.namaAsesor || "-",
+        noRegMet: asesorInfo?.profil?.nomorRegistrasiMet || "-",
+        bidangSkema: selectedSchedule.skema || "-",
+        namaTuk: selectedSchedule.tipeTuk || "-",
+        alamatTuk: selectedSchedule.alamat || "-",
+        hariTanggal: selectedSchedule.tanggal || "-",
+        jam: selectedSchedule.waktuMulai || "-",
+        jumlahPeserta:
+          currentAsesiList?.length || selectedSchedule.totalKandidat || 0,
+        jumlahSkema: 1,
+        namaAsesi:
+          currentAsesiList
+            ?.map((asesiId) => {
+              const asesiData = AssessmentItems?.find((a) => a.id === asesiId);
+              return asesiData?.nama || asesiId;
+            })
+            .join(", ") || "-",
+        spesifikasiRuangTuk: selectedSchedule.tuk || "-",
+        kegiatanPengujian: "Uji Kompetensi",
+        kotaSurat: "Bandung",
+        tanggalSurat: selectedSchedule.tanggal || "-",
+        namaDirektur: namaDirektur,
       };
 
-      const res = await fetch("/api/surat/penugasanassessor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error("Gagal mendownload Surat Tugas");
-
-      const blob = await res.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = `Surat_Tugas_${payload.namaAsesor}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+      await downloadSuratTugas(payload);
     } catch (err) {
       console.error(err);
     }
@@ -260,19 +169,17 @@ export default function AssessmentSchedule() {
       namaBatch: item.namaBatch || "",
       nomorSurat: item.nomorSurat || "",
       skema: item.skema || "",
-      metode: item.metode || "Luring",
-      tipeTuk: item.tipeTuk,
-      tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
+      metode: item.metode || "Offline",
+      tipeTuk: item.tipeTuk || "Sewaktu",
+      tuk: item.tuk || "TUK Sewaktu Kantor LSP",
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
-      namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
-      suratPenugasanName: item.suratPenugasanName || "",
-      totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
+      namaAsesor: item.namaAsesor || "",
+      suratTugasUrl: item.suratTugasUrl || "",
+      totalKandidat: item.totalKandidat || 0,
       status: item.status || "Terjadwal",
     });
-
-    setSelectedAsesiForJadwal(item.asesiList || []);
 
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
@@ -345,21 +252,21 @@ export default function AssessmentSchedule() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const formattanggal = (tanggalStr: string) => {
-    if (!tanggalStr) return "-";
-    try {
-      const date = new Date(tanggalStr); // Gunakan D kapital
-      if (isNaN(date.getTime())) return tanggalStr;
-      return new Intl.DateTimeFormat("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(date);
-    } catch {
-      return tanggalStr;
-    }
-  };
+  // const formattanggal = (tanggalStr: string) => {
+  //   if (!tanggalStr) return "-";
+  //   try {
+  //     const date = new Date(tanggalStr); // Gunakan D kapital
+  //     if (isNaN(date.getTime())) return tanggalStr;
+  //     return new Intl.DateTimeFormat("id-ID", {
+  //       weekday: "long",
+  //       day: "numeric",
+  //       month: "long",
+  //       year: "numeric",
+  //     }).format(date);
+  //   } catch {
+  //     return tanggalStr;
+  //   }
+  // };
 
   // Asesmen Interfaces & State
   interface BackendPesertaJadwal {
@@ -370,7 +277,6 @@ export default function AssessmentSchedule() {
   interface BackendJadwalItem {
     id: number;
     nama_batch?: string;
-    kode_batch?: string;
     nomor_surat?: string;
     metode?: string;
     tanggal?: string | Date;
@@ -378,10 +284,10 @@ export default function AssessmentSchedule() {
     tipe_tuk?: string;
     alamat?: string;
     nama_asesor?: string;
-    surat_tugas_name?: string;
     surat_tugas_url?: string;
     status?: string;
     master_skema?: { namaSkema?: string };
+    master_tuk?: { nama?: string };
     users?: {
       username?: string;
       profil?: { namaLengkap?: string };
@@ -400,6 +306,7 @@ export default function AssessmentSchedule() {
   interface AvailableTukOption {
     id: number;
     nama: string;
+    kapasitas?: number | null;
   }
 
   interface AvailableAsesorOption {
@@ -407,67 +314,51 @@ export default function AssessmentSchedule() {
     username: string;
     role: string;
     nama?: string;
-    profil?: { namaLengkap?: string };
+    noRegMet?: string;
+    profil?: { namaLengkap?: string; nomorRegistrasiMet?: string };
   }
 
   interface BackendPengajuanItem {
     id: number;
-    jenisAsesmen?: string;
+    jenisMetode?: string;
     metode?: string;
     nama?: string;
     nik?: string;
-    skema?: { namaSkema?: string; nama?: string } | string;
+    skema?: AssessmentItem;
     user?: {
+      id: number;
       username?: string;
+      email?: string;
       profil?: {
         namaLengkap?: string;
         nik?: string;
       };
     };
+    dataPribadi?: {
+      namaLengkap?: string;
+      nik?: string;
+    };
   }
 
   const [isJadwalLoading, setIsJadwalLoading] = useState<boolean>(true);
-  const [availableSkemas, setAvailableSkemas] = useState<AvailableSkemaOption[]>([]);
+  const [apiCompletedAsesis, setApiCompletedAsesis] = useState<
+    BackendPengajuanItem[]
+  >([]);
+  const [availableSkemas, setAvailableSkemas] = useState<
+    AvailableSkemaOption[]
+  >([]);
   const [availableTuks, setAvailableTuks] = useState<AvailableTukOption[]>([]);
-  const [availableAsesors, setAvailableAsesors] = useState<AvailableAsesorOption[]>([]);
-  const [apiAvailableAsesis, setApiAvailableAsesis] = useState<BackendPengajuanItem[]>([]);
+  const [availableAsesors, setAvailableAsesors] = useState<
+    AvailableAsesorOption[]
+  >([]);
+  const [availableUsers, setAvailableUsers] = useState<AvailableAsesorOption[]>(
+    [],
+  );
+  const [apiAvailableAsesis, setApiAvailableAsesis] = useState<
+    BackendPengajuanItem[]
+  >([]);
 
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([
-    {
-      id: 1,
-      namaBatch: "BATCH-IT-2026-001",
-      nomorSurat: "ST/LSP-P1/BATCH-001/2026",
-      skema: "Auditor Halal",
-      metode: "Offline",
-      tanggal: "15 Okt 2026",
-      waktuMulai: "08:00",
-      tipeTuk: "Sewaktu",
-      totalKandidat: 20,
-      namaAsesor: "Dr. Aris Thorne",
-      inisialAsesor: "AT",
-      suratPenugasanName:
-        "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J/view",
-      status: "Dikonfirmasi",
-      asesiList: [1, 5],
-    },
-    {
-      id: 2,
-      namaBatch: "BATCH-NET-2026-002",
-      nomorSurat: "ST/LSP-P1/BATCH-002/2026",
-      skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-      metode: "Online",
-      tanggal: "18 Okt 2026",
-      waktuMulai: "13:00",
-      tipeTuk: "Mandiri",
-      totalKandidat: 15,
-      namaAsesor: "Budi Santoso, M.Kom",
-      inisialAsesor: "BS",
-      suratPenugasanName:
-        "https://drive.google.com/file/d/0J9I8H7G6F5E4D3C2B1A/view",
-      status: "Terjadwal",
-      asesiList: [2, 4],
-    },
-  ]);
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
 
   const mapBackendJadwal = (item: BackendJadwalItem): ScheduleItem => {
     const asesorName =
@@ -484,12 +375,11 @@ export default function AssessmentSchedule() {
 
     return {
       id: item.id,
-      namaBatch: item.nama_batch || item.kode_batch || `BATCH-${item.id}`,
       nomorSurat: item.nomor_surat || "-",
       skema: item.master_skema?.namaSkema || "Skema Sertifikasi",
-      metode: item.metode || "Offline",
+      metode: item.metode === "Daring" || item.metode === "Online" ? "Online" : "Offline",
       tanggal: item.tanggal
-        ? new Date(item.tanggal).toLocaleDateString("id-ID")
+        ? new Date(item.tanggal).toISOString().split("T")[0]
         : "",
       waktuMulai: item.waktu_mulai
         ? new Date(item.waktu_mulai).toLocaleTimeString("id-ID", {
@@ -498,27 +388,37 @@ export default function AssessmentSchedule() {
         })
         : "08:00",
       tipeTuk: item.tipe_tuk || "Sewaktu",
-      tuk: item.alamat || "TUK Kantor LSP",
+      tuk: item.master_tuk?.nama || item.alamat || "TUK Kantor LSP",
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       totalKandidat: item.jadwal_asesmen_peserta?.length || 0,
       namaAsesor: asesorName,
       inisialAsesor: initials,
-      suratPenugasanName: item.surat_tugas_name || item.surat_tugas_url || "",
+      suratTugasUrl: item.surat_tugas_url || "",
       status: item.status || "Terjadwal",
       asesiList:
-        item.jadwal_asesmen_peserta?.map((p: BackendPesertaJadwal) => p.pengajuan_id) || [],
+        item.jadwal_asesmen_peserta?.map(
+          (p: BackendPesertaJadwal) => p.pengajuan_id,
+        ) || [],
     };
   };
 
   const fetchJadwalData = async () => {
     try {
       setIsJadwalLoading(true);
-      const [jadwalRes, skemaRes, tukRes, usersRes, pengajuanRes] = await Promise.allSettled([
+      const [
+        jadwalRes,
+        skemaRes,
+        tukRes,
+        usersRes,
+        pengajuanRes,
+        completedPengajuanRes,
+      ] = await Promise.allSettled([
         getJadwalList(),
         getSkemaList(),
         getTukList("all"),
         getAllUsers(),
         getPengajuanList({ status: "Terverifikasi" }),
+        getPengajuanList({ status: "Menunggu Pleno" }),
       ]);
 
       if (
@@ -526,7 +426,9 @@ export default function AssessmentSchedule() {
         Array.isArray(jadwalRes.value) &&
         jadwalRes.value.length > 0
       ) {
-        setSchedules((jadwalRes.value as BackendJadwalItem[]).map(mapBackendJadwal));
+        setSchedules(
+          (jadwalRes.value as BackendJadwalItem[]).map(mapBackendJadwal),
+        );
       }
 
       if (skemaRes.status === "fulfilled" && Array.isArray(skemaRes.value)) {
@@ -538,14 +440,24 @@ export default function AssessmentSchedule() {
       }
 
       if (usersRes.status === "fulfilled" && Array.isArray(usersRes.value)) {
-        const asesors = (usersRes.value as AvailableAsesorOption[]).filter(
-          (u) => u.role === "asesor",
-        );
+        const users = usersRes.value as AvailableAsesorOption[];
+        setAvailableUsers(users);
+        const asesors = users.filter((u) => u.role === "asesor");
         setAvailableAsesors(asesors);
       }
 
-      if (pengajuanRes.status === "fulfilled" && Array.isArray(pengajuanRes.value)) {
+      if (
+        pengajuanRes.status === "fulfilled" &&
+        Array.isArray(pengajuanRes.value)
+      ) {
         setApiAvailableAsesis(pengajuanRes.value);
+      }
+
+      if (
+        completedPengajuanRes.status === "fulfilled" &&
+        Array.isArray(completedPengajuanRes.value)
+      ) {
+        setApiCompletedAsesis(completedPengajuanRes.value);
       }
     } catch (err: unknown) {
       console.error("Gagal memuat data jadwal:", err);
@@ -572,7 +484,7 @@ export default function AssessmentSchedule() {
     waktuMulai: "08:00",
     tuk: "",
     namaAsesor: "",
-    suratPenugasanName: "",
+    suratTugasUrl: "",
     totalKandidat: 0,
     status: "Terjadwal",
   });
@@ -610,14 +522,18 @@ export default function AssessmentSchedule() {
         alamat: formData.alamat,
         tanggal: validDate.toISOString(),
         asesor_id: matchedAsesor?.id || undefined,
-        surat_tugas_name: formData.suratPenugasanName || undefined,
+        surat_tugas_url: formData.suratTugasUrl || undefined,
         status: formData.status || "Terjadwal",
       };
 
       if (isEditMode && editId) {
         await updateJadwal(editId, payload);
+        await addPesertaJadwal(editId, selectedAsesiForJadwal);
       } else {
-        await createJadwal(payload);
+        const newJadwal: ScheduleItem = await createJadwal(payload);
+        if (newJadwal?.id) {
+          await addPesertaJadwal(newJadwal.id, selectedAsesiForJadwal);
+        }
       }
 
       await fetchJadwalData();
@@ -672,7 +588,7 @@ export default function AssessmentSchedule() {
       waktuMulai: "08:00",
       tuk: "",
       namaAsesor: "",
-      suratPenugasanName: "",
+      suratTugasUrl: "",
       totalKandidat: 0,
       status: "Terjadwal",
     });
@@ -688,9 +604,25 @@ export default function AssessmentSchedule() {
       (filterStatus === "Semua" || item.status === filterStatus),
   );
 
-  // Get unique skemas from completed assessments
-  const completedAssessments = AssessmentItems.filter(
-    (a) => a.status === "Selesai",
+  // Used to map apiCompletedAsesis into AsesiPlenoItem format
+  const mappedCompletedAssessments: AsesiPlenoItem[] = apiCompletedAsesis.map(
+    (p) => ({
+      id: p.id,
+      nik: p.dataPribadi?.nik || p.user?.profil?.nik || p.nik || "-",
+      nama:
+        p.dataPribadi?.namaLengkap ||
+        p.user?.profil?.namaLengkap ||
+        p.nama ||
+        p.user?.username ||
+        "Asesi",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      skema: (p.skema as any)?.namaSkema || "Skema Tersertifikasi",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      skemaId: (p.skema as any)?.id || 0,
+      asesor: "Asesor LSP",
+      rekomendasiAsesor: "K",
+      statusPleno: "K",
+    }),
   );
   const uniqueskemas =
     availableSkemas.length > 0
@@ -712,25 +644,38 @@ export default function AssessmentSchedule() {
   const [plenoForm, setPlenoForm] = useState<{
     id?: number;
     batchCode?: string;
+    title?: string;
     tanggal: string;
     waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
     skema: string;
     alamat: string;
+    detailAlamat?: string;
     deskripsi: string;
     plenoAttendees: PlenoAttendee[]; // pakai interface yang sudah ada, bukan inline type
     suratPlenoName?: string;
     suratPlenoUrl?: string;
+    linkSuratBeritaPleno?: string;
+    linkSuratHasil?: string;
+    status?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    asesiList?: any[];
   }>({
     id: undefined,
     batchCode: "",
+    title: "",
     tanggal: "",
     waktu: "",
     skema: "",
     alamat: "Ruang Rapat Utama (Offline)",
+    detailAlamat: "",
     deskripsi: "",
     plenoAttendees: [],
     suratPlenoName: "",
     suratPlenoUrl: "",
+    linkSuratBeritaPleno: "",
+    linkSuratHasil: "",
+    status: "Terjadwal",
+    asesiList: [],
   });
 
   const isAttendeeSelected = (nama: string, role: Role) => {
@@ -765,80 +710,118 @@ export default function AssessmentSchedule() {
   >([]);
 
   // Available Candidates for plenary session (all completed assessments awaiting decision)
-  const availableAsesiForPleno = completedAssessments;
+  const availableAsesiForPleno = mappedCompletedAssessments;
 
-  const handleAddPleno = () => {
-    if (!plenoForm.tanggal || selectedAsesiForPleno.length === 0) return;
-
-    // Gunakan .some() untuk mencocokkan id atau nama dari array objek AsesiPlenoItem[]
-    const selectedAsesiObjects = completedAssessments.filter((a) =>
-      selectedAsesiForPleno.some(
-        (item) => item.id === a.id || item.nama === a.nama,
-      ),
-    );
-
-    const selectedskemas = Array.from(
-      new Set(selectedAsesiObjects.map((a) => a.skema).filter(Boolean)),
-    );
-
-    const skemaLabel =
-      selectedskemas.length > 0
-        ? selectedskemas.join(", ")
-        : plenoForm.skema || "Multi Skema";
-
-    const { ...restPlenoForm } = plenoForm;
-
-    const newPleno: PlenoDetailData = {
-      ...restPlenoForm,
-      id: editId ?? Date.now(),
-      batchCode: plenoForm.batchCode || `PLN-${editId ?? Date.now()}`,
-      skema: skemaLabel,
-      waktu: plenoForm.waktu,
-      status: "Terjadwal",
-      asesiList: selectedAsesiForPleno,
-      plenoAttendees: plenoForm.plenoAttendees.filter(
-        (a) => a.nama.trim() !== "",
-      ),
-    };
-
-    // ... simpan newPleno ke state / API
-
-    // Buat payload yang sesuai dengan format PlenoSchedule
-    const schedulePayload: PlenoSchedule = {
-      id: newPleno.id,
-      batchCode: newPleno.batchCode,
-      tanggal: newPleno.tanggal,
-      waktu: newPleno.waktu,
-      skema: newPleno.skema,
-      jumlahAsesi: newPleno.asesiList.length, // Dapatkan jumlah dari panjang array
-      status: newPleno.status,
-      alamat: newPleno.alamat,
-      detailAlamat: newPleno.detailAlamat || "",
-      deskripsi: newPleno.deskripsi || "",
-      // Ekstrak hanya nama asesi untuk memenuhi syarat string[]
-      asesiList: newPleno.asesiList.map((a) => a.nama),
-    };
-
-    if (isEditMode && editId !== null) {
-      updatePlenoSession(editId, schedulePayload);
-    } else {
-      addPlenoSession(schedulePayload);
+  const handleAddPleno = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (plenoForm.plenoAttendees.some((a) => a.role === "" || a.nama === "")) {
+      alert("Pastikan semua form peserta pleno (Role & Nama) telah diisi.");
+      return;
+    }
+    if (selectedAsesiForPleno.length === 0) {
+      alert("Pilih minimal satu asesi untuk disidangkan.");
+      return;
     }
 
-    setIsPlenoModalOpen(false);
-    setPlenoForm({
-      id: undefined,
-      batchCode: "",
-      tanggal: "",
-      waktu: "",
-      skema: "",
-      alamat: "Ruang Rapat Utama (Offline)",
-      deskripsi: "",
-      plenoAttendees: [],
-      suratPlenoName: "",
-      suratPlenoUrl: "",
-    });
-    setSelectedAsesiForPleno([]);
+    try {
+      setIsSubmitting(true);
+      const uniqueSkemaIds = [
+        ...new Set(
+          selectedAsesiForPleno
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((a) => Number((a as any).skemaId || 0))
+            .filter((id) => id > 0),
+        ),
+      ];
+
+      const selectedAsesiObjects = mappedCompletedAssessments.filter((a) =>
+        selectedAsesiForPleno.some(
+          (item) => item.id === a.id || item.nama === a.nama,
+        ),
+      );
+
+      const selectedskemas = Array.from(
+        new Set(selectedAsesiObjects.map((a) => a.skema).filter(Boolean)),
+      );
+
+      const skemaLabel =
+        selectedskemas.length > 0
+          ? selectedskemas.join(", ")
+          : plenoForm.skema || "Multi Skema";
+
+      const payload = {
+        title: plenoForm.title || `Sidang Pleno ${skemaLabel}`,
+        tanggal: plenoForm.tanggal || new Date().toISOString(),
+        waktu: plenoForm.waktu
+          ? new Date(`1970-01-01T${plenoForm.waktu}:00Z`)
+          : new Date(),
+        alamat: plenoForm.alamat,
+        deskripsi: plenoForm.deskripsi,
+        status: "Terjadwal",
+        skema_ids: uniqueSkemaIds,
+      };
+
+      if (isEditMode && editId !== null) {
+        await updatePleno(editId, payload);
+        showNotification("Berhasil memperbarui sidang pleno", "success");
+      } else {
+        const result = await createPleno(payload);
+        const newPlenoId = result.id;
+
+        // Add asesi
+        if (selectedAsesiForPleno.length > 0) {
+          await addPlenoAsesi(
+            newPlenoId,
+            selectedAsesiForPleno.map((a) => a.id),
+          );
+        }
+
+        // Add attendees
+        for (const attendee of plenoForm.plenoAttendees) {
+          if (attendee.nama.trim() !== "") {
+            await addPlenoAttendee(newPlenoId, {
+              role: attendee.role,
+              nama: attendee.nama,
+            });
+          }
+        }
+        showNotification(
+          "Berhasil membuat jadwal sidang pleno baru",
+          "success",
+        );
+      }
+
+      await fetchJadwalData();
+      setIsPlenoModalOpen(false);
+      setPlenoForm({
+        id: undefined,
+        batchCode: "",
+        title: "",
+        tanggal: "",
+        waktu: "",
+        skema: "",
+        alamat: "Ruang Rapat Utama (Offline)",
+        detailAlamat: "",
+        deskripsi: "",
+        plenoAttendees: [],
+        suratPlenoName: "",
+        suratPlenoUrl: "",
+        linkSuratBeritaPleno: "",
+        linkSuratHasil: "",
+        status: "Terjadwal",
+        asesiList: [],
+      });
+      setSelectedAsesiForPleno([]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+      showNotification(
+        error.message || "Gagal menyimpan jadwal pleno",
+        "error",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filteredPleno = plenoSessions.filter(
@@ -849,19 +832,29 @@ export default function AssessmentSchedule() {
   );
 
   if (isModalOpen) {
-    const availableAsesi = apiAvailableAsesis.filter((a) => {
-      const namaSkema = typeof a.skema === 'object' ? (a.skema?.namaSkema || a.skema?.nama || "") : (a.skema || "");
-      const matchskema = !formData.skema || namaSkema === formData.skema;
-      return matchskema;
-    }).map(a => ({
-      id: a.id,
-      nama: a.user?.profil?.namaLengkap || a.user?.username || a.nama || "Asesi",
-      skema: typeof a.skema === 'object' ? (a.skema?.namaSkema || a.skema?.nama || "") : (a.skema || ""),
-      metode: a.jenisAsesmen || a.metode || "Offline",
-      nik: a.user?.profil?.nik || a.nik || "",
-    })).sort((a, b) => a.nama.localeCompare(b.nama));
-    const selectedTuk = TUK_LIST.find((t) => t.id === formData.tuk);
-    const kapasitas = selectedTuk ? selectedTuk.kapasitas : 0;
+    const availableAsesi = apiAvailableAsesis
+      .filter((a) => {
+        const namaSkema =
+          typeof a.skema === "object" ? a.skema?.namaSkema || a.skema?.nama || "" : a.skema || "";
+        const matchskema = !formData.skema || namaSkema === formData.skema;
+        return matchskema;
+      })
+      .map((a) => ({
+        id: a.id,
+        nama:
+          a.dataPribadi?.namaLengkap ||
+          a.user?.profil?.namaLengkap ||
+          a.user?.username ||
+          a.nama ||
+          "Asesi",
+        skema:
+          typeof a.skema === "object" ? a.skema?.namaSkema || a.skema?.nama || "" : a.skema || "",
+        metode: a.jenisMetode || a.metode || "Offline",
+        nik: a.user?.profil?.nik || a.nik || "",
+      }))
+      .sort((a, b) => a.nama.localeCompare(b.nama));
+    const selectedTuk = availableTuks.find((t) => t.id === Number(formData.tuk) || t.nama === formData.tuk);
+    const kapasitas = selectedTuk?.kapasitas || 0;
 
     return (
       <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
@@ -892,10 +885,10 @@ export default function AssessmentSchedule() {
               Jadwal Asesmen
             </h2>
             {/* 1. Nama Batch, 2. Skema Sertifikasi, 3. Metode Pelaksanaan */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  1. Nama Batch/Grup
+                  1. Judul Pleno
                 </label>
                 <input
                   type="text"
@@ -946,10 +939,8 @@ export default function AssessmentSchedule() {
                   <option value="Online">Online (Daring)</option>
                 </select>
               </div>
-            </div>
 
-            {/* 4. Jenis TUK & 5. Alamat TUK */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 4. Jenis TUK & 5. Alamat TUK */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   4. Jenis TUK
@@ -983,10 +974,8 @@ export default function AssessmentSchedule() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 />
               </div>
-            </div>
 
-            {/* 6. Tanggal Uji & 7. Jam Pelaksanaan */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 6. Tanggal Uji & 7. Jam Pelaksanaan */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   6. Tanggal Uji
@@ -1019,10 +1008,8 @@ export default function AssessmentSchedule() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900 bg-white"
                 />
               </div>
-            </div>
 
-            {/* 8. Spesifikasi Ruang TUK & 9. Asesor Ditugaskan */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 8. Spesifikasi Ruang TUK & 9. Asesor Ditugaskan */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   8. Spesifikasi Ruang TUK
@@ -1036,8 +1023,8 @@ export default function AssessmentSchedule() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
                   <option value="">Pilih Gedung / Spesifikasi Ruangan</option>
-                  {TUK_LIST.map((tuk) => (
-                    <option key={tuk.id} value={tuk.id}>
+                  {availableTuks.map((tuk) => (
+                    <option key={tuk.id} value={tuk.nama}>
                       {tuk.nama}
                     </option>
                   ))}
@@ -1047,26 +1034,41 @@ export default function AssessmentSchedule() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   9. Asesor Ditugaskan
                 </label>
-                <select
-                  value={formData.namaAsesor}
-                  disabled={isPreviewMode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, namaAsesor: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
-                >
-                  <option value="">Pilih Asesor</option>
-                  {availableAsesors.map(
-                    (a) => {
-                      const namaAsesor = a.profil?.namaLengkap || a.nama || a.username;
-                      return (
-                        <option key={a.id} value={namaAsesor}>
-                          {namaAsesor}
-                        </option>
-                      )
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <User size={18} className="text-slate-400" />
+                  </div>
+                  <select
+                    className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900 shadow-sm appearance-none cursor-pointer"
+                    value={formData.namaAsesor}
+                    disabled={isPreviewMode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, namaAsesor: e.target.value })
                     }
-                  )}
-                </select>
+                  >
+                    <option value="">Pilih Asesor</option>
+                    {availableAsesors.map((asesor) => (
+                      <option key={asesor.id} value={asesor.profil?.namaLengkap || asesor.username}>
+                        {asesor.profil?.namaLengkap || asesor.username}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="min-w-0">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  10. Nomor Surat
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: 001/LSP/P1/2026"
+                  value={formData.nomorSurat || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nomorSurat: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                />
               </div>
             </div>
 
@@ -1083,19 +1085,19 @@ export default function AssessmentSchedule() {
                   <input
                     type="url"
                     placeholder="Contoh: https://drive.google.com/file/d/.../view"
-                    value={formData.suratPenugasanName || ""}
+                    value={formData.suratTugasUrl || ""}
                     disabled={isPreviewMode}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        suratPenugasanName: e.target.value,
+                        suratTugasUrl: e.target.value,
                       })
                     }
                     className="w-full pl-4 pr-28 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white placeholder:text-slate-400 font-medium text-slate-900 disabled:bg-slate-50 disabled:text-slate-600"
                   />
-                  {formData.suratPenugasanName ? (
+                  {formData.suratTugasUrl ? (
                     <a
-                      href={formData.suratPenugasanName}
+                      href={formData.suratTugasUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="absolute right-2 px-3.5 py-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
@@ -1107,7 +1109,11 @@ export default function AssessmentSchedule() {
 
                 <button
                   type="button"
-                  onClick={() => handleDownloadSuratTugas()}
+                  onClick={() =>
+                    handleDownloadSuratTugas(
+                      formData as unknown as ScheduleItem,
+                    )
+                  }
                   className="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shrink-0 shadow-xs cursor-pointer active:scale-95"
                   title="Generate dan cetak dokumen Surat Penugasan Asesor"
                 >
@@ -1327,9 +1333,9 @@ export default function AssessmentSchedule() {
                 </label>
                 <input
                   type="text"
-                  value={plenoForm.batchCode || ""}
+                  value={plenoForm.title || ""}
                   onChange={(e) =>
-                    setPlenoForm({ ...plenoForm, batchCode: e.target.value })
+                    setPlenoForm({ ...plenoForm, title: e.target.value })
                   }
                   disabled={isPreviewMode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
@@ -1353,7 +1359,7 @@ export default function AssessmentSchedule() {
               </div>
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  TUK
+                  Alamat Sidang Pleno
                 </label>
                 <input
                   type="text"
@@ -1375,8 +1381,8 @@ export default function AssessmentSchedule() {
                     Pilih Asesi Sidang Pleno
                   </label>
                   <p className="text-xs text-slate-500">
-                    Menampilkan seluruh asesi yang sudah selesai dinilai oleh
-                    asesor dan siap disidangkan
+                    Menampilkan seluruh asesi dengan status pengajuan menunggu
+                    sidang pleno
                   </p>
                 </div>
                 <span className="text-xs font-bold text-[#008BE3] bg-[#008BE3]/10 px-2.5 py-1 rounded-md self-start sm:self-auto shrink-0">
@@ -1387,8 +1393,7 @@ export default function AssessmentSchedule() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {availableAsesiForPleno.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                    Tidak ada asesi yang selesai dinilai dan siap untuk
-                    disidangkan.
+                    Tidak ada asesi dengan status pengajuan menunggu pleno.
                   </div>
                 ) : (
                   availableAsesiForPleno.map((asesi) => {
@@ -1426,9 +1431,13 @@ export default function AssessmentSchedule() {
                                       }
                                     )?.nama || "Asesor LSP",
                                 rekomendasiAsesor:
-                                  asesi.hasil === "Kompeten" ? "K" : "BK",
+                                  asesi.statusPleno === "Kompeten"
+                                    ? "K"
+                                    : "BK",
                                 statusPleno:
-                                  asesi.hasil === "Kompeten" ? "K" : "BK",
+                                  asesi.statusPleno === "Kompeten"
+                                    ? "K"
+                                    : "BK",
                               },
                             ];
 
@@ -1454,14 +1463,14 @@ export default function AssessmentSchedule() {
                             <h4 className="font-bold text-slate-900 text-sm truncate">
                               {asesi.nama}
                             </h4>
-                            {asesi.hasil && (
+                            {asesi.statusPleno && (
                               <span
-                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${asesi.hasil === "Kompeten"
+                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${asesi.statusPleno === "Kompeten"
                                   ? "bg-emerald-100 text-emerald-700"
                                   : "bg-amber-100 text-amber-700"
                                   }`}
                               >
-                                {asesi.hasil}
+                                {asesi.statusPleno}
                               </span>
                             )}
                           </div>
@@ -1578,7 +1587,30 @@ export default function AssessmentSchedule() {
               {/* Checkbox grid of user Candidates */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
                 {(() => {
-                  const mergedUsers = [...ALL_PLENO_USERS];
+                  const mergedUsers = availableUsers.map((u) => {
+                    let mappedRole = u.role;
+                    if (mappedRole) {
+                      const lower = mappedRole.toLowerCase();
+                      if (lower === "asesor") mappedRole = "Asesor";
+                      else if (lower === "direktur") mappedRole = "Direktur";
+                      else if (lower === "dewan_pengarah")
+                        mappedRole = "dewan_pengarah";
+                      else if (lower === "komite_skema")
+                        mappedRole = "komite_skema";
+                      else if (lower === "manajer")
+                        mappedRole = "Manajer Administrasi dan Keuangan";
+                      else
+                        mappedRole =
+                          mappedRole.charAt(0).toUpperCase() +
+                          mappedRole.slice(1);
+                    }
+                    return {
+                      id: `usr-${u.id}`,
+                      nama:
+                        u.profil?.namaLengkap || u.nama || u.username || "-",
+                      role: (mappedRole || "Asesor") as Role,
+                    };
+                  });
                   plenoForm.plenoAttendees.forEach((att) => {
                     if (
                       att.nama.trim() &&
@@ -1751,20 +1783,18 @@ export default function AssessmentSchedule() {
                     className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50"
                   >
                     <div className="p-2 space-y-1">
-                      {["Semua", "Terjadwal", "Dikonfirmasi", "Selesai"].map(
-                        (status) => (
-                          <button
-                            key={status}
-                            onClick={() => {
-                              setFilterStatus(status);
-                              setIsFilterDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === status ? "bg-[#008BE3]/10 text-[#008BE3]" : "text-gray-700 hover:bg-gray-50"}`}
-                          >
-                            {status}
-                          </button>
-                        ),
-                      )}
+                      {["Semua", "Terjadwal", "Dikonfirmasi"].map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => {
+                            setFilterStatus(status);
+                            setIsFilterDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === status ? "bg-[#008BE3]/10 text-[#008BE3]" : "text-gray-700 hover:bg-gray-50"}`}
+                        >
+                          {status}
+                        </button>
+                      ))}
                     </div>
                   </motion.div>
                 )}
@@ -1787,7 +1817,7 @@ export default function AssessmentSchedule() {
                     tuk: "",
                     totalKandidat: 0,
                     namaAsesor: "",
-                    suratPenugasanName: "",
+                    suratTugasUrl: "",
                     status: "Terjadwal",
                   });
                   setSelectedAsesiForJadwal([]);
@@ -1880,7 +1910,10 @@ export default function AssessmentSchedule() {
                       className="px-6 py-16 text-center text-slate-400"
                     >
                       <div className="flex flex-col items-center justify-center gap-3">
-                        <Loader2 className="animate-spin text-[#008BE3]" size={32} />
+                        <Loader2
+                          className="animate-spin text-[#008BE3]"
+                          size={32}
+                        />
                         <p className="text-sm font-semibold text-slate-600">
                           Memuat data jadwal asesmen...
                         </p>
@@ -1890,7 +1923,11 @@ export default function AssessmentSchedule() {
                 ) : (
                   <>
                     {filteredSchedules
-                      .filter((s) => s.status !== "Selesai")
+                      .filter(
+                        (s) =>
+                          s.status !== "Menunggu Pleno" &&
+                          s.status !== "Selesai",
+                      )
                       .map((item) => (
                         <tr
                           key={item.id}
@@ -1937,7 +1974,8 @@ export default function AssessmentSchedule() {
                                 className="text-slate-400 shrink-0"
                               />
                               <span className="whitespace-nowrap">
-                                {item.alamat || "UIN Sunan Gunung Djati Bandung"}
+                                {item.alamat ||
+                                  "UIN Sunan Gunung Djati Bandung"}
                               </span>
                             </div>
                           </td>
@@ -1949,7 +1987,7 @@ export default function AssessmentSchedule() {
                                 size={14}
                                 className="text-slate-400 shrink-0"
                               />
-                              {formattanggal(item.tanggal)}
+                              {item.tanggal}
                             </span>
                           </td>
 
@@ -1968,9 +2006,9 @@ export default function AssessmentSchedule() {
 
                           {/* 7. Spesifikasi Ruang TUK */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-slate-700">
-                            <span className="whitespace-nowrap">
-                              {getTukRuangSpec(item.alamat)}
-                            </span>
+                            <div className="font-medium text-slate-900 truncate">
+                              {item.alamat}
+                            </div>
                           </td>
 
                           {/* 8. Asesor Ditugaskan */}
@@ -1984,10 +2022,10 @@ export default function AssessmentSchedule() {
 
                           {/* 9. Surat Penugasan */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {item.suratPenugasanName ? (
-                              item.suratPenugasanName.startsWith("http") ? (
+                            {item.suratTugasUrl ? (
+                              item.suratTugasUrl.startsWith("http") ? (
                                 <a
-                                  href={item.suratPenugasanName}
+                                  href={item.suratTugasUrl}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors whitespace-nowrap"
@@ -2002,12 +2040,17 @@ export default function AssessmentSchedule() {
                                   </span>
                                 </a>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg whitespace-nowrap">
+                                <a
+                                  href={item.suratTugasUrl.startsWith("/") ? item.suratTugasUrl : `/${item.suratTugasUrl}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg whitespace-nowrap cursor-pointer transition-colors"
+                                >
                                   <FileText size={14} className="shrink-0" />
-                                  <span className="whitespace-nowrap">
-                                    {item.suratPenugasanName}
+                                  <span className="whitespace-nowrap truncate max-w-xs" title={item.suratTugasUrl}>
+                                    Buka File
                                   </span>
-                                </span>
+                                </a>
                               )
                             ) : (
                               <span className="text-[14px] text-slate-400 italic whitespace-nowrap">
@@ -2019,7 +2062,9 @@ export default function AssessmentSchedule() {
                           {/* 10. Total Asesi */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
                             <span className="whitespace-nowrap">
-                              {item.totalKandidat || item.asesiList?.length || 0}{" "}
+                              {item.totalKandidat ||
+                                item.asesiList?.length ||
+                                0}{" "}
                               Asesi
                             </span>
                           </td>
@@ -2046,7 +2091,9 @@ export default function AssessmentSchedule() {
                                     <span>Edit</span>
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteSchedule(item.id)}
+                                    onClick={() =>
+                                      handleDeleteSchedule(item.id)
+                                    }
                                     className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                                     title="Hapus"
                                   >
@@ -2059,8 +2106,10 @@ export default function AssessmentSchedule() {
                           </td>
                         </tr>
                       ))}
-                    {filteredSchedules.filter((s) => s.status !== "Selesai")
-                      .length === 0 && (
+                    {filteredSchedules.filter(
+                      (s) =>
+                        s.status !== "Menunggu Pleno" && s.status !== "Selesai",
+                    ).length === 0 && (
                         <tr>
                           <td
                             colSpan={11}
@@ -2197,11 +2246,11 @@ export default function AssessmentSchedule() {
                       <td className="px-6 py-4 text-xs font-bold">
                         {item.status === "Selesai" ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle size={12} /> Sudah Selesai
+                            <CheckCircle size={12} /> Selesai
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                            <Clock size={12} /> Belum Selesai
+                            <Clock size={12} /> Terjadwal
                           </span>
                         )}
                       </td>

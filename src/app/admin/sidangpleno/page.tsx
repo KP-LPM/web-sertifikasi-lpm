@@ -32,193 +32,6 @@ import {
   updatePlenoAsesiStatus,
 } from "@/lib/api";
 
-const DEFAULT_PLENO_SESSIONS: PlenoDetailData[] = [
-  {
-    id: 1,
-    batchCode: "BATCH-IT-2026-001",
-    title: "Sidang Pleno Penetapan Uji Kompetensi Batch 1 Auditor Halal",
-    skema: "Auditor Halal",
-    noSK: "SK/LSP-UIN/PLN/2026/001",
-    tanggal: "16-10-2026 s/d 18-10-2026",
-    waktu: "09:00 - 11:00 WIB",
-    alamat: "Ruang Rapat Utama (Offline)",
-    detailAlamat: "Ruang Rapat Utama Gedung A, Lantai 2",
-    linkSuratBeritaPleno:
-      "https://drive.google.com/file/d/berita-pleno-001/view?usp=sharing",
-    linkSuratKeputusanDirektur:
-      "https://drive.google.com/file/d/sk-direktur-001/view?usp=sharing",
-    linkSuratBlankoBNSP:
-      "https://drive.google.com/file/d/blanko-bnsp-001/view?usp=sharing",
-    linkSuratHasil:
-      "https://drive.google.com/file/d/sk-direktur-001/view?usp=sharing",
-    status: "Belum Ditetapkan",
-    plenoAttendees: [
-      { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "dewan_pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
-      { role: "komite_skema", nama: "Asep Abdul Sahid, M.T." },
-    ],
-    asesiList: [
-      {
-        id: 1,
-        nik: "1217050001",
-        nama: "Ahmad Hidayat",
-        skema: "Auditor Halal",
-        asesor: "Ichsan Taufik, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-        catatan: "Dokumen portofolio lengkap dan valid",
-      },
-      {
-        id: 2,
-        nik: "1217050002",
-        nama: "Budi Pratama",
-        skema: "Auditor Halal",
-        asesor: "Aceng Abdul Kodir, M.Kom.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-        catatan: "Memenuhi seluruh elemen kriteria kerja",
-      },
-      {
-        id: 3,
-        nik: "1217050003",
-        nama: "Dina Larasati",
-        skema: "Auditor Halal",
-        asesor: "Susanti Ainul Fitri, M.T.",
-        rekomendasiAsesor: "BK",
-        statusPleno: "BK",
-        catatan: "Belum melengkapi bukti kerja unit 3",
-      },
-      {
-        id: 4,
-        nik: "1217050004",
-        nama: "Eko Prasetyo",
-        skema: "Auditor Halal",
-        asesor: "M Sandi Marta, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-        catatan: "Hasil wawancara dan observasi memuaskan",
-      },
-      {
-        id: 5,
-        nik: "1217050005",
-        nama: "Fitri Handayani",
-        skema: "Auditor Halal",
-        asesor: "Gina Sakinah, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-        catatan: "Seluruh unit kompetensi terpenuhi",
-      },
-      {
-        id: 6,
-        nik: "1217050006",
-        nama: "Gitarja Nugraha",
-        skema: "Auditor Halal",
-        asesor: "Elis Ratna Wulan, M.Si.",
-        rekomendasiAsesor: "BK",
-        statusPleno: "K",
-        catatan: "Direvisi saat pleno berdasarkan kelengkapan berkas banding",
-      },
-    ],
-  },
-  {
-    id: 2,
-    batchCode: "BATCH-NET-2026-002",
-    title: "Sidang Pleno Penetapan Hasil Kewirausahaan Industri Gelombang 2",
-    skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-    noSK: "SK/LSP-UIN/PLN/2026/002",
-    tanggal: "21-23 Oktober 2026",
-    waktu: "13:00 - 15:00 WIB",
-    alamat: "Zoom Meeting Room 1 (Online)",
-    detailAlamat: "https://zoom.us/j/123456789",
-
-    linkSuratBeritaPleno: "",
-    linkSuratHasil: "",
-    status: "Belum Ditetapkan",
-    plenoAttendees: [
-      { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "komite_skema", nama: "Siti Alia, M.T." },
-    ],
-    asesiList: [
-      {
-        id: 7,
-        nik: "1217050007",
-        nama: "Hendra Setiawan",
-        skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-        asesor: "Asep Abdul Sahid, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-      {
-        id: 8,
-        nik: "1217050008",
-        nama: "Indah Permata",
-        skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-        asesor: "Siti Alia, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-      {
-        id: 9,
-        nik: "1217050009",
-        nama: "Joko Susilo",
-        skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-        asesor: "Azmi Fasa, M.Kom.",
-        rekomendasiAsesor: "BK",
-        statusPleno: "BK",
-      },
-      {
-        id: 10,
-        nik: "1217050010",
-        nama: "Kurnia Putri",
-        skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-        asesor: "Cucu Susilawati, M.Pd.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-    ],
-  },
-  {
-    id: 3,
-    batchCode: "BATCH-PRG-2026-003",
-    title: "Sidang Pleno Skema Komunikasi Pemangku Kepentingan",
-    skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-    noSK: "SK/LSP-UIN/PLN/2026/003",
-    tanggal: "25 10 2026",
-    waktu: "10:00 - 12:00 WIB",
-    alamat: "Ruang Rapat Utama (Offline)",
-
-    detailAlamat: "Ruang Sidang Lt. 3 Gedung Rektorat",
-    linkSuratBeritaPleno:
-      "https://drive.google.com/file/d/berita-pleno-003/view",
-    linkSuratHasil: "https://drive.google.com/file/d/3x4y5z/view",
-    status: "Selesai",
-    plenoAttendees: [
-      { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-      { role: "dewan_pengarah", nama: "Dr. Ir. H. Muhammad Zulkifli, M.T." },
-    ],
-    asesiList: [
-      {
-        id: 11,
-        nik: "1217050011",
-        nama: "Lani Wijaya",
-        skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-        asesor: "Fitri Pebriani Wahyu, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-      {
-        id: 12,
-        nik: "1217050012",
-        nama: "Muhammad Rizky",
-        skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-        asesor: "Tina Dewi Rosahdi, M.T.",
-        rekomendasiAsesor: "K",
-        statusPleno: "K",
-      },
-    ],
-  },
-];
-
 export default function SidangPleno() {
   const { user, showNotification } = useAppContext();
   const readOnly = user?.role !== "admin";
@@ -241,50 +54,50 @@ export default function SidangPleno() {
 
   // Dirty & Saved State Management for Save / Generate requirements
   const [isDirty, setIsDirty] = useState<boolean>(false);
-interface BackendPlenoSkema {
-  master_skema?: { namaSkema?: string };
-}
+  interface BackendPlenoSkema {
+    master_skema?: { namaSkema?: string };
+  }
 
-interface BackendPlenoAsesi {
-  id: number;
-  nama?: string;
-  rekomendasi_asesor?: string;
-  status_pleno?: string;
-  catatan?: string;
-  pengajuan_skema?: {
-    dataPribadi?: { nik?: string; namaLengkap?: string };
-    skema?: { namaSkema?: string };
-  };
-  users?: {
-    username?: string;
-    profil?: { namaLengkap?: string };
-  };
-}
+  interface BackendPlenoAsesi {
+    id: number;
+    nama?: string;
+    rekomendasi_asesor?: string;
+    status_pleno?: string;
+    catatan?: string;
+    pengajuan_skema?: {
+      dataPribadi?: { nik?: string; namaLengkap?: string };
+      skema?: { namaSkema?: string };
+    };
+    users?: {
+      username?: string;
+      profil?: { namaLengkap?: string };
+    };
+  }
 
-interface BackendPlenoAttendee {
-  role: Role;
-  nama: string;
-}
+  interface BackendPlenoAttendee {
+    role: Role;
+    nama: string;
+  }
 
-interface BackendPlenoDetail {
-  id: number;
-  batch_code?: string;
-  title?: string;
-  no_sk?: string;
-  tanggal?: string | Date;
-  waktu?: string | Date;
-  alamat?: string;
-  detail_alamat?: string;
-  surat_pleno_url?: string;
-  link_surat_hasil?: string;
-  link_surat_berita_pleno?: string;
-  link_surat_keputusan_direktur?: string;
-  link_surat_blanko_bnsp?: string;
-  status?: string;
-  pleno_batch_skema?: BackendPlenoSkema[];
-  pleno_asesi?: BackendPlenoAsesi[];
-  pleno_attendee?: BackendPlenoAttendee[];
-}
+  interface BackendPlenoDetail {
+    id: number;
+    batch_code?: string;
+    title?: string;
+    no_sk?: string;
+    tanggal?: string;
+    waktu?: string;
+    alamat?: string;
+    detail_alamat?: string;
+    surat_pleno_url?: string;
+    link_surat_hasil?: string;
+    link_surat_berita_pleno?: string;
+    link_surat_keputusan_direktur?: string;
+    link_surat_blanko_bnsp?: string;
+    status?: string;
+    pleno_batch_skema?: BackendPlenoSkema[];
+    pleno_asesi?: BackendPlenoAsesi[];
+    pleno_attendee?: BackendPlenoAttendee[];
+  }
 
   const [hasSavedAtLeastOnce, setHasSavedAtLeastOnce] = useState<boolean>(true);
   const [showSaveToast, setShowSaveToast] = useState<boolean>(false);
@@ -295,9 +108,9 @@ interface BackendPlenoDetail {
 
   const mapBackendPleno = (p: BackendPlenoDetail): PlenoDetailData => {
     const skemaList =
-      p.pleno_batch_skema
+      (p.pleno_batch_skema
         ?.map((s) => s.master_skema?.namaSkema)
-        .filter(Boolean) as string[] || [];
+        .filter(Boolean) as string[]) || [];
     const skemaStr = skemaList.join(", ") || "Semua Skema";
 
     const asesiList: AsesiPlenoItem[] =
@@ -305,7 +118,9 @@ interface BackendPlenoDetail {
         id: a.id,
         nik: a.pengajuan_skema?.dataPribadi?.nik || `121705${a.id}`,
         nama:
-          a.pengajuan_skema?.dataPribadi?.namaLengkap || a.nama || `Asesi ${a.id}`,
+          a.pengajuan_skema?.dataPribadi?.namaLengkap ||
+          a.nama ||
+          `Asesi ${a.id}`,
         skema: a.pengajuan_skema?.skema?.namaSkema || skemaStr,
         asesor:
           a.users?.profil?.namaLengkap || a.users?.username || "Asesor LSP",
@@ -326,12 +141,12 @@ interface BackendPlenoDetail {
       title: p.title || "Sidang Pleno",
       skema: skemaStr,
       noSK: p.no_sk || "",
-      tanggal: p.tanggal ? new Date(p.tanggal).toLocaleDateString("id-ID") : "",
+      tanggal: p.tanggal || "",
       waktu: p.waktu
         ? new Date(p.waktu).toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          hour: "2-digit",
+          minute: "2-digit",
+        })
         : "",
       alamat: p.alamat || "Ruang Rapat Utama (Offline)",
       detailAlamat: p.detail_alamat || "",
@@ -344,9 +159,9 @@ interface BackendPlenoDetail {
         attendees.length > 0
           ? attendees
           : [
-              { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-              { role: "komite_skema", nama: "Komite Skema LSP" },
-            ],
+            { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
+            { role: "komite_skema", nama: "Komite Skema LSP" },
+          ],
       asesiList: asesiList,
     };
   };
@@ -355,15 +170,15 @@ interface BackendPlenoDetail {
     try {
       setIsLoading(true);
       const data = await getPlenoList();
-      if (Array.isArray(data) && data.length > 0) {
-        const mapped = data.map(mapBackendPleno);
+      if (Array.isArray(data)) {
+        const mapped = data.map(mapBackendPleno).filter((s) => s.status !== "Selesai");
         setSessions(mapped);
       } else {
-        setSessions(DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"));
+        setSessions([]);
       }
     } catch (err) {
       console.error("Gagal memuat jadwal pleno:", err);
-      setSessions(DEFAULT_PLENO_SESSIONS.filter((s) => s.status !== "Selesai"));
+      setSessions([]);
     } finally {
       setIsLoading(false);
     }
@@ -405,7 +220,10 @@ interface BackendPlenoDetail {
   const handleConfirmBeritaAcara = (e: React.FormEvent) => {
     e.preventDefault();
     if (!beritaAcaraKota.trim()) {
-      showNotification("Mohon masukkan Kota Ditetapkan terlebih dahulu.", "error");
+      showNotification(
+        "Mohon masukkan Kota Ditetapkan terlebih dahulu.",
+        "error",
+      );
       return;
     }
     setIsBeritaAcaraModalOpen(false);
@@ -702,7 +520,10 @@ interface BackendPlenoDetail {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Download error:", error);
-      showNotification("Terjadi kesalahan saat mengunduh Berita Acara.", "error");
+      showNotification(
+        "Terjadi kesalahan saat mengunduh Berita Acara.",
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -750,7 +571,10 @@ interface BackendPlenoDetail {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error(error);
-      showNotification("Terjadi kesalahan saat mengunduh surat permohonan blanko.", "error");
+      showNotification(
+        "Terjadi kesalahan saat mengunduh surat permohonan blanko.",
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -759,7 +583,10 @@ interface BackendPlenoDetail {
   const handleConfirmSKDirektur = (e: React.FormEvent) => {
     e.preventDefault();
     if (!skDirekturNomor.trim() || !skDirekturKota.trim()) {
-      showNotification("Mohon lengkapi Nomor Surat dan Kota Ditetapkan.", "error");
+      showNotification(
+        "Mohon lengkapi Nomor Surat dan Kota Ditetapkan.",
+        "error",
+      );
       return;
     }
     if (formData) {
@@ -772,7 +599,10 @@ interface BackendPlenoDetail {
   const handleConfirmBlankoBNSP = (e: React.FormEvent) => {
     e.preventDefault();
     if (!blankoBNSPKota.trim()) {
-      showNotification("Mohon masukkan Kota Ditetapkan terlebih dahulu.", "error");
+      showNotification(
+        "Mohon masukkan Kota Ditetapkan terlebih dahulu.",
+        "error",
+      );
       return;
     }
     setIsBlankoBNSPModalOpen(false);
@@ -869,7 +699,6 @@ interface BackendPlenoDetail {
         link_surat_berita_pleno: formData.linkSuratBeritaPleno,
         link_surat_keputusan_direktur: formData.linkSuratKeputusanDirektur,
         link_surat_blanko_bnsp: formData.linkSuratBlankoBNSP,
-        link_surat_hasil: formData.linkSuratHasil,
         status: formData.status,
       });
 
@@ -904,7 +733,10 @@ interface BackendPlenoDetail {
       setTimeout(() => setShowSaveToast(false), 3500);
     } catch (err: unknown) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : "Gagal menyimpan data sidang pleno";
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Gagal menyimpan data sidang pleno";
       showNotification?.(msg, "error");
     } finally {
       setIsSubmitting(false);
@@ -927,7 +759,8 @@ interface BackendPlenoDetail {
       setTimeout(() => setShowSaveToast(false), 3500);
     } catch (err: unknown) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : "Gagal menyelesaikan sidang pleno";
+      const msg =
+        err instanceof Error ? err.message : "Gagal menyelesaikan sidang pleno";
       showNotification?.(msg, "error");
     }
   };
@@ -1032,7 +865,6 @@ interface BackendPlenoDetail {
                   >
                     <option value="Semua">Semua Status</option>
                     <option value="Belum Ditetapkan">Belum Ditetapkan</option>
-                    <option value="Selesai">Selesai</option>
                   </select>
                 </div>
               </div>
@@ -1042,9 +874,6 @@ interface BackendPlenoDetail {
               <table className="w-full text-left border-collapse min-w-300">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
-                      Batch
-                    </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-50 sticky top-0 z-20 bg-[#0F172A]">
                       Nama Sidang Pleno
                     </th>
@@ -1076,7 +905,10 @@ interface BackendPlenoDetail {
                         className="px-6 py-16 text-center text-slate-400"
                       >
                         <div className="flex flex-col items-center justify-center gap-3">
-                          <Loader2 className="animate-spin text-[#008BE3]" size={32} />
+                          <Loader2
+                            className="animate-spin text-[#008BE3]"
+                            size={32}
+                          />
                           <p className="text-sm font-semibold text-slate-600">
                             Memuat data Sidang Pleno...
                           </p>
@@ -1111,11 +943,6 @@ interface BackendPlenoDetail {
                         className="group/row hover:bg-[#F9FAFC] transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-[14px] font-bold text-slate-900">
-                            {item.batchCode || item.id}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-[14px] font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors leading-snug">
                             {item.title || `Sidang Pleno ${item.skema}`}
                           </div>
@@ -1136,13 +963,12 @@ interface BackendPlenoDetail {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${
-                              item.jenisTuk === "Sewaktu" || !item.jenisTuk
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : item.jenisTuk === "Mandiri"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-blue-50 text-blue-700 border-blue-200"
-                            }`}
+                            className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${item.jenisTuk === "Sewaktu" || !item.jenisTuk
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : item.jenisTuk === "Mandiri"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                              }`}
                           >
                             {item.jenisTuk || "Sewaktu"}
                           </span>
@@ -1162,20 +988,18 @@ interface BackendPlenoDetail {
                         <td className="px-6 py-4 whitespace-nowrap">
                           {item.status === "Selesai" ? (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              <CheckCircle size={12} /> Sudah Selesai
+                              <CheckCircle size={12} /> Selesai
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                              <Clock size={12} /> Belum Selesai
+                              <Clock size={12} /> Terjadwal
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              onClick={() =>
-                                setSelectedPlenoId(item.id)
-                              }
+                              onClick={() => setSelectedPlenoId(item.id)}
                               className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                               title="Detail Sidang Pleno"
                             >
@@ -1237,11 +1061,10 @@ interface BackendPlenoDetail {
                   Detail Sidang Pleno
                 </h2>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                    formData.status === "Selesai"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-amber-50 text-amber-700 border-amber-200"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${formData.status === "Selesai"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-amber-50 text-amber-700 border-amber-200"
+                    }`}
                 >
                   {formData.status === "Selesai" ? (
                     <CheckCircle size={12} />
@@ -1283,7 +1106,7 @@ interface BackendPlenoDetail {
                 </label>
                 <input
                   type="text"
-                  value={formData.id}
+                  value={formData.title}
                   readOnly
                   disabled
                   className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none truncate"
@@ -1326,21 +1149,21 @@ interface BackendPlenoDetail {
                 {(() => {
                   const attendees =
                     formData.plenoAttendees &&
-                    formData.plenoAttendees.length > 0
+                      formData.plenoAttendees.length > 0
                       ? formData.plenoAttendees.filter(
-                          (a) => a.nama.trim() !== "" && a.role !== "direktur",
-                        )
+                        (a) => a.nama.trim() !== "" && a.role !== "direktur",
+                      )
                       : [
-                          { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-                          {
-                            role: "dewan_pengarah",
-                            nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
-                          },
-                          {
-                            role: "komite_skema",
-                            nama: "Asep Abdul Sahid, M.T.",
-                          },
-                        ];
+                        { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
+                        {
+                          role: "dewan_pengarah",
+                          nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
+                        },
+                        {
+                          role: "komite_skema",
+                          nama: "Asep Abdul Sahid, M.T.",
+                        },
+                      ];
                   return attendees.map((att, idx) => (
                     <span
                       key={idx}
@@ -1397,11 +1220,10 @@ interface BackendPlenoDetail {
                         ? "Belum ada link surat"
                         : "https://drive.google.com/file/d/..."
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${
-                      readOnly
-                        ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
-                        : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
-                    }`}
+                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${readOnly
+                      ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                      : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
+                      }`}
                   />
                 </div>
 
@@ -1422,11 +1244,10 @@ interface BackendPlenoDetail {
                       type="button"
                       onClick={handleOpenBeritaAcaraModal}
                       disabled={isDirty || !hasSavedAtLeastOnce}
-                      className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                        !isDirty && hasSavedAtLeastOnce
-                          ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
-                          : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
-                      }`}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${!isDirty && hasSavedAtLeastOnce
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+                        : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                        }`}
                       title={
                         isDirty
                           ? "Simpan perubahan terlebih dahulu untuk melakukan Generate Surat"
@@ -1476,40 +1297,38 @@ interface BackendPlenoDetail {
                         ? "Belum ada link surat"
                         : "https://drive.google.com/file/d/..."
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${
-                      readOnly
-                        ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
-                        : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
-                    }`}
+                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${readOnly
+                      ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                      : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
+                      }`}
                   />
                 </div>
 
                 <div className="shrink-0 flex items-center gap-2 justify-end">
                   {(formData.linkSuratKeputusanDirektur ||
                     formData.linkSuratHasil) && (
-                    <a
-                      href={
-                        formData.linkSuratKeputusanDirektur ||
-                        formData.linkSuratHasil
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-xl bg-[#008BE3] hover:bg-[#0076C2] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
-                      title="Buka Link Surat Keputusan Direktur"
-                    >
-                      <ExternalLink size={16} />
-                    </a>
-                  )}
+                      <a
+                        href={
+                          formData.linkSuratKeputusanDirektur ||
+                          formData.linkSuratHasil
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 rounded-xl bg-[#008BE3] hover:bg-[#0076C2] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
+                        title="Buka Link Surat Keputusan Direktur"
+                      >
+                        <ExternalLink size={16} />
+                      </a>
+                    )}
                   {!readOnly && (
                     <button
                       type="button"
                       onClick={handleOpenSKDirekturModal}
                       disabled={isDirty || !hasSavedAtLeastOnce}
-                      className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                        !isDirty && hasSavedAtLeastOnce
-                          ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
-                          : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
-                      }`}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${!isDirty && hasSavedAtLeastOnce
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+                        : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                        }`}
                       title={
                         isDirty
                           ? "Simpan perubahan terlebih dahulu untuk melakukan Generate Surat"
@@ -1555,11 +1374,10 @@ interface BackendPlenoDetail {
                         ? "Belum ada link surat"
                         : "https://drive.google.com/file/d/..."
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${
-                      readOnly
-                        ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
-                        : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
-                    }`}
+                    className={`w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all ${readOnly
+                      ? "bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                      : "bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none"
+                      }`}
                   />
                 </div>
 
@@ -1580,11 +1398,10 @@ interface BackendPlenoDetail {
                       type="button"
                       onClick={handleOpenBlankoBNSPModal}
                       disabled={isDirty || !hasSavedAtLeastOnce}
-                      className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                        !isDirty && hasSavedAtLeastOnce
-                          ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
-                          : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
-                      }`}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${!isDirty && hasSavedAtLeastOnce
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+                        : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                        }`}
                       title={
                         isDirty
                           ? "Simpan perubahan terlebih dahulu untuk melakukan Generate Surat"
@@ -1661,7 +1478,7 @@ interface BackendPlenoDetail {
                       No
                     </th>
                     <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
-                      nik / ID
+                      Skema
                     </th>
                     <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                       Nama Asesi
@@ -1687,7 +1504,7 @@ interface BackendPlenoDetail {
                         {idx + 1}
                       </td>
                       <td className="px-4 py-3 text-[14px] font-medium text-slate-700">
-                        {asesi.nik}
+                        {asesi.skema}
                       </td>
                       <td className="px-4 py-3 text-[14px] font-medium text-slate-900 group-hover/row:text-[#008BE3] transition-colors">
                         {asesi.nama}
@@ -1697,11 +1514,10 @@ interface BackendPlenoDetail {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                            asesi.rekomendasiAsesor === "K"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-red-50 text-red-700 border-red-200"
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.rekomendasiAsesor === "K"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                            }`}
                         >
                           {asesi.rekomendasiAsesor === "K"
                             ? "Kompeten"
@@ -1718,11 +1534,10 @@ interface BackendPlenoDetail {
                               onClick={() =>
                                 handleAsesiStatusChange(asesi.id, "K")
                               }
-                              className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                                asesi.statusPleno === "K"
-                                  ? "bg-emerald-600 text-white shadow-2xs"
-                                  : "text-slate-600 hover:text-slate-900"
-                              }`}
+                              className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${asesi.statusPleno === "K"
+                                ? "bg-emerald-600 text-white shadow-2xs"
+                                : "text-slate-600 hover:text-slate-900"
+                                }`}
                             >
                               <Check size={13} />
                               Kompeten
@@ -1732,11 +1547,10 @@ interface BackendPlenoDetail {
                               onClick={() =>
                                 handleAsesiStatusChange(asesi.id, "BK")
                               }
-                              className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                                asesi.statusPleno === "BK"
-                                  ? "bg-rose-600 text-white shadow-2xs"
-                                  : "text-slate-600 hover:text-slate-900"
-                              }`}
+                              className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${asesi.statusPleno === "BK"
+                                ? "bg-rose-600 text-white shadow-2xs"
+                                : "text-slate-600 hover:text-slate-900"
+                                }`}
                             >
                               <XCircle size={13} />
                               Belum Kompeten
@@ -1744,11 +1558,10 @@ interface BackendPlenoDetail {
                           </div>
                         ) : (
                           <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                              asesi.statusPleno === "K"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-red-50 text-red-700 border-red-200"
-                            }`}
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.statusPleno === "K"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                              }`}
                           >
                             {asesi.statusPleno === "K"
                               ? "Kompeten"
@@ -1793,11 +1606,10 @@ interface BackendPlenoDetail {
                   type="button"
                   onClick={handleSave}
                   disabled={!isDirty || isSubmitting}
-                  className={`px-6 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                    isDirty && !isSubmitting
-                      ? "bg-[#008BE3] text-white hover:bg-[#0076C2] shadow-md shadow-[#008BE3]/20"
-                      : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
-                  }`}
+                  className={`px-6 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${isDirty && !isSubmitting
+                    ? "bg-[#008BE3] text-white hover:bg-[#0076C2] shadow-md shadow-[#008BE3]/20"
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                    }`}
                   title={
                     !isDirty
                       ? "Tidak ada perubahan untuk disimpan"
@@ -1805,7 +1617,9 @@ interface BackendPlenoDetail {
                   }
                 >
                   <Save size={16} />
-                  <span>{isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}</span>
+                  <span>
+                    {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
+                  </span>
                 </button>
               </div>
             </div>

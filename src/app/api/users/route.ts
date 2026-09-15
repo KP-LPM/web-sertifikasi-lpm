@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
 
     const { username, email, password, role, isActive } =
       BaseUserSchema.parse(body);
+    const namaLengkap = body.namaLengkap;
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await userService.createUser({
       username,
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role,
       isActive,
+      namaLengkap,
     });
 
     revalidatePath("/api/users");

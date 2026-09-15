@@ -14,6 +14,13 @@ export class PlenoRepository {
         pleno_batch_skema: {
           include: { master_skema: { select: { namaSkema: true } } },
         },
+        pleno_asesi: {
+          include: {
+            pengajuan_skema: {
+              include: { skema: { select: { namaSkema: true } } }
+            }
+          }
+        },
       },
     });
   }
@@ -73,10 +80,10 @@ export class PlenoRepository {
 
   // --- ASESI ---
 
-  async getPengajuanSelesai(skemaIds?: number[], pengajuanIds?: number[]) {
+  async getPengajuanMenunggu(skemaIds?: number[], pengajuanIds?: number[]) {
     return await db.pengajuanSkema.findMany({
       where: {
-        status: { equals: "Selesai", mode: "insensitive" },
+        status: { equals: "Menunggu Pleno", mode: "insensitive" },
         ...(skemaIds && skemaIds.length > 0
           ? { skemaId: { in: skemaIds } }
           : {}),
@@ -124,10 +131,42 @@ export class PlenoRepository {
   }
 
   async addAsesiBulk(plenoBatchId: number, pengajuanIds: number[]) {
-    const dataToInsert = pengajuanIds.map((pengajuanId) => ({
-      pleno_batch_id: plenoBatchId,
-      pengajuan_id: pengajuanId,
-    }));
+    const pengajuans = await db.pengajuanSkema.findMany({
+      where: { id: { in: pengajuanIds } },
+      include: {
+        jadwal_asesmen_peserta: {
+          include: { jadwal_asesmen: true },
+        },
+        hasil_asesmen: true,
+        verifikasi_pengajuan: true,
+      },
+    });
+
+    const dataToInsert = pengajuans.map((p) => {
+      const asesorId =
+        p.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.asesor_id ||
+        p.verifikasi_pengajuan?.assigned_asesor_id;
+
+      // Default mapping for "Kompeten" (K) or "Belum Kompeten" (BK) based on text.
+      let rekomendasi = null;
+      if (p.hasil_asesmen?.hasil) {
+        if (p.hasil_asesmen.hasil.toLowerCase() === "kompeten") {
+          rekomendasi = "K";
+        } else if (p.hasil_asesmen.hasil.toLowerCase() === "belum kompeten") {
+          rekomendasi = "BK";
+        } else {
+          rekomendasi = p.hasil_asesmen.hasil;
+        }
+      }
+
+      return {
+        pleno_batch_id: plenoBatchId,
+        pengajuan_id: p.id,
+        asesor_id: asesorId || null,
+        rekomendasi_asesor: rekomendasi,
+        catatan: p.hasil_asesmen?.catatan || null,
+      };
+    });
 
     return await db.pleno_asesi.createMany({
       data: dataToInsert,

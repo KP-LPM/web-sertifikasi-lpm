@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       windowMs: 60 * 1000,
       key: "get-jadwal-completed",
     });
-    
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return sendResponse(401, "Anda harus login.");
@@ -28,8 +28,13 @@ export async function GET(request: NextRequest) {
     const completedBatches = await db.jadwal_asesmen.findMany({
       where: { status: "Selesai" },
       include: {
-        users: { select: { username: true, profil: { select: { namaLengkap: true } } } },
-        master_skema: { select: { namaSkema: true } },
+        users: {
+          select: {
+            username: true,
+            profil: { select: { namaLengkap: true, nomorRegistrasiMet: true } },
+          },
+        },
+        master_skema: { select: { namaSkema: true, kodeSkema: true } },
         hasil_asesmen: {
           include: {
             pengajuan_skema: {
@@ -50,7 +55,11 @@ export async function GET(request: NextRequest) {
       const asesiList = batch.hasil_asesmen.map((hasil) => {
         const h = hasil.hasil || "";
         if (h.toLowerCase() === "kompeten") kompetenCount++;
-        else if (h.toLowerCase() === "belum kompeten" || h.toLowerCase() === "tidak kompeten") belumKompetenCount++;
+        else if (
+          h.toLowerCase() === "belum kompeten" ||
+          h.toLowerCase() === "tidak kompeten"
+        )
+          belumKompetenCount++;
 
         return {
           nama: hasil.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi",
@@ -61,19 +70,25 @@ export async function GET(request: NextRequest) {
 
       return {
         id: batch.id,
-        kode: batch.kode_batch,
-        nama: batch.nama_batch || batch.kode_batch,
+        nama: batch.nama_batch,
         skema: batch.master_skema?.namaSkema || "-",
-        asesor: batch.users?.profil?.namaLengkap || batch.users?.username || "-",
+        noSkema: batch.master_skema?.kodeSkema || "-",
+        asesor:
+          batch.users?.profil?.namaLengkap || batch.users?.username || "-",
+        asesorReg: batch.users?.profil?.nomorRegistrasiMet || "-",
         tipeTuk: batch.tipe_tuk,
         metode: batch.metode,
         tanggal: batch.tanggal,
-        waktu: batch.waktu_mulai ? new Date(batch.waktu_mulai).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-",
+        waktu: batch.waktu_mulai
+          ? new Date(batch.waktu_mulai).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "-",
         totalAsesi: asesiList.length,
         kompetenCount,
         belumKompetenCount,
         status: batch.status,
-        suratPenugasan: batch.surat_tugas_name || "",
         suratTugasUrl: batch.surat_tugas_url || "",
         asesiList,
       };

@@ -139,6 +139,8 @@ export interface UserItem {
   status: "Aktif" | "Nonaktif" | string; // computed dari isActive
   nik?: string;
   tempPassword?: string;
+  namaInstitusi?: string;
+  jabatan?: string;
   verificationData?: UserVerificationData;
 }
 
@@ -146,6 +148,13 @@ export interface PenyusunValidatorItem {
   nama: string;
   noMet: string;
   ttdTanggal: string;
+  [key: string]: unknown;
+}
+
+export interface UserDocumentItem {
+  id: number;
+  namaDokumen: string;
+  fileUrl?: string;
   [key: string]: unknown;
 }
 
@@ -163,6 +172,7 @@ export interface UserVerificationData {
   assignedAsesorId?: number; // users.id
   statusPembayaran?: "Sudah" | "Belum" | string;
   sumberAnggaran?: string;
+  dokumen?: UserDocumentItem[];
   [key: string]: unknown;
 }
 
@@ -206,7 +216,7 @@ export interface PlenoGroup {
   skemaList: string[];
   tanggal: string;
   waktu: string;
-  lokasi: string;
+  alamat: string;
   isOnline: boolean;
   status: "Belum Selesai" | "Selesai" | string;
   asesiList: AsesiPlenoRecord[];
@@ -241,6 +251,7 @@ export interface AsesiPlenoItem {
   nik: string;
   nama: string;
   skema: string;
+  skemaId?: number;
   asesor: string;
   rekomendasiAsesor: "K" | "BK" | string;
   statusPleno: "K" | "BK" | string;
@@ -329,7 +340,6 @@ export interface MasterSkemaPayload {
 
 export interface ScheduleItem {
   id: number; // jadwal_asesmen.id
-  kodeBatch?: string;
   namaBatch?: string;
   nomorSurat?: string;
   skema?: string;
@@ -343,10 +353,12 @@ export interface ScheduleItem {
   totalKandidat?: number;
   namaAsesor?: string;
   inisialAsesor?: string;
-  suratPenugasanName?: string;
-  suratTugasName?: string;
   suratTugasUrl?: string;
   status: string;
+  noRegMet?: string;
+  jumlahSkema?: number;
+  kotaSurat?: string;
+  namaDirektur?: string;
   asesiList?: number[]; // pengajuan_skema.id[] — sebelumnya (number|string)[]
 }
 
@@ -515,10 +527,13 @@ export interface CompletedBatchAsesi {
 }
 
 export interface CompletedBatchItem {
+  id: number;
   kode: string;
   nama: string;
   skema: string;
+  noSkema?: string;
   asesor: string;
+  asesorReg?: string;
   tipeTuk: TipeTuk;
   metode: JenisMetode;
   tanggal: string;
@@ -528,6 +543,7 @@ export interface CompletedBatchItem {
   belumKompetenCount: number;
   status: string;
   suratPenugasan: string;
+  suratTugasUrl?: string;
   asesiList: CompletedBatchAsesi[];
 }
 
@@ -644,6 +660,9 @@ export interface Candidate {
   tglAsesmen?: string;
   waktu?: string;
   tipeTuk?: string;
+  noSkema?: string;
+  asesor?: string;
+  alamat?: string;
   statusAPL02?: "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
   statusPortofolio?:
   "Terverifikasi" | "Belum Terverifikasi" | "Proses" | string;
@@ -759,6 +778,8 @@ export interface AssessmentItem {
   nik: string;
   nama: string;
   skema: string;
+  namaSkema?: string;
+  noSkema?: string;
   tglAsesmen: string;
   waktu: string;
   tipeTuk: TipeTuk;
@@ -767,13 +788,13 @@ export interface AssessmentItem {
   statusApl?: string;
   alamat?: string;
   asesor?: string;
+  asesorReg?: string;
   metode?: JenisMetode;
   catatan?: string;
   isBanding?: boolean;
   alasanBanding?: string;
   statusBanding?: "Menunggu" | "Disetujui" | "Ditolak" | string;
   catatanBanding?: string;
-  kodeBatch?: string;
   namaBatch?: string;
   linkVideo?: string;
 }

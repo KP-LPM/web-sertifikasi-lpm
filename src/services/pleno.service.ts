@@ -11,7 +11,7 @@ import {
 import { NotFoundError, InvariantError } from "@/error/index";
 
 export class PlenoService {
-  constructor(private repo: PlenoRepository = plenoRepository) {}
+  constructor(private repo: PlenoRepository = plenoRepository) { }
 
   async getList() {
     return await this.repo.getList();
@@ -24,9 +24,14 @@ export class PlenoService {
   }
 
   async create(data: CreatePlenoInput) {
-    const pleno = await this.repo.create(data);
-    if (!pleno) throw new InvariantError("Gagal membuat jadwal pleno baru");
-    return pleno;
+    try {
+      const pleno = await this.repo.create(data);
+      // if (!pleno) throw new InvariantError("Gagal membuat jadwal pleno baru");
+      return pleno;
+    } catch (error) {
+      console.log(error)
+      throw error;
+    }
   }
 
   async update(id: number, data: UpdatePlenoInput) {
@@ -50,7 +55,7 @@ export class PlenoService {
     const skemaIds = pleno.pleno_batch_skema?.map((s) => s.skema_id) || [];
 
     // Ambil pengajuan yang berstatus 'Selesai' (dan sesuai skema pleno jika pleno memiliki batasan skema)
-    const pengajuanSelesai = await this.repo.getPengajuanSelesai(
+    const pengajuanSelesai = await this.repo.getPengajuanMenunggu(
       skemaIds.length > 0 ? skemaIds : undefined,
       pengajuanIds,
     );
@@ -97,7 +102,7 @@ export class PlenoService {
     const skemaIds = pleno.pleno_batch_skema?.map((s) => s.skema_id) || [];
 
     // Ambil seluruh pengajuan berstatus 'Selesai' sesuai skema
-    const pengajuanSelesai = await this.repo.getPengajuanSelesai(
+    const pengajuanSelesai = await this.repo.getPengajuanMenunggu(
       skemaIds.length > 0 ? skemaIds : undefined,
     );
 

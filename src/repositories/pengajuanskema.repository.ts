@@ -18,8 +18,10 @@ export class PengajuanRepository {
           userId: data.userId!,
           skemaId: data.skemaId!,
           tuk: data.tuk,
-          jenisAsesmen: data.jenisAsesmen,
+          jenisMetode: data.jenisMetode || "Offline",
           status: "Menunggu Verifikasi",
+          namaInstitusi: data.dataPribadi.namaInstitusi,
+          jabatan: data.dataPribadi.jabatan,
           dataPribadi: {
             create: {
               nik: data.dataPribadi.nik,
@@ -136,6 +138,7 @@ export class PengajuanRepository {
             asesmenMandiri: true,
           },
         },
+        dokumen: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -209,12 +212,12 @@ export class PengajuanRepository {
   async update(id: number, data: UpdatePengajuanDTO) {
     return await db.$transaction(async (tx) => {
       // Update data induk jika ada
-      if (data.tuk || data.jenisAsesmen) {
+      if (data.tuk || data.jenisMetode) {
         await tx.pengajuanSkema.update({
           where: { id },
           data: {
             ...(data.tuk && { tuk: data.tuk }),
-            ...(data.jenisAsesmen && { jenisAsesmen: data.jenisAsesmen }),
+            ...(data.jenisMetode && { jenisMetode: data.jenisMetode }),
           },
         });
       }

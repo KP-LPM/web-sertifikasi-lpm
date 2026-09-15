@@ -154,6 +154,7 @@ export default function KelolaPengguna() {
         password: formData.tempPassword,
         role: formData.role,
         isActive: formData.status !== "Nonaktif",
+        namaLengkap: formData.namaLengkap.trim(),
       };
       const result = await createUserAdmin(payload);
 
@@ -586,6 +587,27 @@ export default function KelolaPengguna() {
                         className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${readOnly
                           ? "bg-slate-100 text-slate-700 cursor-not-allowed"
                           : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
+                          }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Username{" "}
+                        {!readOnly && <span className="text-rose-500">*</span>}
+                      </label>
+                      <input
+                        type="text"
+                        required={!readOnly}
+                        readOnly={readOnly}
+                        placeholder="Contoh: ahmadfauzi"
+                        value={formData.username}
+                        onChange={(e) =>
+                          setFormData({ ...formData, username: e.target.value })
+                        }
+                        className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${readOnly
+                            ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                            : "bg-white text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                           }`}
                       />
                     </div>

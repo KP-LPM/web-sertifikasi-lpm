@@ -22,6 +22,7 @@ interface ApiUnitKompetensi {
   judulUnit?: string;
   judul?: string;
   elemen?: ApiElemenKompetensi[];
+  elemenKompetensi?: ApiElemenKompetensi[];
 }
 
 export const DEFAULT_APL02_UNITS = [
@@ -74,7 +75,7 @@ export interface FormFRAPL02Props {
   }>;
   answers?: Record<string, "K" | "BK">;
   onAnswerChange?: (key: string, value: "K" | "BK") => void;
-  evidenceFiles?: Record<string, EvidenceFileItem | File | string>;
+  evidenceFiles?: Record<string, EvidenceFileItem | EvidenceFileItem[] | File | string | {name: string, url: string}[]>;
   rekomendasi?: "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | "";
   onRekomendasiChange?: (
     val: "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | "",
@@ -104,6 +105,11 @@ export interface FormFRAPL02Props {
   onPrev?: () => void;
   isNextDisabled?: boolean;
   isAsesi?: boolean;
+  onFormStatusChange?: (
+    totalElements: number,
+    filledElements: number,
+    isAllFilled: boolean
+  ) => void;
 }
 
 export function FormFRAPL02(props: FormFRAPL02Props) {
@@ -125,7 +131,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
             const mapped = (data.unitKompetensi as unknown as ApiUnitKompetensi[]).map((u) => ({
               code: u.kodeUnit || u.kode || "",
               title: u.judulUnit || u.judul || "",
-              elemen: (u.elemen || []).map((e) => ({
+              elemen: (u.elemen || u.elemenKompetensi || []).map((e) => ({
                 title: e.namaElemen || e.nama || "",
                 kuk: typeof e.kriteriaUnjukKerja === "string"
                   ? e.kriteriaUnjukKerja.split("\n").filter(Boolean)
@@ -147,7 +153,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
               const mapped = (data.unitKompetensi as unknown as ApiUnitKompetensi[]).map((u) => ({
                 code: u.kodeUnit || u.kode || "",
                 title: u.judulUnit || u.judul || "",
-                elemen: (u.elemen || []).map((e) => ({
+                elemen: (u.elemen || u.elemenKompetensi || []).map((e) => ({
                   title: e.namaElemen || e.nama || "",
                   kuk: typeof e.kriteriaUnjukKerja === "string"
                     ? e.kriteriaUnjukKerja.split("\n").filter(Boolean)
@@ -219,12 +225,9 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   );
   const [localAsesiSig, setLocalAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState(
-    props.asesmenData?.tglAsesmen ||
-    new Date().toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
+    (props.asesmenData?.tglAsesmen && String(props.asesmenData.tglAsesmen).includes("-"))
+      ? String(props.asesmenData.tglAsesmen).split("T")[0]
+      : new Date().toISOString().split("T")[0]
   );
 
   const [localAsesorName, setLocalAsesorName] = useState(
@@ -235,12 +238,9 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   );
   const [localAsesorSig, setLocalAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState(
-    props.asesmenData?.tglAsesmen ||
-    new Date().toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
+    (props.asesmenData?.tglAsesmen && String(props.asesmenData.tglAsesmen).includes("-"))
+      ? String(props.asesmenData.tglAsesmen).split("T")[0]
+      : new Date().toISOString().split("T")[0]
   );
 
   const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
@@ -258,10 +258,8 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     props.rekomendasi !== undefined ? props.rekomendasi : localRekomendasi;
   const asesiName =
     props.asesiName !== undefined ? props.asesiName : localAsesiName;
-  const asesiSignature =
-    props.asesiSignature !== undefined ? props.asesiSignature : localAsesiSig;
-  const asesiDate =
-    props.asesiDate !== undefined ? props.asesiDate : localAsesiDate;
+  const asesiSignature = props.asesiSignature || localAsesiSig;
+  const asesiDate = props.asesiDate || localAsesiDate;
   const asesorName =
     props.asesorName !== undefined ? props.asesorName : localAsesorName;
   const asesorReg =
@@ -287,6 +285,12 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   ).length;
   const isAllKBKFilled =
     totalElements > 0 && filledElementsCount === totalElements;
+
+  useEffect(() => {
+    if (props.onFormStatusChange) {
+      props.onFormStatusChange(totalElements, filledElementsCount, isAllKBKFilled);
+    }
+  }, [totalElements, filledElementsCount, isAllKBKFilled, props.onFormStatusChange]);
 
   const handleAnswerChangeInternal = (key: string, val: "K" | "BK") => {
     if (props.readOnly || props.isAsesi) return;
@@ -685,7 +689,10 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   id="signature-container"
                   src={asesiSignature}
                   alt="Tanda Tangan Asesi"
-                  className="h-20 object-contain cursor-default"
+                  className="h-20 object-contain cursor-pointer"
+                  onClick={() =>
+                    !props.readOnly && setIsAsesiSigModalOpen(true)
+                  }
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center opacity-80 h-20 cursor-default">
@@ -698,9 +705,14 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                 </div>
               )
             ) : (
-              <div className="h-20 flex items-center justify-center text-gray-400 text-sm">
-                Belum ada tanda tangan
-              </div>
+              <button
+                type="button"
+                disabled={props.readOnly}
+                onClick={() => setIsAsesiSigModalOpen(true)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
+              >
+                Tanda Tangan Asesi
+              </button>
             )}
           </div>
           <div className="w-full">
@@ -751,7 +763,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   <td className="border-r border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent"
                       value={String(p.nama)}
                       onChange={(e) =>
@@ -766,7 +778,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   <td className="border-r border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={String(p.noMet)}
                       onChange={(e) =>
@@ -781,7 +793,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   <td className="p-2 text-center">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={String(p.ttdTanggal)}
                       onChange={(e) =>
@@ -816,7 +828,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   <td className="border-r border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent"
                       value={v.nama}
                       onChange={(e) =>
@@ -831,7 +843,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   <td className="border-r border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={v.noMet}
                       onChange={(e) =>
@@ -846,7 +858,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   <td className="p-2 text-center">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={v.ttdTanggal}
                       onChange={(e) =>
@@ -934,6 +946,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           if (props.onAsesiSignatureChange)
             props.onAsesiSignatureChange(sigData);
           else setLocalAsesiSig(sigData);
+          setIsAsesiSigModalOpen(false);
         }}
       />
 
@@ -946,6 +959,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           if (props.onAsesorSignatureChange)
             props.onAsesorSignatureChange(sigData);
           else setLocalAsesorSig(sigData);
+          setIsAsesorSigModalOpen(false);
         }}
       />
     </div>

@@ -49,6 +49,7 @@ import {
   createPengajuan,
   getPengajuanDetail,
   deletePengajuan,
+  createRiwayatAsesmen,
 } from "@/lib/api";
 
 // --- INTERFACE UNTUK DATA RUJUKAN ---
@@ -264,7 +265,7 @@ export default function PengajuanSkemaPage() {
               item.dataPribadi?.jenisKelamin === "Laki_laki"
                 ? "Laki-laki"
                 : item.dataPribadi?.jenisKelamin || "",
-            alamat: item.dataPribadi?.alamat || "",
+            alamat: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.alamat || item.dataPribadi?.alamat || "",
             provinsi: item.dataPribadi?.kodeProvinsi || "",
             kota: item.dataPribadi?.kodeKota || "",
             nik: item.dataPribadi?.nik || "",
@@ -853,7 +854,22 @@ export default function PengajuanSkemaPage() {
         dokumen: uploadedDokumen,
       };
 
-      await createPengajuan(payloadData);
+      const response = await createPengajuan(payloadData);
+      
+      const pengajuanId = response?.id;
+      if (pengajuanId) {
+        // Simpan riwayat APL-01
+        await createRiwayatAsesmen(pengajuanId, {
+          form_type: "FR.APL.01",
+          form_data: payloadData,
+        }).catch((err) => console.error("Gagal simpan riwayat APL-01:", err));
+
+        // Simpan riwayat APL-02
+        await createRiwayatAsesmen(pengajuanId, {
+          form_type: "FR.APL.02",
+          form_data: eFormData,
+        }).catch((err) => console.error("Gagal simpan riwayat APL-02:", err));
+      }
 
       showNotification(
         `Pengajuan Skema ${payloadData.name} Berhasil Diajukan!`,

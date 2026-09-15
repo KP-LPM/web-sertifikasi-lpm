@@ -57,8 +57,15 @@ export async function POST(request: NextRequest) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
-    if (error instanceof z.ZodError)
-      return sendResponse(400, "Validasi gagal", error.flatten());
+    if (error instanceof z.ZodError) {
+      const errorMsg =
+        "Validasi gagal: " + JSON.stringify(error.flatten().fieldErrors);
+      console.error(
+        "Zod Validation Error:",
+        JSON.stringify(error.flatten(), null, 2),
+      );
+      return sendResponse(400, errorMsg, error.flatten());
+    }
     if (error instanceof ClientError)
       return sendResponse(error.statusCode, error.message);
     return sendResponse(500, "Internal server error");

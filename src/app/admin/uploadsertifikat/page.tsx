@@ -161,7 +161,7 @@ export default function UploadSertifikat() {
       ],
       tanggal: "15 Agt 2026",
       waktu: "09:00 - 12:00 WIB",
-      lokasi: "Ruang Sidang Utama Gedung Rektorat",
+      alamat: "Ruang Sidang Utama Gedung Rektorat",
       isOnline: false,
       status: "Selesai",
       asesiList: [
@@ -231,7 +231,7 @@ export default function UploadSertifikat() {
       skemaList: ["Junior Web Developer", "Auditor Halal"],
       tanggal: "18 Agt 2026",
       waktu: "13:00 - 15:30 WIB",
-      lokasi: "Zoom Meeting (Online)",
+      alamat: "Zoom Meeting (Online)",
       isOnline: true,
       status: "Selesai",
       asesiList: [
@@ -293,7 +293,7 @@ export default function UploadSertifikat() {
       ],
       tanggal: "22 Agt 2026",
       waktu: "09:30 - 11:30 WIB",
-      lokasi: "Gedung PTIPD Lantai 2",
+      alamat: "Gedung PTIPD Lantai 2",
       isOnline: false,
       status: "Terjadwal",
       asesiList: [
@@ -350,44 +350,44 @@ export default function UploadSertifikat() {
   // Copy notification state
   const [copiedId, setCopiedId] = useState<string | number | null>(null);
 
-interface BackendSertifikatRecord {
-  id?: number;
-  pengajuan_id?: number;
-  pleno_asesi_id?: number;
-  no_sertifikat?: string;
-  tanggal_terbit?: string | Date;
-  gdrive_url?: string;
-  status?: string;
-  notes?: string;
-}
+  interface BackendSertifikatRecord {
+    id?: number;
+    pengajuan_id?: number;
+    pleno_asesi_id?: number;
+    no_sertifikat?: string;
+    tanggal_terbit?: string | Date;
+    gdrive_url?: string;
+    status?: string;
+    notes?: string;
+  }
 
-interface BackendPlenoSkemaUpload {
-  master_skema?: { namaSkema?: string };
-}
+  interface BackendPlenoSkemaUpload {
+    master_skema?: { namaSkema?: string };
+  }
 
-interface BackendPlenoAsesiUpload {
-  id: number;
-  pengajuan_id?: number;
-  nama?: string;
-  nik?: string;
-  pengajuan_skema?: {
-    dataPribadi?: Array<{ nik?: string; namaLengkap?: string }>;
-    user?: { username?: string };
-    skema?: { namaSkema?: string };
-  };
-}
+  interface BackendPlenoAsesiUpload {
+    id: number;
+    pengajuan_id?: number;
+    nama?: string;
+    nik?: string;
+    pengajuan_skema?: {
+      dataPribadi?: Array<{ nik?: string; namaLengkap?: string }>;
+      user?: { username?: string };
+      skema?: { namaSkema?: string };
+    };
+  }
 
-interface BackendPlenoUploadItem {
-  id: number;
-  batch_code?: string;
-  skema?: string;
-  tanggal?: string | Date;
-  waktu?: string | Date;
-  alamat?: string;
-  status?: string;
-  pleno_batch_skema?: BackendPlenoSkemaUpload[];
-  pleno_asesi?: BackendPlenoAsesiUpload[];
-}
+  interface BackendPlenoUploadItem {
+    id: number;
+    batch_code?: string;
+    skema?: string;
+    tanggal?: string | Date;
+    waktu?: string | Date;
+    alamat?: string;
+    status?: string;
+    pleno_batch_skema?: BackendPlenoSkemaUpload[];
+    pleno_asesi?: BackendPlenoAsesiUpload[];
+  }
 
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
 
@@ -475,11 +475,11 @@ interface BackendPlenoUploadItem {
               : "-",
             waktu: p.waktu
               ? new Date(p.waktu).toLocaleTimeString("id-ID", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }) + " WIB"
+                hour: "2-digit",
+                minute: "2-digit",
+              }) + " WIB"
               : "09:00 - 12:00 WIB",
-            lokasi: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
+            alamat: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
             isOnline: false,
             status: p.status || "Belum Selesai",
             asesiList,
@@ -630,23 +630,23 @@ interface BackendPlenoUploadItem {
   // Filtered Candidates inside Level 2
   const filteredCandidates = selectedPlenoGroup
     ? selectedPlenoGroup.asesiList.filter((candidate) => {
-        if (candidateFilterStatus === "Terbit" && candidate.status !== "Terbit")
-          return false;
-        if (
-          candidateFilterStatus === "Belum Upload" &&
-          candidate.status !== "Belum Upload"
-        )
-          return false;
+      if (candidateFilterStatus === "Terbit" && candidate.status !== "Terbit")
+        return false;
+      if (
+        candidateFilterStatus === "Belum Upload" &&
+        candidate.status !== "Belum Upload"
+      )
+        return false;
 
-        if (candidateSearchTerm.trim()) {
-          const q = candidateSearchTerm.toLowerCase();
-          const matchName = candidate.nama.toLowerCase().includes(q);
-          const matchNim = candidate.nik.toLowerCase().includes(q);
-          if (!matchName && !matchNim) return false;
-        }
+      if (candidateSearchTerm.trim()) {
+        const q = candidateSearchTerm.toLowerCase();
+        const matchName = candidate.nama.toLowerCase().includes(q);
+        const matchNim = candidate.nik.toLowerCase().includes(q);
+        if (!matchName && !matchNim) return false;
+      }
 
-        return true;
-      })
+      return true;
+    })
     : [];
 
   // Totals for overall header summary
@@ -838,11 +838,10 @@ interface BackendPlenoUploadItem {
 
                         {/* Online / Offline / Status Badge */}
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                            pleno.status === "Selesai"
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${pleno.status === "Selesai"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                               : "bg-amber-50 text-amber-700 border-amber-200"
-                          }`}
+                            }`}
                         >
                           {pleno.status === "Selesai" ? (
                             <CheckCircle2 size={12} className="stroke-[2.5]" />
@@ -897,7 +896,7 @@ interface BackendPlenoUploadItem {
                             />
                           )}
                           <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
-                            {pleno.lokasi}
+                            {pleno.alamat}
                           </span>
                         </div>
 
@@ -917,11 +916,10 @@ interface BackendPlenoUploadItem {
                         {/* Progress Bar */}
                         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all duration-500 ${
-                              progressPercent === 100
+                            className={`h-full transition-all duration-500 ${progressPercent === 100
                                 ? "bg-emerald-500"
                                 : "bg-[#008BE3]"
-                            }`}
+                              }`}
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
@@ -1016,7 +1014,7 @@ interface BackendPlenoUploadItem {
                     TUK
                   </p>
                   <p className="font-bold text-slate-800 text-xs sm:text-sm mt-0.5">
-                    {selectedPlenoGroup?.lokasi}
+                    {selectedPlenoGroup?.alamat}
                   </p>
                 </div>
                 <div>
@@ -1031,14 +1029,14 @@ interface BackendPlenoUploadItem {
                     }{" "}
                     dari {selectedPlenoGroup?.asesiList.length} Asesi Terbit (
                     {selectedPlenoGroup &&
-                    selectedPlenoGroup.asesiList.length > 0
+                      selectedPlenoGroup.asesiList.length > 0
                       ? Math.round(
-                          (selectedPlenoGroup.asesiList.filter(
-                            (a) => a.status === "Terbit",
-                          ).length /
-                            selectedPlenoGroup.asesiList.length) *
-                            100,
-                        )
+                        (selectedPlenoGroup.asesiList.filter(
+                          (a) => a.status === "Terbit",
+                        ).length /
+                          selectedPlenoGroup.asesiList.length) *
+                        100,
+                      )
                       : 0}
                     %)
                   </p>
@@ -1192,7 +1190,7 @@ interface BackendPlenoUploadItem {
                         {/* Tautan Google Drive */}
                         <td className="px-6 py-4 align-middle whitespace-nowrap">
                           {candidate.status === "Terbit" &&
-                          candidate.gdriveUrl ? (
+                            candidate.gdriveUrl ? (
                             <div className="flex items-center gap-1.5 whitespace-nowrap">
                               <a
                                 href={candidate.gdriveUrl}
@@ -1360,11 +1358,10 @@ interface BackendPlenoUploadItem {
                     onChange={(e) =>
                       setInputForm({ ...inputForm, issueDate: e.target.value })
                     }
-                    className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${
-                      readOnly
+                    className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${readOnly
                         ? "bg-slate-100 text-slate-700 cursor-not-allowed"
                         : "bg-slate-50 focus:border-[#008BE3] focus:bg-white"
-                    }`}
+                      }`}
                   />
                 </div>
               </div>
@@ -1399,11 +1396,10 @@ interface BackendPlenoUploadItem {
                           gdriveUrl: e.target.value,
                         })
                       }
-                      className={`w-full border border-sky-200 rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm font-semibold outline-none transition-all ${
-                        readOnly
+                      className={`w-full border border-sky-200 rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm font-semibold outline-none transition-all ${readOnly
                           ? "bg-slate-100 text-slate-700 cursor-not-allowed"
                           : "bg-sky-50/50 text-slate-800 focus:border-[#008BE3] focus:bg-white"
-                      }`}
+                        }`}
                     />
                   </div>
                   {!readOnly && (
@@ -1411,11 +1407,10 @@ interface BackendPlenoUploadItem {
                       type="button"
                       disabled={isLoading}
                       onClick={() => handleDownloadSertifikat()}
-                      className={`px-3.5 py-2.5 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95 ${
-                        isLoading
+                      className={`px-3.5 py-2.5 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95 ${isLoading
                           ? "bg-slate-400 cursor-not-allowed"
                           : "bg-emerald-600 hover:bg-emerald-700"
-                      }`}
+                        }`}
                       title="Generate otomatis tautan Google Drive sertifikat"
                     >
                       {isLoading ? (
