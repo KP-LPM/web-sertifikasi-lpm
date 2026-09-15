@@ -818,6 +818,7 @@ export interface RegisteredAssessment {
   jenisBukti: string;
   rekomendasi: string;
   statusAsesmen: string;
+  statusPembayaran: string;
 }
 
 export interface AssessmentHistory {

@@ -86,6 +86,7 @@ export default function AsesiOverviewPage() {
           jenisMetode?: string;
           tuk?: string;
           status?: string;
+          statusPembayaran?: string;
           tglPengajuan?: string | Date;
           createdAt?: string | Date;
           skema?: { namaSkema?: string };
@@ -127,7 +128,7 @@ export default function AsesiOverviewPage() {
               jadwal?.master_tuk?.alamat ||
               item.master_tuk?.alamat ||
               (String(tipeTuk).toLowerCase().includes("online") ||
-              String(tipeTuk).toLowerCase().includes("virtual")
+                String(tipeTuk).toLowerCase().includes("virtual")
                 ? "Online"
                 : "-");
             const linkMeeting =
@@ -149,6 +150,7 @@ export default function AsesiOverviewPage() {
               jenisBukti: "Portofolio & Praktik",
               rekomendasi,
               statusAsesmen: item.status || "Menunggu Verifikasi",
+              statusPembayaran: item.statusPembayaran || "Belum Dibayar",
             };
           },
         );
@@ -185,8 +187,11 @@ export default function AsesiOverviewPage() {
       item.asesor.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.tipeTuk.toLowerCase().includes(searchQuery.toLowerCase());
 
+    // Pengecekan filter status dengan huruf kecil agar sinkron
     const matchesStatus =
-      statusFilter === "Semua" || item.statusAsesmen === statusFilter;
+      statusFilter === "Semua" ||
+      (item.statusAsesmen || "").toLowerCase() === statusFilter.toLowerCase();
+
     const matchesDate =
       !dateFilter ||
       item.tanggalAsesmen === dateFilter.split("-").reverse().join("/");
@@ -222,49 +227,62 @@ export default function AsesiOverviewPage() {
     return <span className="text-gray-400 text-xs font-semibold px-2">-</span>;
   };
 
+  // Fungsi Badge yang sudah diupdate dengan 5 status
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Selesai":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-            Selesai
-          </span>
-        );
-      case "Terjadwal":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-            Terjadwal
-          </span>
-        );
-      case "Belum Mulai":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>Belum
-            Mulai
-          </span>
-        );
-      case "Menunggu Verifikasi":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-            Menunggu Verifikasi
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-            {status}
-          </span>
-        );
+    const s = (status || "").toLowerCase();
+
+    if (s === "menunggu verifikasi") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+          Menunggu Verifikasi
+        </span>
+      );
     }
+    if (s === "terverifikasi") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+          Terverifikasi
+        </span>
+      );
+    }
+    if (s === "terjadwal") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+          Terjadwal
+        </span>
+      );
+    }
+    if (s === "revisi") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+          Revisi
+        </span>
+      );
+    }
+    if (s === "selesai") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+          Selesai
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+        {status || "Tidak Diketahui"}
+      </span>
+    );
   };
 
   const totalAsesmen = assessments.length;
   const selesaiCount = assessments.filter(
-    (a) => a.statusAsesmen === "Selesai" || a.rekomendasi === "Kompeten",
+    (a) => (a.statusAsesmen || "").toLowerCase() === "selesai" || a.rekomendasi === "Kompeten",
   ).length;
   const inProgressCount = totalAsesmen - selesaiCount;
 
@@ -476,15 +494,17 @@ export default function AsesiOverviewPage() {
                 className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
               />
             </div>
+            {/* Filter Dropdown yang sudah diupdate */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold"
             >
               <option value="Semua">Semua Status</option>
-              <option value="Belum Mulai">Belum Mulai</option>
-              <option value="Terjadwal">Terjadwal</option>
               <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+              <option value="Terverifikasi">Terverifikasi</option>
+              <option value="Terjadwal">Terjadwal</option>
+              <option value="Revisi">Revisi</option>
               <option value="Selesai">Selesai</option>
             </select>
             <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
@@ -526,6 +546,9 @@ export default function AsesiOverviewPage() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                   Hasil
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                  Status Pembayaran
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
                   Status
                 </th>
@@ -548,129 +571,142 @@ export default function AsesiOverviewPage() {
                   </td>
                 </tr>
               ) : filteredAssessments.length > 0 ? (
-                currentRecords.map((item, idx) => (
-                  <tr
-                    key={item.id}
-                    className="group/row hover:bg-[#F9FAFC] transition-colors"
-                  >
-                    <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
-                      <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          idx % 3 === 0
-                            ? "bg-[#008BE3]/10 text-[#008BE3]"
-                            : idx % 3 === 1
-                              ? "bg-[#84CC16]/10 text-[#73B412]"
-                              : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {(currentPage - 1) * itemsPerPage + idx + 1}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 min-w-87.5 max-w-125">
-                      <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
-                        <div className="min-w-0">
-                          <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
-                            {item.skemaSertifikasi}
-                          </div>
-                          <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
-                            {item.kodeSkema || "-"}
+                currentRecords.map((item, idx) => {
+                  const isTerjadwal = (item.statusAsesmen || "").toLowerCase() === "terjadwal";
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className="group/row hover:bg-[#F9FAFC] transition-colors"
+                    >
+                      <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
+                        <div
+                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
+                              ? "bg-[#008BE3]/10 text-[#008BE3]"
+                              : idx % 3 === 1
+                                ? "bg-[#84CC16]/10 text-[#73B412]"
+                                : "bg-slate-100 text-slate-600"
+                            }`}
+                        >
+                          {(currentPage - 1) * itemsPerPage + idx + 1}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 min-w-87.5 max-w-125">
+                        <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-[#008BE3]">
+                          <div className="min-w-0">
+                            <div className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                              {item.skemaSertifikasi}
+                            </div>
+                            <div className="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                              {item.kodeSkema || "-"}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          item.tipeTuk.includes("Sewaktu")
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : item.tipeTuk.includes("Tempat Kerja")
-                              ? "bg-purple-50 text-purple-700 border-purple-200"
-                              : item.tipeTuk.includes("Virtual") ||
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk.includes("Sewaktu")
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : item.tipeTuk.includes("Tempat Kerja")
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : item.tipeTuk.includes("Virtual") ||
                                   item.tipeTuk.includes("Online")
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-orange-50 text-orange-700 border-orange-200"
-                        }`}
-                      >
-                        {item.tipeTuk}
-                      </span>
-                    </td>
-                    <td
-                      className="px-6 py-4 text-xs text-gray-500 font-medium"
-                      title={item.alamat}
-                    >
-                      {item.alamat}
-                    </td>
-                    <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Calendar size={14} className="text-gray-400" />
-                        {item.tanggalAsesmen}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold">
-                      <span className="inline-flex items-center gap-1.5">
-                        <User size={14} className="text-gray-400" />
-                        {item.asesor}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-xs md:text-sm">
-                      {item.linkVirtualMeeting &&
-                      item.linkVirtualMeeting !== "-" ? (
-                        <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
-                          <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
-                          Tersedia
-                        </span>
-                      ) : item.alamat === "Online" ||
-                        item.tipeTuk.includes("Virtual") ||
-                        item.tipeTuk.includes("Online") ? (
-                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
-                          <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
-                          Belum Tersedia
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 font-semibold px-2">
-                          -
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-xs md:text-sm">
-                      {getRekomendasiBadge(item.rekomendasi)}
-                    </td>
-                    <td className="px-6 py-4 text-xs md:text-sm">
-                      {getStatusBadge(item.statusAsesmen)}
-                    </td>
-
-                    <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (item.statusAsesmen === "Terjadwal" && item.asesmen === "Online") {
-                              router.push(
-                                `/asesi/ujian?pengajuanId=${item.id}`,
-                              );
-                            } else {
-                              setSelectedAssessment(item);
-                            }
-                          }}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${
-                            item.statusAsesmen === "Terjadwal" && item.asesmen === "Online"
-                              ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
-                              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
-                          }`}
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-orange-50 text-orange-700 border-orange-200"
+                            }`}
                         >
-                          {item.statusAsesmen === "Terjadwal" && item.asesmen === "Online" ? (
-                            <>
-                              <FileEdit size={14} /> Mulai Ujian
-                            </>
-                          ) : (
-                            <>
-                              <Eye size={14} /> Detail
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {item.tipeTuk}
+                        </span>
+                      </td>
+                      <td
+                        className="px-6 py-4 text-xs text-gray-500 font-medium"
+                        title={item.alamat}
+                      >
+                        {item.alamat}
+                      </td>
+                      <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Calendar size={14} className="text-gray-400" />
+                          {item.tanggalAsesmen}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold">
+                        <span className="inline-flex items-center gap-1.5">
+                          <User size={14} className="text-gray-400" />
+                          {item.asesor}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs md:text-sm">
+                        {item.linkVirtualMeeting &&
+                          item.linkVirtualMeeting !== "-" ? (
+                          <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                            <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
+                            Tersedia
+                          </span>
+                        ) : item.alamat === "Online" ||
+                          item.tipeTuk.includes("Virtual") ||
+                          item.tipeTuk.includes("Online") ? (
+                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                            <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                            Belum Tersedia
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 font-semibold px-2">
+                            -
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-xs md:text-sm">
+                        {getRekomendasiBadge(item.rekomendasi)}
+                      </td>
+                      <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                        {item.statusPembayaran === "Sudah Bayar" ? (
+                          <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                            Sudah Bayar
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                            Belum Bayar
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-xs md:text-sm">
+                        {getStatusBadge(item.statusAsesmen)}
+                      </td>
+                      <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              if (item.statusAsesmen === "Terjadwal" && item.asesmen === "Online") {
+                                router.push(
+                                  `/asesi/ujian?pengajuanId=${item.id}`,
+                                );
+                              } else {
+                                setSelectedAssessment(item);
+                              }
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${item.statusAsesmen === "Terjadwal" && item.asesmen === "Online"
+                                ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
+                                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
+                              }`}
+                          >
+                            {item.statusAsesmen === "Terjadwal" && item.asesmen === "Online" ? (
+                              <>
+                                <FileEdit size={14} /> Mulai Ujian
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={14} /> Detail
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
               ) : (
                 <tr>
                   <td
@@ -720,11 +756,10 @@ export default function AsesiOverviewPage() {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
-                        currentPage === page
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${currentPage === page
                           ? "bg-[#008BE3] text-white border border-[#008BE3]"
                           : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
@@ -807,7 +842,7 @@ export default function AsesiOverviewPage() {
                 </span>
                 <span className="col-span-2 text-slate-900">
                   {selectedAssessment.linkVirtualMeeting &&
-                  selectedAssessment.linkVirtualMeeting !== "-" ? (
+                    selectedAssessment.linkVirtualMeeting !== "-" ? (
                     <a
                       href={selectedAssessment.linkVirtualMeeting}
                       target="_blank"

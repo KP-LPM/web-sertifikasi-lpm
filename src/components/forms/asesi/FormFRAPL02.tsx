@@ -14,7 +14,7 @@ export function EFormApl02({
   allData = {},
 }: EFormApl02Props) {
   const toggleK = (id: string, isK: boolean) => {
-    if (!formData.isAdmin) return; // Prevent changing competencies if admin
+    if (!formData.isAdmin) return; 
     const kData = formData.kompetensi || {};
     onChange({
       ...formData,
@@ -110,28 +110,6 @@ export function EFormApl02({
         }
         onRekomendasiChange={(val) =>
           formData.isAdmin && onChange({ ...formData, rekomendasiApl02: val })
-        }
-        penyusun={(Array.isArray(formData.penyusun)
-          ? formData.penyusun
-          : []
-        ).map((p) => ({
-          nama: p.nama ?? "",
-          noMet: p.noMet ?? "",
-          ttdTanggal: p.ttdTanggal ?? "",
-        }))}
-        onPenyusunChange={(val) =>
-          formData.isAdmin && onChange({ ...formData, penyusun: val })
-        }
-        validator={(Array.isArray(formData.validator)
-          ? formData.validator
-          : []
-        ).map((v) => ({
-          nama: v.nama ?? "",
-          noMet: v.noMet ?? "",
-          ttdTanggal: v.ttdTanggal ?? "",
-        }))}
-        onValidatorChange={(val) =>
-          formData.isAdmin && onChange({ ...formData, validator: val })
         }
       />
     </div>

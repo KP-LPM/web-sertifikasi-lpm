@@ -61,7 +61,7 @@ export function Sidebar() {
                 </div>
                 <div className="transition-all duration-300 overflow-hidden whitespace-nowrap">
                   <h2 className="text-base font-black text-white tracking-tight leading-none mb-1">
-                    LSP UIN SGD
+                    LSP P1 UIN SGD
                   </h2>
                   <p className="text-[10px] text-white/60 font-bold tracking-wider uppercase leading-none">
                     Sertifikasi Profesi

@@ -42,25 +42,28 @@ export async function GET(req: NextRequest) {
       logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
     }
 
-    const htmlContent = `
+const htmlContent = `
       <!DOCTYPE html>
       <html lang="id">
       <head>
         <meta charset="UTF-8">
         <style>
-          body { font-family: 'Arial', sans-serif; padding: 40px; color: #000; font-size: 14px; line-height: 1.5; }
+          body { font-family: 'Arial', sans-serif; padding: 40px; color: #000; font-size: 12px; line-height: 1.5; }
           .header { display: flex; align-items: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
           .header img { max-width: 80px; margin-right: 20px; }
           .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-          .title { font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+          .title { font-weight: bold; margin-bottom: 10px; font-size: 12px; }
           .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          .table th, .table td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+          .table th, .table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px; }
           .table th { background-color: #f0f0f0; text-align: left; }
           .section-title { font-weight: bold; background-color: #f0f0f0; padding: 5px; margin-top: 20px; border: 1px solid #000; border-bottom: none; }
-          .signature-box { float: right; width: 300px; text-align: left; margin-top: 40px; }
+          
+          /* Perbaikan Tanda Tangan */
+          .signature-container { display: flex; justify-content: flex-end; margin-top: 30px; page-break-inside: avoid; break-inside: avoid; width: 100%; }
+          .signature-box { width: 300px; text-align: left; }
           .signature-box .date { margin-bottom: 40px; }
           .signature-box .name { font-weight: bold; text-decoration: underline; }
-          .clearfix::after { content: ""; clear: both; display: table; }
+          
           .check-box { width: 15px; height: 15px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 15px; margin-right: 5px; }
         </style>
       </head>
@@ -103,7 +106,8 @@ export async function GET(req: NextRequest) {
           <tr><td>Nomor</td><td>${pengajuan.skema?.kodeSkema || ''}</td></tr>
         </table>
 
-        <div class="clearfix">
+        <!-- Pembungkus Tanda Tangan Anti-Offside -->
+        <div class="signature-container">
           <div class="signature-box">
             <div class="date">Tanggal: ${new Date().toLocaleDateString('id-ID')}</div>
             <div class="name">${data?.namaLengkap || user?.username || '_______________________'}</div>

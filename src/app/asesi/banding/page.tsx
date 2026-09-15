@@ -163,20 +163,20 @@ export default function AsesiAppeals() {
 
   if (selectedAppeal) {
     return (
-      <div className="min-h-screen bg-slate-100 p-4 md:p-8 pb-24 w-full">
-        <div className="w-full max-w-none mx-auto animate-in fade-in zoom-in-95 duration-200">
+      <div className="space-y-6 pb-24 w-full">
+        <div className="w-full animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button 
                 onClick={() => setSelectedAppeal(null)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mb-4 mt-0.5"
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
                 title="Kembali"
               >
                 <ArrowLeft size={18} />
               </button>
             </div>
-            <div className="w-full max-w-none mx-auto bg-white shadow-xl p-8 md:p-12 min-h-280.75 space-y-8 relative mb-8 text-slate-800 text-sm">
-              
-              <div className="flex items-center justify-between p-3.5 rounded-lg bg-white border border-slate-100 mb-4">
+            
+            <div className="w-full bg-white rounded-lg border border-gray-100 shadow-xs p-6 md:p-8 space-y-6 text-slate-800 text-sm">
+              <div className="flex items-center justify-between p-3.5 rounded-lg bg-slate-50 border border-slate-100">
                 <span className="text-xs font-bold text-slate-500">Status Tindak Lanjut</span>
                 {getStatusBadge(selectedAppeal.status)}
               </div>
@@ -195,7 +195,7 @@ export default function AsesiAppeals() {
                     <td className="border border-slate-300 p-2 font-semibold bg-white">Tanggal Asesmen:</td>
                     <td className="border border-slate-300 p-2" colSpan={2}>{formatTanggal(selectedAppeal.tanggalPengajuan)}</td>
                   </tr>
-                  <tr className="bg-slate-100 font-bold">
+                  <tr className="bg-slate-50 font-bold">
                     <td className="border border-slate-300 p-2">Jawablah dengan Ya atau Tidak pertanyaan-pertanyaan berikut ini :</td>
                     <td className="border border-slate-300 p-2 text-center w-16">YA</td>
                     <td className="border border-slate-300 p-2 text-center w-16">TIDAK</td>
@@ -361,7 +361,6 @@ export default function AsesiAppeals() {
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-15 sticky top-0 z-20 bg-[#0F172A]">No</th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">ID Banding</th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">Skema Sertifikasi</th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">Tanggal</th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-50 sticky top-0 z-20 bg-[#0F172A]">Alasan Utama</th>
@@ -381,9 +380,6 @@ export default function AsesiAppeals() {
                       }`}>
                         {(currentPage - 1) * itemsPerPage + idx + 1}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-bold text-slate-800 whitespace-nowrap">
-                      <span>{rec.id}</span>
                     </td>
                     <td className="px-6 py-4 min-w-87.5 max-w-125">
                       <div className="text-sm font-bold text-[#008BE3] line-clamp-2">{rec.skemaSertifikasi}</div>
@@ -412,7 +408,7 @@ export default function AsesiAppeals() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium">
+                  <td colSpan={6} className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium">
                     Tidak ada pengajuan banding yang cocok dengan kriteria filter Anda.
                   </td>
                 </tr>
