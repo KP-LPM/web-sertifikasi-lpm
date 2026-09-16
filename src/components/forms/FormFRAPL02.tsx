@@ -8,6 +8,7 @@ import {
   EvidenceFileItem,
 } from "@/types/types";
 import { getSkemaDetail, getPengajuanDetail } from "@/lib/api";
+import { useAppContext } from "@/context/context"; // 1. Import useAppContext
 
 interface ApiElemenKompetensi {
   namaElemen?: string;
@@ -108,6 +109,7 @@ export interface FormFRAPL02Props {
 }
 
 export function FormFRAPL02(props: FormFRAPL02Props) {
+  const { user, registeredProfile } = useAppContext(); // 2. Ambil data context user & profil
   const [apiUnits, setApiUnits] = useState<typeof props.units | null>(null);
 
   useEffect(() => {
@@ -155,13 +157,13 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                     : Array.isArray(e.kriteriaUnjukKerja)
                       ? e.kriteriaUnjukKerja
                       : [],
-                })),
-              }));
-              setApiUnits(mapped);
-              return;
-            }
+              })),
+            }));
+            setApiUnits(mapped);
+            return;
           }
         }
+      }
       } catch (err) {
         console.warn("Gagal memuat unit kompetensi dari API, gunakan fallback lokal:", err);
       }
@@ -218,7 +220,34 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const [localAsesiName, setLocalAsesiName] = useState(
     props.asesmenData?.nama || "AHMAD FAUZI",
   );
-  const [localAsesiSig, setLocalAsesiSig] = useState("");
+
+  // 3. Ambil tanda tangan profil sebagai nilai awal tanda tangan asesi
+  const profileSignature = 
+    (registeredProfile as unknown as { tanda_tangan?: string; tandaTangan?: string })?.tanda_tangan ||
+    (registeredProfile as unknown as { tandaTangan?: string })?.tandaTangan ||
+    (user as unknown as { tanda_tangan?: string })?.tanda_tangan || "";
+
+  const [localAsesiSig, setLocalAsesiSig] = useState(
+    props.asesiSignature || (props.isAsesi !== false ? profileSignature : "")
+  );
+
+  const [localAsesorSig, setLocalAsesorSig] = useState(
+    props.asesorSignature || (props.isAsesi === false ? profileSignature : "")
+  );
+
+  // 4. Update state jika data profil baru berhasil termuat belakangan
+  useEffect(() => {
+    const freshSig = 
+      (registeredProfile as unknown as { tanda_tangan?: string; tandaTangan?: string })?.tanda_tangan ||
+      (registeredProfile as unknown as { tandaTangan?: string })?.tandaTangan ||
+      (user as unknown as { tanda_tangan?: string })?.tanda_tangan || "";
+    
+    if (freshSig) {
+      if (props.isAsesi !== false && !localAsesiSig) setLocalAsesiSig(freshSig);
+      if (props.isAsesi === false && !localAsesorSig) setLocalAsesorSig(freshSig);
+    }
+  }, [registeredProfile, user, localAsesiSig, localAsesorSig, props.isAsesi]);
+
   const [localAsesiDate, setLocalAsesiDate] = useState(
     (props.asesmenData?.tglAsesmen && String(props.asesmenData.tglAsesmen).includes("-"))
       ? String(props.asesmenData.tglAsesmen).split("T")[0]
@@ -231,7 +260,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const [localAsesorReg, setLocalAsesorReg] = useState(
     props.asesmenData?.asesorReg || "",
   );
-  const [localAsesorSig, setLocalAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState(
     (props.asesmenData?.tglAsesmen && String(props.asesmenData.tglAsesmen).includes("-"))
       ? String(props.asesmenData.tglAsesmen).split("T")[0]

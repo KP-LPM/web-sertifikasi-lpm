@@ -343,20 +343,21 @@ export interface ScheduleItem {
   namaBatch?: string;
   nomorSurat?: string;
   skema?: string;
+  jumlahSkema?: number;
   metode?: string;
   tanggal: string;
   waktuMulai?: string;
   tipeTuk: TipeTuk;
   alamat?: string;
+  kota?: string;
   tuk?: string;
+  noRegMet?: string;
   linkVideo?: string;
   totalKandidat?: number;
   namaAsesor?: string;
   inisialAsesor?: string;
   suratTugasUrl?: string;
   status: string;
-  noRegMet?: string;
-  jumlahSkema?: number;
   kotaSurat?: string;
   namaDirektur?: string;
   asesiList?: number[]; // pengajuan_skema.id[] — sebelumnya (number|string)[]

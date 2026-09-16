@@ -116,20 +116,10 @@ export class PengajuanRepository {
         sertifikat: true,
         apl02_penilaian: true,
         jadwal_asesmen_peserta: {
-          include: {
-            jadwal_asesmen: {
-              include: {
-                users: {
-                  select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    profil: { select: { namaLengkap: true } },
-                  },
-                },
-                master_tuk: true,
-              },
-            },
+          select: {
+            id: true,
+            jadwal_id: true,
+            pengajuan_id: true,
           },
         },
         _count: {

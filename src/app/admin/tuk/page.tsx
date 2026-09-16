@@ -81,7 +81,7 @@ const INITIAL_TUK_DATA: TukItem[] = [
 ];
 
 export default function TukManagement() {
-  const { user, showNotification } = useAppContext();
+  const { user, showNotification, setExtraCrumbs } = useAppContext();
   const readOnly = user?.role !== "admin";
 
   const [tukData, setTukData] = useState<TukItem[]>([]);
@@ -113,25 +113,61 @@ export default function TukManagement() {
     ],
   };
 
-interface BackendTukInventaris {
-  id?: number;
-  nama: string;
-  jumlah: number;
-}
+  interface BackendTukInventaris {
+    id?: number;
+    nama: string;
+    jumlah: number;
+  }
 
-interface BackendTukItem {
-  id: number;
-  nama: string;
-  keterangan?: string | null;
-  tipe?: string | null;
-  alamat?: string | null;
-  status: string;
-  kapasitas?: number | null;
-  penanggung_jawab?: string | null;
-  master_tuk_inventaris?: BackendTukInventaris[];
-}
+  interface BackendTukItem {
+    id: number;
+    nama: string;
+    keterangan?: string | null;
+    tipe?: string | null;
+    alamat?: string | null;
+    status: string;
+    kapasitas?: number | null;
+    penanggung_jawab?: string | null;
+    master_tuk_inventaris?: BackendTukInventaris[];
+  }
 
   const [formData, setFormData] = useState<TukItem>(DEFAULT_FORM_DATA);
+
+  // ==========================================
+  // PENGATURAN BREADCRUMB EXTRA DARI CONTEXT
+  // ==========================================
+  useEffect(() => {
+    if (setExtraCrumbs) {
+      if (isEditModalOpen) {
+        setExtraCrumbs([{ label: "Edit TUK" }]);
+      } else if (isModalOpen) {
+        setExtraCrumbs([{ label: "Tambah TUK Baru" }]);
+      } else {
+        setExtraCrumbs([]);
+      }
+    }
+
+    // Cleanup saat unmount atau pindah halaman
+    return () => {
+      if (setExtraCrumbs) {
+        setExtraCrumbs([]);
+      }
+    };
+  }, [isModalOpen, isEditModalOpen, setExtraCrumbs]);
+
+  // Tangkap event breadcrumb klik untuk tutup form/modal
+  useEffect(() => {
+    const handleResetModal = () => {
+      setIsModalOpen(false);
+      setIsEditModalOpen(false);
+    };
+
+    window.addEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
+    return () => {
+      window.removeEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
+    };
+  }, []);
+  // ==========================================
 
   const fetchTukData = async () => {
     try {
@@ -476,9 +512,9 @@ interface BackendTukItem {
                   </div>
                 </motion.div>
               ))}
-            </AnimatePresence>
-          </div>
-        )}
+              </AnimatePresence>
+            </div>
+          )}
         </>
       ) : (
         /* FORM VIEW */
@@ -584,7 +620,7 @@ interface BackendTukItem {
 
                 <div className="min-w-0">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    tipe TUK
+                    Tipe TUK
                   </label>
                   <select
                     value={formData.tipe}
@@ -819,7 +855,7 @@ interface BackendTukItem {
 
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                      tipe TUK
+                      Tipe TUK
                     </p>
                     <p className="text-sm font-bold text-slate-700">
                       {selectedTuk?.tipe}

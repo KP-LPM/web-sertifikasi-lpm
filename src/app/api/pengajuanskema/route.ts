@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       return sendResponse(error.statusCode, error.message);
     }
     console.error("[GET /api/pengajuanskema]:", error);
-    return sendResponse(500, "Terjadi kesalahan internal pada server");
+    return sendResponse(500, error instanceof Error ? error.message : "Terjadi kesalahan internal pada server");
   }
 }
 
@@ -97,6 +97,6 @@ export async function POST(request: NextRequest) {
       return sendResponse(error.statusCode, error.message);
     }
     console.error("[POST /api/pengajuanskema]:", error);
-    return sendResponse(500, "Terjadi kesalahan internal pada server");
+    return sendResponse(500, error instanceof Error ? error.message : "Terjadi kesalahan internal pada server");
   }
 }

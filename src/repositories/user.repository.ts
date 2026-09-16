@@ -17,8 +17,10 @@ export class UserRepository {
           select: {
             namaLengkap: true,
             nomorRegistrasiMet: true,
+            namaInstitusi: true,
           },
         },
+        portfolio_asesor: true,
       },
     });
     return user;

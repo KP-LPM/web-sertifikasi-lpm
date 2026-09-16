@@ -78,7 +78,7 @@ interface Breadcrumb {
 type SubmissionProfile = Profile & { statusPembayaran?: string };
 
 export default function PengajuanSkemaPage() {
-  const { user, setExtraCrumbs, showNotification } = useAppContext();
+  const { user, setExtraCrumbs, showNotification, registeredProfile } = useAppContext();
 
   const [subView, setSubView] = useState<
     "list" | "choose-scheme" | "apply-form"
@@ -853,6 +853,7 @@ export default function PengajuanSkemaPage() {
         metode,
         penyesuaianWajar,
         berpengalaman,
+        tandaTangan: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
         dokumen: uploadedDokumen,
       };
 
@@ -3065,7 +3066,7 @@ export default function PengajuanSkemaPage() {
                     skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
                     nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
                     schemeDetail: currentSchemeDetail,
-                    signature: user?.avatar,
+                    signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
                     readOnly: activeModalDoc?.isPreview,
                   }}
                   onChange={(val) => setTempEFormData(val)}
@@ -3079,7 +3080,7 @@ export default function PengajuanSkemaPage() {
                     skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
                     nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
                     schemeDetail: currentSchemeDetail,
-                    signature: user?.avatar,
+                    signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
                     readOnly: activeModalDoc?.isPreview,
                   }}
                   onChange={(val) => setTempEFormData(val)}

@@ -29,7 +29,8 @@ import {
 } from "@/lib/api";
 
 export default function UsersManagement() {
-  const { user } = useAppContext();
+  // 👇 INI BAGIAN YANG DITAMBAHIN setExtraCrumbs 👇
+  const { user, setExtraCrumbs } = useAppContext();
   const readOnly = user?.role === "direktur" || user?.role === "manajer";
 
   const [mainTab, setMainTab] = useState<"asesi" | "asesor">("asesi");
@@ -175,7 +176,7 @@ export default function UsersManagement() {
 
   interface BackendProfilPengguna {
     namaLengkap?: string;
-    institusiPerusahaan?: string;
+    namaInstitusi?: string;
   }
 
   interface BackendUserRecord {
@@ -186,6 +187,13 @@ export default function UsersManagement() {
     is_verified?: boolean;
     nomor_registrasi_met?: string;
     profil?: BackendProfilPengguna[] | BackendProfilPengguna;
+    portfolio_asesor?: {
+      id: number;
+      nama_dokumen: string;
+      file_name?: string;
+      file_peminjaman_name?: string;
+      file_jawaban_name?: string;
+    }[];
   }
 
   // Backend Integration State
@@ -259,6 +267,28 @@ export default function UsersManagement() {
         const profil = Array.isArray(u.profil) ? u.profil[0] : u.profil;
         const namaLengkap = profil?.namaLengkap || u.username;
 
+        const dokumen = u.portfolio_asesor?.map((port) => {
+          let fileUrl = "";
+          let finalName = port.nama_dokumen;
+          if (port.file_name) {
+            fileUrl = `/uploads/${port.file_name}`;
+            finalName = port.file_name;
+          } else if (port.file_peminjaman_name) {
+            fileUrl = `/uploads/${port.file_peminjaman_name}`;
+            finalName = port.file_peminjaman_name;
+          } else if (port.file_jawaban_name) {
+            fileUrl = `/uploads/${port.file_jawaban_name}`;
+            finalName = port.file_jawaban_name;
+          }
+
+          return {
+            id: port.id,
+            namaDokumen: port.nama_dokumen,
+            fileUrl: fileUrl,
+            fileName: finalName,
+          };
+        }) || [];
+
         return {
           id: u.id,
           username: u.username,
@@ -269,21 +299,22 @@ export default function UsersManagement() {
           verificationData: {
             rekomendasi: "Diterima",
             catatan: "",
-            asalAsesor: profil?.institusiPerusahaan
+            asalAsesor: profil?.namaInstitusi
               ?.toLowerCase()
               .includes("uin")
               ? "Internal"
               : "Eksternal",
-            instansi: profil?.institusiPerusahaan || "LSP UIN SGD",
+            instansi: profil?.namaInstitusi || "LSP UIN SGD",
             skema: "Semua Skema",
             noReg: u.nomor_registrasi_met || "MET.000.12345.2024",
+            dokumen: dokumen,
           },
         };
       });
 
-      if (mappedAsesi.length > 0 || mappedAsesor.length > 0) {
-        setUsers([...mappedAsesi, ...mappedAsesor]);
-      }
+      // === HAPUS SYARAT .length > 0 AGAR BISA MERESET STATE JIKA KOSONG ===
+      setUsers([...mappedAsesi, ...mappedAsesor]);
+
     } catch (err) {
       console.error("Gagal memuat data verifikasi berkas:", err);
     } finally {
@@ -324,6 +355,32 @@ export default function UsersManagement() {
     statusPembayaran: "Belum" as "Sudah" | "Belum",
     sumberAnggaran: "Sumber Anggaran Biaya Mandiri",
   });
+
+  // === EVENT LISTENER UNTUK RESET DARI BREADCRUMB ===
+  useEffect(() => {
+    const handleCloseModals = () => {
+      setIsVerifyModalOpen(false);
+      setUserToVerify(null);
+    };
+    window.addEventListener("BREADCRUMB_RESET_MODAL", handleCloseModals);
+    return () => window.removeEventListener("BREADCRUMB_RESET_MODAL", handleCloseModals);
+  }, []);
+
+  // === EFEK UNTUK UPDATE BREADCRUMB SESUAI STATE ===
+  useEffect(() => {
+    if (setExtraCrumbs) {
+      if (isVerifyModalOpen && userToVerify) {
+        setExtraCrumbs([{ label: "Tinjauan Verifikasi Berkas" }]);
+      } else {
+        setExtraCrumbs([]); // Reset kalau modal ditutup
+      }
+    }
+
+    // Cleanup saat komponen unmount atau pindah halaman
+    return () => {
+      if (setExtraCrumbs) setExtraCrumbs([]);
+    };
+  }, [isVerifyModalOpen, userToVerify, setExtraCrumbs]);
 
   const openPaymentModal = (userItem: UserItem) => {
     setUserToEditPayment(userItem);
@@ -690,15 +747,17 @@ export default function UsersManagement() {
       !!apl01FormData.ttdAdmin && (totalReqs === 0 || checkedReqs === totalReqs);
 
     return (
-      <div className="space-y-6 pb-24 text-sm text-gray-700">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-4">
+      <div className="w-full space-y-6 text-sm text-gray-700">
+        <div className="w-full animate-in fade-in zoom-in-95 duration-200">
+
+          {/* Header & Back Button */}
+          <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => {
                 setIsVerifyModalOpen(false);
                 setUserToVerify(null);
               }}
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
               title="Kembali"
             >
               <ArrowLeft size={18} />
@@ -713,25 +772,24 @@ export default function UsersManagement() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden flex flex-col">
+          <div className="w-full space-y-6 relative mb-8 text-slate-800 text-sm">
+
             {userToVerify.role === "asesi" && (
-              <div className="border-b border-gray-100 bg-slate-50 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="min-w-0">
-                      <p className="text-sm md:text-base font-bold text-slate-900">
-                        {userToVerify.namaLengkap}
-                      </p>
-                      <p className="text-[11px] md:text-xs text-gray-500 font-medium mt-0.5">
-                        <span className="text-[#008BE3]">@{userToVerify.username}</span> • {userToVerify.email}
-                      </p>
-                    </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white border border-slate-200 shadow-sm mb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="min-w-0">
+                    <p className="text-sm md:text-base font-bold text-slate-900">
+                      {userToVerify.namaLengkap}
+                    </p>
+                    <p className="text-[11px] md:text-xs text-gray-500 font-medium mt-0.5">
+                      <span className="text-[#008BE3]">@{userToVerify.username}</span> • {userToVerify.email}
+                    </p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="p-6 space-y-4">
+            <div className="w-full">
               {userToVerify.role === "asesi" ? (
                 <div className="space-y-6">
                   <EFormApl01
@@ -740,8 +798,8 @@ export default function UsersManagement() {
                   />
                 </div>
               ) : (
-                <div className="flex flex-col gap-6 w-full">
-                  <div className="border-b border-gray-100 bg-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="w-full bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden flex flex-col">
+                  <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-col min-w-0 gap-1 items-start">
                       {userToVerify.verificationData?.asalAsesor === "Eksternal" ? (
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
@@ -768,7 +826,7 @@ export default function UsersManagement() {
                     </div>
                   </div>
 
-                  <div className="px-6 pb-6">
+                  <div className="px-6 py-6">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col md:flex-row gap-4 md:gap-8">
                       <div className="flex-1">
                         <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Skema Keahlian</p>
@@ -787,35 +845,27 @@ export default function UsersManagement() {
                     <div className="mt-6">
                       <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Berkas Surat Asesor</h4>
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white hover:border-[#008BE3]/30 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center text-[#008BE3]">
-                              <FileCheck size={20} />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-slate-800">1. Surat Peminjaman Asesor</p>
-                              <p className="text-xs text-slate-500">Surat_Peminjaman_Asesor_LSP_UIN.pdf</p>
-                            </div>
-                          </div>
-                          <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-[#008BE3] transition-colors">
-                            <Eye size={14} /> Lihat File
-                          </a>
-                        </div>
-
-                        {userToVerify.verificationData?.asalAsesor === "Eksternal" && (
-                          <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white hover:border-purple-300 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
-                                <FileCheck size={20} />
+                        {userToVerify.verificationData?.dokumen && userToVerify.verificationData.dokumen.length > 0 ? (
+                          userToVerify.verificationData.dokumen.map((doc, index) => (
+                            <div key={doc.id} className={`flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white transition-colors ${doc.namaDokumen.toLowerCase().includes("jawaban") ? "hover:border-purple-300" : "hover:border-[#008BE3]/30"}`}>
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${doc.namaDokumen.toLowerCase().includes("jawaban") ? "bg-purple-50 text-purple-600" : "bg-sky-50 text-[#008BE3]"}`}>
+                                  <FileCheck size={20} />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-slate-800">{index + 1}. {doc.namaDokumen}</p>
+                                  <p className="text-xs text-slate-500">{(doc.fileName as string) || doc.namaDokumen}</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm font-bold text-slate-800">2. Surat Balasan / Jawaban LSP Luar</p>
-                                <p className="text-xs text-slate-500">Surat_Konfirmasi_Balasan_LSP_TIK.pdf</p>
-                              </div>
+                              <a href={doc.fileUrl || "#"} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors shadow-2xs ${doc.namaDokumen.toLowerCase().includes("jawaban") ? "text-purple-600" : "text-[#008BE3]"}`}>
+                                <Eye size={14} /> Lihat File
+                              </a>
                             </div>
-                            <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-purple-600 transition-colors">
-                              <Eye size={14} /> Lihat File
-                            </a>
+                          ))
+                        ) : (
+                          <div className="text-center py-6 bg-slate-50 border border-slate-100 rounded-xl text-slate-400">
+                            <FileCheck size={32} className="mx-auto mb-2 opacity-50" />
+                            <p className="text-sm font-medium">Belum ada berkas terunggah.</p>
                           </div>
                         )}
                       </div>
@@ -825,20 +875,20 @@ export default function UsersManagement() {
               )}
             </div>
 
-            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-auto">
+            <div className="pt-6 flex justify-end gap-3 mt-8 border-t border-slate-200">
               <button
                 onClick={() => {
                   setIsVerifyModalOpen(false);
                   setUserToVerify(null);
                 }}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs mr-auto"
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs mr-auto cursor-pointer"
               >
                 Batal
               </button>
 
               <button
                 onClick={handleSaveVerifyDraft}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs"
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer"
               >
                 Simpan Draft
               </button>

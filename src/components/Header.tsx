@@ -40,6 +40,7 @@ export function Header() {
     logout,
     requestNavigation,
     registeredProfile,
+    setRegisteredProfile,
   } = useAppContext();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -67,6 +68,10 @@ export function Header() {
           Record<string, unknown> | undefined;
 
         if (!data) return;
+
+        if (setRegisteredProfile) {
+          setRegisteredProfile(data);
+        }
 
         setDbProfile({
           name: (data.nama || data.nama_lengkap) as string,
