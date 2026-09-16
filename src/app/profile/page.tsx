@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Save, User as UserIcon, X, Trash2, Upload } from "lucide-react";
+import { Save, User as UserIcon, X, Trash2, Upload, ArrowLeft } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import SignatureCanvas from "react-signature-canvas";
 import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 import { forgotPassword, getUsersProfile } from "@/lib/api";
 
 type SessionUser = {
@@ -17,7 +18,8 @@ type SessionUser = {
 };
 
 export default function Profile() {
-  const { user, registeredProfile, updateUser, showNotification } = useAppContext();
+  const { user, registeredProfile, setRegisteredProfile, updateUser, showNotification } = useAppContext();
+  const router = useRouter();
 
   // State untuk modal tanda tangan
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
@@ -207,6 +209,8 @@ export default function Profile() {
 
         if (!data) return;
 
+        setRegisteredProfile?.(data);
+
         if (data.avatar && typeof data.avatar === "string") {
           setAvatarPreview(data.avatar);
         }
@@ -271,12 +275,12 @@ export default function Profile() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // --- 1. PROSES UPLOAD AVATAR ---
       let finalAvatarUrl = (user as SessionUser)?.avatar || "";
 
       if (avatarFile) {
         const compressedFile = await compressImage(avatarFile);
-        const fileName = `avatar-${(user as SessionUser)?.id || Date.now()
-          }-${Date.now()}.jpg`;
+        const fileName = `avatar-${(user as SessionUser)?.id || Date.now()}-${Date.now()}.jpg`;
 
         const { error: uploadError } = await supabase.storage
           .from("avatars")
@@ -291,6 +295,29 @@ export default function Profile() {
         finalAvatarUrl = publicUrlData.publicUrl;
       }
 
+      // --- 2. PROSES UPLOAD TANDA TANGAN (BARU) ---
+      let finalSignatureUrl = formData.tandaTangan;
+
+      if (formData.tandaTangan && formData.tandaTangan.startsWith("data:image")) {
+        const fetchResponse = await fetch(formData.tandaTangan);
+        const blob = await fetchResponse.blob();
+        const signatureFileName = `signature-${(user as SessionUser)?.id || Date.now()}-${Date.now()}.png`;
+
+        const { error: signatureUploadError } = await supabase.storage
+          .from("signatures")
+          .upload(signatureFileName, blob);
+
+        if (signatureUploadError)
+          throw new Error("Gagal upload tanda tangan: " + signatureUploadError.message);
+
+        const { data: signatureUrlData } = supabase.storage
+          .from("signatures")
+          .getPublicUrl(signatureFileName);
+        
+        finalSignatureUrl = signatureUrlData.publicUrl;
+      }
+
+      // --- 3. PAYLOAD KE DATABASE ---
       const payload = {
         name: formData.namaLengkap,
         email: formData.email,
@@ -305,7 +332,8 @@ export default function Profile() {
         no_telp: formData.noTelp,
         pekerjaan: formData.pekerjaan,
         pendidikan_terakhir: formData.pendidikanTerakhir,
-        tanda_tangan: formData.tandaTangan,
+        // Masukkan URL tanda tangan yang sudah diupload ke database
+        tanda_tangan: finalSignatureUrl, 
         avatar: finalAvatarUrl,
       };
 
@@ -327,7 +355,21 @@ export default function Profile() {
         email: result.user?.email || payload.email,
       });
 
+      setRegisteredProfile?.({
+        ...(registeredProfile || {}),
+        ...payload,
+        tandaTangan: finalSignatureUrl,
+        tanda_tangan: finalSignatureUrl,
+      });
+
+      // Update state formData agar pas disave nggak reload pakai base64 lagi
+      setFormData(prev => ({ ...prev, tandaTangan: finalSignatureUrl }));
+
       showNotification("Profil berhasil disimpan!", "success");
+      
+      setTimeout(() => {
+        router.back();
+      }, 1000);
     } catch (error) {
       if (error instanceof Error) {
         showNotification(error.message, "error");
@@ -344,9 +386,13 @@ export default function Profile() {
       {/* Header Title Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
-            <UserIcon size={20} className="stroke-[2.5]" />
-          </div>
+          <button
+            onClick={() => router.back()}
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
+            title="Kembali"
+          >
+            <ArrowLeft size={20} className="stroke-[2.5]" />
+          </button>
           <div className="min-w-0">
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
               Profil Pengguna
@@ -680,7 +726,7 @@ export default function Profile() {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xs transition-colors w-full md:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xs transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={18} className="stroke-[2.5]" />
               {isSaving ? "Menyimpan..." : "Simpan Perubahan"}

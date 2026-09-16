@@ -78,7 +78,7 @@ interface Breadcrumb {
 type SubmissionProfile = Profile & { statusPembayaran?: string };
 
 export default function PengajuanSkemaPage() {
-  const { user, setExtraCrumbs, showNotification } = useAppContext();
+  const { user, setExtraCrumbs, showNotification, registeredProfile } = useAppContext();
 
   const [subView, setSubView] = useState<
     "list" | "choose-scheme" | "apply-form"
@@ -853,6 +853,7 @@ export default function PengajuanSkemaPage() {
         metode,
         penyesuaianWajar,
         berpengalaman,
+        tandaTangan: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
         dokumen: uploadedDokumen,
       };
 
@@ -3058,7 +3059,7 @@ export default function PengajuanSkemaPage() {
                     skema: selectedScheme?.nama || "",
                     nomorSkema: selectedScheme?.kode || "",
                     schemeDetail: currentSchemeDetail,
-                    signature: user?.avatar,
+                    signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
                     readOnly: activeModalDoc?.isPreview,
                     ...(tempEFormData || {}),
                   }}
@@ -3072,7 +3073,7 @@ export default function PengajuanSkemaPage() {
                     skema: selectedScheme?.nama || "",
                     nomorSkema: selectedScheme?.kode || "",
                     schemeDetail: currentSchemeDetail,
-                    signature: user?.avatar,
+                    signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
                     readOnly: activeModalDoc?.isPreview,
                     ...(tempEFormData || {}),
                   }}

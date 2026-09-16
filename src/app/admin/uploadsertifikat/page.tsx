@@ -40,9 +40,10 @@ import {
 export type { AsesiPlenoRecord };
 
 export default function UploadSertifikat() {
-  const { user, showNotification } = useAppContext();
+  const { user, showNotification, setExtraCrumbs } = useAppContext();
   const readOnly = user?.role !== "admin";
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleDownloadSertifikat = async () => {
     try {
       setIsLoading(true);
@@ -337,6 +338,43 @@ export default function UploadSertifikat() {
   // Level 1 vs Level 2 state
   const [selectedPlenoId, setSelectedPlenoId] = useState<number | null>(null);
 
+  // Selected Pleno Group for Level 2
+  const selectedPlenoGroup = plenoGroups.find(
+    (g) => g.plenoId === selectedPlenoId,
+  );
+
+  // ==========================================
+  // PENGATURAN BREADCRUMB EXTRA DARI CONTEXT
+  // ==========================================
+  useEffect(() => {
+    if (setExtraCrumbs) {
+      if (selectedPlenoId && selectedPlenoGroup) {
+        setExtraCrumbs([{ label: selectedPlenoGroup.plenoTitle }]);
+      } else {
+        setExtraCrumbs([]);
+      }
+    }
+    
+    // Cleanup saat unmount atau pindah halaman
+    return () => {
+      if (setExtraCrumbs) {
+        setExtraCrumbs([]);
+      }
+    };
+  }, [selectedPlenoId, selectedPlenoGroup, setExtraCrumbs]);
+
+  // Tangkap event breadcrumb klik untuk tutup detail
+  useEffect(() => {
+    const handleResetModal = () => {
+      setSelectedPlenoId(null);
+    };
+    
+    window.addEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
+    return () => {
+      window.removeEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
+    };
+  }, []);
+
   // Search and Filter states
   const [plenoSearchTerm, setPlenoSearchTerm] = useState("");
   const [plenoFilterStatus, setPlenoFilterStatus] = useState<
@@ -622,11 +660,6 @@ export default function UploadSertifikat() {
     return true;
   });
 
-  // Selected Pleno Group for Level 2
-  const selectedPlenoGroup = plenoGroups.find(
-    (g) => g.plenoId === selectedPlenoId,
-  );
-
   // Filtered Candidates inside Level 2
   const filteredCandidates = selectedPlenoGroup
     ? selectedPlenoGroup.asesiList.filter((candidate) => {
@@ -662,22 +695,24 @@ export default function UploadSertifikat() {
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
-      {/* Header Title - Aligned with standard admin page headers */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
-            <Award size={20} className="stroke-[2.5]" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Upload Sertifikat
-            </h2>
-            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
-              Pengelolaan & pengunggahan tautan sertifikat per Sidang Pleno
-            </p>
+      {/* Sembunyikan Judul Utama jika sedang berada di Level 2 (selectedPlenoId terisi) */}
+      {!selectedPlenoId && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
+              <Award size={20} className="stroke-[2.5]" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                Upload Sertifikat
+              </h2>
+              <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
+                Pengelolaan & pengunggahan tautan sertifikat per Sidang Pleno
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* VIEW SWITCHER: LEVEL 1 (Daftar Sidang Pleno) vs LEVEL 2 (Daftar Asesi dalam Sidang Pleno) */}
       {!selectedPlenoId ? (
@@ -969,8 +1004,10 @@ export default function UploadSertifikat() {
           {/* Header Card Info for Selected Pleno */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
             <div className="p-4 sm:p-6 border-b border-slate-100 space-y-4">
-              {/* Back Button & Title */}
+              
+              {/* Desain Baru Bagian Kiri (Back, Judul) & Kanan (Badge) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* Bagian Kiri */}
                 <div className="flex items-center gap-3 min-w-0">
                   <button
                     onClick={() => {
@@ -983,19 +1020,30 @@ export default function UploadSertifikat() {
                   >
                     <ArrowLeft size={18} />
                   </button>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 text-xs font-black border border-slate-200">
-                        {selectedPlenoGroup?.plenoId}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                        {selectedPlenoGroup?.status}
-                      </span>
-                    </div>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate">
                       {selectedPlenoGroup?.plenoTitle}
                     </h2>
                   </div>
+                </div>
+
+                {/* Bagian Kanan */}
+                <div className="shrink-0 flex items-center">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                      selectedPlenoGroup?.status === "Selesai"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : "bg-amber-50 text-amber-700 border-amber-200"
+                    }`}
+                  >
+                    {selectedPlenoGroup?.status === "Selesai" ? (
+                      <CheckCircle2 size={14} className="stroke-[2.5]" />
+                    ) : (
+                      <Clock size={14} className="stroke-[2.5]" />
+                    )}
+                    {selectedPlenoGroup?.status}
+                  </span>
                 </div>
               </div>
 
@@ -1084,7 +1132,7 @@ export default function UploadSertifikat() {
               </div>
             </div>
 
-            {/* Table of Candidates with SEPARATED COLUMNS (1 Data per Column, Single-line Rows) */}
+            {/* Table of Candidates */}
             <div className="overflow-x-auto relative">
               <table className="w-full text-left border-collapse min-w-max">
                 <thead>

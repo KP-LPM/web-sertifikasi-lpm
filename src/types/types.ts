@@ -358,7 +358,6 @@ export interface ScheduleItem {
   inisialAsesor?: string;
   suratTugasUrl?: string;
   status: string;
-  jumlahSkema?: number;
   kotaSurat?: string;
   namaDirektur?: string;
   asesiList?: number[]; // pengajuan_skema.id[] — sebelumnya (number|string)[]

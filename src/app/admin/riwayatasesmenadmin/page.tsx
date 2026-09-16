@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   History,
@@ -44,17 +44,74 @@ import {
   AssessmentItem,
 } from "@/types/types";
 
-
-
 export default function RiwayatAsesmenAdmin() {
-  const { AssessmentItems } = useAppContext();
+  const { AssessmentItems, setExtraCrumbs } = useAppContext();
 
   const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">("asesmen");
   const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
   const [completedPleno, setCompletedPleno] = useState<PlenoDetailData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
+  // Asesmen Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [hasilFilter, setHasilFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [tanggalFilter, setTanggalFilter] = useState("");
+  const [selectedAsesmen, setSelectedAsesmen] = useState<AssessmentItem | null>(null);
+  const [previewForm, setPreviewForm] = useState<
+    "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
+  >(null);
+
+  // Batch Detail Modal State
+  const [selectedBatch, setSelectedBatch] = useState<CompletedBatchItem | null>(null);
+  const [batchTypeFilter, setBatchTypeFilter] = useState<"Semua" | "Offline" | "Online">("Semua");
+  const [batchSearchTerm, setBatchSearchTerm] = useState("");
+
+  // Pleno Detail / Preview Modal State
+  const [selectedPleno, setSelectedPleno] = useState<PlenoDetailData | null>(null);
+  const [previewPlenoDoc, setPreviewPlenoDoc] = useState<PlenoDetailData | null>(null);
+
+  // ==========================================
+  // PENGATURAN BREADCRUMB EXTRA DARI CONTEXT
+  // ==========================================
+  useEffect(() => {
+    if (setExtraCrumbs) {
+      if (selectedAsesmen) {
+        setExtraCrumbs([{ label: "Detail Asesmen" }]);
+      } else if (selectedBatch) {
+        setExtraCrumbs([{ label: "Detail Batch" }]);
+      } else if (selectedPleno) {
+        setExtraCrumbs([{ label: "Detail Sidang Pleno" }]);
+      } else {
+        setExtraCrumbs([]);
+      }
+    }
+    
+    // Cleanup saat pindah halaman
+    return () => {
+      if (setExtraCrumbs) {
+        setExtraCrumbs([]);
+      }
+    };
+  }, [selectedAsesmen, selectedBatch, selectedPleno, setExtraCrumbs]);
+
+  // Tangkap event breadcrumb klik untuk tutup modal/detail
+  useEffect(() => {
+    const handleResetModal = () => {
+      setSelectedAsesmen(null);
+      setSelectedBatch(null);
+      setSelectedPleno(null);
+      setPreviewForm(null);
+      setPreviewPlenoDoc(null);
+    };
+    
+    window.addEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
+    return () => {
+      window.removeEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
+    };
+  }, []);
+
+  useEffect(() => {
     fetchHistoryData();
   }, []);
 
@@ -78,34 +135,6 @@ export default function RiwayatAsesmenAdmin() {
     }
   };
 
-  // Asesmen Filters
-  const [searchTerm, setSearchTerm] = useState("");
-  const [hasilFilter, setHasilFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [tanggalFilter, setTanggalFilter] = useState("");
-  const [selectedAsesmen, setSelectedAsesmen] = useState<AssessmentItem | null>(
-    null,
-  );
-  const [previewForm, setPreviewForm] = useState<
-    "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
-  >(null);
-
-  // Batch Detail Modal State
-  const [selectedBatch, setSelectedBatch] = useState<CompletedBatchItem | null>(
-    null,
-  );
-  const [batchTypeFilter, setBatchTypeFilter] = useState<
-    "Semua" | "Offline" | "Online"
-  >("Semua");
-  const [batchSearchTerm, setBatchSearchTerm] = useState("");
-
-  // Pleno Detail / Preview Modal State
-  const [selectedPleno, setSelectedPleno] = useState<PlenoDetailData | null>(
-    null,
-  );
-  const [previewPlenoDoc, setPreviewPlenoDoc] =
-    useState<PlenoDetailData | null>(null);
-
   // Helper to parse string dates
   const parseDateToISO = (dateStr: string): string => {
     if (!dateStr) return "";
@@ -113,29 +142,10 @@ export default function RiwayatAsesmenAdmin() {
     if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
 
     const months: Record<string, string> = {
-      Jan: "01",
-      Feb: "02",
-      Mar: "03",
-      Apr: "04",
-      Mei: "05",
-      Jun: "06",
-      Jul: "07",
-      Agt: "08",
-      Sep: "09",
-      Okt: "10",
-      Nov: "11",
-      Des: "12",
-      Januari: "01",
-      Februari: "02",
-      Maret: "03",
-      April: "04",
-      Juni: "06",
-      Juli: "07",
-      Agustus: "08",
-      September: "09",
-      Oktober: "10",
-      November: "11",
-      Desember: "12",
+      Jan: "01", Feb: "02", Mar: "03", Apr: "04", Mei: "05", Jun: "06",
+      Jul: "07", Agt: "08", Sep: "09", Okt: "10", Nov: "11", Des: "12",
+      Januari: "01", Februari: "02", Maret: "03", April: "04", Juni: "06",
+      Juli: "07", Agustus: "08", September: "09", Oktober: "10", November: "11", Desember: "12",
     };
 
     const parts = trimmed.split(" ");
@@ -1278,7 +1288,7 @@ export default function RiwayatAsesmenAdmin() {
             </div>
           )}
         </div>
-      )}{" "}
+      )} 
       {/* TAB 3: SIDANG PLENO */}
       {mainTab === "pleno" && (
         <div className="space-y-6">

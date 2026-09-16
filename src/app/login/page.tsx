@@ -741,21 +741,6 @@ export default function Login() {
                     </select>
                   </div>
 
-                  {mode === "asesor" && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Alamat Wilayah/Kelurahan
-                      </label>
-                      <input
-                        type="text"
-                        name="alamat_wilayah"
-                        className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
-                        placeholder="Masukkan alamat wilayah/kelurahan"
-                        required
-                      />
-                    </div>
-                  )}
-
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       Tanda Tangan

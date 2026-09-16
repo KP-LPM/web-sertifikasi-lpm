@@ -208,7 +208,6 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
                 {crumb.label}
               </Link>
             ) : (
-              // 👇 INI YANG DIUBAH, supaya breadcrumb tulisan biasa bisa dipencet & mereset modal
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent("BREADCRUMB_RESET_MODAL"))}
                 className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
