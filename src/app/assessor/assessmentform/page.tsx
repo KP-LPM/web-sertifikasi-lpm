@@ -13,7 +13,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useAppContext } from "@/context/context";
-import { saveHasilAsesmen } from "@/lib/api";
+import { saveHasilAsesmen, getPengajuanDetail, createRiwayatAsesmen, upsertRiwayatAsesmen } from "@/lib/api";
 import {
   FormFRAPL02,
   FormFRAK07,
@@ -21,7 +21,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { AVAILABLE_SCHEMES } from "@/data/schemes";
+
 
 type AsesmenData = {
   nama: string;
@@ -42,14 +42,7 @@ type SignatureCanvasRef = {
   isEmpty: () => boolean;
 };
 
-type SchemeWithUnits = {
-  units?: Array<{
-    kodeUnit?: string;
-    judulUnit?: string;
-    elemen?: Array<unknown>;
-    [key: string]: unknown;
-  }>;
-};
+
 
 type SignatureCanvasProps = {
   canvasProps?: React.CanvasHTMLAttributes<HTMLCanvasElement>;
@@ -69,6 +62,50 @@ function AssessmentFormContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [asesiSignatureApl02, setAsesiSignatureApl02] = useState<string>("");
   const [asesiDateApl02, setAsesiDateApl02] = useState<string>("");
+  const [evidenceFiles, setEvidenceFiles] = useState<Record<string, { name: string, url: string }[]>>({});
+  const [formApl02Status, setFormApl02Status] = useState({
+    total: 0,
+    filled: 0,
+    isAllFilled: false,
+  });
+
+  useEffect(() => {
+    if (selectedAsesmen?.id) {
+      getPengajuanDetail(Number(selectedAsesmen.id)).then((data) => {
+        if (data?.dokumen && Array.isArray(data.dokumen)) {
+          const files: Record<string, { name: string, url: string }[]> = {};
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data.dokumen.forEach((d: any) => {
+            if (d.namaDokumen) {
+              if (!files[d.namaDokumen]) files[d.namaDokumen] = [];
+              files[d.namaDokumen].push({
+                name: d.namaDokumen,
+                url: d.fileUrl || d.url || "#",
+              });
+            }
+          });
+          setEvidenceFiles(files);
+        }
+        if (data?.dataPribadi?.tandaTangan) {
+          setAsesiSignatureApl02(data.dataPribadi.tandaTangan);
+          const isOnline = data?.jenisMetode === "Online" || selectedAsesmen?.metode === "Online" || data?.jenisMetode === "online";
+          if (isOnline) {
+            setAsesiSignature(data.dataPribadi.tandaTangan);
+            setAsesiSignatureStep2(data.dataPribadi.tandaTangan);
+            setAsesiSignatureStep3(data.dataPribadi.tandaTangan);
+            setAsesiSignatureStep4(data.dataPribadi.tandaTangan);
+          }
+        }
+        if (data?.tglPengajuan) {
+          setAsesiDateApl02(data.tglPengajuan.toString().split("T")[0]);
+        } else if (data?.createdAt) {
+          setAsesiDateApl02(data.createdAt.toString().split("T")[0]);
+        } else if (data?.dataPribadi?.createdAt) {
+          setAsesiDateApl02(data.dataPribadi.createdAt.toString().split("T")[0]);
+        }
+      }).catch(err => console.error("Failed to load pengajuan detail:", err));
+    }
+  }, [selectedAsesmen]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -76,24 +113,21 @@ function AssessmentFormContent() {
 
   // Data Asesmen
   const asesmenData = {
-    nama: String(selectedAsesmen?.nama || "Kandidat Default"),
-    skema: String(selectedAsesmen?.skema || "Teknisi Muda Jaringan Komputer"),
-    noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
-    tuk: String(selectedAsesmen?.tipeTuk || ""),
-    metodeAsesmen: String(selectedAsesmen?.metode),
-    tanggal: "11 Oktober 2024",
-    asesor: "Ichsan Taufik",
+    nama: selectedAsesmen?.nama ? String(selectedAsesmen.nama) : "-",
+    skema: selectedAsesmen?.skema ? String(selectedAsesmen.skema) : "-",
+    noSkema: selectedAsesmen?.noSkema ? String(selectedAsesmen.noSkema) : "-",
+    tuk: selectedAsesmen?.alamat ? String(selectedAsesmen.alamat) : selectedAsesmen?.tipeTuk ? String(selectedAsesmen.tipeTuk) : "-",
+    metodeAsesmen: selectedAsesmen?.metode ? String(selectedAsesmen.metode) : "-",
+    tanggal: selectedAsesmen?.tglAsesmen ? String(selectedAsesmen.tglAsesmen) : "-",
+    asesor: selectedAsesmen?.asesor || "-",
+    asesorReg: selectedAsesmen?.asesorReg || "-",
   } as AsesmenData;
   // Step 1: Form FR.APL.02 State
   const [rekomendasiApl02, setRekomendasiApl02] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
   >("Dapat dilanjutkan");
   const [asesorSignatureApl02, setAsesorSignatureApl02] = useState("");
-  const [answersApl02, setAnswersApl02] = useState<Record<string, "K" | "BK">>({
-    u0e0: "K",
-    u0e1: "K",
-    u1e0: "K",
-  });
+  const [answersApl02, setAnswersApl02] = useState<Record<string, "K" | "BK">>({});
 
   // AK.07 Form State
   const [acuanPembanding, setAcuanPembanding] = useState("");
@@ -844,6 +878,59 @@ function AssessmentFormContent() {
           hasil: finalDecision,
           catatan: catatanAsesor || "Penilaian asesmen telah diselesaikan oleh asesor.",
         });
+
+        // 1. Upsert APL-02
+        await upsertRiwayatAsesmen(targetId, {
+          form_type: "FR.APL.02",
+          penilaian: rekomendasiApl02,
+        }).catch(e => console.error("Gagal upsert APL-02:", e));
+
+        // 2. Create AK-07
+        await createRiwayatAsesmen(targetId, {
+          form_type: "FR.AK.07",
+          form_data: {
+            potensiAsesi,
+            noAdjustment,
+            adjustments,
+            acuanPembanding,
+            metodeAsesmen,
+            instrumenAsesmen
+          },
+        }).catch(e => console.error("Gagal create AK-07:", e));
+
+        // 3. Create IA-04A (Step 3)
+        await createRiwayatAsesmen(targetId, {
+          form_type: "FR.IA.04A",
+          form_data: {
+            umpanBalik: umpanBalikStep2,
+            penyusun,
+            validator
+          },
+        }).catch(e => console.error("Gagal create IA-04A:", e));
+
+        // 4. Create IA-04B (Step 4)
+        await createRiwayatAsesmen(targetId, {
+          form_type: "FR.IA.04B",
+          form_data: {
+            questions: step3Questions,
+            answers: step3Answers,
+            rekomendasi: rekomendasiStep3,
+            penyusun: penyusunStep3,
+            validator: validatorStep3
+          },
+        }).catch(e => console.error("Gagal create IA-04B:", e));
+
+        // 5. Create IA-07 (Step 5)
+        await createRiwayatAsesmen(targetId, {
+          form_type: "FR.IA.07",
+          form_data: {
+            questions: step4Questions,
+            answers: step4Answers,
+            umpanBalik: umpanBalikStep4,
+            penyusun: penyusunStep4,
+            validator: validatorStep4
+          },
+        }).catch(e => console.error("Gagal create IA-07:", e));
       }
 
       if (selectedAsesmen) {
@@ -933,69 +1020,29 @@ function AssessmentFormContent() {
 
 
   const renderStep1 = () => {
-    // 1. Simpan target nama skema ke variabel dengan fallback string kosong
-    const targetSkemaName = (
-      selectedAsesmen?.skema ||
-      asesmenData?.skema ||
-      ""
-    ).toLowerCase();
-    const targetSkemaCode = selectedAsesmen?.id ? String(selectedAsesmen.id) : "";
-
-    // 2. Pencarian skema yang aman dari error undefined
-    const matchedSchemeApl02 =
-      AVAILABLE_SCHEMES.find((s) => {
-        const sName = (s.name || "").toLowerCase();
-        const sCode = s.code || "";
-
-        return (
-          sName === targetSkemaName ||
-          (targetSkemaCode && sCode === targetSkemaCode) ||
-          (targetSkemaName && sName.includes(targetSkemaName)) ||
-          (targetSkemaName && targetSkemaName.includes(sName))
-        );
-      }) || AVAILABLE_SCHEMES[0];
-
-    // 3. Fallback unit list yang aman tanpa error 'Cannot find name'
-    const unitsApl02: Array<{
-      kodeUnit?: string;
-      judulUnit?: string;
-      elemen?: Array<unknown>;
-      [key: string]: unknown;
-    }> =
-      (selectedAsesmen as { schemeDetail?: SchemeWithUnits } | undefined)
-        ?.schemeDetail?.units ||
-      (matchedSchemeApl02 as SchemeWithUnits | undefined)?.units ||
-      [];
-    // 4. Perulangan dengan tipe parameter yang jelas
-    const allElementKeysApl02: string[] = [];
-    unitsApl02.forEach((unit, idx: number) => {
-      const elemenList = Array.isArray(unit.elemen) ? unit.elemen : [];
-      elemenList.forEach((_, eIdx: number) => {
-        allElementKeysApl02.push(`u${idx}e${eIdx}`);
-      });
-    });
-
-    const totalElementsApl02 = allElementKeysApl02.length;
-    const filledElementsCountApl02 = allElementKeysApl02.filter(
-      (k) => answersApl02[k] === "K" || answersApl02[k] === "BK",
-    ).length;
-    const isAllKBKFilledApl02 =
-      totalElementsApl02 > 0 && filledElementsCountApl02 === totalElementsApl02;
+    // Note: totalElementsApl02, filledElementsCountApl02, and isAllKBKFilledApl02
+    // are now managed by formApl02Status state updated directly by FormFRAPL02.
+    const { total: totalElementsApl02, filled: filledElementsCountApl02, isAllFilled: isAllKBKFilledApl02 } = formApl02Status;
 
     return (
       <div className="space-y-6">
         <FormFRAPL02
+          pengajuanId={selectedAsesmen?.id}
           asesmenData={
             {
               nama: asesmenData.nama,
               skema: asesmenData.skema,
-              tuk: asesmenData.tipeTuk,
-              tanggal: asesmenData.tglAsesmen,
+              noSkema: asesmenData.noSkema,
+              tuk: asesmenData.tuk,
+              tanggal: asesmenData.tanggal,
+              tglAsesmen: asesmenData.tanggal,
               asesor: asesmenData.asesor,
-              asesorReg: "MET.000.001234 2021",
-            } as AsesmenData
+              asesorReg: asesmenData.asesorReg,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any
           }
           answers={answersApl02}
+          evidenceFiles={evidenceFiles}
           onAnswerChange={(key, val) =>
             setAnswersApl02((prev) => ({ ...prev, [key]: val }))
           }
@@ -1011,9 +1058,21 @@ function AssessmentFormContent() {
           asesiDate={asesiDateApl02} // Hubungkan ke state
           onAsesiDateChange={setAsesiDateApl02} // Tambahkan fungsi handler
           asesorName={String(asesmenData.asesor || "")}
-          asesorReg="MET.000.001234 2021"
+          asesorReg={asesmenData.asesorReg}
           asesorSignature={asesorSignatureApl02}
           onAsesorSignatureChange={setAsesorSignatureApl02}
+          onFormStatusChange={(total, filled, isAllFilled) => {
+            setFormApl02Status((prev) => {
+              if (
+                prev.total === total &&
+                prev.filled === filled &&
+                prev.isAllFilled === isAllFilled
+              ) {
+                return prev;
+              }
+              return { total, filled, isAllFilled };
+            });
+          }}
         />
 
         {rekomendasiApl02 !== "Tidak dapat dilanjutkan" && (

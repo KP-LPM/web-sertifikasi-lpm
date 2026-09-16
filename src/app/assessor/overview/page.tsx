@@ -33,7 +33,6 @@ import {
 interface BackendOverviewJadwal {
   id: number;
   status?: string;
-  kode_batch?: string;
   nama_batch?: string;
   master_skema?: { namaSkema?: string };
   metode?: string;
@@ -127,14 +126,14 @@ export default function AssessorOverview() {
             : [];
 
         if (jadwals.length > 0) {
-          const mapped: BatchDetail[] = jadwals.map((j) => {
+          const activeJadwals = jadwals.filter((j) => j.status !== "Selesai");
+          const mapped: BatchDetail[] = activeJadwals.map((j) => {
             const batchCand = candidates.filter(
               (c) => c.jadwalId === j.id,
             );
             return {
               id: j.id,
               status: j.status || "Terjadwal",
-              kodeBatch: j.kode_batch || `BATCH-${j.id}`,
               namaBatch: j.nama_batch || `Batch Asesmen #${j.id}`,
               skema: j.master_skema?.namaSkema || "Skema Sertifikasi",
               metode: (j.metode || (j.tipe_tuk === "Online" ? "Online" : "Offline")) as JenisMetode,
@@ -277,15 +276,12 @@ export default function AssessorOverview() {
                 const totalCount = batch.candidates.length;
                 return (
                   <div
-                    key={batch.kodeBatch}
+                    key={batch.id}
                     onClick={() => router.push("/assessor/candidates")}
                     className="p-3.5 border border-gray-100 rounded-lg hover:border-sky-200 hover:bg-sky-50/40 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md uppercase">
-                          {batch.kodeBatch}
-                        </span>
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${
                             batch.metode?.toLowerCase() === "online"

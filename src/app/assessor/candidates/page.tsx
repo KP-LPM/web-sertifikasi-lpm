@@ -24,16 +24,15 @@ import {
   Mail,
   X,
 } from "lucide-react";
-import { AssessmentItem, BatchDetail, JenisMetode, TipeTuk } from "@/types/types";
+import { BatchDetail, JenisMetode, TipeTuk } from "@/types/types";
 import { useAppContext } from "@/context/context";
-import { getCandidatesList, getJadwalList } from "@/lib/api";
+import { getCandidatesList, getJadwalList, updateJadwal } from "@/lib/api";
 
 interface BackendJadwal {
   id: number;
   status?: string;
-  kode_batch?: string;
   nama_batch?: string;
-  master_skema?: { namaSkema?: string };
+  master_skema?: { namaSkema?: string; kodeSkema?: string };
   metode?: string;
   tipe_tuk?: string;
   alamat?: string;
@@ -41,6 +40,9 @@ interface BackendJadwal {
   tanggal?: string;
   waktu_mulai?: string;
   link_video?: string;
+  surat_tugas_name?: string;
+  surat_tugas_url?: string;
+  users?: { profil?: { namaLengkap?: string; nomorRegistrasiMet?: string }; username?: string };
 }
 
 interface BackendCandidate {
@@ -57,24 +59,15 @@ interface BackendCandidate {
 
 export default function AsesiList() {
   const router = useRouter();
-  const {
-    setSelectedAsesmen,
-    selectedAsesmen,
-    AssessmentItems,
-    deleteBatchAssessmentItems,
-    completedBatchCodes,
-  } = useAppContext();
+  const { setSelectedAsesmen, AssessmentItems, deleteBatchAssessmentItems } =
+    useAppContext();
 
   // State
   const [activeTab, setActiveTab] = useState<"Semua" | "Offline" | "Online">(
     "Semua",
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBatchCode, setSelectedBatchCode] = useState<string | null>(
-    () => {
-      return selectedAsesmen?.kodeBatch || null;
-    },
-  );
+  const [selectedBatchId, setSelectedBatchId] = useState<number | null>(null);
   const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [successNotification, setSuccessNotification] = useState<string | null>(
@@ -92,7 +85,8 @@ export default function AsesiList() {
         ]);
 
         const candidates =
-          candidatesRes.status === "fulfilled" && Array.isArray(candidatesRes.value)
+          candidatesRes.status === "fulfilled" &&
+            Array.isArray(candidatesRes.value)
             ? (candidatesRes.value as unknown as BackendCandidate[])
             : [];
 
@@ -102,88 +96,75 @@ export default function AsesiList() {
             : [];
 
         if (jadwals.length > 0) {
-          const mapped: BatchDetail[] = jadwals.map((j) => {
-            const batchCand = candidates.filter(
-              (c) => c.jadwalId === j.id,
-            );
+          const activeJadwals = jadwals.filter((j) => j.status !== "Selesai");
+          const mapped: BatchDetail[] = activeJadwals.map((j) => {
+            const batchCand = candidates.filter((c) => c.jadwalId === j.id);
             return {
               id: j.id,
               status: j.status || "Terjadwal",
-              kodeBatch: j.kode_batch || `BATCH-${j.id}`,
               namaBatch: j.nama_batch || `Batch Asesmen #${j.id}`,
               skema: j.master_skema?.namaSkema || "Skema Sertifikasi",
-              metode: (j.metode || (j.tipe_tuk === "Online" ? "Online" : "Offline")) as JenisMetode,
+              metode: (j.metode ||
+                (j.tipe_tuk === "Online"
+                  ? "Online"
+                  : "Offline")) as JenisMetode,
               tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
               alamat: j.alamat || j.master_tuk?.nama_tuk || "TUK Terdaftar",
-              tanggal: j.tanggal ? new Date(j.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-",
-              waktuMulai: j.waktu_mulai ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "09:00 WIB",
+              tanggal: j.tanggal
+                ? new Date(j.tanggal).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
+                : "-",
+              waktuMulai: j.waktu_mulai
+                ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                : "09:00 WIB",
               linkVideo: j.link_video || "-",
-              candidates:
-                batchCand.length > 0
-                  ? batchCand.map((c) => ({
-                      id: c.pengajuanId,
-                      nik: c.nik || `32730128${c.pengajuanId}0001`,
-                      nama: c.namaLengkap || "Asesi",
-                      skema:
-                        c.namaSkema ||
-                        j.master_skema?.namaSkema ||
-                        "Skema Sertifikasi",
-                      tglAsesmen: j.tanggal
-                        ? new Date(j.tanggal).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-",
-                      waktu: j.waktu_mulai
-                        ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "09:00 WIB",
-                      tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
-                      metode: (j.metode ||
-                        (j.tipe_tuk === "Online"
-                          ? "Online"
-                          : "Offline")) as JenisMetode,
-                      status:
-                        c.hasilAsesmen !== "Belum Dinilai"
-                          ? "Selesai"
-                          : "Belum Selesai",
-                      statusAsesmen: c.hasilAsesmen || "Belum Dinilai",
-                      statusAPL02: "APL-01 & APL-02 Terverifikasi",
-                    }))
-                  : AssessmentItems.slice(0, 3).map((item, idx) => ({
-                      id: 1000 + idx,
-                      nik: item.nik || `32730128100${idx}0001`,
-                      nama: item.nama || `Asesi Kandidat ${idx + 1}`,
-                      skema:
-                        j.master_skema?.namaSkema ||
-                        item.skema ||
-                        "Skema Sertifikasi",
-                      tglAsesmen: j.tanggal
-                        ? new Date(j.tanggal).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-",
-                      waktu: j.waktu_mulai
-                        ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "09:00 WIB",
-                      tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
-                      metode: (j.metode ||
-                        (j.tipe_tuk === "Online"
-                          ? "Online"
-                          : "Offline")) as JenisMetode,
-                      status: item.status || "Belum Selesai",
-                      statusAsesmen: item.hasil || "Belum Dinilai",
-                      statusAPL02:
-                        item.statusApl || "APL-01 & APL-02 Terverifikasi",
-                    })),
+              suratTugasName: j.surat_tugas_name || "",
+              suratTugasUrl: j.surat_tugas_url || "",
+              candidates: batchCand.map((c) => ({
+                id: c.pengajuanId,
+                nik: c.nik || "-",
+                nama: c.namaLengkap || "-",
+                skema:
+                  c.namaSkema ||
+                  j.master_skema?.namaSkema ||
+                  "Skema Sertifikasi",
+                noSkema: j.master_skema?.kodeSkema || "-",
+                asesor:
+                  j.users?.profil?.namaLengkap || j.users?.username || "-",
+                asesorReg:
+                  j.users?.profil?.nomorRegistrasiMet || "-",
+                tglAsesmen: j.tanggal
+                  ? new Date(j.tanggal).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                  : "-",
+                waktu: j.waktu_mulai
+                  ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                  : "09:00 WIB",
+                alamat: j.alamat || j.master_tuk?.nama_tuk || "-",
+                tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
+                metode: (j.metode ||
+                  (j.tipe_tuk === "Online"
+                    ? "Online"
+                    : "Offline")) as JenisMetode,
+                status:
+                  c.hasilAsesmen && c.hasilAsesmen !== "Belum Dinilai"
+                    ? "Selesai"
+                    : "Belum Selesai",
+                statusAsesmen: c.hasilAsesmen || "Belum Dinilai",
+                statusAPL02: "APL-01 & APL-02 Terverifikasi",
+              })),
             };
           });
           setBackendBatches(mapped);
@@ -198,44 +179,7 @@ export default function AsesiList() {
     loadData();
   }, [AssessmentItems]);
 
-  // 1. Group assessments into Batches (Fallback from Context)
-  const batchMap = new Map<string, BatchDetail>();
-  AssessmentItems.forEach((item: AssessmentItem) => {
-    const skemaNama = item.skema || "Skema Asesmen";
-    const batchKey = `${item.kodeBatch || skemaNama}-${item.tglAsesmen}`;
-
-    if (!batchMap.has(batchKey)) {
-      batchMap.set(batchKey, {
-        id: item.id || Date.now(),
-        status: item.status || "Terjadwal",
-        kodeBatch: item.kodeBatch || batchKey,
-        namaBatch: skemaNama,
-        skema: skemaNama,
-        tipeTuk: item.tipeTuk || "-",
-        metode: (item.metode || "") as JenisMetode,
-        tanggal: item.tglAsesmen || "05 Okt 2026",
-        waktuMulai: item.waktu || "09:00 WIB",
-        alamat: (item.alamat || "-") as string,
-        linkVideo: item.linkVideo,
-        candidates: [],
-      });
-    }
-    const batch = batchMap.get(batchKey)!;
-    batch.candidates.push({
-      ...item,
-      nik: item.nik || `32730128${(1000 + Number(item.id)).toString()}0001`,
-      statusAPL02: item.statusApl || "APL-01 & APL-02 Terverifikasi",
-    });
-  });
-
-  const fallbackBatches = Array.from(batchMap.values()).filter(
-    (b) => !completedBatchCodes.includes(b.kodeBatch as string),
-  );
-
-  const allBatches =
-    backendBatches.length > 0
-      ? [...backendBatches, ...fallbackBatches]
-      : fallbackBatches;
+  const allBatches = backendBatches;
 
   // 2. Filter batches according to active tab and search query
   const filteredBatches = allBatches.filter((batch) => {
@@ -249,33 +193,30 @@ export default function AsesiList() {
     if (!searchTerm.trim()) return true;
 
     const query = searchTerm.toLowerCase();
-    const matchBatchCode = batch.kodeBatch?.toLowerCase().includes(query);
     const matchBatchName = batch.namaBatch?.toLowerCase().includes(query);
     const matchSkema = batch.skema?.toLowerCase().includes(query);
     const matchCandidateName = batch.candidates.some((c) =>
       c.nama?.toLowerCase().includes(query),
     );
 
-    return matchBatchCode || matchBatchName || matchSkema || matchCandidateName;
+    return matchBatchName || matchSkema || matchCandidateName;
   });
 
   // Selected Batch for Level 2 View
-  const currentSelectedBatch = allBatches.find(
-    (b) => b.kodeBatch === selectedBatchCode,
-  );
+  const currentSelectedBatch = allBatches.find((b) => b.id === selectedBatchId);
 
   const isAllCandidatesFinished = currentSelectedBatch
     ? currentSelectedBatch.candidates.length > 0 &&
-      currentSelectedBatch.candidates.every((c) => c.status === "Selesai")
+    currentSelectedBatch.candidates.every((c) => c.status === "Selesai")
     : false;
 
   // Filter candidates inside Level 2 view
   const filteredCandidates = currentSelectedBatch
     ? currentSelectedBatch.candidates.filter(
-        (c) =>
-          c.nama?.toLowerCase().includes(candidateSearchTerm.toLowerCase()) ||
-          c.nik?.toLowerCase().includes(candidateSearchTerm.toLowerCase()),
-      )
+      (c) =>
+        c.nama?.toLowerCase().includes(candidateSearchTerm.toLowerCase()) ||
+        c.nik?.toLowerCase().includes(candidateSearchTerm.toLowerCase()),
+    )
     : [];
 
   return (
@@ -290,7 +231,8 @@ export default function AsesiList() {
             Daftar Asesmen
           </h2>
           <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4">
-            Kelola dan pantau proses asesmen kandidat asesi yang terkelompok berdasarkan Batch Penugasan.
+            Kelola dan pantau proses asesmen kandidat asesi yang terkelompok
+            berdasarkan Batch Penugasan.
           </p>
         </div>
       </div>
@@ -314,7 +256,7 @@ export default function AsesiList() {
       )}
 
       {/* VIEW SWITCHER: LEVEL 1 (Batch List) vs LEVEL 2 (Candidates inside selected Batch) */}
-      {!selectedBatchCode ? (
+      {!selectedBatchId ? (
         /* ==================== LEVEL 1 VIEW: BATCH LIST ==================== */
         <div className="space-y-6">
           {/* Summary Cards */}
@@ -330,7 +272,9 @@ export default function AsesiList() {
                     {allBatches.length.toString().padStart(2, "0")}
                   </span>
                 </div>
-                <p className="text-[11px] font-bold text-sky-600">Semua Batch Penugasan</p>
+                <p className="text-[11px] font-bold text-sky-600">
+                  Semua Batch Penugasan
+                </p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#008BE3] text-white">
                 <Layers size={20} strokeWidth={2.5} />
@@ -345,10 +289,15 @@ export default function AsesiList() {
                 </span>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-2xl font-black text-slate-900 tracking-tight">
-                    {allBatches.filter((b) => b.metode?.toLowerCase() === "offline").length.toString().padStart(2, "0")}
+                    {allBatches
+                      .filter((b) => b.metode?.toLowerCase() === "offline")
+                      .length.toString()
+                      .padStart(2, "0")}
                   </span>
                 </div>
-                <p className="text-[11px] font-bold text-emerald-600">Metode Tatap Muka</p>
+                <p className="text-[11px] font-bold text-emerald-600">
+                  Metode Tatap Muka
+                </p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#84CC16] text-white">
                 <Building2 size={20} strokeWidth={2.5} />
@@ -363,10 +312,15 @@ export default function AsesiList() {
                 </span>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-2xl font-black text-slate-900 tracking-tight">
-                    {allBatches.filter((b) => b.metode?.toLowerCase() === "online").length.toString().padStart(2, "0")}
+                    {allBatches
+                      .filter((b) => b.metode?.toLowerCase() === "online")
+                      .length.toString()
+                      .padStart(2, "0")}
                   </span>
                 </div>
-                <p className="text-[11px] font-bold text-purple-600">Metode Daring</p>
+                <p className="text-[11px] font-bold text-purple-600">
+                  Metode Daring
+                </p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-purple-500 text-white">
                 <Video size={20} strokeWidth={2.5} />
@@ -449,7 +403,7 @@ export default function AsesiList() {
 
                 return (
                   <div
-                    key={batch.kodeBatch}
+                    key={batch.id}
                     className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#008BE3]/50 transition-all flex flex-col justify-between overflow-hidden group"
                   >
                     {/* Card Top Header */}
@@ -462,11 +416,10 @@ export default function AsesiList() {
 
                         {/* AssessmentItem Type Badge */}
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${
-                            isOnline
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${isOnline
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          }`}
+                            }`}
                         >
                           {isOnline ? "Online" : "Offline"}
                         </span>
@@ -548,11 +501,10 @@ export default function AsesiList() {
                         {/* Mini Progress Bar */}
                         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all duration-500 ${
-                              progressPercent === 100
+                            className={`h-full transition-all duration-500 ${progressPercent === 100
                                 ? "bg-emerald-500"
                                 : "bg-[#008BE3]"
-                            }`}
+                              }`}
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
@@ -562,9 +514,7 @@ export default function AsesiList() {
                     {/* Card Footer Action */}
                     <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
                       <button
-                        onClick={() =>
-                          setSelectedBatchCode(batch.kodeBatch as string)
-                        }
+                        onClick={() => setSelectedBatchId(batch.id)}
                         className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 ml-auto cursor-pointer"
                       >
                         Lihat Detail
@@ -603,7 +553,7 @@ export default function AsesiList() {
                   {/* Navigation Back Button */}
                   <button
                     onClick={() => {
-                      setSelectedBatchCode(null);
+                      setSelectedBatchId(null);
                       setSelectedAsesmen(null);
                       setCandidateSearchTerm("");
                     }}
@@ -619,7 +569,7 @@ export default function AsesiList() {
                         {currentSelectedBatch.namaBatch}
                       </h3>
                       {currentSelectedBatch.metode?.toLowerCase() ===
-                      "online" ? (
+                        "online" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                           <Video size={13} /> Online
                         </span>
@@ -704,7 +654,7 @@ export default function AsesiList() {
                       Surat Penugasan
                     </span>
                     <a
-                      href="https://drive.google.com"
+                      href={currentSelectedBatch.suratTugasUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-bold text-[#008BE3] hover:text-[#0070B8] hover:underline transition-colors mt-0.5"
@@ -725,19 +675,17 @@ export default function AsesiList() {
           {/* ========================================================================= */}
           {currentSelectedBatch && (
             <div
-              className={`rounded-2xl border p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs ${
-                isAllCandidatesFinished
+              className={`rounded-2xl border p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs ${isAllCandidatesFinished
                   ? "bg-linear-to-r from-emerald-50 via-white to-emerald-50/60 border-emerald-300"
                   : "bg-white border-slate-200"
-              }`}
+                }`}
             >
               <div className="flex items-start md:items-center gap-4">
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-colors ${
-                    isAllCandidatesFinished
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-colors ${isAllCandidatesFinished
                       ? "bg-emerald-600 text-white"
                       : "bg-slate-100 text-slate-400 border border-slate-200"
-                  }`}
+                    }`}
                 >
                   <ShieldCheck size={26} className="stroke-[2.2]" />
                 </div>
@@ -774,11 +722,10 @@ export default function AsesiList() {
                 <button
                   disabled={!isAllCandidatesFinished}
                   onClick={() => setShowCompleteModal(true)}
-                  className={`w-full md:w-auto px-5 py-3 rounded-xl font-black text-xs md:text-sm flex items-center justify-center gap-2.5 transition-all shadow-xs ${
-                    isAllCandidatesFinished
+                  className={`w-full md:w-auto px-5 py-3 rounded-xl font-black text-xs md:text-sm flex items-center justify-center gap-2.5 transition-all shadow-xs ${isAllCandidatesFinished
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-emerald-600/20 hover:shadow-md"
                       : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                  }`}
+                    }`}
                 >
                   <ShieldCheck size={18} />
                   <span>Selesaikan Asesmen Batch</span>
@@ -840,13 +787,12 @@ export default function AsesiList() {
                         {/* No */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div
-                            className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                              idx % 3 === 0
+                            className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
                                 ? "bg-[#008BE3]/10 text-[#008BE3]"
                                 : idx % 3 === 1
                                   ? "bg-[#84CC16]/10 text-[#73B412]"
                                   : "bg-slate-100 text-slate-600"
-                            }`}
+                              }`}
                           >
                             {idx + 1}
                           </div>
@@ -860,11 +806,10 @@ export default function AsesiList() {
                         {/* AssessmentItem Status */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                              candidate.status === "Selesai"
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${candidate.status === "Selesai"
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}
+                              }`}
                           >
                             {candidate.status === "Selesai" ? (
                               <CheckCircle size={12} />
@@ -894,9 +839,13 @@ export default function AsesiList() {
                                   nik: candidate.nik ?? "",
                                   nama: candidate.nama,
                                   skema: candidate.skema,
+                                  noSkema: candidate.noSkema ?? "-",
+                                  asesor: candidate.asesor ?? "-",
+                                  alamat: candidate.alamat ?? "-",
                                   tglAsesmen: candidate.tglAsesmen ?? "",
                                   waktu: candidate.waktu ?? "",
                                   tipeTuk: candidate.tipeTuk ?? "",
+                                  metode: "Offline",
                                   hasil:
                                     candidate.statusAsesmen ?? "Belum Dinilai",
                                 });
@@ -990,17 +939,28 @@ export default function AsesiList() {
                 Batal
               </button>
               <button
-                onClick={() => {
-                  const name = currentSelectedBatch.namaBatch;
-                  deleteBatchAssessmentItems(
-                    currentSelectedBatch.kodeBatch as string,
-                  );
-                  setSelectedBatchCode(null);
-                  setSelectedAsesmen(null);
-                  setShowCompleteModal(false);
-                  setSuccessNotification(
-                    `Batch "${name}" telah berhasil diselesaikan dan dihapus dari daftar asesmen Anda.`,
-                  );
+                onClick={async () => {
+                  try {
+                    await updateJadwal(currentSelectedBatch.id, {
+                      status: "Selesai",
+                    });
+
+                    const name = currentSelectedBatch.namaBatch;
+                    deleteBatchAssessmentItems(
+                      currentSelectedBatch.id.toString(),
+                    );
+                    setSelectedBatchId(null);
+                    setSelectedAsesmen(null);
+                    setShowCompleteModal(false);
+                    setSuccessNotification(
+                      `Batch "${name}" telah berhasil diselesaikan dan dihapus dari daftar asesmen Anda.`,
+                    );
+                  } catch (error) {
+                    console.error("Gagal menyelesaikan batch:", error);
+                    alert(
+                      "Gagal menyelesaikan batch asesmen. Silakan coba lagi.",
+                    );
+                  }
                 }}
                 className="px-4 py-2.5 font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >

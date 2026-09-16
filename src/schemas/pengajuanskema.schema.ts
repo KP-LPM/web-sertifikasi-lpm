@@ -56,7 +56,8 @@ export const createPengajuanSchema = z
     code: z.string().optional(),
     name: z.string().optional(),
     tuk: z.string().default("TUK Mandiri"),
-    jenisAsesmen: z.string().default("Uji Kompetensi"),
+    jenisMetode: z.string().default("Offline"),
+    jenisAsesmen: z.string().optional(),
 
     // Format terstruktur
     dataPribadi: dataPribadiSchema.optional(),
@@ -72,6 +73,7 @@ export const createPengajuanSchema = z
     kota: z.string().optional(),
     kodePos: z.string().optional(),
     kebangsaan: z.string().optional(),
+    kewarganegaraan: z.string().optional(),
     noTelp: z.string().optional(),
     pendidikanTerakhir: z.string().optional(),
     pekerjaan: z.string().optional(),
@@ -85,6 +87,7 @@ export const createPengajuanSchema = z
     faxInstitusi: z.string().optional(),
     penyesuaianWajar: z.boolean().optional(),
     berpengalaman: z.boolean().optional(),
+    metode: z.string().optional(),
 
     dokumen: z.array(itemDokumenSchema).optional(),
     asesmenMandiri: z.array(itemAsesmenMandiriSchema).optional(),
@@ -103,7 +106,7 @@ export const createPengajuanSchema = z
           data.jenisKelamin === "Laki-laki" || data.jenisKelamin === "Laki_laki"
             ? "Laki_laki"
             : "Perempuan",
-        kewarganegaraan: data.kebangsaan || "Indonesia",
+        kewarganegaraan: data.kewarganegaraan || data.kebangsaan || "Indonesia",
         alamat: data.alamat || "",
         kodeProvinsi: data.provinsi || "",
         kodeKota: data.kota || "",
@@ -131,7 +134,7 @@ export const createPengajuanSchema = z
       skemaId: data.skemaId,
       kodeSkema: data.kodeSkema || data.code,
       tuk: data.tuk || "TUK Mandiri",
-      jenisAsesmen: data.jenisAsesmen || "Uji Kompetensi",
+      jenisMetode: data.metode || data.jenisMetode || data.jenisAsesmen || "Offline",
       dataPribadi,
       dokumen,
       asesmenMandiri,
@@ -141,13 +144,15 @@ export const createPengajuanSchema = z
 // 4. Skema Edit Pengajuan (selama belum diverifikasi)
 export const updatePengajuanSchema = z.object({
   tuk: z.string().optional(),
-  jenisAsesmen: z.string().optional(),
+  jenisMetode: z.string().optional(),
   dataPribadi: dataPribadiSchema.partial().optional(),
 });
 
 // 5. Skema Update Status Pengajuan (Admin)
 export const updateStatusPengajuanSchema = z.object({
   status: z.string().min(1, "Status wajib diisi"),
+  statusPembayaran: z.string().optional(),
+  sumberAnggaran: z.string().optional(),
 });
 
 // 6. Skema Upload Dokumen Tambahan

@@ -5,11 +5,16 @@ export interface FormHeaderProps {
   formCode: string;
   asesmenData?: {
     nama?: string;
+    namaLengkap?: string;
     skema?: string;
     noSkema?: string;
+    nomorSkema?: string;
     tuk?: string;
+    tipeTuk?: string;
     tanggal?: string;
     asesor?: string;
+    asesorName?: string;
+    namaAsesor?: string;
   };
   compact?: boolean;
 }
@@ -21,13 +26,14 @@ export function FormHeader({
   compact = false,
 }: FormHeaderProps) {
   const data = {
-    nama: asesmenData?.nama || "Ahmad Supriyadi",
-    skema: asesmenData?.skema || "Teknisi Muda Jaringan Komputer",
-    noSkema: asesmenData?.noSkema || "04/SKM/LSP P1 UIN SGD/V/2022",
-    tuk: asesmenData?.tuk || "TUK Sewaktu LSP",
-    tanggal: asesmenData?.tanggal || "11 Oktober 2024",
-    asesor: asesmenData?.asesor || "Ichsan Taufik",
+    nama: asesmenData?.nama || asesmenData?.namaLengkap || "-",
+    skema: asesmenData?.skema || "-",
+    noSkema: asesmenData?.noSkema || asesmenData?.nomorSkema || "-",
+    tuk: asesmenData?.tuk || asesmenData?.tipeTuk || "-",
+    tanggal: asesmenData?.tanggal || "-",
+    asesor: asesmenData?.asesor || asesmenData?.asesorName || asesmenData?.namaAsesor || "-",
   };
+
 
   if (compact) {
     return (

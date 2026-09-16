@@ -200,7 +200,7 @@ export function EFormApl01({
                   Judul :
                 </td>
                 <td className="border border-slate-300 p-2 whitespace-nowrap font-medium text-slate-800">
-                  {(formData?.judulSkema as string) || ""}
+                  {(formData?.namaSkema as string) || ""}
                 </td>
               </tr>
               <tr>
@@ -208,7 +208,7 @@ export function EFormApl01({
                   Nomor :
                 </td>
                 <td className="border border-slate-300 p-2">
-                  {(formData?.nomorSkema as string) || ""}
+                  {(formData?.kodeSkema as string) || ""}
                 </td>
               </tr>
 
@@ -356,7 +356,7 @@ export function EFormApl01({
                               )
                             }
                             className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                          >
+                          > lihat file
                             <Eye size={14} />
                           </button>
                         )}

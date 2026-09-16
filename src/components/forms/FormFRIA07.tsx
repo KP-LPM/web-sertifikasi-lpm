@@ -744,7 +744,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   <td className="border border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent"
                       value={String(p.nama || "")}
                       onChange={(e) =>
@@ -759,7 +759,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   <td className="border border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={p.noMet}
                       onChange={(e) =>
@@ -774,7 +774,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   <td className="border border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={String(p.ttdTanggal || "")}
                       onChange={(e) =>
@@ -804,7 +804,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   <td className="border border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent"
                       value={v.nama}
                       onChange={(e) =>
@@ -819,7 +819,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   <td className="border border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={v.noMet}
                       onChange={(e) =>
@@ -834,7 +834,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   <td className="border border-slate-300 p-2">
                     <input
                       type="text"
-                      disabled={props.readOnly || props.isAsesi}
+                      disabled={true}
                       className="w-full outline-none bg-transparent text-center"
                       value={v.ttdTanggal}
                       onChange={(e) =>

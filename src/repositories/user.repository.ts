@@ -16,6 +16,7 @@ export class UserRepository {
         profil: {
           select: {
             namaLengkap: true,
+            nomorRegistrasiMet: true,
           },
         },
       },
@@ -44,9 +45,18 @@ export class UserRepository {
     });
   }
 
-  async createUser(data: BaseUserInput) {
+  async createUser(data: BaseUserInput & { namaLengkap?: string }) {
+    const { namaLengkap, ...userData } = data;
     return await db.user.create({
-      data,
+      data: {
+        ...userData,
+        profil: namaLengkap ? {
+          create: {
+            namaLengkap,
+            nik: Math.random().toString().slice(2, 18).padEnd(16, "0"), // Exactly 16 digits
+          }
+        } : undefined
+      },
     });
   }
 

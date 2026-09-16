@@ -34,7 +34,11 @@ export const upsertVerifikasiPengajuan = async (
     // 2. Update status pengajuan di tabel induk
     await tx.pengajuanSkema.update({
       where: { id: pengajuanId },
-      data: { status: statusPengajuanBaru },
+      data: {
+        status: statusPengajuanBaru,
+        statusPembayaran: data.statusPembayaran,
+        sumberAnggaran: data.sumberAnggaran
+      },
     });
 
     return verifikasi;

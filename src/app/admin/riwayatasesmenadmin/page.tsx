@@ -223,22 +223,20 @@ export default function RiwayatAsesmenAdmin() {
 
               <div className="shrink-0 flex items-center gap-2">
                 <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${
-                    selectedAsesmen.hasil === "Kompeten"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-red-50 text-red-700 border-red-200"
-                  }`}
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.hasil === "Kompeten"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-red-50 text-red-700 border-red-200"
+                    }`}
                 >
                   {selectedAsesmen.hasil}
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${
-                    selectedAsesmen.status === "Selesai"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : selectedAsesmen.status === "Terjadwal"
-                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                        : "bg-slate-50 text-slate-700 border-slate-200"
-                  }`}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.status === "Selesai"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : selectedAsesmen.status === "Terjadwal"
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-slate-50 text-slate-700 border-slate-200"
+                    }`}
                 >
                   {selectedAsesmen.status === "Selesai" && (
                     <CheckCircle size={12} />
@@ -489,19 +487,18 @@ export default function RiwayatAsesmenAdmin() {
                     asesmenData={{
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
-                      noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
+                      noSkema: selectedAsesmen.noSkema || "-",
                       tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: "MET.000.001234 2021",
+                      asesorReg: selectedAsesmen.asesorReg || "-",
                     }}
-                    answers={{ u0e0: "K", u0e1: "K", u1e0: "K" }}
                     rekomendasi="Dapat dilanjutkan"
                     asesiName={selectedAsesmen.nama}
                     asesiSignature={selectedAsesmen.nama}
                     asesiDate={selectedAsesmen.tglAsesmen}
                     asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                    asesorReg="MET.000.001234 2021"
+                    asesorReg={selectedAsesmen.asesorReg || "-"}
                     asesorSignature={
                       selectedAsesmen.asesor || "Dr. Aris Thorne"
                     }
@@ -513,11 +510,11 @@ export default function RiwayatAsesmenAdmin() {
                     asesmenData={{
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
-                      noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
+                      noSkema: selectedAsesmen.noSkema || "-",
                       tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: "MET.000.001234 2021",
+                      asesorReg: selectedAsesmen.asesorReg || "-",
                     }}
                     readOnly={true}
                   />
@@ -527,11 +524,11 @@ export default function RiwayatAsesmenAdmin() {
                     asesmenData={{
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
-                      noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
+                      noSkema: selectedAsesmen.noSkema || "-",
                       tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: "MET.000.001234 2021",
+                      asesorReg: selectedAsesmen.asesorReg || "-",
                     }}
                     readOnly={true}
                   />
@@ -544,7 +541,7 @@ export default function RiwayatAsesmenAdmin() {
                       tipeTuk: selectedAsesmen.tipeTuk,
                       t: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: "MET.000.001234 2021",
+                      asesorReg: selectedAsesmen.asesorReg || "-",
                     }}
                     readOnly={true}
                   />
@@ -554,11 +551,11 @@ export default function RiwayatAsesmenAdmin() {
                     asesmenData={{
                       nama: selectedAsesmen.nama,
                       skema: selectedAsesmen.skema,
-                      noSkema: "04/SKM/LSP P1 UIN SGD/V/2022",
+                      noSkema: selectedAsesmen.noSkema || "-",
                       tipeTuk: selectedAsesmen.tipeTuk,
                       tanggal: selectedAsesmen.tglAsesmen,
                       asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: "MET.000.001234 2021",
+                      asesorReg: selectedAsesmen.asesorReg || "-",
                     }}
                     readOnly={true}
                   />
@@ -594,33 +591,30 @@ export default function RiwayatAsesmenAdmin() {
       <div className="bg-white p-1 rounded-xl shadow-xs border border-gray-100 flex items-center w-full max-w-md">
         <button
           onClick={() => setMainTab("asesmen")}
-          className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-lg transition-all text-center cursor-pointer ${
-            mainTab === "asesmen"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-500 hover:text-slate-800"
-          }`}
+          className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-lg transition-all text-center cursor-pointer ${mainTab === "asesmen"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-500 hover:text-slate-800"
+            }`}
         >
           Asesmen
         </button>
 
         <button
           onClick={() => setMainTab("batch")}
-          className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-lg transition-all text-center cursor-pointer ${
-            mainTab === "batch"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-500 hover:text-slate-800"
-          }`}
+          className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-lg transition-all text-center cursor-pointer ${mainTab === "batch"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-500 hover:text-slate-800"
+            }`}
         >
           Batch
         </button>
 
         <button
           onClick={() => setMainTab("pleno")}
-          className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-lg transition-all text-center cursor-pointer ${
-            mainTab === "pleno"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-500 hover:text-slate-800"
-          }`}
+          className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-lg transition-all text-center cursor-pointer ${mainTab === "pleno"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-500 hover:text-slate-800"
+            }`}
         >
           Sidang Pleno
         </button>
@@ -739,13 +733,12 @@ export default function RiwayatAsesmenAdmin() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                              item.tipeTuk === "Sewaktu"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : item.tipeTuk === "Tempat Kerja"
-                                  ? "bg-purple-50 text-purple-700 border-purple-200"
-                                  : "bg-orange-50 text-orange-700 border-orange-200"
-                            }`}
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.tipeTuk === "Sewaktu"
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : item.tipeTuk === "Tempat Kerja"
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : "bg-orange-50 text-orange-700 border-orange-200"
+                              }`}
                           >
                             {item.tipeTuk}
                           </span>
@@ -765,22 +758,20 @@ export default function RiwayatAsesmenAdmin() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                              item.hasil === "Kompeten"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-red-50 text-red-700 border-red-200"
-                            }`}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.hasil === "Kompeten"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                              }`}
                           >
                             {item.hasil}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                              item.status === "Selesai"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.status === "Selesai"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                              }`}
                           >
                             <CheckCircle size={12} /> {item.status}
                           </span>
@@ -1003,11 +994,10 @@ export default function RiwayatAsesmenAdmin() {
                             </td>
                             <td className="px-6 py-4">
                               <span
-                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                                  asesi.hasil === "Kompeten"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : "bg-red-50 text-red-700 border-red-200"
-                                }`}
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.hasil === "Kompeten"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-red-50 text-red-700 border-red-200"
+                                  }`}
                               >
                                 {asesi.hasil}
                               </span>
@@ -1039,7 +1029,13 @@ export default function RiwayatAsesmenAdmin() {
                                     apl01: { status: "Disetujui", catatan: "" },
                                     apl02: { status: "Disetujui", catatan: "" },
                                   };
-                                  setSelectedAsesmen(found);
+                                  setSelectedAsesmen({
+                                    ...found,
+                                    noSkema: selectedBatch.noSkema,
+                                    asesorReg: selectedBatch.asesorReg,
+                                    skema: selectedBatch.skema,
+                                    asesor: selectedBatch.asesor,
+                                  });
                                 }}
                                 className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold transition-all shadow-2xs inline-flex items-center gap-1.5 cursor-pointer"
                               >
@@ -1381,13 +1377,12 @@ export default function RiwayatAsesmenAdmin() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
-                              className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${
-                                item.jenisTuk === "Sewaktu" || !item.jenisTuk
-                                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                                  : item.jenisTuk === "Mandiri"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : "bg-blue-50 text-blue-700 border-blue-200"
-                              }`}
+                              className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${item.jenisTuk === "Sewaktu" || !item.jenisTuk
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : item.jenisTuk === "Mandiri"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-blue-50 text-blue-700 border-blue-200"
+                                }`}
                             >
                               {item.jenisTuk || "Sewaktu"}
                             </span>
@@ -1547,24 +1542,24 @@ export default function RiwayatAsesmenAdmin() {
                     {(() => {
                       const attendees =
                         selectedPleno.plenoAttendees &&
-                        selectedPleno.plenoAttendees.length > 0
+                          selectedPleno.plenoAttendees.length > 0
                           ? selectedPleno.plenoAttendees.filter(
-                              (a) =>
-                                a.nama.trim() !== "" &&
-                                a.role !== "Pimpinan Sidang",
-                            )
+                            (a) =>
+                              a.nama.trim() !== "" &&
+                              a.role !== "Pimpinan Sidang",
+                          )
                           : [
-                              { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
-                              {
-                                role: "dewan_pengarah",
-                                nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
-                              },
+                            { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
+                            {
+                              role: "dewan_pengarah",
+                              nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
+                            },
 
-                              {
-                                role: "komite_skema",
-                                nama: "Asep Abdul Sahid, M.T.",
-                              },
-                            ];
+                            {
+                              role: "komite_skema",
+                              nama: "Asep Abdul Sahid, M.T.",
+                            },
+                          ];
                       return attendees.map((att, idx) => (
                         <span
                           key={idx}
@@ -1624,7 +1619,7 @@ export default function RiwayatAsesmenAdmin() {
                       2. Surat Keputusan Direktur
                     </span>
                     {selectedPleno.linkSuratKeputusanDirektur ||
-                    selectedPleno.linkSuratHasil ? (
+                      selectedPleno.linkSuratHasil ? (
                       <a
                         href={
                           selectedPleno.linkSuratKeputusanDirektur ||
@@ -1736,16 +1731,16 @@ export default function RiwayatAsesmenAdmin() {
                         ) => {
                           const asesi: AsesiPlenoItem =
                             typeof asesiItem === "string" ||
-                            typeof asesiItem === "number"
+                              typeof asesiItem === "number"
                               ? {
-                                  id: idx + 1,
-                                  nik: `121705${1000 + idx}`,
-                                  nama: String(asesiItem),
-                                  skema: selectedPleno.skema,
-                                  asesor: "Asesor LSP",
-                                  rekomendasiAsesor: "K",
-                                  statusPleno: "K",
-                                }
+                                id: idx + 1,
+                                nik: `121705${1000 + idx}`,
+                                nama: String(asesiItem),
+                                skema: selectedPleno.skema,
+                                asesor: "Asesor LSP",
+                                rekomendasiAsesor: "K",
+                                statusPleno: "K",
+                              }
                               : asesiItem;
 
                           return (
@@ -1767,11 +1762,10 @@ export default function RiwayatAsesmenAdmin() {
                               </td>
                               <td className="px-4 py-3 text-center">
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                                    asesi.rekomendasiAsesor === "K"
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                      : "bg-red-50 text-red-700 border-red-200"
-                                  }`}
+                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.rekomendasiAsesor === "K"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-red-50 text-red-700 border-red-200"
+                                    }`}
                                 >
                                   {asesi.rekomendasiAsesor === "K"
                                     ? "Kompeten"
@@ -1780,11 +1774,10 @@ export default function RiwayatAsesmenAdmin() {
                               </td>
                               <td className="px-4 py-3 text-center">
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                                    asesi.statusPleno === "K"
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                      : "bg-red-50 text-red-700 border-red-200"
-                                  }`}
+                                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.statusPleno === "K"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-red-50 text-red-700 border-red-200"
+                                    }`}
                                 >
                                   {asesi.statusPleno === "K"
                                     ? "Kompeten"

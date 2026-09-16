@@ -17,7 +17,9 @@ export class JadwalRepository {
       },
       include: {
         master_skema: { select: { namaSkema: true, kodeSkema: true } },
-        users: { select: { username: true, email: true } },
+        users: { select: { username: true, email: true, profil: { select: { namaLengkap: true, nomorRegistrasiMet: true } } } },
+        jadwal_asesmen_peserta: true,
+        master_tuk: true,
       },
       orderBy: { tanggal: "desc" },
     });
@@ -28,7 +30,7 @@ export class JadwalRepository {
       where: { id },
       include: {
         master_skema: true,
-        users: { select: { username: true, email: true } },
+        users: { select: { username: true, email: true, profil: { select: { namaLengkap: true, nomorRegistrasiMet: true } } } },
         master_tuk: true,
         jadwal_asesmen_peserta: {
           include: {
@@ -51,23 +53,59 @@ export class JadwalRepository {
   }
 
   async delete(id: number) {
-    return await db.jadwal_asesmen.delete({
-      where: { id },
+    return await db.$transaction(async (tx) => {
+      const peserta = await tx.jadwal_asesmen_peserta.findMany({
+        where: { jadwal_id: id },
+        select: { pengajuan_id: true }
+      });
+      const pengajuanIds = peserta.map((p) => p.pengajuan_id);
+
+      if (pengajuanIds.length > 0) {
+        await tx.pengajuanSkema.updateMany({
+          where: { id: { in: pengajuanIds } },
+          data: { status: "Terverifikasi" }
+        });
+      }
+
+      return await tx.jadwal_asesmen.delete({
+        where: { id },
+      });
     });
   }
 
   // --- MANAJEMEN PESERTA BATCH ---
 
   async addPesertaBulk(jadwalId: number, pengajuanIds: number[]) {
-    // Memasukkan banyak data sekaligus ke tabel junction
-    const dataToInsert = pengajuanIds.map((pengajuanId) => ({
-      jadwal_id: jadwalId,
-      pengajuan_id: pengajuanId,
-    }));
+    return await db.$transaction(async (tx) => {
+      // Hapus semua peserta yang sudah ada di jadwal ini
+      await tx.jadwal_asesmen_peserta.deleteMany({
+        where: { jadwal_id: jadwalId }
+      });
 
-    return await db.jadwal_asesmen_peserta.createMany({
-      data: dataToInsert,
-      skipDuplicates: true,
+      if (pengajuanIds.length > 0) {
+        // Memasukkan banyak data sekaligus ke tabel junction
+        const dataToInsert = pengajuanIds.map((pengajuanId) => ({
+          jadwal_id: jadwalId,
+          pengajuan_id: pengajuanId,
+        }));
+
+        await tx.jadwal_asesmen_peserta.createMany({
+          data: dataToInsert,
+          skipDuplicates: true,
+        });
+
+        // Update status pengajuan_skema menjadi 'Terjadwal'
+        await tx.pengajuanSkema.updateMany({
+          where: {
+            id: { in: pengajuanIds },
+          },
+          data: {
+            status: "Terjadwal",
+          },
+        });
+      }
+
+      return true;
     });
   }
 

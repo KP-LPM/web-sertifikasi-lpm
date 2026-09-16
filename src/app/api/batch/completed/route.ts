@@ -64,10 +64,9 @@ export async function GET(request: NextRequest) {
 
       return {
         id: batch.id,
-        batchCode: batch.batch_code,
+        batchCode: batch.no_sk || `BATCH-${batch.id}`,
         title: batch.title,
         tanggal: batch.tanggal,
-        waktu: batch.waktu,
         alamat: batch.alamat,
         skemaList: batch.pleno_batch_skema.map(
           (s) => s.master_skema.namaSkema,

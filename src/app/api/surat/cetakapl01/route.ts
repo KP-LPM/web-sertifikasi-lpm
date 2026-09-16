@@ -101,7 +101,7 @@ const htmlContent = `
 
         <div class="title">Data Permohonan Sertifikasi</div>
         <table class="table">
-          <tr><td width="30%">Tujuan Asesmen</td><td width="5%">:</td><td>${pengajuan.jenisAsesmen || ''}</td></tr>
+          <tr><td width="30%">Tujuan Asesmen</td><td width="5%">:</td><td>${pengajuan.jenisMetode || ''}</td></tr>
           <tr><td rowspan="2">Skema Sertifikasi</td><td>Judul</td><td>${pengajuan.skema?.namaSkema || ''}</td></tr>
           <tr><td>Nomor</td><td>${pengajuan.skema?.kodeSkema || ''}</td></tr>
         </table>

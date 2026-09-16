@@ -110,11 +110,11 @@ export function Header() {
         } else if (user.role === "asesor") {
           const jadwal = await getJadwalList();
           if (Array.isArray(jadwal)) {
-            jadwal.slice(0, 5).forEach((j: Record<string, unknown>) => {
+            jadwal.filter((j: Record<string, unknown>) => j.status !== "Selesai").slice(0, 5).forEach((j: Record<string, unknown>) => {
               notifs.push({
                 id: `jadwal-${j.id}`,
                 title: "Jadwal Asesmen",
-                message: `${(j.namaBatch as string) || (j.kodeBatch as string) || "Batch Asesmen"} (${(j.skema as string) || "Skema"})`,
+                message: `${(j.namaBatch as string) || "Batch Asesmen"} (${(j.skema as string) || "Skema"})`,
                 time: j.tanggal
                   ? new Date(j.tanggal as string).toLocaleDateString("id-ID")
                   : "Mendatang",

@@ -26,6 +26,7 @@ model User {
   portfolio_asesor                portfolio_asesor[]
   profil                          ProfilPengguna?
   verifikasi_pengajuan            verifikasi_pengajuan[]
+  riwayat_asesmen_detail          riwayat_asesmen_detail[]
 
   @@map("users")
 }
@@ -141,7 +142,7 @@ model MasterElemenKompetensi {
   urutan             Int
   isWajib            Boolean              @default(true) @map("is_wajib")
   createdAt          DateTime             @default(now()) @map("created_at")
-  unitKompetensi   MasterUnitKompetensi @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  unitKompetensi     MasterUnitKompetensi @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@index([unitId], map: "idx_master_elemen_kompetensi_unit_id")
   @@map("master_elemen_kompetensi")
@@ -153,12 +154,16 @@ model PengajuanSkema {
   userId                 Int                      @map("user_id")
   skemaId                Int                      @map("skema_id")
   tuk                    String                   @map("tuk") @db.VarChar(100)
-  jenisAsesmen           String                   @map("jenis_asesmen") @db.VarChar(100)
+  jenisMetode            String                   @map("jenis_asesmen") @db.VarChar(100)
   status                 String                   @db.VarChar(50)
   tglPengajuan           DateTime                 @default(now()) @map("tgl_pengajuan")
   createdAt              DateTime                 @default(now()) @map("created_at")
   updatedAt              DateTime                 @updatedAt @map("updated_at")
   tuk_id                 Int?
+  statusPembayaran       String?                  @map("status_pembayaran") @db.VarChar
+  sumberAnggaran         String?                  @map("sumber_anggaran") @db.VarChar
+  namaInstitusi          String?                  @map("nama_institusi") @db.VarChar
+  jabatan                String?                  @db.VarChar
   apl02_penilaian        apl02_penilaian?
   asesmenMandiri         AsesmenMandiri[]
   dokumen                DokumenPengajuan[]
@@ -171,6 +176,7 @@ model PengajuanSkema {
   pleno_asesi            pleno_asesi[]
   sertifikat             sertifikat?
   verifikasi_pengajuan   verifikasi_pengajuan?
+  riwayat_asesmen_detail riwayat_asesmen_detail[]
 
   @@index([skemaId], map: "idx_pengajuan_skema_skema_id")
   @@index([skemaId, status], map: "idx_pengajuan_skema_skema_id_status")
@@ -296,7 +302,6 @@ model hasil_asesmen {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model jadwal_asesmen {
   id                     Int                      @id @default(autoincrement())
-  kode_batch             String?                  @unique @db.VarChar
   nama_batch             String?
   nomor_surat            String?                  @db.VarChar
   skema_id               Int?
@@ -308,11 +313,14 @@ model jadwal_asesmen {
   alamat                 String?
   link_video             String?
   asesor_id              Int?
-  surat_tugas_name       String?
   surat_tugas_url        String?
   status                 String                   @default("Terjadwal") @db.VarChar
   created_at             DateTime                 @default(now()) @db.Timestamp(6)
   updated_at             DateTime                 @default(now()) @db.Timestamp(6)
+  jumlahSkema            Int?                     @map("jumlah_skema")
+  kotaSurat              String?                  @map("kota_surat") @db.VarChar
+  namaDirektur           String?                  @map("nama_direktur") @db.VarChar
+  noRegMet               String?                  @map("no_reg_met") @db.VarChar
   hasil_asesmen          hasil_asesmen[]
   users                  User?                    @relation(fields: [asesor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   master_skema           MasterSkema?             @relation(fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -549,18 +557,11 @@ model pleno_attendee {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model pleno_batch {
   id                            Int                 @id @default(autoincrement())
-  batch_code                    String?             @unique @db.VarChar
   title                         String?
   no_sk                         String?             @db.VarChar
-  tanggal                       DateTime?           @db.Date
-  waktu                         DateTime?           @db.Time(6)
+  tanggal                       String?
   alamat                        String?
-  detail_alamat                 String?
-  deskripsi                     String?
   status                        String              @default("Draft") @db.VarChar
-  surat_pleno_name              String?
-  surat_pleno_url               String?
-  link_surat_hasil              String?
   link_surat_berita_pleno       String?
   link_surat_keputusan_direktur String?
   link_surat_blanko_bnsp        String?
@@ -695,4 +696,23 @@ enum Role {
 enum JenisKelamin {
   Perempuan
   Laki_laki @map("Laki-laki")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model riwayat_asesmen_detail {
+  id              Int            @id @default(autoincrement())
+  pengajuan_id    Int
+  asesor_id       Int?
+  form_type       String         @db.VarChar
+  form_data       Json           @default("{}")
+  penilaian       Json?
+  catatan         String?
+  created_at      DateTime       @default(now()) @db.Timestamp(6)
+  updated_at      DateTime       @default(now()) @updatedAt @db.Timestamp(6)
+  
+  pengajuan_skema PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade)
+  user            User?          @relation(fields: [asesor_id], references: [id], onDelete: NoAction)
+
+  @@index([pengajuan_id], map: "idx_riwayat_asesmen_detail_pengajuan_id")
+  @@index([asesor_id], map: "idx_riwayat_asesmen_detail_asesor_id")
 }
