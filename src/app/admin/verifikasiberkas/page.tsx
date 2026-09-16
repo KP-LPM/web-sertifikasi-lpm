@@ -27,119 +27,7 @@ import {
   verifyUser,
 } from "@/lib/api";
 
-export default function UsersManagement() {
-  const { user } = useAppContext();
-  const readOnly = user?.role === "direktur" || user?.role === "manajer";
-
-  const [mainTab, setMainTab] = useState<"asesi" | "asesor">("asesi");
-
-  const [users, setUsers] = useState<UserItem[]>([
-    {
-      id: 1,
-      username: "ahmad_h",
-      namaLengkap: "Ahmad Hidayat",
-      email: "ahmad.h@student.uin.ac.id",
-      role: "asesi",
-      status: "Menunggu Verifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "",
-        statusPembayaran: "Belum",
-        sumberAnggaran: "Sumber Anggaran Biaya Mandiri",
-      },
-    },
-    {
-      id: 2,
-      username: "budi_p",
-      namaLengkap: "Budi Pratama",
-      email: "budi.p@student.uin.ac.id",
-      role: "asesi",
-      status: "Menunggu Verifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "",
-        statusPembayaran: "Sudah",
-        sumberAnggaran: "Sumber Anggaran dari APBN",
-      },
-    },
-    {
-      id: 3,
-      username: "dewi_l",
-      namaLengkap: "Dewi Lestari",
-      email: "dewi.l@student.uin.ac.id",
-      role: "asesi",
-      status: "Terverifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "Dokumen APL 01 & APL 02 telah terverifikasi secara sah.",
-        statusPembayaran: "Sudah",
-        sumberAnggaran: "Sumber Anggaran dari APBN",
-      },
-    },
-    {
-      id: 4,
-      username: "rahmat_h",
-      namaLengkap: "Rahmat Hidayat",
-      email: "rahmat.h@student.uin.ac.id",
-      role: "asesi",
-      status: "Terverifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "Persyaratan dasar dan dokumen administrasi lengkap.",
-        statusPembayaran: "Sudah",
-        sumberAnggaran: "Sumber Anggaran Biaya Mandiri",
-      },
-    },
-    {
-      id: 5,
-      username: "siti_r",
-      namaLengkap: "Dr. Siti Rohmah",
-      email: "siti.r@lecturer.uin.ac.id",
-      role: "asesor",
-      status: "Terverifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "",
-        asalAsesor: "Internal",
-        instansi: "LSP UIN SGD",
-        skema: "Rekayasa Perangkat Lunak",
-        noReg: "MET.000.12345.2023",
-      }
-    },
-    {
-      id: 6,
-      username: "ichsan_t",
-      namaLengkap: "Ichsan Taufik",
-      email: "ichsan.taufik@lsp.uin.ac.id",
-      role: "asesor",
-      status: "Menunggu Verifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "",
-        asalAsesor: "Eksternal",
-        instansi: "LSP Teknologi Informasi & Komunikasi Indonesia",
-        skema: "Teknisi Muda Jaringan Komputer",
-        noReg: "MET.000.98765.2025",
-      }
-    },
-    {
-      id: 7,
-      username: "aceng_k",
-      namaLengkap: "Aceng Abdul Kodir",
-      email: "aceng.kodir@lsp.uin.ac.id",
-      role: "asesor",
-      status: "Terverifikasi",
-      verificationData: {
-        rekomendasi: "Diterima",
-        catatan: "",
-        asalAsesor: "Internal",
-        instansi: "LSP UIN SGD",
-        skema: "Rekayasa Perangkat Lunak",
-        noReg: "MET.000.54321.2024",
-      }
-    },
-  ]);
-
+// Memindahkan interface ke luar komponen agar kode lebih rapi dan mencegah re-deklarasi
 interface BackendDataPribadi {
   nik?: string;
   namaLengkap?: string;
@@ -179,6 +67,15 @@ interface BackendUserRecord {
   nomor_registrasi_met?: string;
   profil?: BackendProfilPengguna[] | BackendProfilPengguna;
 }
+
+export default function UsersManagement() {
+  const { user, setExtraCrumbs } = useAppContext();
+  const readOnly = user?.role === "direktur" || user?.role === "manajer";
+
+  const [mainTab, setMainTab] = useState<"asesi" | "asesor">("asesi");
+
+  // === DATA DUMMY DIHAPUS, MULAI DARI ARRAY KOSONG ===
+  const [users, setUsers] = useState<UserItem[]>([]);
 
   // Backend Integration State
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
@@ -269,9 +166,9 @@ interface BackendUserRecord {
         };
       });
 
-      if (mappedAsesi.length > 0 || mappedAsesor.length > 0) {
-        setUsers([...mappedAsesi, ...mappedAsesor]);
-      }
+      // === HAPUS SYARAT .length > 0 AGAR BISA MERESET STATE JIKA KOSONG ===
+      setUsers([...mappedAsesi, ...mappedAsesor]);
+      
     } catch (err) {
       console.error("Gagal memuat data verifikasi berkas:", err);
     } finally {
@@ -313,6 +210,32 @@ interface BackendUserRecord {
     statusPembayaran: "Belum" as "Sudah" | "Belum",
     sumberAnggaran: "Sumber Anggaran Biaya Mandiri",
   });
+
+  // === EVENT LISTENER UNTUK RESET DARI BREADCRUMB ===
+  useEffect(() => {
+    const handleCloseModals = () => {
+      setIsVerifyModalOpen(false);
+      setUserToVerify(null);
+    };
+    window.addEventListener("BREADCRUMB_RESET_MODAL", handleCloseModals);
+    return () => window.removeEventListener("BREADCRUMB_RESET_MODAL", handleCloseModals);
+  }, []);
+
+  // === EFEK UNTUK UPDATE BREADCRUMB SESUAI STATE ===
+  useEffect(() => {
+    if (setExtraCrumbs) {
+      if (isVerifyModalOpen && userToVerify) {
+        setExtraCrumbs([{ label: "Tinjauan Verifikasi Berkas" }]);
+      } else {
+        setExtraCrumbs([]); // Reset kalau modal ditutup
+      }
+    }
+
+    // Cleanup saat komponen unmount atau pindah halaman
+    return () => {
+      if (setExtraCrumbs) setExtraCrumbs([]);
+    };
+  }, [isVerifyModalOpen, userToVerify, setExtraCrumbs]);
 
   const openPaymentModal = (userItem: UserItem) => {
     setUserToEditPayment(userItem);
@@ -717,15 +640,17 @@ interface BackendUserRecord {
       !!apl01FormData.ttdAdmin && (totalReqs === 0 || checkedReqs === totalReqs);
 
     return (
-      <div className="space-y-6 pb-24 text-sm text-gray-700">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-4">
+      <div className="w-full space-y-6 text-sm text-gray-700">
+        <div className="w-full animate-in fade-in zoom-in-95 duration-200">
+          
+          {/* Header & Back Button */}
+          <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => {
                 setIsVerifyModalOpen(false);
                 setUserToVerify(null);
               }}
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
               title="Kembali"
             >
               <ArrowLeft size={18} />
@@ -740,48 +665,49 @@ interface BackendUserRecord {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden flex flex-col">
+          <div className="w-full space-y-6 relative mb-8 text-slate-800 text-sm">
+            
             {userToVerify.role === "asesi" && (
-              <div className="border-b border-gray-100 bg-slate-50 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="min-w-0">
-                      <p className="text-sm md:text-base font-bold text-slate-900">
-                        {userToVerify.namaLengkap}
-                      </p>
-                      <p className="text-[11px] md:text-xs text-gray-500 font-medium mt-0.5">
-                        <span className="text-[#008BE3]">@{userToVerify.username}</span> • {userToVerify.email}
-                      </p>
-                    </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white border border-slate-200 shadow-sm mb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="min-w-0">
+                    <p className="text-sm md:text-base font-bold text-slate-900">
+                      {userToVerify.namaLengkap}
+                    </p>
+                    <p className="text-[11px] md:text-xs text-gray-500 font-medium mt-0.5">
+                      <span className="text-[#008BE3]">@{userToVerify.username}</span> • {userToVerify.email}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${activeVerifyTab === "apl01" ? "bg-[#008BE3] text-white shadow-sm" : "bg-slate-200 text-slate-500"}`}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeVerifyTab === "apl01" ? "bg-[#008BE3] text-white shadow-sm" : "bg-slate-100 text-slate-500 cursor-pointer hover:bg-slate-200"}`}
+                    onClick={() => setActiveVerifyTab("apl01")}
+                  >
+                    <span
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${activeVerifyTab === "apl01" ? "bg-white text-[#008BE3]" : "bg-slate-300 text-slate-500"}`}
                     >
-                      <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${activeVerifyTab === "apl01" ? "bg-white text-[#008BE3]" : "bg-slate-300 text-slate-500"}`}
-                      >
-                        1
-                      </span>
-                      FR.APL.01
-                    </div>
-                    <div className="w-8 h-px bg-slate-300"></div>
-                    <div
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${activeVerifyTab === "apl02" ? "bg-[#008BE3] text-white shadow-sm" : "bg-slate-200 text-slate-500"}`}
+                      1
+                    </span>
+                    FR.APL.01
+                  </div>
+                  <div className="w-6 h-px bg-slate-300"></div>
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeVerifyTab === "apl02" ? "bg-[#008BE3] text-white shadow-sm" : "bg-slate-100 text-slate-500 cursor-pointer hover:bg-slate-200"}`}
+                    onClick={isApl01Valid ? () => setActiveVerifyTab("apl02") : undefined}
+                  >
+                    <span
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${activeVerifyTab === "apl02" ? "bg-white text-[#008BE3]" : "bg-slate-300 text-slate-500"}`}
                     >
-                      <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${activeVerifyTab === "apl02" ? "bg-white text-[#008BE3]" : "bg-slate-300 text-slate-500"}`}
-                      >
-                        2
-                      </span>
-                      FR.APL.02
-                    </div>
+                      2
+                    </span>
+                    FR.APL.02
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="p-6 space-y-4">
+            <div className="w-full">
               {userToVerify.role === "asesi" ? (
                 <>
                   {activeVerifyTab === "apl01" ? (
@@ -812,8 +738,8 @@ interface BackendUserRecord {
                   )}
                 </>
               ) : (
-                <div className="flex flex-col gap-6 w-full">
-                  <div className="border-b border-gray-100 bg-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="w-full bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden flex flex-col">
+                  <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-col min-w-0 gap-1 items-start">
                       {userToVerify.verificationData?.asalAsesor === "Eksternal" ? (
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
@@ -840,7 +766,7 @@ interface BackendUserRecord {
                     </div>
                   </div>
 
-                  <div className="px-6 pb-6">
+                  <div className="px-6 py-6">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col md:flex-row gap-4 md:gap-8">
                       <div className="flex-1">
                         <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Skema Keahlian</p>
@@ -869,7 +795,7 @@ interface BackendUserRecord {
                               <p className="text-xs text-slate-500">Surat_Peminjaman_Asesor_LSP_UIN.pdf</p>
                             </div>
                           </div>
-                          <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-[#008BE3] transition-colors">
+                          <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-[#008BE3] transition-colors shadow-2xs">
                             <Eye size={14} /> Lihat File
                           </a>
                         </div>
@@ -885,7 +811,7 @@ interface BackendUserRecord {
                                 <p className="text-xs text-slate-500">Surat_Konfirmasi_Balasan_LSP_TIK.pdf</p>
                               </div>
                             </div>
-                            <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-purple-600 transition-colors">
+                            <a href="#" onClick={(e) => { e.preventDefault(); window.open('/dummy.pdf', '_blank'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-purple-600 transition-colors shadow-2xs">
                               <Eye size={14} /> Lihat File
                             </a>
                           </div>
@@ -897,20 +823,20 @@ interface BackendUserRecord {
               )}
             </div>
 
-            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-auto">
+            <div className="pt-6 flex justify-end gap-3 mt-8 border-t border-slate-200">
               <button
                 onClick={() => {
                   setIsVerifyModalOpen(false);
                   setUserToVerify(null);
                 }}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs mr-auto"
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs mr-auto cursor-pointer"
               >
                 Batal
               </button>
 
               <button
                 onClick={handleSaveVerifyDraft}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs"
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer"
               >
                 Simpan Draft
               </button>
@@ -919,7 +845,7 @@ interface BackendUserRecord {
                 <button
                   onClick={() => setActiveVerifyTab("apl02")}
                   disabled={!isApl01Valid}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!isApl01Valid ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-[#008BE3] text-white hover:bg-[#0076C2]"}`}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer ${!isApl01Valid ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-[#008BE3] text-white hover:bg-[#0076C2]"}`}
                 >
                   Approve Form 1 & Selanjutnya
                 </button>
@@ -930,7 +856,7 @@ interface BackendUserRecord {
                       <select
                         value={selectedAsesorId}
                         onChange={(e) => setSelectedAsesorId(e.target.value)}
-                        className="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 outline-none focus:border-[#008BE3]"
+                        className="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 outline-none focus:border-[#008BE3] cursor-pointer"
                       >
                         <option value="">Pilih Asesor...</option>
                         {users
@@ -944,7 +870,7 @@ interface BackendUserRecord {
                       <button
                         onClick={handleAssignAsesor}
                         disabled={!selectedAsesorId}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!selectedAsesorId ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-[#008BE3] text-white hover:bg-[#0076C2]"}`}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer ${!selectedAsesorId ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-[#008BE3] text-white hover:bg-[#0076C2]"}`}
                       >
                         Tugaskan ke Asesor
                       </button>
@@ -957,7 +883,7 @@ interface BackendUserRecord {
                         activeVerifyTab === "apl02" &&
                         (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor)
                       }
-                      className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${userToVerify?.role === "asesi" && activeVerifyTab === "apl02" && (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
+                      className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer ${userToVerify?.role === "asesi" && activeVerifyTab === "apl02" && (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
                     >
                       Verifikasi Akun (Siap Ujian)
                     </button>

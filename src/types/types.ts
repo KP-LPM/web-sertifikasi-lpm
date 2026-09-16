@@ -333,12 +333,15 @@ export interface ScheduleItem {
   namaBatch?: string;
   nomorSurat?: string;
   skema?: string;
+  jumlahSkema?: number;
   metode?: string;
   tanggal: string;
   waktuMulai?: string;
   tipeTuk: TipeTuk;
   alamat?: string;
+  kota?: string;
   tuk?: string;
+  noRegMet?: string;
   linkVideo?: string;
   totalKandidat?: number;
   namaAsesor?: string;
@@ -347,6 +350,7 @@ export interface ScheduleItem {
   suratTugasName?: string;
   suratTugasUrl?: string;
   status: string;
+  namaDirektur?: string;
   asesiList?: number[]; // pengajuan_skema.id[] — sebelumnya (number|string)[]
 }
 

@@ -100,14 +100,12 @@ const ROUTE_CRUMBS: Record<string, CrumbItem[]> = {
   "/asesi/pengajuanskema": [{ label: "Dashboard", href: "/asesi/overview" }],
   "/asesi/riwayatasesmen": [
     { label: "Dashboard", href: "/asesi/overview" },
-    // Label disesuaikan dengan kode asesi lama
     { label: "Riwayat & Sertifikat", href: "/asesi/riwayatasesmen" },
   ],
   "/asesi/banding": [
     { label: "Dashboard", href: "/asesi/overview" },
     { label: "Banding Asesmen", href: "/asesi/banding" },
   ],
-  // Tambahan rute Ujian Online yang sebelumnya hilang
   "/asesi/ujian": [
     { label: "Dashboard", href: "/asesi/overview" },
     { label: "Ujian Online", href: "/asesi/ujian" },
@@ -150,7 +148,7 @@ const ROUTE_CRUMBS: Record<string, CrumbItem[]> = {
   ],
   "/admin/verifikasiberkas": [
     { label: "Dashboard", href: "/admin/overview" },
-    { label: "Daftar Pengguna" },
+    { label: "Verifikasi Berkas" }, // PERBAIKAN: Sebelumnya "Daftar Pengguna"
   ],
   "/admin/reports": [
     { label: "Dashboard", href: "/admin/overview" },
@@ -176,7 +174,6 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
 
   if (!baseCrumbs) return null;
 
-  // Gabungkan rute dasar dengan rute tambahan dari form/state
   const crumbs = [...baseCrumbs, ...(extraCrumbs || [])];
 
   if (crumbs.length <= 1) return null;
@@ -193,12 +190,8 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
             {idx > 0 && <span className="text-slate-400 mx-1">/</span>}
 
             {isLast ? (
-              // Jika ini langkah terakhir, tampilkan teks tebal berwarna biru
               <span className="text-[#008BE3] font-black">{crumb.label}</span>
             ) : "onClick" in crumb && crumb.onClick ? (
-              // type-narrow: extraCrumbs from context can have different shape,
-              // so ensure safe check for onClick
-              // Jika ini rute state (seperti saat klik kembali ke Daftar Skema), gunakan tombol
               <button
                 onClick={
                   crumb.onClick as React.MouseEventHandler<HTMLButtonElement>
@@ -208,7 +201,6 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
                 {crumb.label}
               </button>
             ) : crumb.href ? (
-              // Jika ini rute URL normal, gunakan Link Next.js
               <Link
                 href={crumb.href}
                 className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
@@ -216,9 +208,14 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
                 {crumb.label}
               </Link>
             ) : (
-              // Jika tidak ada onClick dan tidak ada href, jadikan teks biasa
-              <span className="text-slate-500">{crumb.label}</span>
-            )}
+              // 👇 INI YANG DIUBAH, supaya breadcrumb tulisan biasa bisa dipencet & mereset modal
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("BREADCRUMB_RESET_MODAL"))}
+                className="text-slate-500 hover:text-[#008BE3] transition-colors cursor-pointer uppercase font-bold"
+              >
+                {crumb.label}
+              </button>
+            )}  
           </React.Fragment>
         );
       })}

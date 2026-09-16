@@ -19,6 +19,7 @@ import {
   Sparkles,
   Printer,
   Loader2,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
@@ -195,17 +196,16 @@ export default function AssessmentSchedule() {
       skema: item.skema || "",
       metode: item.metode || "Luring",
       tipeTuk: item.tipeTuk,
-      tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
+      tuk: item.alamat || "TUK Sewaktu Kantor LSP",
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
-      namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
+      namaAsesor: item.namaAsesor || "",
       suratPenugasanName: item.suratPenugasanName || "",
-      totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
+      totalKandidat: item.totalKandidat || 0,
       status: item.status || "Terjadwal",
     });
 
-    setSelectedAsesiForJadwal(item.asesiList || []);
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
@@ -262,21 +262,20 @@ export default function AssessmentSchedule() {
       skema: item.skema || "",
       metode: item.metode || "Luring",
       tipeTuk: item.tipeTuk,
-      tuk: item.alamat || "TUK Sewaktu Kantor LSP", // Tambahkan properti 'tuk' yang hilang
+      tuk: item.alamat || "TUK Sewaktu Kantor LSP",
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
-      namaAsesor: item.namaAsesor || "", // Gunakan item.namaasesor
+      namaAsesor: item.namaAsesor || "",
       suratPenugasanName: item.suratPenugasanName || "",
-      totalKandidat: item.totalKandidat || 0, // Gunakan item.totalKandidat
+      totalKandidat: item.totalKandidat || 0,
       status: item.status || "Terjadwal",
     });
 
     setSelectedAsesiForJadwal(item.asesiList || []);
-
-    setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
+
   const handlePreviewPleno = (item: PlenoDetailData) => {
     setIsPreviewMode(true);
     setEditId(item.id);
@@ -326,6 +325,7 @@ export default function AssessmentSchedule() {
       setConfirmAsesmenId(null);
     }
   };
+
   const handleSelesaiPleno = () => {
     if (confirmPlenoId !== null) {
       updatePlenoSession(confirmPlenoId, { status: "Selesai" });
@@ -348,7 +348,7 @@ export default function AssessmentSchedule() {
   const formattanggal = (tanggalStr: string) => {
     if (!tanggalStr) return "-";
     try {
-      const date = new Date(tanggalStr); // Gunakan D kapital
+      const date = new Date(tanggalStr);
       if (isNaN(date.getTime())) return tanggalStr;
       return new Intl.DateTimeFormat("id-ID", {
         weekday: "long",
@@ -361,7 +361,6 @@ export default function AssessmentSchedule() {
     }
   };
 
-  // Asesmen Interfaces & State
   interface BackendPesertaJadwal {
     id?: number;
     pengajuan_id: number;
@@ -432,42 +431,8 @@ export default function AssessmentSchedule() {
   const [availableAsesors, setAvailableAsesors] = useState<AvailableAsesorOption[]>([]);
   const [apiAvailableAsesis, setApiAvailableAsesis] = useState<BackendPengajuanItem[]>([]);
 
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([
-    {
-      id: 1,
-      namaBatch: "BATCH-IT-2026-001",
-      nomorSurat: "ST/LSP-P1/BATCH-001/2026",
-      skema: "Auditor Halal",
-      metode: "Offline",
-      tanggal: "15 Okt 2026",
-      waktuMulai: "08:00",
-      tipeTuk: "Sewaktu",
-      totalKandidat: 20,
-      namaAsesor: "Dr. Aris Thorne",
-      inisialAsesor: "AT",
-      suratPenugasanName:
-        "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J/view",
-      status: "Dikonfirmasi",
-      asesiList: [1, 5],
-    },
-    {
-      id: 2,
-      namaBatch: "BATCH-NET-2026-002",
-      nomorSurat: "ST/LSP-P1/BATCH-002/2026",
-      skema: "Jenjang 5 Bidang Kewirausahaan Industri",
-      metode: "Online",
-      tanggal: "18 Okt 2026",
-      waktuMulai: "13:00",
-      tipeTuk: "Mandiri",
-      totalKandidat: 15,
-      namaAsesor: "Budi Santoso, M.Kom",
-      inisialAsesor: "BS",
-      suratPenugasanName:
-        "https://drive.google.com/file/d/0J9I8H7G6F5E4D3C2B1A/view",
-      status: "Terjadwal",
-      asesiList: [2, 4],
-    },
-  ]);
+  // State jadwal di-set kosong (hapus data dummy)
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
 
   const mapBackendJadwal = (item: BackendJadwalItem): ScheduleItem => {
     const asesorName =
@@ -623,7 +588,6 @@ export default function AssessmentSchedule() {
       await fetchJadwalData();
     } catch (err) {
       console.error("Gagal menyimpan jadwal asesmen:", err);
-      // Fallback local update
       if (isEditMode) {
         setSchedules(
           schedules.map((s) =>
@@ -688,7 +652,6 @@ export default function AssessmentSchedule() {
       (filterStatus === "Semua" || item.status === filterStatus),
   );
 
-  // Get unique skemas from completed assessments
   const completedAssessments = AssessmentItems.filter(
     (a) => a.status === "Selesai",
   );
@@ -713,11 +676,11 @@ export default function AssessmentSchedule() {
     id?: number;
     batchCode?: string;
     tanggal: string;
-    waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
+    waktu: string;
     skema: string;
     alamat: string;
     deskripsi: string;
-    plenoAttendees: PlenoAttendee[]; // pakai interface yang sudah ada, bukan inline type
+    plenoAttendees: PlenoAttendee[];
     suratPlenoName?: string;
     suratPlenoUrl?: string;
   }>({
@@ -764,13 +727,11 @@ export default function AssessmentSchedule() {
     AsesiPlenoItem[]
   >([]);
 
-  // Available Candidates for plenary session (all completed assessments awaiting decision)
   const availableAsesiForPleno = completedAssessments;
 
   const handleAddPleno = () => {
     if (!plenoForm.tanggal || selectedAsesiForPleno.length === 0) return;
 
-    // Gunakan .some() untuk mencocokkan id atau nama dari array objek AsesiPlenoItem[]
     const selectedAsesiObjects = completedAssessments.filter((a) =>
       selectedAsesiForPleno.some(
         (item) => item.id === a.id || item.nama === a.nama,
@@ -801,21 +762,17 @@ export default function AssessmentSchedule() {
       ),
     };
 
-    // ... simpan newPleno ke state / API
-
-    // Buat payload yang sesuai dengan format PlenoSchedule
     const schedulePayload: PlenoSchedule = {
       id: newPleno.id,
       batchCode: newPleno.batchCode,
       tanggal: newPleno.tanggal,
       waktu: newPleno.waktu,
       skema: newPleno.skema,
-      jumlahAsesi: newPleno.asesiList.length, // Dapatkan jumlah dari panjang array
+      jumlahAsesi: newPleno.asesiList.length,
       status: newPleno.status,
       alamat: newPleno.alamat,
       detailAlamat: newPleno.detailAlamat || "",
       deskripsi: newPleno.deskripsi || "",
-      // Ekstrak hanya nama asesi untuk memenuhi syarat string[]
       asesiList: newPleno.asesiList.map((a) => a.nama),
     };
 
@@ -848,7 +805,7 @@ export default function AssessmentSchedule() {
       (filterStatus === "Semua" || item.status === filterStatus),
   );
 
-  if (isModalOpen) {
+if (isModalOpen) {
     const availableAsesi = apiAvailableAsesis.filter((a) => {
       const namaSkema = typeof a.skema === 'object' ? (a.skema?.namaSkema || a.skema?.nama || "") : (a.skema || "");
       const matchskema = !formData.skema || namaSkema === formData.skema;
@@ -860,12 +817,14 @@ export default function AssessmentSchedule() {
       metode: a.jenisAsesmen || a.metode || "Offline",
       nik: a.user?.profil?.nik || a.nik || "",
     })).sort((a, b) => a.nama.localeCompare(b.nama));
+    
     const selectedTuk = TUK_LIST.find((t) => t.id === formData.tuk);
     const kapasitas = selectedTuk ? selectedTuk.kapasitas : 0;
 
     return (
-      <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
-        <div className="flex items-center gap-4">
+      <div className="w-full pb-24 space-y-6 animate-in fade-in duration-200 -mt-2">
+        {/* Header Form & Breadcrumb Lokal */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <button
             onClick={() => setIsModalOpen(false)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
@@ -873,25 +832,31 @@ export default function AssessmentSchedule() {
           >
             <ArrowLeft size={18} />
           </button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-[#008BE3] uppercase tracking-wider mb-1">
+              <span>Jadwal & Penugasan</span>
+              <ChevronRight size={12} />
+              <span>{isPreviewMode ? "Detail Jadwal" : isEditMode ? "Edit Jadwal" : "Buat Jadwal Baru"}</span>
+            </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Buat Jadwal Baru
+              {isPreviewMode ? "Detail Jadwal Asesmen" : isEditMode ? "Edit Jadwal Asesmen" : "Buat Jadwal Baru"}
             </h1>
-            <p className="text-sm text-slate-500 mt-1 font-medium">
-              Buat jadwal asesmen baru untuk batch asesi
-            </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-8 space-y-8">
+        {/* Kontainer Form Dibuat Lebar Penuh (w-full) */}
+        <div className="bg-white w-full rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+          <div className="p-6 md:p-8 space-y-8">
+            {/* ---------------------------------------------------- */}
+            {/* ISI FORM SAMA SEPERTI SEBELUMNYA, TIDAK ADA YANG DIHAPUS */}
+            {/* ---------------------------------------------------- */}
+            
             <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
                 1
               </span>
               Jadwal Asesmen
             </h2>
-            {/* 1. Nama Batch, 2. Skema Sertifikasi, 3. Metode Pelaksanaan */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -917,7 +882,7 @@ export default function AssessmentSchedule() {
                   disabled={isPreviewMode}
                   onChange={(e) => {
                     setFormData({ ...formData, skema: e.target.value });
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on skema change
+                    setSelectedAsesiForJadwal([]); 
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
@@ -938,7 +903,7 @@ export default function AssessmentSchedule() {
                   disabled={isPreviewMode}
                   onChange={(e) => {
                     setFormData({ ...formData, metode: e.target.value });
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on metode change
+                    setSelectedAsesiForJadwal([]); 
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-bold text-[#008BE3]"
                 >
@@ -948,7 +913,6 @@ export default function AssessmentSchedule() {
               </div>
             </div>
 
-            {/* 4. Jenis TUK & 5. Alamat TUK */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -985,7 +949,6 @@ export default function AssessmentSchedule() {
               </div>
             </div>
 
-            {/* 6. Tanggal Uji & 7. Jam Pelaksanaan */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -1021,7 +984,6 @@ export default function AssessmentSchedule() {
               </div>
             </div>
 
-            {/* 8. Spesifikasi Ruang TUK & 9. Asesor Ditugaskan */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -1070,7 +1032,6 @@ export default function AssessmentSchedule() {
               </div>
             </div>
 
-            {/* Field Tautan Link Google Drive Surat Penugasan Asesor */}
             <div className="min-w-0">
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Tautan / Link Google Drive Surat Penugasan Asesor{" "}
@@ -1107,7 +1068,7 @@ export default function AssessmentSchedule() {
 
                 <button
                   type="button"
-                  onClick={() => handleDownloadSuratTugas()}
+                  onClick={() => handleDownloadSuratTugas(schedules[0])}
                   className="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shrink-0 shadow-xs cursor-pointer active:scale-95"
                   title="Generate dan cetak dokumen Surat Penugasan Asesor"
                 >
@@ -1178,13 +1139,13 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {!formData.skema ? (
-                  <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                  <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Pilih skema sertifikasi terlebih dahulu.
                   </div>
                 ) : availableAsesi.length === 0 ? (
-                  <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                  <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi yang tersedia untuk skema{" "}
                     <span className="font-bold text-slate-800">
                       {formData.skema}
@@ -1297,10 +1258,11 @@ export default function AssessmentSchedule() {
     );
   }
 
-  if (isPlenoModalOpen) {
+if (isPlenoModalOpen) {
     return (
-      <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
-        <div className="flex items-center gap-4">
+      <div className="w-full pb-24 space-y-6 animate-in fade-in duration-200 -mt-2">
+        {/* Header Form & Breadcrumb Lokal */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <button
             onClick={() => setIsPlenoModalOpen(false)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
@@ -1308,18 +1270,25 @@ export default function AssessmentSchedule() {
           >
             <ArrowLeft size={18} />
           </button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-[#008BE3] uppercase tracking-wider mb-1">
+              <span>Jadwal & Penugasan</span>
+              <ChevronRight size={12} />
+              <span>{isPreviewMode ? "Detail Sidang Pleno" : isEditMode ? "Edit Sidang Pleno" : "Buat Sidang Pleno"}</span>
+            </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Jadwalkan Sidang Pleno
+              {isPreviewMode ? "Detail Sidang Pleno" : isEditMode ? "Edit Sidang Pleno" : "Jadwalkan Sidang Pleno"}
             </h1>
-            <p className="text-sm text-slate-500 mt-1 font-medium">
-              Buat jadwal sidang pleno baru untuk penetapan kelulusan
-            </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-8 space-y-8">
+        {/* Kontainer Form Dibuat Lebar Penuh (w-full) */}
+        <div className="bg-white w-full rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+          <div className="p-6 md:p-8 space-y-8">
+             {/* ---------------------------------------------------- */}
+             {/* SISA ISI FORM PLENO BIARKAN SAMA PERSIS SEPERTI SEBELUMNYA */}
+             {/* DARI <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> SAMPAI SELESAI */}
+             {/* ---------------------------------------------------- */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -1384,7 +1353,7 @@ export default function AssessmentSchedule() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {availableAsesiForPleno.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi yang selesai dinilai dan siap untuk
@@ -1401,7 +1370,7 @@ export default function AssessmentSchedule() {
                         onClick={() => {
                           if (isPreviewMode) return;
 
-                          const newItems: AsesiPlenoItem[] = isSelected
+                          const newItems = isSelected
                             ? selectedAsesiForPleno.filter(
                               (item) =>
                                 item.id !== asesi.id &&
@@ -1519,7 +1488,6 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              {/* Selected attendees tags */}
               {plenoForm.plenoAttendees.filter((a) => a.nama.trim() !== "")
                 .length > 0 && (
                   <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2">
@@ -1575,8 +1543,7 @@ export default function AssessmentSchedule() {
                   </div>
                 )}
 
-              {/* Checkbox grid of user Candidates */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-65 overflow-y-auto pr-1">
                 {(() => {
                   const mergedUsers = [...ALL_PLENO_USERS];
                   plenoForm.plenoAttendees.forEach((att) => {
@@ -1671,9 +1638,16 @@ export default function AssessmentSchedule() {
       </div>
     );
   }
-
+  
   return (
-    <div className="space-y-6 pb-24 text-sm text-gray-700">
+    <div className="space-y-6 pb-24 text-sm text-gray-700 max-w-full overflow-x-hidden">
+      {/* Main Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-2">
+        <span>Dashboard</span>
+        <ChevronRight size={14} />
+        <span className="text-slate-900 font-bold">Jadwal & Penugasan</span>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
@@ -1728,7 +1702,7 @@ export default function AssessmentSchedule() {
               />
             </div>
 
-            <div className="relative z-50">
+            <div className="relative z-40">
               <button
                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
                 className="items-center justify-center gap-2 px-3 h-10.5 sm:px-4 bg-gray-50 border border-gray-200/50 text-gray-700 rounded-lg text-[14px] font-bold cursor-pointer hover:bg-gray-100 transition-colors flex shrink-0"
@@ -2347,7 +2321,7 @@ export default function AssessmentSchedule() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
             >
               {/* Header */}
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50">
@@ -2431,7 +2405,7 @@ export default function AssessmentSchedule() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full relative z-10 overflow-hidden flex flex-col max-h-[92vh]"
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full relative z-10 overflow-hidden flex flex-col max-h-[92vh]"
             >
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
