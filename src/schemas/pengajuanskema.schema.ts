@@ -146,6 +146,7 @@ export const updatePengajuanSchema = z.object({
   tuk: z.string().optional(),
   jenisMetode: z.string().optional(),
   dataPribadi: dataPribadiSchema.partial().optional(),
+  status: z.string().optional(),
 });
 
 // 5. Skema Update Status Pengajuan (Admin)

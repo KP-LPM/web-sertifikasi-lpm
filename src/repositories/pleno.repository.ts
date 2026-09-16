@@ -33,8 +33,19 @@ export class PlenoRepository {
         pleno_attendee: true,
         pleno_asesi: {
           include: {
-            pengajuan_skema: true, // Ambil detail pengajuan
-            users: { select: { username: true, email: true } }, // Info asesor
+            pengajuan_skema: {
+              include: {
+                dataPribadi: { select: { namaLengkap: true, nik: true } },
+                skema: { select: { namaSkema: true } },
+              }
+            },
+            users: {
+              select: {
+                username: true,
+                email: true,
+                profil: { select: { namaLengkap: true } },
+              }
+            },
           },
         },
       },

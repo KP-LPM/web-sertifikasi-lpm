@@ -499,7 +499,7 @@ export async function updateJadwal(id: number, data: Record<string, unknown>) {
 export async function saveHasilAsesmen(
   pengajuanId: number,
   data: {
-    hasil: "Kompeten" | "Belum Kompeten";
+    hasil: "Kompeten" | "Belum Kompeten" | "Perlu Perbaikan";
     catatan?: string | null;
     linkVideo?: string | null;
   },
@@ -1004,6 +1004,7 @@ export async function getPlenoList() {
   const res = await fetch(`${BASE_URL}/pleno`, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
+    cache: "no-store",
   });
   const json = await res.json();
   if (!res.ok)

@@ -8,7 +8,7 @@ import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {

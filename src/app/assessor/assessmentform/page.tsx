@@ -821,7 +821,7 @@ function AssessmentFormContent() {
 
   // State Step 5
   const [finalDecision, setFinalDecision] = useState<
-    "Kompeten" | "Belum Kompeten" | null
+    "Kompeten" | "Belum Kompeten" | "Perlu Perbaikan" | null
   >(null);
   const [catatanAsesor, setCatatanAsesor] = useState("");
 
@@ -1049,7 +1049,7 @@ function AssessmentFormContent() {
           rekomendasi={rekomendasiApl02}
           onRekomendasiChange={setRekomendasiApl02}
           onFinishDirectly={() => {
-            setFinalDecision("Belum Kompeten");
+            setFinalDecision("Perlu Perbaikan");
             setCurrentStep(6);
           }}
           asesiName={asesmenData.nama}

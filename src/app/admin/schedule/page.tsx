@@ -11,6 +11,7 @@ import {
   Plus,
   Filter,
   CheckSquare,
+  Edit,
   Clock,
   ArrowLeft,
   CheckCircle,
@@ -46,6 +47,7 @@ import {
   updatePleno,
   addPlenoAsesi,
   addPlenoAttendee,
+  getPlenoList,
 } from "@/lib/api";
 
 
@@ -59,12 +61,11 @@ const getDocumentPreviewUrl = (name?: string, url?: string) => {
 export default function AssessmentSchedule() {
   const {
     user,
-    plenoSessions,
     AssessmentItems,
-    updatePlenoSession,
     deletePlenoSession,
     showNotification,
   } = useAppContext();
+  const [plenoSessions, setPlenoSessions] = useState<PlenoDetailData[]>([]);
   const isPlenoOnlyRole =
     user?.role === "direktur" ||
     user?.role === "manajer" ||
@@ -73,7 +74,6 @@ export default function AssessmentSchedule() {
   const readOnly = user?.role !== "admin";
 
   const [confirmAsesmenId, setConfirmAsesmenId] = useState<number | null>(null);
-  const [confirmPlenoId, setConfirmPlenoId] = useState<number | null>(null);
 
   // Pleno State
   const [isPlenoModalOpen, setIsPlenoModalOpen] = useState(false);
@@ -184,8 +184,9 @@ export default function AssessmentSchedule() {
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
-  const handlePreviewPleno = (item: PlenoDetailData) => {
-    setIsPreviewMode(true);
+  const handleEditPleno = (item: PlenoDetailData) => {
+    setIsPreviewMode(false);
+    setIsEditMode(true);
     setEditId(item.id);
     setPlenoForm({
       id: item.id,
@@ -233,13 +234,6 @@ export default function AssessmentSchedule() {
       setConfirmAsesmenId(null);
     }
   };
-  const handleSelesaiPleno = () => {
-    if (confirmPlenoId !== null) {
-      updatePlenoSession(confirmPlenoId, { status: "Selesai" });
-      setConfirmPlenoId(null);
-    }
-  };
-
   const [activeTab, setActiveTab] = useState<"asesmen" | "pleno">(
     isPlenoOnlyRole ? "pleno" : "asesmen",
   );
@@ -338,6 +332,7 @@ export default function AssessmentSchedule() {
       namaLengkap?: string;
       nik?: string;
     };
+    statusPembayaran?: string;
   }
 
   const [isJadwalLoading, setIsJadwalLoading] = useState<boolean>(true);
@@ -412,6 +407,7 @@ export default function AssessmentSchedule() {
         usersRes,
         pengajuanRes,
         completedPengajuanRes,
+        plenoRes,
       ] = await Promise.allSettled([
         getJadwalList(),
         getSkemaList(),
@@ -419,6 +415,7 @@ export default function AssessmentSchedule() {
         getAllUsers(),
         getPengajuanList({ status: "Terverifikasi" }),
         getPengajuanList({ status: "Menunggu Pleno" }),
+        getPlenoList(),
       ]);
 
       if (
@@ -450,7 +447,8 @@ export default function AssessmentSchedule() {
         pengajuanRes.status === "fulfilled" &&
         Array.isArray(pengajuanRes.value)
       ) {
-        setApiAvailableAsesis(pengajuanRes.value);
+        const asesis = pengajuanRes.value as BackendPengajuanItem[];
+        setApiAvailableAsesis(asesis.filter(a => a.statusPembayaran === "Sudah"));
       }
 
       if (
@@ -458,6 +456,45 @@ export default function AssessmentSchedule() {
         Array.isArray(completedPengajuanRes.value)
       ) {
         setApiCompletedAsesis(completedPengajuanRes.value);
+      }
+
+      console.log("plenoRes:", plenoRes);
+      if (
+        plenoRes.status === "fulfilled" &&
+        Array.isArray(plenoRes.value)
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mappedPleno = plenoRes.value.map((p: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const asesiList: AsesiPlenoItem[] = p.pleno_asesi?.map((a: any) => ({
+            id: a.pengajuan_skema?.id || a.id,
+            nik: a.pengajuan_skema?.dataPribadi?.nik || `121705${a.id}`,
+            nama: a.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi",
+            skema: a.pengajuan_skema?.skema?.namaSkema || "Skema Sertifikasi",
+            statusPleno: a.status_pleno || "Belum",
+            rekomendasiAsesor: a.rekomendasi_asesor || "Belum",
+          })) || [];
+          return {
+            id: p.id,
+            batchCode: `PLN-${p.id}`,
+            title: p.title || "Sidang Pleno",
+            tanggal: p.tanggal ? (p.tanggal.includes("T") && !isNaN(Date.parse(p.tanggal)) ? new Date(p.tanggal).toISOString().split("T")[0] : p.tanggal) : "",
+            waktu: p.waktu ? (p.waktu.includes("T") && !isNaN(Date.parse(p.waktu)) ? new Date(p.waktu).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : p.waktu) : "",
+            skema: Array.isArray(p.skema) ? p.skema.join(", ") : p.skema || "Multi Skema",
+            jenisTuk: p.jenisTuk || "Sewaktu",
+            alamat: p.alamat || "Ruang Rapat",
+            jumlahAsesi: p.pleno_asesi?.length || 0,
+            status: p.status || "Terjadwal",
+            deskripsi: p.deskripsi || "",
+            asesiList: asesiList,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            plenoAttendees: p.pleno_attendee?.map((att: any) => ({
+              role: att.role,
+              nama: att.nama,
+            })) || []
+          };
+        });
+        setPlenoSessions(mappedPleno);
       }
     } catch (err: unknown) {
       console.error("Gagal memuat data jadwal:", err);
@@ -2239,7 +2276,7 @@ export default function AssessmentSchedule() {
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700">
                         <span>
-                          {item.jumlahAsesi || item.asesiList?.length || 0}{" "}
+                          {item.asesiList?.length || 0}
                           Asesi
                         </span>
                       </td>
@@ -2256,27 +2293,26 @@ export default function AssessmentSchedule() {
                       </td>
                       <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                         <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() =>
-                              handlePreviewPleno(
-                                item as unknown as PlenoDetailData,
-                              )
-                            }
-                            className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
-                            title="Detail"
-                          >
-                            <Eye size={14} />
-                            <span>Detail</span>
-                          </button>
                           {!readOnly && (
-                            <button
-                              onClick={() => handleDeletePleno(item.id)}
-                              className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                              title="Hapus"
-                            >
-                              <Trash2 size={14} />
-                              <span>Hapus</span>
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleEditPleno(item as unknown as PlenoDetailData)}
+                                className="px-3 py-1.5 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Edit"
+                              >
+                                <Edit size={14} />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeletePleno(item.id)}
+                                className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Hapus"
+                              >
+                                <Trash2 size={14} />
+                                <span>Hapus</span>
+                              </button>
+
+                            </>
                           )}
                         </div>
                       </td>
@@ -2341,46 +2377,7 @@ export default function AssessmentSchedule() {
           </div>
         )}
 
-        {confirmPlenoId !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setConfirmPlenoId(null)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden"
-            >
-              <div className="p-6">
-                <h3 className="font-bold text-slate-900 text-lg mb-2">
-                  Konfirmasi Sidang Pleno
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Apakah anda yakin sidang pleno telah selesai?
-                </p>
-              </div>
-              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
-                <button
-                  onClick={() => setConfirmPlenoId(null)}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handleSelesaiPleno}
-                  className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs"
-                >
-                  Ya, Selesai
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+
 
         {/* Lightbox / Preview Modal Surat Sidang Pleno */}
         {previewDocModal !== null && (

@@ -174,6 +174,12 @@ export class PengajuanRepository {
             kodeSkema: true,
             kategori: true,
             deskripsi: true,
+            persyaratanDasar: {
+              orderBy: { urutan: "asc" },
+            },
+            master_bukti_administratif: {
+              orderBy: { urutan: "asc" },
+            },
             unitKompetensi: {
               include: {
                 elemenKompetensi: true,
@@ -212,12 +218,13 @@ export class PengajuanRepository {
   async update(id: number, data: UpdatePengajuanDTO) {
     return await db.$transaction(async (tx) => {
       // Update data induk jika ada
-      if (data.tuk || data.jenisMetode) {
+      if (data.tuk || data.jenisMetode || data.status) {
         await tx.pengajuanSkema.update({
           where: { id },
           data: {
             ...(data.tuk && { tuk: data.tuk }),
             ...(data.jenisMetode && { jenisMetode: data.jenisMetode }),
+            ...(data.status && { status: data.status }),
           },
         });
       }

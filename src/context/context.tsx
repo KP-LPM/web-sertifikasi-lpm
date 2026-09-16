@@ -164,36 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const [plenoSessions, setPlenoSessions] = useState<PlenoSchedule[]>([
-    {
-      id: 1,
-      batchCode: "PLN-001",
-      tanggal: "2026-10-15",
-      waktu: "09:00",
-      skema: "Pemrograman Web",
-      jumlahAsesi: 24,
-      status: "Terjadwal",
-      alamat: "Ruang Rapat Utama (Offline)",
-      detailAlamat: "Gedung A, Lantai 2",
-      deskripsi:
-        "Sidang pleno penetapan kelulusan uji kompetensi skema Pemrograman Web gelombang 1.",
-      asesiList: ["Ahmad Fauzi", "Budi Santoso", "Citra Kirana"],
-    },
-    {
-      id: 2,
-      batchCode: "PLN-002",
-      tanggal: "2026-10-18",
-      waktu: "13:00",
-      skema: "Desain Grafis",
-      jumlahAsesi: 15,
-      status: "Menunggu Persetujuan",
-      alamat: "Zoom Meeting (Online)",
-      detailAlamat: "https://zoom.us/j/123456789",
-      deskripsi:
-        "Sidang pleno penetapan kelulusan uji kompetensi skema Desain Grafis gelombang 2.",
-      asesiList: ["Dewi Lestari", "Eko Prasetyo"],
-    },
-  ]);
+  const [plenoSessions, setPlenoSessions] = useState<PlenoSchedule[]>([]);
 
   const addPlenoSession = (session: PlenoSchedule) => {
     setPlenoSessions((prev) => [session, ...prev]);
@@ -553,11 +524,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className={`fixed top-6 left-1/2 -translate-x-1/2 z-9999 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${
-              notification.type === "success"
-                ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
-                : "bg-rose-50/90 border-rose-200 text-rose-800"
-            }`}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-9999 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${notification.type === "success"
+              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+              : "bg-rose-50/90 border-rose-200 text-rose-800"
+              }`}
           >
             {notification.type === "success" ? (
               <BadgeCheck size={20} className="text-emerald-500" />

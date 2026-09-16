@@ -98,7 +98,7 @@ export class PengajuanService {
     const pengajuan = await this.getById(id, user);
 
     // Cek apakah status masih bisa diedit
-    const editableStatuses = ["Menunggu Verifikasi", "Draf", "Ditolak / Revisi"];
+    const editableStatuses = ["Menunggu Verifikasi", "Draf", "Ditolak / Revisi", "Perlu Perbaikan"];
     if (!editableStatuses.includes(pengajuan.status)) {
       throw new InvariantError(
         `Pengajuan tidak dapat diedit karena status saat ini adalah '${pengajuan.status}'`

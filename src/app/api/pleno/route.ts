@@ -8,7 +8,8 @@ import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
-export const revalidate = 3600;
+// Dynamic route to ensure fresh data for admin dashboard
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {

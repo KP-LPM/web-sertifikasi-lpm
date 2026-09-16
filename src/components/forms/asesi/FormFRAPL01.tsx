@@ -1,7 +1,12 @@
 import { SignatureField } from "@/components/forms/asesi/SignatureField";
 import React from "react";
 import { Eye } from "lucide-react";
-import { FormDataType, PersyaratanAdministrasi, PersyaratanDasar, RequirementType } from "@/types/types";
+import {
+  FormDataType,
+  PersyaratanAdministrasi,
+  PersyaratanDasar,
+  RequirementType,
+} from "@/types/types";
 
 type SignatureValue = {
   type: "auto" | "upload" | "draw";
@@ -67,7 +72,10 @@ export function EFormApl01({
 
     return () => {
       window.removeEventListener("scroll-to-apl01-error", handleScrollTujuan);
-      window.removeEventListener("scroll-to-apl01-signature-error", handleScrollTtd);
+      window.removeEventListener(
+        "scroll-to-apl01-signature-error",
+        handleScrollTtd,
+      );
     };
   }, []);
 
@@ -86,7 +94,11 @@ export function EFormApl01({
   return (
     <div className="bg-white border border-slate-300 shadow-sm p-4 md:p-6 lg:p-8 w-full mx-auto font-sans text-xs sm:text-sm text-slate-800 space-y-6">
       <div className="flex items-center gap-4 border-b-2 border-slate-800 pb-4">
-        <img src="/logo-lsp.png" alt="Logo LSP" className="w-16 h-16 object-contain shrink-0" />
+        <img
+          src="/logo-lsp.png"
+          alt="Logo LSP"
+          className="w-16 h-16 object-contain shrink-0"
+        />
         <div className="min-w-0">
           <h2 className="font-black text-lg">
             FR.APL.01 PERMOHONAN SERTIFIKASI KOMPETENSI
@@ -105,7 +117,7 @@ export function EFormApl01({
 
         <h4 className="font-bold mb-2 text-xs">A. Data Pribadi</h4>
         <div className="overflow-x-auto mb-4 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs">
             <tbody>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold w-1/3 bg-white">
@@ -156,7 +168,7 @@ export function EFormApl01({
           B. Data Pekerjaan Sekarang
         </h4>
         <div className="overflow-x-auto mb-6 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs">
             <tbody>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold w-1/3 bg-white">
@@ -187,7 +199,7 @@ export function EFormApl01({
         </p>
 
         <div className="overflow-x-auto mb-6 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-[600px] text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-150 text-xs">
             <tbody>
               <tr>
                 <td
@@ -258,7 +270,9 @@ export function EFormApl01({
                     onChange={() => handleChangeTujuan("Sertifikasi Ulang")}
                   />
                 </td>
-                <td className="border border-slate-300 p-2">Sertifikasi Ulang</td>
+                <td className="border border-slate-300 p-2">
+                  Sertifikasi Ulang
+                </td>
               </tr>
               <tr
                 className={
@@ -322,7 +336,7 @@ export function EFormApl01({
         <p className="text-xs text-slate-600 mb-2">Diisi oleh LSP/Asesor.</p>
 
         <div className="overflow-x-auto mb-6 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs">
             <thead>
               <tr className="bg-[#ebf0fa] border-b border-slate-300 text-slate-800">
                 <th className="border border-slate-300 px-4 py-3 font-bold uppercase tracking-wider sticky top-0 z-20 bg-[#ebf0fa]">
@@ -356,7 +370,7 @@ export function EFormApl01({
                               )
                             }
                             className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                          > lihat file
+                          >
                             <Eye size={14} />
                           </button>
                         )}
@@ -367,9 +381,9 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                          typeof req === "string"
-                            ? req
-                            : req.namaDokumen || ""
+                            typeof req === "string"
+                              ? req
+                              : req.namaDokumen || ""
                           ] === "memenuhi"
                         }
                         onChange={() =>
@@ -389,9 +403,9 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                          typeof req === "string"
-                            ? req
-                            : req.namaDokumen || ""
+                            typeof req === "string"
+                              ? req
+                              : req.namaDokumen || ""
                           ] === "tidak memenuhi"
                         }
                         onChange={() =>
@@ -523,7 +537,7 @@ export function EFormApl01({
         </div>
 
         <div className="overflow-x-auto ">
-          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs table-fixed">
+          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs table-fixed">
             <tbody>
               <tr>
                 <td className="border border-slate-300 p-4 w-1/2 align-top bg-white">
@@ -579,7 +593,10 @@ export function EFormApl01({
                       <Input field="namaLengkap" fallback="AHMAD FAUZI" />
                     </span>
                   </div>
-                  <div className={`mb-4 p-2 ${highlightTtd && !formData.ttdAsesi ? "bg-red-50 border-l-4 border-red-500 transition-colors" : ""}`} id="ttd-asesi-row">
+                  <div
+                    className={`mb-4 p-2 ${highlightTtd && !formData.ttdAsesi ? "bg-red-50 border-l-4 border-red-500 transition-colors" : ""}`}
+                    id="ttd-asesi-row"
+                  >
                     <span className="font-semibold inline-block mb-1">
                       Tanda Tangan dan Tanggal:{" "}
                       {!formData.readOnly && !formData.isAdmin ? (
@@ -593,11 +610,11 @@ export function EFormApl01({
                         formData.ttdAsesi
                           ? getSignatureValue(formData.ttdAsesi)
                           : {
-                            type: formData.signature ? "upload" : "auto",
-                            data: formData.signature as string,
-                          }
+                              type: formData.signature ? "upload" : "auto",
+                              data: formData.signature as string,
+                            }
                       }
-                      onChange={() => { }}
+                      onChange={() => {}}
                       readOnly={true}
                       fallbackName={
                         (formData.signature as string) ||

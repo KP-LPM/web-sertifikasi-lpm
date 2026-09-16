@@ -31,10 +31,8 @@ import {
 import { useAppContext } from "@/context/context";
 import { AsesiPlenoRecord, PlenoGroup } from "@/types/types";
 import {
-  getAllSertifikat,
   updateSertifikat,
-  getPlenoList,
-  getPlenoDetail,
+  getBatchCompleted,
 } from "@/lib/api";
 
 export type { AsesiPlenoRecord };
@@ -151,188 +149,7 @@ export default function UploadSertifikat() {
   };
 
   // State for Pleno Sessions and their Asesi lists
-  const [plenoGroups, setPlenoGroups] = useState<PlenoGroup[]>([
-    {
-      plenoId: 1,
-      plenoTitle: "Sidang Pleno Hasil Asesmen Batch 1",
-      skemaList: [
-        "Pemrogram Mobil Pertama (Mobile Developer)",
-        "Junior Web Developer",
-      ],
-      tanggal: "15 Agt 2026",
-      waktu: "09:00 - 12:00 WIB",
-      alamat: "Ruang Sidang Utama Gedung Rektorat",
-      isOnline: false,
-      status: "Selesai",
-      asesiList: [
-        {
-          id: 1,
-          nama: "Ahmad Rizki",
-          nik: "1197050001",
-          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
-          noSertifikat: "50012/LSP-SGD/VIII/2026",
-          issueDate: "2026-08-16",
-          gdriveUrl:
-            "https://drive.google.com/file/d/1A2b3C4d5E6f7G8h9I0j_Cert1/view",
-          status: "Terbit",
-          notes: "Telah terverifikasi BNSP",
-        },
-        {
-          id: 2,
-          nama: "Siti Nurhaliza",
-          nik: "1197050012",
-          skema: "Junior Web Developer",
-          noSertifikat: "50013/LSP-SGD/VIII/2026",
-          issueDate: "2026-08-16",
-          gdriveUrl:
-            "https://drive.google.com/file/d/2B3c4D5e6F7g8H9i0J1k_Cert2/view",
-          status: "Terbit",
-          notes: "Dokumen diunggah ke GDrive LSP",
-        },
-        {
-          id: 3,
-          nama: "Budi Santoso",
-          nik: "1197050025",
-          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-        {
-          id: 4,
-          nama: "Dewi Anggraini",
-          nik: "1197050031",
-          skema: "Junior Web Developer",
-          noSertifikat: "50014/LSP-SGD/VIII/2026",
-          issueDate: "2026-08-16",
-          gdriveUrl:
-            "https://drive.google.com/file/d/3C4d5E6f7G8h9I0j1K2l_Cert3/view",
-          status: "Terbit",
-          notes: "",
-        },
-        {
-          id: 5,
-          nama: "Muhammad Farhan",
-          nik: "1197050042",
-          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-      ],
-    },
-    {
-      plenoId: 2,
-      plenoTitle: "Sidang Pleno Kelulusan Asesmen Batch 2",
-      skemaList: ["Junior Web Developer", "Auditor Halal"],
-      tanggal: "18 Agt 2026",
-      waktu: "13:00 - 15:30 WIB",
-      alamat: "Zoom Meeting (Online)",
-      isOnline: true,
-      status: "Selesai",
-      asesiList: [
-        {
-          id: 6,
-          nama: "Dewi Lestari",
-          nik: "1197050044",
-          skema: "Junior Web Developer",
-          noSertifikat: "50020/LSP-SGD/VIII/2026",
-          issueDate: "2026-08-18",
-          gdriveUrl:
-            "https://drive.google.com/file/d/4D5e6F7g8H9i0J1k2L3m_Cert4/view",
-          status: "Terbit",
-          notes: "Lulus Sidang Pleno",
-        },
-        {
-          id: 7,
-          nama: "Eko Prasetyo",
-          nik: "1197050058",
-          skema: "Auditor Halal",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-        {
-          id: 8,
-          nama: "Rina Marlina",
-          nik: "1197050063",
-          skema: "Junior Web Developer",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-        {
-          id: 9,
-          nama: "Hendra Wijaya",
-          nik: "1197050070",
-          skema: "Auditor Halal",
-          noSertifikat: "50021/LSP-SGD/VIII/2026",
-          issueDate: "2026-08-18",
-          gdriveUrl:
-            "https://drive.google.com/file/d/5E6f7G8h9I0j1K2l3M4n_Cert5/view",
-          status: "Terbit",
-          notes: "",
-        },
-      ],
-    },
-    {
-      plenoId: 3,
-      plenoTitle: "Sidang Pleno Terpadu Batch 3",
-      skemaList: [
-        "Auditor Halal",
-        "Pemrogram Mobil Pertama (Mobile Developer)",
-        "Network Administrator",
-      ],
-      tanggal: "22 Agt 2026",
-      waktu: "09:30 - 11:30 WIB",
-      alamat: "Gedung PTIPD Lantai 2",
-      isOnline: false,
-      status: "Terjadwal",
-      asesiList: [
-        {
-          id: 10,
-          nama: "Bambang Hermanto",
-          nik: "1197050081",
-          skema: "Auditor Halal",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-        {
-          id: 11,
-          nama: "Nina Zatulini",
-          nik: "1197050095",
-          skema: "Pemrogram Mobil Pertama (Mobile Developer)",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-        {
-          id: 12,
-          nama: "Dian Sastrowardoyo",
-          nik: "1197050102",
-          skema: "Network Administrator",
-          noSertifikat: "",
-          issueDate: "",
-          gdriveUrl: "",
-          status: "Belum Upload",
-          notes: "",
-        },
-      ],
-    },
-  ]);
+  const [plenoGroups, setPlenoGroups] = useState<PlenoGroup[]>([]);
 
   // Level 1 vs Level 2 state
   const [selectedPlenoId, setSelectedPlenoId] = useState<number | null>(null);
@@ -350,148 +167,39 @@ export default function UploadSertifikat() {
   // Copy notification state
   const [copiedId, setCopiedId] = useState<string | number | null>(null);
 
-  interface BackendSertifikatRecord {
-    id?: number;
-    pengajuan_id?: number;
-    pleno_asesi_id?: number;
-    no_sertifikat?: string;
-    tanggal_terbit?: string | Date;
-    gdrive_url?: string;
-    status?: string;
-    notes?: string;
-  }
-
-  interface BackendPlenoSkemaUpload {
-    master_skema?: { namaSkema?: string };
-  }
-
-  interface BackendPlenoAsesiUpload {
-    id: number;
-    pengajuan_id?: number;
-    nama?: string;
-    nik?: string;
-    pengajuan_skema?: {
-      dataPribadi?: Array<{ nik?: string; namaLengkap?: string }>;
-      user?: { username?: string };
-      skema?: { namaSkema?: string };
-    };
-  }
-
-  interface BackendPlenoUploadItem {
-    id: number;
-    batch_code?: string;
-    skema?: string;
-    tanggal?: string | Date;
-    waktu?: string | Date;
-    alamat?: string;
-    status?: string;
-    pleno_batch_skema?: BackendPlenoSkemaUpload[];
-    pleno_asesi?: BackendPlenoAsesiUpload[];
-  }
 
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
 
   const fetchData = async () => {
     try {
       setIsDataLoading(true);
-      const [plenoRes, sertifikatRes] = await Promise.allSettled([
-        getPlenoList(),
-        getAllSertifikat(),
-      ]);
-
-      const rawPlenos =
-        plenoRes.status === "fulfilled" && Array.isArray(plenoRes.value)
-          ? (plenoRes.value as BackendPlenoUploadItem[])
-          : [];
-      const rawSertifikats =
-        sertifikatRes.status === "fulfilled" && Array.isArray(sertifikatRes.value)
-          ? (sertifikatRes.value as BackendSertifikatRecord[])
-          : [];
-
-      if (rawPlenos.length > 0) {
-        // Fetch detailed info for each pleno
-        const detailedPlenos: BackendPlenoUploadItem[] = await Promise.all(
-          rawPlenos.map(async (p) => {
-            try {
-              const detail = await getPlenoDetail(p.id);
-              return (detail as BackendPlenoUploadItem) || p;
-            } catch {
-              return p;
-            }
-          }),
-        );
-
-        const mapped: PlenoGroup[] = detailedPlenos.map((p) => {
-          const asesiList: AsesiPlenoRecord[] = (p.pleno_asesi || []).map(
-            (pa) => {
-              const cert = rawSertifikats.find(
-                (s) =>
-                  s.pengajuan_id === pa.pengajuan_id ||
-                  s.pleno_asesi_id === pa.id,
-              );
-              const nama =
-                pa.pengajuan_skema?.dataPribadi?.[0]?.namaLengkap ||
-                pa.pengajuan_skema?.user?.username ||
-                pa.nama ||
-                `Asesi ${pa.id}`;
-              const nik =
-                pa.pengajuan_skema?.dataPribadi?.[0]?.nik || pa.nik || "-";
-              const skema =
-                pa.pengajuan_skema?.skema?.namaSkema ||
-                p.pleno_batch_skema?.[0]?.master_skema?.namaSkema ||
-                p.skema ||
-                "-";
-
-              return {
-                id: pa.pengajuan_id || pa.id,
-                nama,
-                nik,
-                skema,
-                noSertifikat: cert?.no_sertifikat || "",
-                issueDate: cert?.tanggal_terbit
-                  ? new Date(cert.tanggal_terbit).toISOString().split("T")[0]
-                  : "",
-                gdriveUrl: cert?.gdrive_url || "",
-                status:
-                  cert?.gdrive_url || cert?.status === "Terbit"
-                    ? "Terbit"
-                    : "Belum Upload",
-                notes: cert?.notes || "",
-              };
-            },
-          );
-
+      const res = await getBatchCompleted();
+      
+      if (Array.isArray(res)) {
+        const mapped: PlenoGroup[] = res.map((p) => {
           return {
             plenoId: p.id,
-            plenoTitle: p.batch_code
-              ? `Sidang Pleno ${p.batch_code}`
-              : `Sidang Pleno Batch ${p.id}`,
-            skemaList:
-              (p.pleno_batch_skema
-                ?.map((s) => s.master_skema?.namaSkema)
-                .filter(Boolean) as string[]) || [],
+            plenoTitle: p.title || p.batchCode || `Sidang Pleno Batch ${p.id}`,
+            skemaList: p.skemaList || [],
             tanggal: p.tanggal
-              ? new Date(p.tanggal).toLocaleDateString("id-ID")
+              ? new Date(p.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })
               : "-",
-            waktu: p.waktu
-              ? new Date(p.waktu).toLocaleTimeString("id-ID", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }) + " WIB"
-              : "09:00 - 12:00 WIB",
+            waktu: p.waktu ? new Date(p.waktu).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB" : "09:00 - 12:00 WIB",
             alamat: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
-            isOnline: false,
-            status: p.status || "Belum Selesai",
-            asesiList,
+            isOnline: !!p.isOnline,
+            status: p.status === "Selesai" ? "Selesai" : "Terjadwal",
+            asesiList: p.asesiList || [],
           };
         });
 
         if (mapped.length > 0) {
           setPlenoGroups(mapped);
+        } else {
+          setPlenoGroups([]);
         }
       }
     } catch (err) {
-      console.error("Gagal memuat data pleno / sertifikat:", err);
+      console.error("Gagal memuat data batch completed:", err);
     } finally {
       setIsDataLoading(false);
     }

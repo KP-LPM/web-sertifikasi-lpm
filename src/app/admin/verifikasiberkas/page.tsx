@@ -17,14 +17,15 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
-import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
+// import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { useAppContext } from "@/context/context";
-import { UserItem, Apl01FormData, Apl02FormData, UserDocumentItem } from "@/types/types";
+import { UserItem, Apl01FormData, Apl02FormData } from "@/types/types";
 import {
   getPengajuanList,
   getAllUsers,
   verifyPengajuanApl01,
   verifyUser,
+  getPengajuanDetail,
 } from "@/lib/api";
 
 export default function UsersManagement() {
@@ -215,11 +216,9 @@ export default function UsersManagement() {
           dp?.namaLengkap || p.user?.username || `Asesi #${p.id}`;
         const email = p.user?.email || "-";
         const status =
-          p.status === "Terverifikasi"
-            ? "Terverifikasi"
-            : p.status === "Ditolak"
-              ? "Ditolak"
-              : "Menunggu Verifikasi";
+          p.status === "Menunggu Verifikasi" || !p.status
+            ? "Menunggu Verifikasi"
+            : "Selesai";
 
         return {
           id: p.id,
@@ -300,10 +299,10 @@ export default function UsersManagement() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false);
   const [userToVerify, setUserToVerify] = useState<UserItem | null>(null);
-  const [activeVerifyTab, setActiveVerifyTab] = useState<"apl01" | "apl02">(
-    "apl01",
-  );
+  const [activeVerifyTab] = useState<string>("apl01");
+
 
   const [verificationForm, setVerificationForm] = useState({
     rekomendasi: "Diterima",
@@ -313,9 +312,8 @@ export default function UsersManagement() {
     isAdmin: true,
     hidePaymentFields: true,
   });
-  const [apl02FormData, setApl02FormData] = useState<Apl02FormData>({
-    isAdmin: true,
-  });
+  const [apl02FormData] = useState<Apl02FormData>({} as Apl02FormData);
+
   const [selectedAsesorId, setSelectedAsesorId] = useState<string>("");
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -413,24 +411,14 @@ export default function UsersManagement() {
           console.error("Gagal memverifikasi user asesor:", err);
         }
       } else {
-        let currentAdminUrl =
-          userToVerify.verificationData?.adminSignatureUrl || null;
+        const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
         const currentLspUrl =
           userToVerify.verificationData?.lspSignatureUrl || null;
 
-        if (activeVerifyTab === "apl01") {
-          currentAdminUrl = apl01FormData.ttdAdmin || null;
-        }
-
         try {
           await verifyPengajuanApl01(userToVerify.id!, {
-            rekomendasi: (activeVerifyTab === "apl01"
-              ? apl01FormData.rekomendasi || "Diterima"
-              : verificationForm.rekomendasi) as "Diterima" | "Ditolak",
-            catatan:
-              activeVerifyTab === "apl01"
-                ? apl01FormData.catatan || ""
-                : verificationForm.catatan,
+            rekomendasi: (apl01FormData.rekomendasi || "Diterima") as "Diterima" | "Ditolak",
+            catatan: apl01FormData.catatan || "",
             statusPembayaran: (apl01FormData.statusPembayaran ||
               userToVerify.verificationData?.statusPembayaran ||
               "Sudah") as "Sudah" | "Belum",
@@ -449,24 +437,13 @@ export default function UsersManagement() {
         }
       }
 
-      let currentAdminUrl =
-        userToVerify.verificationData?.adminSignatureUrl || null;
+      const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
       const currentLspUrl =
         userToVerify.verificationData?.lspSignatureUrl || null;
 
-      if (activeVerifyTab === "apl01") {
-        currentAdminUrl = apl01FormData.ttdAdmin || null;
-      }
-
       const newVerificationData = {
-        rekomendasi:
-          activeVerifyTab === "apl01"
-            ? apl01FormData.rekomendasi || "Diterima"
-            : verificationForm.rekomendasi,
-        catatan:
-          activeVerifyTab === "apl01"
-            ? apl01FormData.catatan || ""
-            : verificationForm.catatan,
+        rekomendasi: apl01FormData.rekomendasi || "Diterima",
+        catatan: apl01FormData.catatan || "",
         statusPembayaran:
           apl01FormData.statusPembayaran ||
           userToVerify.verificationData?.statusPembayaran ||
@@ -477,27 +454,15 @@ export default function UsersManagement() {
           "Sumber Anggaran Biaya Mandiri",
         adminSignatureUrl: currentAdminUrl,
         lspSignatureUrl: currentLspUrl,
-        ...(activeVerifyTab === "apl02"
-          ? {
-            rekomendasiApl02: apl02FormData.rekomendasiApl02,
-            ttdAsesor: apl02FormData.ttdAsesor,
-            asesorName: apl02FormData.asesorName,
-            asesorReg: apl02FormData.asesorReg,
-            penyusun: apl02FormData.penyusun,
-            validator: apl02FormData.validator,
-            assignedAsesorId: selectedAsesorId
-              ? Number(selectedAsesorId)
-              : undefined,
-          }
-          : {
-            rekomendasiApl02: userToVerify.verificationData?.rekomendasiApl02,
-            ttdAsesor: userToVerify.verificationData?.ttdAsesor,
-            asesorName: userToVerify.verificationData?.asesorName,
-            asesorReg: userToVerify.verificationData?.asesorReg,
-            penyusun: userToVerify.verificationData?.penyusun,
-            validator: userToVerify.verificationData?.validator,
-            assignedAsesorId: userToVerify.verificationData?.assignedAsesorId,
-          }),
+        rekomendasiApl02: userToVerify.verificationData?.rekomendasiApl02,
+        ttdAsesor: userToVerify.verificationData?.ttdAsesor,
+        asesorName: userToVerify.verificationData?.asesorName,
+        asesorReg: userToVerify.verificationData?.asesorReg,
+        penyusun: userToVerify.verificationData?.penyusun,
+        validator: userToVerify.verificationData?.validator,
+        assignedAsesorId: selectedAsesorId
+          ? Number(selectedAsesorId)
+          : userToVerify.verificationData?.assignedAsesorId,
       };
 
       setUsers(
@@ -516,23 +481,17 @@ export default function UsersManagement() {
     setUserToVerify(null);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAssignAsesor = async () => {
     if (!userToVerify || !selectedAsesorId) return;
 
-    let currentAdminUrl =
-      userToVerify.verificationData?.adminSignatureUrl || null;
+    const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
     const currentLspUrl =
       userToVerify.verificationData?.lspSignatureUrl || null;
 
-    if (activeVerifyTab === "apl01") {
-      currentAdminUrl = apl01FormData.ttdAdmin || null;
-    }
-
     try {
       await verifyPengajuanApl01(userToVerify.id!, {
-        rekomendasi: (activeVerifyTab === "apl01"
-          ? apl01FormData.rekomendasi || "Diterima"
-          : verificationForm.rekomendasi) as "Diterima" | "Ditolak",
+        rekomendasi: (apl01FormData.rekomendasi || "Diterima") as "Diterima" | "Ditolak",
         assignedAsesorId: Number(selectedAsesorId),
       });
     } catch (err) {
@@ -540,14 +499,8 @@ export default function UsersManagement() {
     }
 
     const newVerificationData = {
-      rekomendasi:
-        activeVerifyTab === "apl01"
-          ? apl01FormData.rekomendasi || "Diterima"
-          : verificationForm.rekomendasi,
-      catatan:
-        activeVerifyTab === "apl01"
-          ? apl01FormData.catatan || ""
-          : verificationForm.catatan,
+      rekomendasi: apl01FormData.rekomendasi || "Diterima",
+      catatan: apl01FormData.catatan || "",
       statusPembayaran:
         apl01FormData.statusPembayaran ||
         userToVerify.verificationData?.statusPembayaran ||
@@ -585,62 +538,9 @@ export default function UsersManagement() {
     setUserToVerify(null);
   };
 
-  const openVerifyModal = (user: UserItem) => {
+  const openVerifyModal = async (user: UserItem) => {
     setUserToVerify(user);
-    setActiveVerifyTab("apl01");
     setSelectedAsesorId(user.verificationData?.assignedAsesorId ? String(user.verificationData.assignedAsesorId) : "");
-
-    setApl01FormData({
-      isAdmin: true,
-      namaLengkap: user.namaLengkap,
-      rekomendasi: user.verificationData?.rekomendasi || "Diterima",
-      catatan: user.verificationData?.catatan || "",
-      statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
-      sumberAnggaran: user.verificationData?.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
-      ttdAdmin: user.verificationData?.adminSignatureUrl,
-      tujuan: "Sertifikasi",
-      namaSkema: user.verificationData?.namaSkema || user.verificationData?.skema || "-",
-      kodeSkema: user.verificationData?.kodeSkema || "-",
-      institusiPerusahaan: user.namaInstitusi || "PNS",
-      jabatan: user.jabatan || "PNS",
-      ttdAsesi: { type: "auto" },
-      onPreview: (reqName: string) => {
-        const doc = user.verificationData?.dokumen?.find((d: UserDocumentItem) => d.namaDokumen === reqName);
-        if (doc?.fileUrl) {
-          window.open(doc.fileUrl, "_blank");
-        } else {
-          alert("Dokumen tidak ditemukan atau file belum diunggah.");
-        }
-      },
-      schemeDetail: {
-        persyaratanDasar: (user.verificationData?.dokumen || []).map((doc: UserDocumentItem) => ({
-          id: doc.id,
-          namaDokumen: doc.namaDokumen,
-          is_wajib: true,
-        })),
-        buktiAdministratif: [],
-        buktiKompetensi: [],
-      },
-    });
-
-    setApl02FormData({
-      isAdmin: true,
-      namaLengkap: user.namaLengkap,
-      rekomendasiApl02: user.verificationData?.rekomendasiApl02 || "Dapat dilanjutkan",
-      ttdAsesi: { type: "auto" },
-      kompetensi: { u0e0: "K", u0e1: "K", u1e0: "K" },
-      ttdAsesor: user.verificationData?.ttdAsesor || null,
-      asesorName: user.verificationData?.asesorName || "",
-      asesorReg: user.verificationData?.asesorReg || "",
-      penyusun: user.verificationData?.penyusun || [
-        { nama: "", noMet: "", ttdTanggal: "" },
-        { nama: "", noMet: "", ttdTanggal: "" },
-      ],
-      validator: user.verificationData?.validator || [
-        { nama: "", noMet: "", ttdTanggal: "" },
-        { nama: "", noMet: "", ttdTanggal: "" },
-      ],
-    });
 
     if (user.verificationData) {
       setVerificationForm({
@@ -652,6 +552,52 @@ export default function UsersManagement() {
     }
 
     setIsVerifyModalOpen(true);
+
+    if (user.role === "asesi") {
+      setIsModalLoading(true);
+      try {
+        const detail = await getPengajuanDetail(user.id!);
+        const dp = detail.dataPribadi as Record<string, unknown> | undefined;
+
+        const newApl01: Apl01FormData = {
+          isAdmin: true,
+          hidePaymentFields: true,
+          rekomendasi: user.verificationData?.rekomendasi || "Diterima",
+          catatan: user.verificationData?.catatan || "",
+          statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
+          sumberAnggaran: user.verificationData?.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
+          ttdAdmin: user.verificationData?.adminSignatureUrl || null,
+
+          namaSkema: detail.skema?.namaSkema || "",
+          kodeSkema: detail.skema?.kodeSkema || "",
+          tuk: detail.tuk || "",
+          tujuan: detail.tujuanAsesmen || "Sertifikasi",
+          ...dp,
+          schemeDetail: {
+            ...detail.skema,
+            buktiAdministratif: detail.skema?.master_bukti_administratif || detail.skema?.buktiAdministratif || [],
+            persyaratanDasar: detail.skema?.persyaratanDasar || [],
+            buktiKompetensi: detail.skema?.buktiKompetensi || [],
+          },
+          checklist: detail.checklist || {},
+          onPreview: (docName: string) => {
+            const docs = detail.dokumen as Array<{ namaDokumen: string; fileUrl: string }> || [];
+            const doc = docs.find((d) => d.namaDokumen === docName);
+            if (doc && doc.fileUrl) {
+              window.open(doc.fileUrl, "_blank");
+            } else {
+              alert(`File untuk dokumen "${docName}" belum diunggah oleh asesi.`);
+            }
+          }
+        };
+
+        setApl01FormData(newApl01);
+      } catch (e) {
+        console.error("Gagal load detail pengajuan untuk verifikasi", e);
+      } finally {
+        setIsModalLoading(false);
+      }
+    }
   };
 
   const handleSaveVerifyDraft = () => {
@@ -723,6 +669,15 @@ export default function UsersManagement() {
     return "bg-slate-100 text-slate-700 border-slate-200";
   };
 
+  if (isVerifyModalOpen && isModalLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-32 space-y-4">
+        <Loader2 className="w-8 h-8 text-[#008BE3] animate-spin" />
+        <p className="text-gray-500 font-medium">Memuat data pengajuan...</p>
+      </div>
+    );
+  }
+
   if (isVerifyModalOpen && userToVerify) {
     const totalReqs = [
       ...(apl01FormData.schemeDetail?.persyaratanDasar || []),
@@ -730,6 +685,7 @@ export default function UsersManagement() {
       ...(apl01FormData.schemeDetail?.buktiKompetensi || []),
     ].length;
     const checkedReqs = Object.keys(apl01FormData.checklist || {}).length;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const isApl01Valid =
       !!apl01FormData.ttdAdmin && (totalReqs === 0 || checkedReqs === totalReqs);
 
@@ -771,63 +727,18 @@ export default function UsersManagement() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${activeVerifyTab === "apl01" ? "bg-[#008BE3] text-white shadow-sm" : "bg-slate-200 text-slate-500"}`}
-                    >
-                      <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${activeVerifyTab === "apl01" ? "bg-white text-[#008BE3]" : "bg-slate-300 text-slate-500"}`}
-                      >
-                        1
-                      </span>
-                      FR.APL.01
-                    </div>
-                    <div className="w-8 h-px bg-slate-300"></div>
-                    <div
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${activeVerifyTab === "apl02" ? "bg-[#008BE3] text-white shadow-sm" : "bg-slate-200 text-slate-500"}`}
-                    >
-                      <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${activeVerifyTab === "apl02" ? "bg-white text-[#008BE3]" : "bg-slate-300 text-slate-500"}`}
-                      >
-                        2
-                      </span>
-                      FR.APL.02
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
 
             <div className="p-6 space-y-4">
               {userToVerify.role === "asesi" ? (
-                <>
-                  {activeVerifyTab === "apl01" ? (
-                    <div className="space-y-6">
-                      <EFormApl01
-                        formData={apl01FormData}
-                        onChange={setApl01FormData}
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <EFormApl02
-                        formData={apl02FormData}
-                        onChange={setApl02FormData}
-                        allData={{
-                          "UK.01 - Menyiapkan pemeriksaan dokumen": {
-                            name: "Ijazah.pdf",
-                          },
-                          "UK.01 - Melakukan pemeriksaan kesesuaian bukti": {
-                            name: "Portofolio.pdf",
-                          },
-                          "UK.02 - Menyusun ringkasan bukti": {
-                            name: "Transkrip.pdf",
-                          },
-                        }}
-                      />
-                    </div>
-                  )}
-                </>
+                <div className="space-y-6">
+                  <EFormApl01
+                    formData={apl01FormData}
+                    onChange={setApl01FormData}
+                  />
+                </div>
               ) : (
                 <div className="flex flex-col gap-6 w-full">
                   <div className="border-b border-gray-100 bg-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -932,54 +843,21 @@ export default function UsersManagement() {
                 Simpan Draft
               </button>
 
-              {userToVerify.role === "asesi" && activeVerifyTab === "apl01" ? (
+              {userToVerify.role === "asesi" ? (
                 <button
-                  onClick={() => setActiveVerifyTab("apl02")}
-                  disabled={!isApl01Valid}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!isApl01Valid ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-[#008BE3] text-white hover:bg-[#0076C2]"}`}
+                  onClick={confirmVerify}
+                  disabled={!apl01FormData.ttdAdmin}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!apl01FormData.ttdAdmin ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
                 >
-                  Approve Form 1 & Selanjutnya
+                  Verifikasi Form APL-01
                 </button>
               ) : (
-                <>
-                  {!apl02FormData.ttdAsesor && userToVerify.role === "asesi" ? (
-                    <div className="flex items-center gap-3 min-w-0">
-                      <select
-                        value={selectedAsesorId}
-                        onChange={(e) => setSelectedAsesorId(e.target.value)}
-                        className="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 outline-none focus:border-[#008BE3]"
-                      >
-                        <option value="">Pilih Asesor...</option>
-                        {users
-                          .filter((u) => u.role === "asesor")
-                          .map((asesor) => (
-                            <option key={asesor.id} value={asesor.id}>
-                              {asesor.namaLengkap}
-                            </option>
-                          ))}
-                      </select>
-                      <button
-                        onClick={handleAssignAsesor}
-                        disabled={!selectedAsesorId}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!selectedAsesorId ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-[#008BE3] text-white hover:bg-[#0076C2]"}`}
-                      >
-                        Tugaskan ke Asesor
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={confirmVerify}
-                      disabled={
-                        userToVerify?.role === "asesi" &&
-                        activeVerifyTab === "apl02" &&
-                        (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor)
-                      }
-                      className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${userToVerify?.role === "asesi" && activeVerifyTab === "apl02" && (!apl01FormData.ttdAdmin || !apl02FormData.ttdAsesor) ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
-                    >
-                      Verifikasi Akun (Siap Ujian)
-                    </button>
-                  )}
-                </>
+                <button
+                  onClick={confirmVerify}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-colors shadow-xs"
+                >
+                  Verifikasi Akun (Siap Ujian)
+                </button>
               )}
             </div>
           </div>
@@ -1156,13 +1034,17 @@ export default function UsersManagement() {
 
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${user.status === "Terverifikasi"
+                        className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${user.status === "Terverifikasi" || user.status === "Selesai"
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
+                          : user.status === "Perlu Perbaikan"
+                            ? "bg-orange-50 text-orange-700 border-orange-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
                           }`}
                       >
-                        {user.status === "Terverifikasi" ? (
+                        {user.status === "Terverifikasi" || user.status === "Selesai" ? (
                           <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                        ) : user.status === "Perlu Perbaikan" ? (
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                         ) : (
                           <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
                         )}

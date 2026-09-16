@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const hasilEnum = ["Kompeten", "Belum Kompeten"] as const;
+const hasilEnum = ["Kompeten", "Belum Kompeten", "Perlu Perbaikan"] as const;
 
 export const hasilAsesmenSchema = z.object({
   hasil: z.enum(hasilEnum, {

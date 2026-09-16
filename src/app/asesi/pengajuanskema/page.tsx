@@ -1064,6 +1064,7 @@ export default function PengajuanSkemaPage() {
                       <option value="Terverifikasi">Terverifikasi</option>
                       <option value="Terjadwal">Terjadwal</option>
                       <option value="Revisi">Revisi</option>
+                      <option value="Perlu Perbaikan">Perlu Perbaikan</option>
                       <option value="Selesai">Selesai</option>
                     </select>
 
@@ -1259,6 +1260,11 @@ export default function PengajuanSkemaPage() {
                                 <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                   Revisi
+                                </span>
+                              ) : item.status?.toLowerCase() === "perlu perbaikan" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                                  Perlu Perbaikan
                                 </span>
                               ) : item.status?.toLowerCase() === "selesai" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
@@ -3046,6 +3052,7 @@ export default function PengajuanSkemaPage() {
               {activeModalDoc?.name?.includes("APL.01") ? (
                 <EFormApl01
                   formData={{
+                    ...(tempEFormData || {}),
                     namaLengkap,
                     tempatLahir,
                     tanggalLahir,
@@ -3055,12 +3062,11 @@ export default function PengajuanSkemaPage() {
                     pendidikanTerakhir,
                     institusiPerusahaan,
                     jabatan,
-                    skema: selectedScheme?.nama || "",
-                    nomorSkema: selectedScheme?.kode || "",
+                    skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
+                    nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
                     schemeDetail: currentSchemeDetail,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
-                    ...(tempEFormData || {}),
                   }}
                   onChange={(val) => setTempEFormData(val)}
                 />
@@ -3068,13 +3074,13 @@ export default function PengajuanSkemaPage() {
                 <EFormApl02
                   allData={eFormData as Record<string, File | string>}
                   formData={{
+                    ...(tempEFormData || {}),
                     namaLengkap,
-                    skema: selectedScheme?.nama || "",
-                    nomorSkema: selectedScheme?.kode || "",
+                    skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
+                    nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
                     schemeDetail: currentSchemeDetail,
                     signature: user?.avatar,
                     readOnly: activeModalDoc?.isPreview,
-                    ...(tempEFormData || {}),
                   }}
                   onChange={(val) => setTempEFormData(val)}
                 />

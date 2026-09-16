@@ -34,8 +34,9 @@ export async function GET(request: NextRequest) {
           include: {
             pengajuan_skema: {
               include: {
-                dataPribadi: { select: { namaLengkap: true } },
+                dataPribadi: { select: { namaLengkap: true, nik: true } },
                 skema: { select: { namaSkema: true } },
+                sertifikat: true,
               },
             },
           },
@@ -61,18 +62,40 @@ export async function GET(request: NextRequest) {
           belumKompeten++;
         }
       });
+      const asesiList = batch.pleno_asesi
+        .filter((a) => a.status_pleno === "Kompeten" || a.status_pleno === "K")
+        .map((a) => {
+          const cert = a.pengajuan_skema?.sertifikat;
+          // In Prisma, if it's one-to-one it's an object. If one-to-many, it's an array.
+          // In schema it says `sertifikat sertifikat?`, so it's an object.
+          return {
+            id: a.pengajuan_id,
+            nama: a.pengajuan_skema?.dataPribadi?.namaLengkap || "Tanpa Nama",
+            nik: a.pengajuan_skema?.dataPribadi?.nik || "-",
+            skema: a.pengajuan_skema?.skema?.namaSkema || "-",
+            noSertifikat: cert?.no_sertifikat || "",
+            issueDate: cert?.tanggal_terbit ? new Date(cert.tanggal_terbit).toISOString().split("T")[0] : "",
+            gdriveUrl: cert?.gdrive_url || "",
+            status: cert?.status || "Belum Upload",
+            notes: "", // Add notes if needed, or cert?.catatan if available
+          };
+        });
 
       return {
         id: batch.id,
         batchCode: batch.no_sk || `BATCH-${batch.id}`,
         title: batch.title,
         tanggal: batch.tanggal,
-        alamat: batch.alamat,
+        waktu: "",
+        alamat: batch.alamat || "",
+        isOnline: false,
+        status: batch.status,
         skemaList: batch.pleno_batch_skema.map(
           (s) => s.master_skema.namaSkema,
         ),
         totalAsesi: batch.pleno_asesi.length,
         rekapHasil: { kompeten, belumKompeten },
+        asesiList,
       };
     });
 

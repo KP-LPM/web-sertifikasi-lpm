@@ -285,7 +285,6 @@ export default function VerifikasiPortofolio() {
       file_size: "2.0 MB",
       file_type: "application/pdf",
       deskripsi: formData.deskripsi || "-",
-      skema_id: 1,
     })
       .then(() => {
         showNotification("Portofolio berhasil diunggah ke sistem!", "success");

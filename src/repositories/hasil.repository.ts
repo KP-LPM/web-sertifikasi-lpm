@@ -7,25 +7,28 @@ export const upsertHasilAsesmen = async (
 ) => {
   return await db.$transaction(async (tx) => {
     // 1. Simpan/Update Hasil Asesmen
+    const newHasil = data.hasil === "Perlu Perbaikan" ? "Belum Kompeten" : data.hasil;
+
     const hasil = await tx.hasil_asesmen.upsert({
       where: { pengajuan_id: pengajuanId },
       update: {
-        hasil: data.hasil,
+        hasil: newHasil,
         catatan: data.catatan,
         link_video: data.linkVideo,
       },
       create: {
         pengajuan_id: pengajuanId,
-        hasil: data.hasil,
+        hasil: newHasil,
         catatan: data.catatan,
         link_video: data.linkVideo,
       },
     });
 
     // 2. Update status pengajuan
+    const newStatus = data.hasil === "Perlu Perbaikan" ? "Perlu Perbaikan" : "Menunggu Pleno";
     await tx.pengajuanSkema.update({
       where: { id: pengajuanId },
-      data: { status: "Menunggu Pleno" },
+      data: { status: newStatus },
     });
 
     return hasil;

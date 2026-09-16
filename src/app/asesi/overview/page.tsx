@@ -263,6 +263,14 @@ export default function AsesiOverviewPage() {
         </span>
       );
     }
+    if (s === "perlu perbaikan") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+          Perlu Perbaikan
+        </span>
+      );
+    }
     if (s === "selesai") {
       return (
         <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
@@ -282,7 +290,9 @@ export default function AsesiOverviewPage() {
 
   const totalAsesmen = assessments.length;
   const selesaiCount = assessments.filter(
-    (a) => (a.statusAsesmen || "").toLowerCase() === "selesai" || a.rekomendasi === "Kompeten",
+    (a) =>
+      (a.statusAsesmen || "").toLowerCase() === "selesai" ||
+      a.rekomendasi === "Kompeten",
   ).length;
   const inProgressCount = totalAsesmen - selesaiCount;
 
@@ -505,6 +515,7 @@ export default function AsesiOverviewPage() {
               <option value="Terverifikasi">Terverifikasi</option>
               <option value="Terjadwal">Terjadwal</option>
               <option value="Revisi">Revisi</option>
+              <option value="Perlu Perbaikan">Perlu Perbaikan</option>
               <option value="Selesai">Selesai</option>
             </select>
             <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-44 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
@@ -572,8 +583,6 @@ export default function AsesiOverviewPage() {
                 </tr>
               ) : filteredAssessments.length > 0 ? (
                 currentRecords.map((item, idx) => {
-                  const isTerjadwal = (item.statusAsesmen || "").toLowerCase() === "terjadwal";
-
                   return (
                     <tr
                       key={item.id}
@@ -660,7 +669,7 @@ export default function AsesiOverviewPage() {
                         {getRekomendasiBadge(item.rekomendasi)}
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                        {item.statusPembayaran === "Sudah Bayar" ? (
+                        {item.statusPembayaran === "Sudah" ? (
                           <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                             Sudah Bayar
@@ -679,22 +688,35 @@ export default function AsesiOverviewPage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => {
-                              if (item.statusAsesmen === "Terjadwal" && item.asesmen === "Online") {
+                              if (
+                                item.statusAsesmen === "Terjadwal" &&
+                                item.asesmen === "Online"
+                              ) {
                                 router.push(
                                   `/asesi/ujian?pengajuanId=${item.id}`,
                                 );
+                              } else if (item.statusAsesmen === "Perlu Perbaikan") {
+                                router.push(`/asesi/pengajuanskema/${item.id}/edit`);
                               } else {
                                 setSelectedAssessment(item);
                               }
                             }}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${item.statusAsesmen === "Terjadwal" && item.asesmen === "Online"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${item.statusAsesmen === "Terjadwal" &&
+                                item.asesmen === "Online"
                                 ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
-                                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
+                                : item.statusAsesmen === "Perlu Perbaikan"
+                                  ? "bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100 hover:border-orange-300"
+                                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
                               }`}
                           >
-                            {item.statusAsesmen === "Terjadwal" && item.asesmen === "Online" ? (
+                            {item.statusAsesmen === "Terjadwal" &&
+                              item.asesmen === "Online" ? (
                               <>
                                 <FileEdit size={14} /> Mulai Ujian
+                              </>
+                            ) : item.statusAsesmen === "Perlu Perbaikan" ? (
+                              <>
+                                <FileEdit size={14} /> Edit Revisi
                               </>
                             ) : (
                               <>
@@ -705,7 +727,7 @@ export default function AsesiOverviewPage() {
                         </div>
                       </td>
                     </tr>
-                  )
+                  );
                 })
               ) : (
                 <tr>
