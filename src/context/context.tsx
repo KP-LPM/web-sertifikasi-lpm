@@ -12,6 +12,7 @@ import {
   User,
   PlenoSchedule,
 } from "@/types/types";
+import { getCurrentProfile } from "@/lib/api";
 
 interface AppContextType {
   extraCrumbs: CrumbItem[];
@@ -184,7 +185,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         email: session.user.email || "",
         role: session.user.role,
         avatar: session.user.image || undefined,
+        namaLengkap: session.user.namaLengkap,
       });
+
+      const syncProfile = async () => {
+        try {
+          const res = await getCurrentProfile();
+          if (res?.namaLengkap) {
+            setUser((prev) =>
+              prev ? { ...prev, namaLengkap: res.namaLengkap } : null,
+            );
+          }
+        } catch {
+          // Silently ignore if profile sync fails (e.g., no profile created yet or unauthorized)
+        }
+      };
+
+      syncProfile();
     }
   }, [session]);
 

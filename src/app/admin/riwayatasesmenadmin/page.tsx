@@ -72,6 +72,8 @@ export default function RiwayatAsesmenAdmin() {
   const [assessmentList, setAssessmentList] = useState<AssessmentItem[]>([]);
   const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
   const [completedPleno, setCompletedPleno] = useState<PlenoDetailData[]>([]);
+  const [riwayatDetails, setRiwayatDetails] = useState<any[]>([]);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Asesmen Filters
@@ -160,13 +162,13 @@ export default function RiwayatAsesmenAdmin() {
           skema: c.namaSkema || "Skema Sertifikasi",
           tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
           metode: (c.metode || "Online") as JenisMetode,
-          waktu: c.waktuMulai || "09:00 - 12:00 WIB",
+          waktu: c.waktuMulai || "",
           tglAsesmen: c.tanggalJadwal
             ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
             : "-",
           hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
           status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
@@ -266,6 +268,21 @@ export default function RiwayatAsesmenAdmin() {
   });
 
   // If detail view of individual assessment is open
+  useEffect(() => {
+    if (selectedAsesmen?.id) {
+      setIsLoadingDetails(true);
+      fetch(`/api/pengajuanskema/${selectedAsesmen.id}/riwayat-asesmen`)
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.data) setRiwayatDetails(json.data);
+        })
+        .catch((err) => console.error("Error fetching riwayat details:", err))
+        .finally(() => setIsLoadingDetails(false));
+    } else {
+      setRiwayatDetails([]);
+    }
+  }, [selectedAsesmen]);
+
   if (selectedAsesmen) {
     return (
       <div className="space-y-6 pb-24 text-sm text-gray-700">
@@ -373,159 +390,47 @@ export default function RiwayatAsesmenAdmin() {
             </h2>
 
             <div className="space-y-4 sm:space-y-6">
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
-                  <span>FR.APL.02 - Asesmen Mandiri</span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                    Terverifikasi
-                  </span>
+              {isLoadingDetails ? (
+                <div className="text-center py-6 text-slate-500 text-sm font-semibold">
+                  Memuat detail berkas...
                 </div>
-                <div className="p-4 bg-white flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
-                      <FileText size={20} />
+              ) : riwayatDetails.length > 0 ? (
+                riwayatDetails.map((detail, idx) => (
+                  <div key={idx} className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+                      <span>{detail.form_type} - Dokumen Asesmen</span>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                        Terverifikasi
+                      </span>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-slate-800 text-sm">
-                        FR_APL_02_Signed.pdf
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Telah diisi oleh Asesi dan Diverifikasi Asesor
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setPreviewForm("FR.APL.02")}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
-                  >
-                    <Eye size={16} /> Pratinjau
-                  </button>
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
-                  <span>
-                    FR.AK.07 - Ceklis Penyesuaian yang Wajar dan Beralasan
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                    Terverifikasi
-                  </span>
-                </div>
-                <div className="p-4 bg-white flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
-                      <FileText size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-slate-800 text-sm">
-                        FR_AK_07_Signed.pdf
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Telah diisi oleh Asesi dan Asesor
-                      </p>
+                    <div className="p-4 bg-white flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
+                          <FileText size={20} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 text-sm">
+                            {detail.form_type.replace(/\./g, "_")}_Signed.pdf
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Data form telah direkam oleh sistem
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setPreviewForm(detail.form_type)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
+                      >
+                        <Eye size={16} /> Pratinjau
+                      </button>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setPreviewForm("FR.AK.07")}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
-                  >
-                    <Eye size={16} /> Pratinjau
-                  </button>
+                ))
+              ) : (
+                <div className="text-center py-6 text-slate-500 text-sm font-medium">
+                  Belum ada dokumen form asesmen yang tersimpan untuk pengajuan ini.
                 </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
-                  <span>FR.IA.04A - Penilaian Praktik/Observasi</span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                    Terverifikasi
-                  </span>
-                </div>
-                <div className="p-4 bg-white flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
-                      <FileText size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-slate-800 text-sm">
-                        FR_IA_04A_Signed.pdf
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Lembar Observasi Demonstrasi Praktik
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setPreviewForm("FR.IA.04A")}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
-                  >
-                    <Eye size={16} /> Pratinjau
-                  </button>
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
-                  <span>
-                    FR.IA.04B - Penilaian Daftar Periksa Tugas Praktik (DPT)
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                    Terverifikasi
-                  </span>
-                </div>
-                <div className="p-4 bg-white flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
-                      <FileText size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-slate-800 text-sm">
-                        FR_IA_04B_Signed.pdf
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Lembar Penilaian Hasil Tugas Praktik
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setPreviewForm("FR.IA.04B")}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
-                  >
-                    <Eye size={16} /> Pratinjau
-                  </button>
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
-                  <span>FR.IA.07 - Pertanyaan Lisan Pendukung Observasi</span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                    Terverifikasi
-                  </span>
-                </div>
-                <div className="p-4 bg-white flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
-                      <FileText size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-slate-800 text-sm">
-                        FR_IA_07_Signed.pdf
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Lembar Hasil Wawancara / Pertanyaan Lisan
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setPreviewForm("FR.IA.07")}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
-                  >
-                    <Eye size={16} /> Pratinjau
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -552,84 +457,114 @@ export default function RiwayatAsesmenAdmin() {
                 </button>
               </div>
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
-                {previewForm === "FR.APL.02" && (
-                  <FormFRAPL02
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: selectedAsesmen.noSkema || "-",
-                      tipeTuk: selectedAsesmen.tipeTuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: selectedAsesmen.asesorReg || "-",
-                    }}
-                    rekomendasi="Dapat dilanjutkan"
-                    asesiName={selectedAsesmen.nama}
-                    asesiSignature={selectedAsesmen.nama}
-                    asesiDate={selectedAsesmen.tglAsesmen}
-                    asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                    asesorReg={selectedAsesmen.asesorReg || "-"}
-                    asesorSignature={
-                      selectedAsesmen.asesor || "Dr. Aris Thorne"
-                    }
-                    readOnly={true}
-                  />
-                )}
-                {previewForm === "FR.AK.07" && (
-                  <FormFRAK07
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: selectedAsesmen.noSkema || "-",
-                      tipeTuk: selectedAsesmen.tipeTuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: selectedAsesmen.asesorReg || "-",
-                    }}
-                    readOnly={true}
-                  />
-                )}
-                {previewForm === "FR.IA.04A" && (
-                  <FormFRIA04A
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: selectedAsesmen.noSkema || "-",
-                      tipeTuk: selectedAsesmen.tipeTuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: selectedAsesmen.asesorReg || "-",
-                    }}
-                    readOnly={true}
-                  />
-                )}
-                {previewForm === "FR.IA.04B" && (
-                  <FormFRIA04B
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      tipeTuk: selectedAsesmen.tipeTuk,
-                      t: selectedAsesmen.tglAsesmen,
-                      asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: selectedAsesmen.asesorReg || "-",
-                    }}
-                    readOnly={true}
-                  />
-                )}
-                {previewForm === "FR.IA.07" && (
-                  <FormFRIA07
-                    asesmenData={{
-                      nama: selectedAsesmen.nama,
-                      skema: selectedAsesmen.skema,
-                      noSkema: selectedAsesmen.noSkema || "-",
-                      tipeTuk: selectedAsesmen.tipeTuk,
-                      tanggal: selectedAsesmen.tglAsesmen,
-                      asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
-                      asesorReg: selectedAsesmen.asesorReg || "-",
-                    }}
-                    readOnly={true}
-                  />
-                )}
+                {(() => {
+                  const activeDetail = riwayatDetails.find((d) => d.form_type === previewForm);
+                  const formData = activeDetail?.form_data || {};
+                  const penilaian = activeDetail?.penilaian || {};
+
+                  return (
+                    <>
+                      {previewForm === "FR.APL.02" && (
+                        <FormFRAPL02
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: selectedAsesmen.noSkema || "-",
+                            tipeTuk: selectedAsesmen.tipeTuk,
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
+                          }}
+                          answers={penilaian}
+                          rekomendasi={formData.rekomendasi || "Dapat dilanjutkan"}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorReg={selectedAsesmen.asesorReg || "-"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          readOnly={true}
+                        />
+                      )}
+                      {previewForm === "FR.AK.07" && (
+                        <FormFRAK07
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: selectedAsesmen.noSkema || "-",
+                            tipeTuk: selectedAsesmen.tipeTuk,
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
+                          }}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          readOnly={true}
+                        />
+                      )}
+                      {previewForm === "FR.IA.04A" && (
+                        <FormFRIA04A
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: selectedAsesmen.noSkema || "-",
+                            tipeTuk: selectedAsesmen.tipeTuk,
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
+                          }}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          readOnly={true}
+                        />
+                      )}
+                      {previewForm === "FR.IA.04B" && (
+                        <FormFRIA04B
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            tipeTuk: selectedAsesmen.tipeTuk,
+                            t: selectedAsesmen.tglAsesmen,
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
+                          }}
+                          answers={penilaian}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorReg={selectedAsesmen.asesorReg || "-"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          readOnly={true}
+                        />
+                      )}
+                      {previewForm === "FR.IA.07" && (
+                        <FormFRIA07
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: selectedAsesmen.noSkema || "-",
+                            tipeTuk: selectedAsesmen.tipeTuk,
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
+                          }}
+                          answers={penilaian}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorReg={selectedAsesmen.asesorReg || "-"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          readOnly={true}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -772,7 +707,10 @@ export default function RiwayatAsesmenAdmin() {
                       Metode
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                      Tanggal & Waktu
+                      Tanggal
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Waktu
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Hasil
@@ -833,6 +771,8 @@ export default function RiwayatAsesmenAdmin() {
                           <div className="text-slate-700 font-medium text-[14px]">
                             {item.tglAsesmen}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-[11px] text-slate-400 font-semibold">
                             {item.waktu}
                           </div>

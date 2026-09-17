@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-
+import { useAppContext } from "@/context/context";
 
 export function SignatureField({
   value,
@@ -13,6 +12,14 @@ export function SignatureField({
   readOnly?: boolean;
   fallbackName?: string;
 }) {
+  const { registeredProfile, user } = useAppContext();
+
+  const profileSignature =
+    (registeredProfile as any)?.tanda_tangan ||
+    (registeredProfile as any)?.tandaTangan ||
+    (user as any)?.tanda_tangan ||
+    "";
+
   const [useProfile, setUseProfile] = useState(
     value?.type === "auto" || !value,
   );
@@ -23,13 +30,21 @@ export function SignatureField({
     }
   }, [value]);
 
+  useEffect(() => {
+    if (useProfile && profileSignature && (!value || !value.data)) {
+      onChange({ type: "auto", data: profileSignature });
+    }
+  }, [useProfile, profileSignature, value?.data, onChange]);
+
   const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setUseProfile(checked);
     if (checked) {
-      onChange({ type: "auto", data: "" });
+      onChange({ type: "auto", data: profileSignature });
     }
   };
+
+  const displaySignature = (value?.type === "auto" && value?.data) ? value.data : (useProfile ? profileSignature : undefined);
 
   if (readOnly) {
     if (!value)
@@ -40,6 +55,18 @@ export function SignatureField({
       );
 
     if (value.type === "auto") {
+      const sigData = value.data || profileSignature;
+      if (sigData) {
+        return (
+          <div className="flex flex-col items-center justify-center h-20">
+            <img
+              src={sigData}
+              alt="Tanda Tangan Profil"
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+        );
+      }
       return (
         <div className="flex flex-col items-center justify-center opacity-80 h-20">
           <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-110">
@@ -87,11 +114,19 @@ export function SignatureField({
 
       <div className="border border-slate-300 rounded p-1 h-24 flex flex-col items-center justify-center bg-slate-50 overflow-hidden relative w-full">
         {useProfile ? (
-          <div className="flex flex-col items-center justify-center opacity-80">
-            <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-150">
-              {fallbackName || "Tanda Tangan"}
+          displaySignature ? (
+            <img
+              src={displaySignature}
+              alt="Tanda Tangan Profil"
+              className="max-h-full max-w-full object-contain"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center opacity-80">
+              <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-150">
+                {fallbackName || "Tanda Tangan"}
+              </div>
             </div>
-          </div>
+          )
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center relative">
             <span className="text-xs text-gray-400">
