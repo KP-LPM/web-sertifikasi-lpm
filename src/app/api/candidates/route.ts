@@ -56,7 +56,13 @@ export async function GET(request: NextRequest) {
     const candidates = await db.pengajuanSkema.findMany({
       where: whereClause,
       include: {
-        user: { select: { username: true, email: true } },
+        user: { 
+          select: { 
+            username: true, 
+            email: true,
+            profil: { select: { namaLengkap: true, nik: true } }
+          } 
+        },
         dataPribadi: {
           select: { nik: true, namaLengkap: true, noHp: true },
         },
@@ -98,7 +104,10 @@ export async function GET(request: NextRequest) {
         try {
           const w = new Date(jadwal.waktu_mulai);
           if (!isNaN(w.getTime())) {
-            formattedWaktu = `${String(w.getUTCHours()).padStart(2, "0")}:${String(w.getUTCMinutes()).padStart(2, "0")} WIB`;
+            const startHour = w.getUTCHours();
+            const startMin = String(w.getUTCMinutes()).padStart(2, "0");
+            const endHour = (startHour + 3) % 24;
+            formattedWaktu = `${String(startHour).padStart(2, "0")}:${startMin} - ${String(endHour).padStart(2, "0")}:${startMin} WIB`;
           }
         } catch {
           // fallback
@@ -109,8 +118,8 @@ export async function GET(request: NextRequest) {
         pengajuanId: c.id,
         nomorPengajuan: c.nomorPengajuan,
         statusPengajuan: c.status,
-        nik: c.dataPribadi?.nik,
-        namaLengkap: c.dataPribadi?.namaLengkap,
+        nik: c.dataPribadi?.nik || c.user?.profil?.nik || undefined,
+        namaLengkap: c.dataPribadi?.namaLengkap || c.user?.profil?.namaLengkap || c.user?.username,
         email: c.user?.email,
         noHp: c.dataPribadi?.noHp,
         skemaId: c.skemaId,

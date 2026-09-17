@@ -40,7 +40,14 @@ export async function GET(request: NextRequest) {
       skema_id: skemaId ? parseInt(skemaId, 10) : undefined,
     };
 
-    let finalData: any[] = [];
+    type FinalSuratItem = {
+      id: number;
+      nomor_surat: string;
+      created_at?: Date | string | null;
+      [key: string]: unknown;
+    };
+
+    let finalData: FinalSuratItem[] = [];
 
     // Jika kategori tidak ada (atau bukan surat_masuk/surat_keluar eksklusif), ambil sertifikat
     if (!kategori || kategori === "sertifikat" || kategori === "all") {

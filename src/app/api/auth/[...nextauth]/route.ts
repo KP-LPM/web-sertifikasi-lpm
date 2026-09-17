@@ -25,6 +25,9 @@ const handler = NextAuth({
               { email: credentials.username },
             ],
           },
+          include: {
+            profil: true,
+          }
         });
 
         if (!user) {
@@ -48,6 +51,7 @@ const handler = NextAuth({
           username: user.username,
           email: user.email,
           role: user.role,
+          namaLengkap: user.profil?.namaLengkap,
         };
       },
     }),
@@ -59,6 +63,7 @@ const handler = NextAuth({
         token.role = user.role;
         token.username = user.username;
         token.email = user.email;
+        token.namaLengkap = user.namaLengkap;
       }
       return token;
     },
@@ -68,6 +73,7 @@ const handler = NextAuth({
         session.user.role = token.role;
         session.user.username = token.username as string;
         session.user.email = token.email as string;
+        session.user.namaLengkap = token.namaLengkap as string;
       }
       return session;
     },

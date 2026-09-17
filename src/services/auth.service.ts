@@ -13,7 +13,8 @@ import type {
   VerifyOtpInput,
 } from "@/schemas/auth.schema";
 import { userRepository } from "@/repositories/user.repository";
-import { resend } from "@/lib/resend";
+import { transporter } from "@/lib/nodemailer";
+import { render } from "@react-email/components";
 import { InvariantError } from "@/error";
 import OtpEmail from "@/components/emails/OtpEmail";
 import { supabase } from "@/lib/supabase";
@@ -141,11 +142,13 @@ export class AuthService {
 
     await userRepository.setResetToken(user.id, hashedOtp, expiry);
 
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
+    const html = await render(OtpEmail({ otp, expiryMinutes: 10 }));
+
+    await transporter.sendMail({
+      from: `"LSP UIN SGD" <${process.env.SMTP_USER}>`,
       to: user.email,
       subject: "Kode OTP Reset Password - LSP UIN SGD",
-      react: OtpEmail({ otp, expiryMinutes: 10 }),
+      html: html,
     });
 
     return { message: "Kode OTP terkirim." };

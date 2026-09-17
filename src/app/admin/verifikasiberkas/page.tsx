@@ -497,6 +497,7 @@ export default function UsersManagement() {
         userToVerify.verificationData?.lspSignatureUrl || null;
 
       const newVerificationData = {
+        ...userToVerify.verificationData,
         rekomendasi: apl01FormData.rekomendasi || "Diterima",
         catatan: apl01FormData.catatan || "",
         statusPembayaran:
@@ -554,6 +555,7 @@ export default function UsersManagement() {
     }
 
     const newVerificationData = {
+      ...userToVerify.verificationData,
       rekomendasi: apl01FormData.rekomendasi || "Diterima",
       catatan: apl01FormData.catatan || "",
       statusPembayaran:
@@ -668,6 +670,7 @@ export default function UsersManagement() {
     }
 
     const newVerificationData = {
+      ...userToVerify.verificationData,
       rekomendasi:
         activeVerifyTab === "apl01"
           ? apl01FormData.rekomendasi || "Diterima"

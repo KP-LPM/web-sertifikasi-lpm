@@ -39,7 +39,7 @@ interface OverviewPendingItem {
 export default function AdminOverview() {
   const router = useRouter();
   const { user } = useAppContext();
-  
+
   const adminName = user?.username || "Administrator LSP";
 
   const [dashboardData, setDashboardData] = React.useState<OverviewDashboardData | null>(null);
@@ -78,7 +78,7 @@ export default function AdminOverview() {
   return (
     // Memakai pembungkus yang sama persis dengan Asesi (tanpa padding berlebih)
     <div className="space-y-6 pb-24 text-sm text-gray-700">
-      
+
       {/* Page Title Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -106,11 +106,6 @@ export default function AdminOverview() {
             Kelola pengguna, skema sertifikasi, verifikasi berkas asesi, jadwal
             uji kompetensi, dan sidang pleno dalam satu panel terpusat.
           </p>
-          <div className="pt-0.5">
-            <span className="inline-flex items-center gap-1.5 bg-[#008BE3] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-xs">
-              ID Admin: ADMIN-001
-            </span>
-          </div>
         </div>
 
         {/* SVG Graphic agar tidak kosong */}
@@ -271,13 +266,12 @@ export default function AdminOverview() {
                     {/* Kolom No */}
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
                       <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          index % 3 === 0
-                            ? "bg-[#008BE3]/10 text-[#008BE3]"
-                            : index % 3 === 1
-                              ? "bg-[#84CC16]/10 text-[#73B412]"
-                              : "bg-slate-100 text-slate-600"
-                        }`}
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${index % 3 === 0
+                          ? "bg-[#008BE3]/10 text-[#008BE3]"
+                          : index % 3 === 1
+                            ? "bg-[#84CC16]/10 text-[#73B412]"
+                            : "bg-slate-100 text-slate-600"
+                          }`}
                       >
                         {index + 1}
                       </div>

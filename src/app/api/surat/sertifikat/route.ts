@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     if (body.pengajuanId) {
       const { db } = await import("@/lib/db");
-      let pengajuan = await db.pengajuanSkema.findUnique({
+      const pengajuan = await db.pengajuanSkema.findUnique({
         where: { id: body.pengajuanId },
         include: {
           sertifikat: true,
