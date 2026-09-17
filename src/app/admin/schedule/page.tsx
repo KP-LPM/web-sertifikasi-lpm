@@ -234,15 +234,9 @@ export default function AssessmentSchedule() {
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
-<<<<<<< HEAD
   const handleEditPleno = (item: PlenoDetailData) => {
     setIsPreviewMode(false);
     setIsEditMode(true);
-=======
-
-  const handlePreviewPleno = (item: PlenoDetailData) => {
-    setIsPreviewMode(true);
->>>>>>> 9ae07e656a5c134fed16bbddba3fd407c7bbd90f
     setEditId(item.id);
     setPlenoForm({
       id: item.id,
@@ -290,17 +284,6 @@ export default function AssessmentSchedule() {
       setConfirmAsesmenId(null);
     }
   };
-<<<<<<< HEAD
-=======
-
-  const handleSelesaiPleno = () => {
-    if (confirmPlenoId !== null) {
-      updatePlenoSession(confirmPlenoId, { status: "Selesai" });
-      setConfirmPlenoId(null);
-    }
-  };
-
->>>>>>> 9ae07e656a5c134fed16bbddba3fd407c7bbd90f
   const [activeTab, setActiveTab] = useState<"asesmen" | "pleno">(
     isPlenoOnlyRole ? "pleno" : "asesmen",
   );

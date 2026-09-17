@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -59,7 +59,7 @@ interface BackendCandidate {
 
 export default function AsesiList() {
   const router = useRouter();
-  const { setSelectedAsesmen, AssessmentItems, deleteBatchAssessmentItems } =
+  const { setSelectedAsesmen, AssessmentItems, deleteBatchAssessmentItems, setExtraCrumbs } =
     useAppContext();
 
   // State
@@ -75,6 +75,18 @@ export default function AsesiList() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [backendBatches, setBackendBatches] = useState<BatchDetail[]>([]);
+
+  useEffect(() => {
+    if (selectedBatchId) {
+      const batch = backendBatches.find((b) => b.id === selectedBatchId);
+      if (batch) {
+        setExtraCrumbs([{ label: batch.namaBatch || "", href: "#" }]);
+      }
+    } else {
+      setExtraCrumbs([]);
+    }
+    return () => setExtraCrumbs([]);
+  }, [selectedBatchId, backendBatches, setExtraCrumbs]);
 
   useEffect(() => {
     async function loadData() {
@@ -446,7 +458,7 @@ export default function AsesiList() {
                             />
                             <span>{batch.tanggal}</span>
                           </div>
-                          <span className="text-slate-300">•</span>
+                          <span className="text-slate-300">â€¢</span>
                           <div className="flex items-center gap-1.5">
                             <Clock
                               size={14}
@@ -549,63 +561,64 @@ export default function AsesiList() {
           {currentSelectedBatch && (
             <div className="bg-white rounded-2xl border border-slate-200 p-5 md:p-6 shadow-2xs space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                <div className="flex items-start gap-3">
-                  {/* Navigation Back Button */}
+                <div className="flex items-center gap-3 w-full">
                   <button
                     onClick={() => {
                       setSelectedBatchId(null);
                       setSelectedAsesmen(null);
                       setCandidateSearchTerm("");
                     }}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0 mt-0.5"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
                     title="Kembali ke Daftar Batch"
                   >
                     <ArrowLeft size={18} />
                   </button>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h3 className="text-lg md:text-xl font-black text-slate-900">
-                        {currentSelectedBatch.namaBatch}
-                      </h3>
-                      {currentSelectedBatch.metode?.toLowerCase() ===
-                        "online" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                          <Video size={13} /> Online
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <Building2 size={13} /> Offline
-                        </span>
-                      )}
+                  <div className="flex-1 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="text-lg md:text-xl font-black text-slate-900">
+                          {currentSelectedBatch.namaBatch}
+                        </h3>
+                      </div>
+                      <p className="text-xs md:text-sm text-slate-600 font-semibold">
+                        Skema: {currentSelectedBatch.skema}
+                      </p>
                     </div>
-                    <p className="text-xs md:text-sm text-slate-600 font-semibold">
-                      Skema: {currentSelectedBatch.skema}
-                    </p>
                   </div>
                 </div>
 
-                {/* Direct "Buka Link Meeting" Quick Button for Online Batches */}
-                {currentSelectedBatch.metode?.toLowerCase() === "online" && (
-                  <div className="shrink-0">
-                    {currentSelectedBatch.linkVideo !== "-" ? (
-                      <a
-                        href={currentSelectedBatch.linkVideo}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs md:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-colors"
-                      >
-                        <Video size={18} />
-                        Buka Link Meeting
-                        <ExternalLink size={14} />
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-500 font-medium italic">
-                        Link Meeting Belum Dikonfigurasi
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="shrink-0 flex items-center gap-3 w-full md:w-auto justify-end mt-4 md:mt-0">
+                  {currentSelectedBatch.metode?.toLowerCase() === "online" ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                      <Video size={14} /> Online
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <Building2 size={14} /> Offline
+                    </span>
+                  )}
+                  {/* Direct "Buka Link Meeting" Quick Button for Online Batches */}
+                  {currentSelectedBatch.metode?.toLowerCase() === "online" && (
+                    <>
+                      {currentSelectedBatch.linkVideo !== "-" ? (
+                        <a
+                          href={currentSelectedBatch.linkVideo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs md:text-sm px-4 py-2 rounded-xl shadow-xs transition-colors"
+                        >
+                          <Video size={16} />
+                          Buka Link Meeting
+                          <ExternalLink size={14} />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-slate-500 font-medium italic">
+                          Link Meeting Belum Dikonfigurasi
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Batch Metadata Row */}
@@ -736,14 +749,16 @@ export default function AsesiList() {
           {/* Candidate Table Section */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="min-w-0">
-                <h3 className="text-base font-black text-slate-900">
-                  Daftar Asesi dalam Batch
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Lakukan pemeriksaan berkas APL dan berikan penilaian
-                  kompetensi untuk masing-masing asesi.
-                </p>
+              <div className="min-w-0 flex items-center gap-3">
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Daftar Asesi dalam Batch
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Lakukan pemeriksaan berkas APL dan berikan penilaian
+                    kompetensi untuk masing-masing asesi.
+                  </p>
+                </div>
               </div>
 
               {/* Candidate Search Input */}

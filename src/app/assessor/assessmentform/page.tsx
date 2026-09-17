@@ -1,4 +1,8 @@
+﻿/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-empty-pattern */
 "use client";
+import Link from "next/link";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import React, { useState, useEffect, ChangeEvent } from "react";
 import {
   ArrowLeft,
@@ -9,7 +13,6 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useAppContext } from "@/context/context";
@@ -17,11 +20,11 @@ import { saveHasilAsesmen, getPengajuanDetail, createRiwayatAsesmen, upsertRiway
 import {
   FormFRAPL02,
   FormFRAK07,
+  DEFAULT_ADJUSTMENT_OPTIONS,
   FormFRIA04A,
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-
 
 type AsesmenData = {
   nama: string;
@@ -42,23 +45,11 @@ type SignatureCanvasRef = {
   isEmpty: () => boolean;
 };
 
-
-
-type SignatureCanvasProps = {
-  canvasProps?: React.CanvasHTMLAttributes<HTMLCanvasElement>;
-  backgroundColor?: string;
-};
-
-const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
-  ssr: false,
-}) as React.ForwardRefExoticComponent<
-  SignatureCanvasProps & React.RefAttributes<SignatureCanvasRef>
->;
-
 function AssessmentFormContent() {
   const router = useRouter();
-  const { selectedAsesmen, updateAssessmentItem } = useAppContext();
+  const { selectedAsesmen, updateAssessmentItem, setExtraCrumbs, user, registeredProfile } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [asesiSignatureApl02, setAsesiSignatureApl02] = useState<string>("");
   const [asesiDateApl02, setAsesiDateApl02] = useState<string>("");
@@ -86,30 +77,66 @@ function AssessmentFormContent() {
           });
           setEvidenceFiles(files);
         }
-        if (data?.dataPribadi?.tandaTangan) {
-          setAsesiSignatureApl02(data.dataPribadi.tandaTangan);
-          const isOnline = data?.jenisMetode === "Online" || selectedAsesmen?.metode === "Online" || data?.jenisMetode === "online";
-          if (isOnline) {
-            setAsesiSignature(data.dataPribadi.tandaTangan);
-            setAsesiSignatureStep2(data.dataPribadi.tandaTangan);
-            setAsesiSignatureStep3(data.dataPribadi.tandaTangan);
-            setAsesiSignatureStep4(data.dataPribadi.tandaTangan);
-          }
+        
+        // Auto-fill Asesi Signature (from pengajuan dataPribadi)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const asesiSig = data?.dataPribadi?.tandaTangan || (data?.dataPribadi as any)?.tanda_tangan || "";
+        if (asesiSig) {
+          setAsesiSignatureApl02(asesiSig);
+          setAsesiSignature(asesiSig);
+          setAsesiSignatureStep2(asesiSig);
+          setAsesiSignatureStep3(asesiSig);
+          setAsesiSignatureStep4(asesiSig);
         }
+
+        // Auto-fill dates to today
+        const today = new Date().toISOString().split("T")[0];
+        setAsesiDate(today);
+        setAsesiDateStep3(today);
+        setAsesiDateStep4(today);
+        setAsesorDate(today);
+        setAsesorDateStep3(today);
+        setAsesorDateStep4(today);
+
         if (data?.tglPengajuan) {
           setAsesiDateApl02(data.tglPengajuan.toString().split("T")[0]);
         } else if (data?.createdAt) {
           setAsesiDateApl02(data.createdAt.toString().split("T")[0]);
         } else if (data?.dataPribadi?.createdAt) {
           setAsesiDateApl02(data.dataPribadi.createdAt.toString().split("T")[0]);
+        } else {
+          setAsesiDateApl02(today);
         }
       }).catch(err => console.error("Failed to load pengajuan detail:", err));
     }
-  }, [selectedAsesmen]);
+  }, [selectedAsesmen, user]);
+
+  // Sync asesor signature from registeredProfile whenever it loads
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const asesorSig = (registeredProfile as any)?.tanda_tangan || (registeredProfile as any)?.tandaTangan || "";
+    if (asesorSig) {
+      setAsesorSignatureApl02(asesorSig);
+      setAsesorSignature(asesorSig);
+      setAsesorSignatureStep2(asesorSig);
+      setAsesorSignatureStep3(asesorSig);
+      setAsesorSignatureStep4(asesorSig);
+    }
+  }, [registeredProfile]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentStep]);
+
+  useEffect(() => {
+    if (selectedAsesmen?.nama) {
+      setExtraCrumbs([
+        { label: selectedAsesmen.namaBatch || "Batch", href: "/assessor/candidates" },
+        { label: selectedAsesmen.nama },
+      ]);
+    }
+    return () => setExtraCrumbs([]);
+  }, [selectedAsesmen, setExtraCrumbs]);
 
   // Data Asesmen
   const asesmenData = {
@@ -827,43 +854,33 @@ function AssessmentFormContent() {
 
   // Validation
   const isStep1Valid =
-    (noAdjustment ||
-      adjustmentOptions.every((opt) => {
-        const adj = adjustments[opt.id];
-        if (!adj || adj.required === undefined || adj.required === null)
-          return false;
-        if (adj.required === true && !adj.note?.trim()) return false;
-        return true;
-      })) &&
-    !!String(asesorName || "").trim() &&
-    !!String(asesiName || "").trim() &&
-    !!asesorSignature &&
-    !!asesiSignature &&
-    !!String(asesorDate || "").trim() &&
-    !!String(asesiDate || "").trim();
+    noAdjustment ||
+    DEFAULT_ADJUSTMENT_OPTIONS.every((opt) => {
+      const adj = adjustments[opt.id];
+      if (!adj || adj.required === undefined || adj.required === null)
+        return false;
+      if (adj.required === true && !adj.note?.trim()) return false;
+      return true;
+    });
   const isStep2Valid =
-    !!umpanBalikStep2?.trim() &&
-    !!asesiSignatureStep2 &&
-    !!asesorSignatureStep2;
+    !!umpanBalikStep2?.trim();
   const isStep3Valid =
-    step3Questions.every(
-      (q) =>
-        step3Answers[q.id]?.answer?.trim() &&
-        step3Answers[q.id]?.achievement !== undefined &&
-        step3Answers[q.id]?.achievement !== null,
-    ) &&
-    !!rekomendasiStep3?.trim() &&
-    !!asesiSignatureStep3 &&
-    !!asesorSignatureStep3;
+    (step3Questions.length === 0 ||
+      step3Questions.every(
+        (q) =>
+          step3Answers[q.id]?.answer?.trim() &&
+          step3Answers[q.id]?.achievement !== undefined &&
+          step3Answers[q.id]?.achievement !== null,
+      )) &&
+    !!rekomendasiStep3?.trim();
   const isStep4Valid =
+    step4Questions.length === 0 ||
     step4Questions.every(
       (q) =>
         step4Answers[q.id]?.answer?.trim() &&
         step4Answers[q.id]?.achievement !== undefined &&
         step4Answers[q.id]?.achievement !== null,
-    ) &&
-    !!asesiSignatureStep4 &&
-    !!asesorSignatureStep4;
+    );
 
   const searchParams = useSearchParams();
   const pengajuanIdParam = searchParams.get("pengajuanId");
@@ -1101,7 +1118,7 @@ function AssessmentFormContent() {
               )}
             </div>
             <button
-              onClick={() => setCurrentStep(2)}
+              onClick={() => { setCompletedSteps(p => new Set(p).add(1)); setCurrentStep(2); }}
               disabled={!isAllKBKFilledApl02}
               title={
                 !isAllKBKFilledApl02
@@ -1145,7 +1162,7 @@ function AssessmentFormContent() {
       asesiDate={asesiDate}
       onAsesiDateChange={setAsesiDate}
       onPrev={() => setCurrentStep(1)}
-      onNext={() => setCurrentStep(3)}
+      onNext={() => { setCompletedSteps(p => new Set(p).add(2)); setCurrentStep(3); }}
       isNextDisabled={!isStep1Valid}
     />
   );
@@ -1170,7 +1187,7 @@ function AssessmentFormContent() {
       validator={validator}
       onValidatorChange={setValidator}
       onPrev={() => setCurrentStep(2)}
-      onNext={() => setCurrentStep(4)}
+      onNext={() => { setCompletedSteps(p => new Set(p).add(3)); setCurrentStep(4); }}
       isNextDisabled={!isStep2Valid}
     />
   );
@@ -1208,7 +1225,7 @@ function AssessmentFormContent() {
       validatorStep3={validatorStep3}
       onValidatorStep3Change={setValidatorStep3}
       onPrev={() => setCurrentStep(3)}
-      onNext={() => setCurrentStep(5)}
+      onNext={() => { setCompletedSteps(p => new Set(p).add(4)); setCurrentStep(5); }}
       isNextDisabled={!isStep3Valid}
     />
   );
@@ -1246,7 +1263,7 @@ function AssessmentFormContent() {
       validatorStep4={validatorStep4}
       onValidatorStep4Change={setValidatorStep4}
       onPrev={() => setCurrentStep(4)}
-      onNext={() => setCurrentStep(6)}
+      onNext={() => { setCompletedSteps(p => new Set(p).add(5)); setCurrentStep(6); }}
       isNextDisabled={!isStep4Valid}
     />
   );
@@ -1333,7 +1350,7 @@ function AssessmentFormContent() {
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <label
-              className={`flex items-center justify-center gap-3 p-3.5 sm:p-4 border-2 cursor-pointer transition-colors w-full sm:w-64 ${finalDecision === "Kompeten" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-300 hover:bg-slate-50"}`}
+              className={`flex items-center justify-center gap-3 p-3.5 sm:p-4 border-2 rounded-xl cursor-pointer transition-colors w-full sm:w-64 ${finalDecision === "Kompeten" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-300 hover:bg-slate-50"}`}
             >
               <input
                 type="radio"
@@ -1352,7 +1369,7 @@ function AssessmentFormContent() {
               <span className="font-bold text-base">KOMPETEN</span>
             </label>
             <label
-              className={`flex items-center justify-center gap-3 p-3.5 sm:p-4 border-2 cursor-pointer transition-colors w-full sm:w-64 ${finalDecision === "Belum Kompeten" ? "border-red-500 bg-red-50 text-red-700" : "border-slate-300 hover:bg-slate-50"}`}
+              className={`flex items-center justify-center gap-3 p-3.5 sm:p-4 border-2 rounded-xl cursor-pointer transition-colors w-full sm:w-64 ${finalDecision === "Belum Kompeten" ? "border-red-500 bg-red-50 text-red-700" : "border-slate-300 hover:bg-slate-50"}`}
             >
               <input
                 type="radio"
@@ -1378,7 +1395,7 @@ function AssessmentFormContent() {
         <button
           onClick={handleSubmit}
           disabled={!finalDecision || isSubmitting}
-          className="bg-slate-900 text-white px-8 py-2.5 font-bold text-sm hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md w-full sm:w-auto cursor-pointer"
+          className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-2.5 font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto cursor-pointer disabled:opacity-50 transition-colors"
         >
           <Save size={16} />{" "}
           {isSubmitting ? "Menyimpan..." : "Finalisasi Asesmen"}
@@ -1398,47 +1415,67 @@ function AssessmentFormContent() {
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
-      {/* 
-        Container Form Maksimal
-        Menggunakan grid untuk membagi Sidebar & Konten Utama
-      */}<div className="max-w-200 mx-auto mb-6 flex items-center justify-center">
-        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 text-xs md:text-sm font-semibold text-slate-500">
-          {steps.map((s, i) => (
-            <React.Fragment key={s.num}>
-              <div
-                className={`flex items-center gap-1.5 ${currentStep === s.num ? "text-slate-900 font-bold" : ""}`}
-              >
-                <span>{currentStep >= s.num ? "●" : "○"}</span>
-                <span>{s.label}</span>
-              </div>
-              {i < steps.length - 1 && (
-                <span className="hidden md:inline text-slate-300">→</span>
-              )}
-            </React.Fragment>
-          ))}
+      {/* Header Info: Nama Asesi, Skema, Back Button */}
+      <div className="w-full max-w-full mx-auto px-4 md:px-8 mb-4">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center gap-3">
+          <button
+            onClick={() => router.push('/assessor/candidates')}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
+            title="Kembali ke Daftar Asesi"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div className="min-w-0">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              {asesmenData.nama}
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Skema: {asesmenData.skema}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-200 mx-auto mb-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center gap-3">
-        <button
-          onClick={() => router.push("/assessor/candidates")}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
-          title="Kembali"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div className="min-w-0">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">
-            {asesmenData.nama}
-          </h2>
-          <p className="text-xs text-slate-500 font-medium">
-            {asesmenData.skema}
-          </p>
+      {/* Steps Indicator */}
+      <div className="w-full max-w-full mx-auto px-4 md:px-8 mb-6 flex items-center justify-center">
+        <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
+          {steps.map((s, i) => {
+            const isDone = completedSteps.has(s.num);
+            const isCurrent = currentStep === s.num;
+            const maxReached = Math.max(...Array.from(completedSteps), currentStep);
+            const isClickable = s.num <= maxReached + 1;
+            return (
+              <React.Fragment key={s.num}>
+                <button
+                  type="button"
+                  disabled={!isClickable}
+                  onClick={() => isClickable && setCurrentStep(s.num)}
+                  className={[
+                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold',
+                    isCurrent ? 'bg-[#008BE3] text-white shadow-sm' : isDone ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer' : isClickable ? 'hover:bg-slate-100 text-slate-500 cursor-pointer' : 'text-slate-300 cursor-not-allowed',
+                  ].join(' ')}
+                >
+                  <span className={[
+                    'w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black border',
+                    isCurrent ? 'bg-white text-[#008BE3] border-white' : isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-current',
+                  ].join(' ')}>
+                    {(isDone && !isCurrent) ? <Check size={8} /> : s.num}
+                  </span>
+                  <span>{s.label}</span>
+                </button>
+                {i < steps.length - 1 && (
+                  <ChevronRight size={12} className="text-slate-300 shrink-0" />
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
+
 
       {/* Main Document Container */}
-      <div className="max-w-200 mx-auto bg-white shadow-xl p-4 sm:p-8 md:p-12 min-h-280.75 relative mb-8 text-slate-900 text-sm">
+      <div className="w-full max-w-full mx-auto px-4 md:px-8">
+        <div className="w-full bg-white shadow-xl p-4 sm:p-8 md:p-12 min-h-280.75 relative mb-8 text-slate-900 text-sm">
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
@@ -1446,592 +1483,7 @@ function AssessmentFormContent() {
         {currentStep === 5 && renderStep5()}
         {currentStep === 6 && renderStep6()}
       </div>
-
-      {/* Signature Modal Asesor */}
-      {isAsesorSigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesor</h3>
-              <button
-                onClick={() => setIsAsesorSigOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesorSigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesorSigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesorSigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesorFileRef}
-                  onChange={handleAsesorFileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesorFileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs transition-colors"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesorSig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Signature Modal Asesi */}
-      {isAsesiSigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesi</h3>
-              <button
-                onClick={() => setIsAsesiSigOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesiSigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesiSigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesiSigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesiFileRef}
-                  onChange={handleAsesiFileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesiFileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs transition-colors"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesiSig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Modal Asesi Step 2 */}
-      {isAsesiStep2SigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesi</h3>
-              <button
-                onClick={() => setIsAsesiStep2SigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesiStep2SigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesiStep2SigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesiStep2SigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesiStep2FileRef}
-                  onChange={handleAsesiStep2FileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesiStep2FileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesiStep2Sig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Asesor Step 2 */}
-      {isAsesorStep2SigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesor</h3>
-              <button
-                onClick={() => setIsAsesorStep2SigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesorStep2SigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesorStep2SigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesorStep2SigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesorStep2FileRef}
-                  onChange={handleAsesorStep2FileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesorStep2FileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesorStep2Sig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Supervisor Step 2 */}
-      {isSupervisorSigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">
-                Tanda Tangan Supervisor
-              </h3>
-              <button
-                onClick={() => setIsSupervisorSigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={supervisorSigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsSupervisorSigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => supervisorSigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={supervisorFileRef}
-                  onChange={handleSupervisorFileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => supervisorFileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveSupervisorSig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Asesi Step 4 */}
-      {isAsesiStep4SigOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesi</h3>
-              <button
-                onClick={() => setIsAsesiStep4SigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesiStep4SigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesiStep4SigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesiStep4SigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesiStep4FileRef}
-                  onChange={handleAsesiStep4FileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesiStep4FileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesiStep4Sig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Asesor Step 4 */}
-      {isAsesorStep4SigOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesor</h3>
-              <button
-                onClick={() => setIsAsesorStep4SigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesorStep4SigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesorStep4SigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesorStep4SigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesorStep4FileRef}
-                  onChange={handleAsesorStep4FileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesorStep4FileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesorStep4Sig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Asesi Step 3 */}
-      {isAsesiStep3SigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesi</h3>
-              <button
-                onClick={() => setIsAsesiStep3SigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesiStep3SigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesiStep3SigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesiStep3SigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesiStep3FileRef}
-                  onChange={handleAsesiStep3FileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesiStep3FileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesiStep3Sig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Asesor Step 3 */}
-      {isAsesorStep3SigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan Asesor</h3>
-              <button
-                onClick={() => setIsAsesorStep3SigOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={asesorStep3SigRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsAsesorStep3SigOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => asesorStep3SigRef.current?.clear()}
-                  className="px-4 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-sm font-medium hover:bg-red-50"
-                >
-                  Hapus
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={asesorStep3FileRef}
-                  onChange={handleAsesorStep3FileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => asesorStep3FileRef.current?.click()}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-sm font-bold shadow-xs"
-                >
-                  Upload
-                </button>
-                <button
-                  onClick={saveAsesorStep3Sig}
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold shadow-sm"
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

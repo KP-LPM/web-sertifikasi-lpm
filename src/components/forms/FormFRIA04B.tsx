@@ -1,7 +1,8 @@
+﻿/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-empty-pattern */
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
-import { SignatureModal } from "./SignatureModal";
 import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
 import {
   getKonfigurasiPertanyaanList,
@@ -201,9 +202,6 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
   const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
     [],
   );
-
-  const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
-  const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
 
   const answers = props.step3Answers || props.answers || localAnswers;
   const rekomendasi =
@@ -599,10 +597,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                   <div
                     id="signature-container"
-                    className="flex-1 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() =>
-                      !props.readOnly && setIsAsesiSigModalOpen(true)
-                    }
+                    className="flex-1 h-20 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50"
                   >
                     {asesiSignature ? (
                       <img
@@ -611,8 +606,8 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                         className="h-full object-contain"
                       />
                     ) : (
-                      <span className="text-gray-400 text-sm">
-                        Klik untuk tanda tangan
+                      <span className="text-slate-400 text-xs italic">
+                        Tanda tangan belum tersedia
                       </span>
                     )}
                   </div>
@@ -666,12 +661,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
               <td className="border border-slate-300 p-2">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                   <div
-                    className="flex-1 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() =>
-                      !props.readOnly &&
-                      !props.isAsesi &&
-                      setIsAsesorSigModalOpen(true)
-                    }
+                    className="flex-1 h-20 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50"
                   >
                     {asesorSignature ? (
                       <img
@@ -680,8 +670,8 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                         className="h-full object-contain"
                       />
                     ) : (
-                      <span className="text-gray-400 text-sm">
-                        Klik untuk tanda tangan
+                      <span className="text-slate-400 text-xs italic">
+                        Tanda tangan belum tersedia
                       </span>
                     )}
                   </div>
@@ -699,148 +689,6 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
         </table>
       </div>
 
-      {/* Penyusun & Validator */}
-      <div className="mt-8 border border-slate-300 bg-white text-sm">
-        <div className="font-bold p-2">PENYUSUN DAN VALIDATOR</div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-137.5">
-            <thead>
-              <tr className="bg-white border-b border-slate-300 text-center">
-                <th className="border border-slate-300 p-2 w-1/4">STATUS</th>
-                <th className="border border-slate-300 p-2 w-12">NO</th>
-                <th className="border border-slate-300 p-2">NAMA</th>
-                <th className="border border-slate-300 p-2 w-1/4">NOMOR MET</th>
-                <th className="border border-slate-300 p-2 w-1/4">
-                  TANDA TANGAN DAN TANGGAL
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {penyusun.map((p, idx) => (
-                <tr key={"p3-" + idx}>
-                  {idx === 0 && (
-                    <td
-                      className="border border-slate-300 p-2 text-center align-top font-bold"
-                      rowSpan={penyusun.length}
-                    >
-                      PENYUSUN
-                    </td>
-                  )}
-                  <td className="border border-slate-300 p-2 text-center">
-                    {idx + 1}
-                  </td>
-                  <td className="border border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={true}
-                      className="w-full outline-none bg-transparent"
-                      value={String(p.nama || "")}
-                      onChange={(e) =>
-                        handlePenyusunChangeInternal(
-                          idx,
-                          "nama",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="border border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={true}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={p.noMet}
-                      onChange={(e) =>
-                        handlePenyusunChangeInternal(
-                          idx,
-                          "noMet",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="border border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={true}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={String(p.ttdTanggal || "")}
-                      onChange={(e) =>
-                        handlePenyusunChangeInternal(
-                          idx,
-                          "ttdTanggal",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                </tr>
-              ))}
-              {validator.map((v, idx) => (
-                <tr key={"v3-" + idx}>
-                  {idx === 0 && (
-                    <td
-                      className="border border-slate-300 p-2 text-center align-top font-bold"
-                      rowSpan={validator.length}
-                    >
-                      VALIDATOR
-                    </td>
-                  )}
-                  <td className="border border-slate-300 p-2 text-center">
-                    {idx + 1}
-                  </td>
-                  <td className="border border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={true}
-                      className="w-full outline-none bg-transparent"
-                      value={v.nama}
-                      onChange={(e) =>
-                        handleValidatorChangeInternal(
-                          idx,
-                          "nama",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="border border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={true}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={v.noMet}
-                      onChange={(e) =>
-                        handleValidatorChangeInternal(
-                          idx,
-                          "noMet",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="border border-slate-300 p-2">
-                    <input
-                      type="text"
-                      disabled={true}
-                      className="w-full outline-none bg-transparent text-center"
-                      value={v.ttdTanggal}
-                      onChange={(e) =>
-                        handleValidatorChangeInternal(
-                          idx,
-                          "ttdTanggal",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       {/* Navigation */}
       {(props.onPrev || props.onNext) && (
         <div className="mt-8 flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3">
@@ -848,7 +696,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
             <button
               type="button"
               onClick={props.onPrev}
-              className="border border-slate-300 px-6 py-2.5 font-semibold text-sm hover:bg-slate-50 flex items-center gap-2"
+              className="border border-slate-300 bg-white text-slate-700 px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
             >
               <ArrowLeft size={16} /> Kembali
             </button>
@@ -860,7 +708,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
               type="button"
               onClick={props.onNext}
               disabled={props.isNextDisabled}
-              className="bg-slate-900 text-white px-6 py-2.5 font-semibold text-sm hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
+              className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Lanjut ke Step 4 <ChevronRight size={16} />
             </button>
@@ -868,26 +716,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
         </div>
       )}
 
-      {/* Signature Modals */}
-      <SignatureModal
-        isOpen={isAsesiSigModalOpen}
-        onClose={() => setIsAsesiSigModalOpen(false)}
-        title="Tanda Tangan Asesi"
-        initialSignature={asesiSignature}
-        onSave={(dataUrl) => {
-          handleAsesiSignatureChange(dataUrl);
-        }}
-      />
-
-      <SignatureModal
-        isOpen={isAsesorSigModalOpen}
-        onClose={() => setIsAsesorSigModalOpen(false)}
-        title="Tanda Tangan Asesor"
-        initialSignature={asesorSignature}
-        onSave={(dataUrl) => {
-          handleAsesorSignatureChange(dataUrl);
-        }}
-      />
+      {/* Removed Signature Modals */}
     </div>
   );
 }
