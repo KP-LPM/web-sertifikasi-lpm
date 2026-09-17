@@ -35,11 +35,12 @@ export async function GET(request: NextRequest) {
           },
         },
         master_skema: { select: { namaSkema: true, kodeSkema: true } },
-        hasil_asesmen: {
+        jadwal_asesmen_peserta: {
           include: {
             pengajuan_skema: {
               include: {
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
+                hasil_asesmen: { select: { hasil: true } }
               },
             },
           },
@@ -52,8 +53,8 @@ export async function GET(request: NextRequest) {
       let kompetenCount = 0;
       let belumKompetenCount = 0;
 
-      const asesiList = batch.hasil_asesmen.map((hasil) => {
-        const h = hasil.hasil || "";
+      const asesiList = batch.jadwal_asesmen_peserta.map((peserta) => {
+        const h = peserta.pengajuan_skema?.hasil_asesmen?.hasil || "";
         if (h.toLowerCase() === "kompeten") kompetenCount++;
         else if (
           h.toLowerCase() === "belum kompeten" ||
@@ -62,14 +63,16 @@ export async function GET(request: NextRequest) {
           belumKompetenCount++;
 
         return {
-          nama: hasil.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi",
-          nik: hasil.pengajuan_skema?.dataPribadi?.nik || "-",
+          id: peserta.pengajuan_id,
+          nama: peserta.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi",
+          nik: peserta.pengajuan_skema?.dataPribadi?.nik || "-",
           hasil: h || "Belum Dinilai",
         };
       });
 
       return {
         id: batch.id,
+        kode: batch.nama_batch || `BATCH-${batch.id}`, // Add kode for the UI
         nama: batch.nama_batch,
         skema: batch.master_skema?.namaSkema || "-",
         noSkema: batch.master_skema?.kodeSkema || "-",

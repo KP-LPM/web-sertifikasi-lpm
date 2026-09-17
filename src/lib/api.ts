@@ -1046,8 +1046,9 @@ export async function updatePleno(id: number, data: Record<string, unknown>) {
     body: JSON.stringify(data),
   });
   const json = await res.json();
-  if (!res.ok)
+  if (!res.ok) {
     throw new Error(json.message || "Gagal memperbarui data sidang pleno");
+  }
   return json.data !== undefined ? json.data : json;
 }
 

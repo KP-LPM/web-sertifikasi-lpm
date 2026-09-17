@@ -66,10 +66,11 @@ export class PlenoRepository {
     });
   }
 
-  async update(id: number, data: UpdatePlenoInput) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async update(id: number, data: UpdatePlenoInput, tx: any = db) {
     const { skema_ids, ...restData } = data;
 
-    return await db.pleno_batch.update({
+    return await tx.pleno_batch.update({
       where: { id },
       data: {
         ...restData,

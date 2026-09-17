@@ -50,6 +50,8 @@ import {
   getPlenoList,
 } from "@/lib/api";
 
+
+
 const getDocumentPreviewUrl = (name?: string, url?: string) => {
   if (url && url.trim().length > 0) return url;
   const safeName = name ? encodeURIComponent(name) : "Surat_Sidang_Pleno.pdf";
@@ -62,7 +64,6 @@ export default function AssessmentSchedule() {
     AssessmentItems,
     deletePlenoSession,
     showNotification,
-    setExtraCrumbs, // <-- Diambil dari context untuk breadcrumb
   } = useAppContext();
   const [plenoSessions, setPlenoSessions] = useState<PlenoDetailData[]>([]);
   const isPlenoOnlyRole =
@@ -85,57 +86,6 @@ export default function AssessmentSchedule() {
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [, setIsSubmitting] = useState(false);
-  
-  // ==========================================
-  // PENGATURAN BREADCRUMB EXTRA DARI CONTEXT
-  // ==========================================
-  useEffect(() => {
-    if (setExtraCrumbs) {
-      if (isModalOpen) {
-        setExtraCrumbs([
-          {
-            label: isPreviewMode
-              ? "Detail Jadwal"
-              : isEditMode
-              ? "Edit Jadwal"
-              : "Buat Jadwal Baru",
-          },
-        ]);
-      } else if (isPlenoModalOpen) {
-        setExtraCrumbs([
-          {
-            label: isPreviewMode
-              ? "Detail Sidang Pleno"
-              : isEditMode
-              ? "Edit Sidang Pleno"
-              : "Buat Sidang Pleno",
-          },
-        ]);
-      } else {
-        setExtraCrumbs([]);
-      }
-    }
-    
-    // Cleanup saat komponen dibongkar (pindah halaman)
-    return () => {
-      if (setExtraCrumbs) {
-        setExtraCrumbs([]);
-      }
-    };
-  }, [isModalOpen, isPlenoModalOpen, isPreviewMode, isEditMode, setExtraCrumbs]);
-
-  // Tangkap event saat breadcrumb yang diklik punya action RESET_MODAL
-  useEffect(() => {
-    const handleResetModal = () => {
-      setIsModalOpen(false);
-      setIsPlenoModalOpen(false);
-    };
-    
-    window.addEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
-    return () => {
-      window.removeEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
-    };
-  }, []);
 
   const handlePreviewAsesmen = (item: ScheduleItem) => {
     setIsPreviewMode(true);
@@ -234,19 +184,14 @@ export default function AssessmentSchedule() {
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
-<<<<<<< HEAD
   const handleEditPleno = (item: PlenoDetailData) => {
     setIsPreviewMode(false);
     setIsEditMode(true);
-=======
-
-  const handlePreviewPleno = (item: PlenoDetailData) => {
-    setIsPreviewMode(true);
->>>>>>> 9ae07e656a5c134fed16bbddba3fd407c7bbd90f
     setEditId(item.id);
     setPlenoForm({
       id: item.id,
       batchCode: item.batchCode || `PLN-${item.id}`,
+      title: item.title,
       tanggal: item.tanggal,
       waktu: item.waktu?.split(" s.d ")[0] || "",
       skema: item.skema,
@@ -290,17 +235,6 @@ export default function AssessmentSchedule() {
       setConfirmAsesmenId(null);
     }
   };
-<<<<<<< HEAD
-=======
-
-  const handleSelesaiPleno = () => {
-    if (confirmPlenoId !== null) {
-      updatePlenoSession(confirmPlenoId, { status: "Selesai" });
-      setConfirmPlenoId(null);
-    }
-  };
-
->>>>>>> 9ae07e656a5c134fed16bbddba3fd407c7bbd90f
   const [activeTab, setActiveTab] = useState<"asesmen" | "pleno">(
     isPlenoOnlyRole ? "pleno" : "asesmen",
   );
@@ -313,6 +247,23 @@ export default function AssessmentSchedule() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  // const formattanggal = (tanggalStr: string) => {
+  //   if (!tanggalStr) return "-";
+  //   try {
+  //     const date = new Date(tanggalStr); // Gunakan D kapital
+  //     if (isNaN(date.getTime())) return tanggalStr;
+  //     return new Intl.DateTimeFormat("id-ID", {
+  //       weekday: "long",
+  //       day: "numeric",
+  //       month: "long",
+  //       year: "numeric",
+  //     }).format(date);
+  //   } catch {
+  //     return tanggalStr;
+  //   }
+  // };
+
+  // Asesmen Interfaces & State
   interface BackendPesertaJadwal {
     id?: number;
     pengajuan_id: number;
@@ -626,6 +577,7 @@ export default function AssessmentSchedule() {
       await fetchJadwalData();
     } catch (err) {
       console.error("Gagal menyimpan jadwal asesmen:", err);
+      // Fallback local update
       if (isEditMode) {
         setSchedules(
           schedules.map((s) =>
@@ -710,7 +662,6 @@ export default function AssessmentSchedule() {
       statusPleno: "K",
     }),
   );
-  
   const uniqueskemas =
     availableSkemas.length > 0
       ? availableSkemas.map((s) => s.namaSkema || s.nama_skema || s.nama || "")
@@ -733,12 +684,12 @@ export default function AssessmentSchedule() {
     batchCode?: string;
     title?: string;
     tanggal: string;
-    waktu: string;
+    waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
     skema: string;
     alamat: string;
     detailAlamat?: string;
     deskripsi: string;
-    plenoAttendees: PlenoAttendee[];
+    plenoAttendees: PlenoAttendee[]; // pakai interface yang sudah ada, bukan inline type
     suratPlenoName?: string;
     suratPlenoUrl?: string;
     linkSuratBeritaPleno?: string;
@@ -796,6 +747,7 @@ export default function AssessmentSchedule() {
     AsesiPlenoItem[]
   >([]);
 
+  // Available Candidates for plenary session (all completed assessments awaiting decision)
   const availableAsesiForPleno = mappedCompletedAssessments;
 
   const handleAddPleno = async (e: React.FormEvent) => {
@@ -943,8 +895,8 @@ export default function AssessmentSchedule() {
     const kapasitas = selectedTuk?.kapasitas || 0;
 
     return (
-      <div className="w-full pb-24 space-y-6 animate-in fade-in duration-200 -mt-2">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setIsModalOpen(false)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
@@ -952,22 +904,25 @@ export default function AssessmentSchedule() {
           >
             <ArrowLeft size={18} />
           </button>
-          
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              {isPreviewMode ? "Detail Jadwal Asesmen" : isEditMode ? "Edit Jadwal Asesmen" : "Buat Jadwal Baru"}
+              Buat Jadwal Baru
             </h1>
+            <p className="text-sm text-slate-500 mt-1 font-medium">
+              Buat jadwal asesmen baru untuk batch asesi
+            </p>
           </div>
         </div>
 
-        <div className="bg-white w-full rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-6 md:p-8 space-y-8">
+        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+          <div className="p-8 space-y-8">
             <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
                 1
               </span>
               Jadwal Asesmen
             </h2>
+            {/* 1. Nama Batch, 2. Skema Sertifikasi, 3. Metode Pelaksanaan */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -993,7 +948,7 @@ export default function AssessmentSchedule() {
                   disabled={isPreviewMode}
                   onChange={(e) => {
                     setFormData({ ...formData, skema: e.target.value });
-                    setSelectedAsesiForJadwal([]); 
+                    setSelectedAsesiForJadwal([]); // Reset selected asesi on skema change
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
@@ -1014,7 +969,7 @@ export default function AssessmentSchedule() {
                   disabled={isPreviewMode}
                   onChange={(e) => {
                     setFormData({ ...formData, metode: e.target.value });
-                    setSelectedAsesiForJadwal([]); 
+                    setSelectedAsesiForJadwal([]); // Reset selected asesi on metode change
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-bold text-[#008BE3]"
                 >
@@ -1023,6 +978,7 @@ export default function AssessmentSchedule() {
                 </select>
               </div>
 
+              {/* 4. Jenis TUK & 5. Alamat TUK */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   4. Jenis TUK
@@ -1035,7 +991,7 @@ export default function AssessmentSchedule() {
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
-                  <option value="">Pilih Jenis TUK</option>
+                  1  <option value="">Pilih Jenis TUK</option>
                   <option value="Sewaktu">Sewaktu</option>
                   <option value="Mandiri">Mandiri</option>
                   <option value="Tempat Kerja">Tempat Kerja</option>
@@ -1057,6 +1013,7 @@ export default function AssessmentSchedule() {
                 />
               </div>
 
+              {/* 6. Tanggal Uji & 7. Jam Pelaksanaan */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   6. Tanggal Uji
@@ -1090,6 +1047,7 @@ export default function AssessmentSchedule() {
                 />
               </div>
 
+              {/* 8. Spesifikasi Ruang TUK & 9. Asesor Ditugaskan */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   8. Spesifikasi Ruang TUK
@@ -1152,6 +1110,7 @@ export default function AssessmentSchedule() {
               </div>
             </div>
 
+            {/* Field Tautan Link Google Drive Surat Penugasan Asesor */}
             <div className="min-w-0">
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Tautan / Link Google Drive Surat Penugasan Asesor{" "}
@@ -1263,13 +1222,13 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {!formData.skema ? (
-                  <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                  <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Pilih skema sertifikasi terlebih dahulu.
                   </div>
                 ) : availableAsesi.length === 0 ? (
-                  <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                  <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi yang tersedia untuk skema{" "}
                     <span className="font-bold text-slate-800">
                       {formData.skema}
@@ -1382,10 +1341,10 @@ export default function AssessmentSchedule() {
     );
   }
 
-if (isPlenoModalOpen) {
+  if (isPlenoModalOpen) {
     return (
-      <div className="w-full pb-24 space-y-6 animate-in fade-in duration-200 -mt-2">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setIsPlenoModalOpen(false)}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
@@ -1393,15 +1352,18 @@ if (isPlenoModalOpen) {
           >
             <ArrowLeft size={18} />
           </button>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              {isPreviewMode ? "Detail Sidang Pleno" : isEditMode ? "Edit Sidang Pleno" : "Jadwalkan Sidang Pleno"}
+              Jadwalkan Sidang Pleno
             </h1>
+            <p className="text-sm text-slate-500 mt-1 font-medium">
+              Buat jadwal sidang pleno baru untuk penetapan kelulusan
+            </p>
           </div>
         </div>
 
-        <div className="bg-white w-full rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-          <div className="p-6 md:p-8 space-y-8">
+        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+          <div className="p-8 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -1466,7 +1428,7 @@ if (isPlenoModalOpen) {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {availableAsesiForPleno.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi dengan status pengajuan menunggu pleno.
@@ -1482,7 +1444,7 @@ if (isPlenoModalOpen) {
                         onClick={() => {
                           if (isPreviewMode) return;
 
-                          const newItems = isSelected
+                          const newItems: AsesiPlenoItem[] = isSelected
                             ? selectedAsesiForPleno.filter(
                               (item) =>
                                 item.id !== asesi.id &&
@@ -1604,6 +1566,7 @@ if (isPlenoModalOpen) {
                 </div>
               </div>
 
+              {/* Selected attendees tags */}
               {plenoForm.plenoAttendees.filter((a) => a.nama.trim() !== "")
                 .length > 0 && (
                   <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2">
@@ -1659,7 +1622,8 @@ if (isPlenoModalOpen) {
                   </div>
                 )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-65 overflow-y-auto pr-1">
+              {/* Checkbox grid of user Candidates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
                 {(() => {
                   const mergedUsers = availableUsers.map((u) => {
                     let mappedRole = u.role;
@@ -1777,9 +1741,9 @@ if (isPlenoModalOpen) {
       </div>
     );
   }
-  
+
   return (
-    <div className="space-y-6 pb-24 text-sm text-gray-700 max-w-full overflow-x-hidden">
+    <div className="space-y-6 pb-24 text-sm text-gray-700">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-[#008BE3]/10 flex items-center justify-center text-[#008BE3] border border-[#008BE3]/20 shadow-xs shrink-0">
@@ -1834,7 +1798,7 @@ if (isPlenoModalOpen) {
               />
             </div>
 
-            <div className="relative z-40">
+            <div className="relative z-50">
               <button
                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
                 className="items-center justify-center gap-2 px-3 h-10.5 sm:px-4 bg-gray-50 border border-gray-200/50 text-gray-700 rounded-lg text-[14px] font-bold cursor-pointer hover:bg-gray-100 transition-colors flex shrink-0"
@@ -1938,9 +1902,6 @@ if (isPlenoModalOpen) {
             <table className="w-full text-left border-collapse min-w-[1600px]">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
-                    Batch
-                  </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
@@ -2007,18 +1968,15 @@ if (isPlenoModalOpen) {
                           key={item.id}
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-[14px] font-bold text-slate-900">
-                              {item.namaBatch}
-                            </div>
-                          </td>
 
+                          {/* 2. Skema Sertifikasi */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-[14px] font-semibold text-slate-700 whitespace-nowrap">
                               {item.skema || "-"}
                             </div>
                           </td>
 
+                          {/* 2.5 Metode */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-md border ${(item.metode || item.metode) === "Online"
@@ -2030,12 +1988,14 @@ if (isPlenoModalOpen) {
                             </span>
                           </td>
 
+                          {/* 3. Jenis TUK */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
                               {item.tipeTuk || "Sewaktu"}
                             </span>
                           </td>
 
+                          {/* 4. Alamat TUK */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-[14px] font-medium text-slate-700 whitespace-nowrap">
                               <MapPin
@@ -2049,6 +2009,7 @@ if (isPlenoModalOpen) {
                             </div>
                           </td>
 
+                          {/* 5. Tanggal Uji */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-600">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar
@@ -2059,6 +2020,7 @@ if (isPlenoModalOpen) {
                             </span>
                           </td>
 
+                          {/* 6. Jam Pelaksanaan */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-700">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Clock
@@ -2071,12 +2033,14 @@ if (isPlenoModalOpen) {
                             </span>
                           </td>
 
+                          {/* 7. Spesifikasi Ruang TUK */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-slate-700">
                             <div className="font-medium text-slate-900 truncate">
                               {item.alamat}
                             </div>
                           </td>
 
+                          {/* 8. Asesor Ditugaskan */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <span className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
@@ -2085,6 +2049,7 @@ if (isPlenoModalOpen) {
                             </div>
                           </td>
 
+                          {/* 9. Surat Penugasan */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             {item.suratTugasUrl ? (
                               item.suratTugasUrl.startsWith("http") ? (
@@ -2123,6 +2088,7 @@ if (isPlenoModalOpen) {
                             )}
                           </td>
 
+                          {/* 10. Total Asesi */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
                             <span className="whitespace-nowrap">
                               {item.totalKandidat ||
@@ -2132,6 +2098,7 @@ if (isPlenoModalOpen) {
                             </span>
                           </td>
 
+                          {/* 11. Aksi (Detail, Edit, Hapus) */}
                           <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                             <div className="flex items-center justify-center gap-2">
                               <button
@@ -2191,9 +2158,6 @@ if (isPlenoModalOpen) {
             <table className="w-full text-left border-collapse min-w-300">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-40 sticky top-0 z-20 bg-[#0F172A]">
-                    Batch
-                  </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-75 sticky top-0 z-20 bg-[#0F172A]">
                     Nama Sidang Pleno
                   </th>
@@ -2224,11 +2188,6 @@ if (isPlenoModalOpen) {
                       key={item.id}
                       className="group/row hover:bg-[#F9FAFC] transition-colors"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-[14px] font-bold text-slate-900">
-                          {item.batchCode || item.id}
-                        </div>
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-[14px] font-bold text-slate-900 leading-snug">
                           {item.title ||
@@ -2299,10 +2258,9 @@ if (isPlenoModalOpen) {
                           {item.alamat}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700">
+                      <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700 text-center">
                         <span>
                           {item.asesiList?.length || 0}
-                          Asesi
                         </span>
                       </td>
                       <td className="px-6 py-4 text-xs font-bold">
@@ -2359,6 +2317,7 @@ if (isPlenoModalOpen) {
         </div>
       </div>
 
+      {/* Modals for Confirmation */}
       <AnimatePresence>
         {confirmAsesmenId !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -2403,6 +2362,7 @@ if (isPlenoModalOpen) {
 
 
 
+        {/* Lightbox / Preview Modal Surat Sidang Pleno */}
         {previewDocModal !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
@@ -2416,8 +2376,9 @@ if (isPlenoModalOpen) {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
             >
+              {/* Header */}
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center shrink-0 font-bold">
@@ -2440,6 +2401,7 @@ if (isPlenoModalOpen) {
                 </button>
               </div>
 
+              {/* Body */}
               <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-75">
                 {previewDocModal.url.startsWith("data:image") ||
                   previewDocModal.url.startsWith("http") ? (
@@ -2457,6 +2419,7 @@ if (isPlenoModalOpen) {
                 )}
               </div>
 
+              {/* Footer */}
               <div className="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
                 <span className="text-xs text-slate-500 font-medium truncate max-w-62.5">
                   {previewDocModal.name}
@@ -2483,6 +2446,7 @@ if (isPlenoModalOpen) {
           </div>
         )}
 
+        {/* Printable / Generated Modal Surat Penugasan Asesor */}
         {isGeneratePenugasanModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
@@ -2496,8 +2460,9 @@ if (isPlenoModalOpen) {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full relative z-10 overflow-hidden flex flex-col max-h-[92vh]"
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full relative z-10 overflow-hidden flex flex-col max-h-[92vh]"
             >
+              {/* Modal Header */}
               <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold">
@@ -2520,8 +2485,10 @@ if (isPlenoModalOpen) {
                 </button>
               </div>
 
+              {/* Modal Printable Document Content */}
               <div className="p-6 md:p-8 overflow-y-auto space-y-6 bg-slate-50 text-slate-900">
                 <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-2xs space-y-6 font-serif">
+                  {/* Kop Surat Header */}
                   <div className="text-center border-b-2 border-slate-900 pb-4 space-y-1">
                     <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 font-sans">
                       LSP UIN SUNAN GUNUNG DJATI BANDUNG
@@ -2535,6 +2502,7 @@ if (isPlenoModalOpen) {
                     </p>
                   </div>
 
+                  {/* Judul Surat */}
                   <div className="text-center space-y-1 font-sans">
                     <h3 className="text-base font-black uppercase text-slate-900 underline tracking-wide">
                       SURAT TUGAS ASESOR KOMPETENSI
@@ -2544,6 +2512,7 @@ if (isPlenoModalOpen) {
                     </p>
                   </div>
 
+                  {/* Body Text */}
                   <div className="text-xs space-y-4 leading-relaxed font-sans text-slate-800">
                     <p>
                       Ketua Lembaga Sertifikasi Profesi (LSP-P1) UIN Sunan
@@ -2625,6 +2594,7 @@ if (isPlenoModalOpen) {
                     </p>
                   </div>
 
+                  {/* Tanda Tangan */}
                   <div className="grid grid-cols-2 gap-8 pt-6 text-center font-sans text-xs">
                     <div>
                       <p className="font-bold text-slate-500">
@@ -2652,6 +2622,7 @@ if (isPlenoModalOpen) {
                 </div>
               </div>
 
+              {/* Modal Footer Actions */}
               <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
                 <span className="text-xs text-slate-500 font-medium">
                   Dokumen Surat Penugasan siap dicetak.

@@ -65,6 +65,7 @@ export async function PATCH(request: NextRequest, context: Context) {
       return sendResponse(400, "Validasi gagal", error.flatten());
     if (error instanceof ClientError)
       return sendResponse(error.statusCode, error.message);
+    console.error(error)
     return sendResponse(500, "Internal server error");
   }
 }

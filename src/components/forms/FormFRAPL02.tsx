@@ -157,13 +157,13 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                     : Array.isArray(e.kriteriaUnjukKerja)
                       ? e.kriteriaUnjukKerja
                       : [],
-              })),
-            }));
-            setApiUnits(mapped);
-            return;
+                })),
+              }));
+              setApiUnits(mapped);
+              return;
+            }
           }
         }
-      }
       } catch (err) {
         console.warn("Gagal memuat unit kompetensi dari API, gunakan fallback lokal:", err);
       }
@@ -222,7 +222,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   );
 
   // 3. Ambil tanda tangan profil sebagai nilai awal tanda tangan asesi
-  const profileSignature = 
+  const profileSignature =
     (registeredProfile as unknown as { tanda_tangan?: string; tandaTangan?: string })?.tanda_tangan ||
     (registeredProfile as unknown as { tandaTangan?: string })?.tandaTangan ||
     (user as unknown as { tanda_tangan?: string })?.tanda_tangan || "";
@@ -237,11 +237,11 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
 
   // 4. Update state jika data profil baru berhasil termuat belakangan
   useEffect(() => {
-    const freshSig = 
+    const freshSig =
       (registeredProfile as unknown as { tanda_tangan?: string; tandaTangan?: string })?.tanda_tangan ||
       (registeredProfile as unknown as { tandaTangan?: string })?.tandaTangan ||
       (user as unknown as { tanda_tangan?: string })?.tanda_tangan || "";
-    
+
     if (freshSig) {
       if (props.isAsesi !== false && !localAsesiSig) setLocalAsesiSig(freshSig);
       if (props.isAsesi === false && !localAsesorSig) setLocalAsesorSig(freshSig);

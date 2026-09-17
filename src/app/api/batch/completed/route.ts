@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
                 skema: { select: { namaSkema: true } },
                 sertifikat: true,
+                hasil_asesmen: true,
               },
             },
           },
@@ -44,6 +45,9 @@ export async function GET(request: NextRequest) {
         pleno_batch_skema: {
           include: { master_skema: { select: { namaSkema: true } } },
         },
+        pleno_attendee: {
+          select: { id: true, nama: true, role: true, user_id: true }
+        }
       },
       orderBy: { tanggal: "desc" },
     });
@@ -53,26 +57,40 @@ export async function GET(request: NextRequest) {
       let belumKompeten = 0;
 
       batch.pleno_asesi.forEach((asesi) => {
-        if (asesi.status_pleno === "Kompeten" || asesi.status_pleno === "K") {
+        const finalStatus = asesi.status_pleno || asesi.rekomendasi_asesor || asesi.pengajuan_skema?.hasil_asesmen?.hasil;
+        if (finalStatus === "Kompeten" || finalStatus === "K" || finalStatus === "KOMPETEN") {
           kompeten++;
         } else if (
-          asesi.status_pleno === "Belum Kompeten" ||
-          asesi.status_pleno === "BK"
+          finalStatus === "Belum Kompeten" ||
+          finalStatus === "BK" ||
+          finalStatus === "BELUM KOMPETEN"
         ) {
           belumKompeten++;
         }
       });
       const asesiList = batch.pleno_asesi
-        .filter((a) => a.status_pleno === "Kompeten" || a.status_pleno === "K")
+        .filter((a) => {
+          const finalStatus = a.status_pleno || a.rekomendasi_asesor || a.pengajuan_skema?.hasil_asesmen?.hasil;
+          return finalStatus === "Kompeten" || finalStatus === "K" || finalStatus === "KOMPETEN" || !finalStatus; // Termasuk jika null untuk jaga-jaga apabila belum dinilai secara eksplisit
+        })
         .map((a) => {
           const cert = a.pengajuan_skema?.sertifikat;
           // In Prisma, if it's one-to-one it's an object. If one-to-many, it's an array.
           // In schema it says `sertifikat sertifikat?`, so it's an object.
+          
+          const rek = a.rekomendasi_asesor || a.pengajuan_skema?.hasil_asesmen?.hasil || "BK";
+          const pln = a.status_pleno || rek;
+          const isRekK = rek === "K" || rek.toLowerCase() === "kompeten";
+          const isPlnK = pln === "K" || pln.toLowerCase() === "kompeten";
+
           return {
             id: a.pengajuan_id,
             nama: a.pengajuan_skema?.dataPribadi?.namaLengkap || "Tanpa Nama",
             nik: a.pengajuan_skema?.dataPribadi?.nik || "-",
             skema: a.pengajuan_skema?.skema?.namaSkema || "-",
+            asesor: "Asesor LSP", // Can fetch from jadwal_asesmen or user if available
+            rekomendasiAsesor: isRekK ? "K" : "BK",
+            statusPleno: isPlnK ? "K" : "BK",
             noSertifikat: cert?.no_sertifikat || "",
             issueDate: cert?.tanggal_terbit ? new Date(cert.tanggal_terbit).toISOString().split("T")[0] : "",
             gdriveUrl: cert?.gdrive_url || "",
@@ -85,10 +103,16 @@ export async function GET(request: NextRequest) {
         id: batch.id,
         batchCode: batch.no_sk || `BATCH-${batch.id}`,
         title: batch.title,
-        tanggal: batch.tanggal,
-        waktu: "",
-        alamat: batch.alamat || "",
-        isOnline: false,
+        skema: batch.pleno_batch_skema.map((s) => s.master_skema.namaSkema).join(", ") || "-",
+        noSK: batch.no_sk || "-",
+        tanggal: batch.tanggal || "-",
+        waktu: "-",
+        jenisTuk: "-",
+        alamat: batch.alamat || "-",
+        detailAlamat: batch.alamat || "-",
+        linkSuratBeritaPleno: batch.link_surat_berita_pleno || "",
+        linkSuratKeputusanDirektur: batch.link_surat_keputusan_direktur || "",
+        linkSuratBlankoBNSP: batch.link_surat_blanko_bnsp || "",
         status: batch.status,
         skemaList: batch.pleno_batch_skema.map(
           (s) => s.master_skema.namaSkema,
@@ -96,6 +120,11 @@ export async function GET(request: NextRequest) {
         totalAsesi: batch.pleno_asesi.length,
         rekapHasil: { kompeten, belumKompeten },
         asesiList,
+        plenoAttendees: batch.pleno_attendee.map(a => ({
+          id: a.id,
+          nama: a.nama,
+          role: a.role,
+        })),
       };
     });
 

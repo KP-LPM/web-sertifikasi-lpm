@@ -882,7 +882,7 @@ function AssessmentFormContent() {
         // 1. Upsert APL-02
         await upsertRiwayatAsesmen(targetId, {
           form_type: "FR.APL.02",
-          penilaian: rekomendasiApl02,
+          penilaian: { rekomendasi: rekomendasiApl02 },
         }).catch(e => console.error("Gagal upsert APL-02:", e));
 
         // 2. Create AK-07

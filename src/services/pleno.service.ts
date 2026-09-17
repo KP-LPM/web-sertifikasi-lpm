@@ -36,35 +36,39 @@ export class PlenoService {
 
   async update(id: number, data: UpdatePlenoInput) {
     await this.getById(id);
-    const pleno = await this.repo.update(id, data);
-    if (!pleno) throw new InvariantError("Gagal memperbarui jadwal pleno");
-    
-    // Jika status sidang pleno diubah menjadi "Selesai"
-    if (data.status === "Selesai") {
-      const asesiList = await this.repo.getAsesiByPlenoBatchId(id);
-      const pengajuanIds = asesiList.map(a => a.pengajuan_id);
+    // Wrap di dalam transaction agar atomik
+    const { db } = await import("@/lib/db");
+    const result = await db.$transaction(async (tx) => {
+      const pleno = await this.repo.update(id, data, tx);
+      if (!pleno) throw new InvariantError("Gagal memperbarui jadwal pleno");
       
-      if (pengajuanIds.length > 0) {
-        // Update status pengajuan skema menjadi "Selesai"
-        const { db } = await import("@/lib/db");
-        await db.pengajuanSkema.updateMany({
-          where: { id: { in: pengajuanIds } },
-          data: { status: "Selesai" }
-        });
+      // Jika status sidang pleno diubah menjadi "Selesai"
+      if (data.status === "Selesai") {
+        const asesiList = await this.repo.getAsesiByPlenoBatchId(id);
+        const pengajuanIds = asesiList.map(a => a.pengajuan_id);
+        
+        if (pengajuanIds.length > 0) {
+          // Update status pengajuan skema menjadi "Selesai"
+          await tx.pengajuanSkema.updateMany({
+            where: { id: { in: pengajuanIds } },
+            data: { status: "Selesai" }
+          });
 
-        // Update status_pleno berdasarkan rekomendasi_asesor
-        await db.pleno_asesi.updateMany({
-          where: { pleno_batch_id: id, rekomendasi_asesor: "K" },
-          data: { status_pleno: "Kompeten" }
-        });
-        await db.pleno_asesi.updateMany({
-          where: { pleno_batch_id: id, rekomendasi_asesor: "BK" },
-          data: { status_pleno: "Belum Kompeten" }
-        });
+          // Update status_pleno berdasarkan rekomendasi_asesor
+          await tx.pleno_asesi.updateMany({
+            where: { pleno_batch_id: id, rekomendasi_asesor: "K" },
+            data: { status_pleno: "K" }
+          });
+          await tx.pleno_asesi.updateMany({
+            where: { pleno_batch_id: id, rekomendasi_asesor: "BK" },
+            data: { status_pleno: "BK" }
+          });
+        }
       }
-    }
+      return pleno;
+    });
 
-    return pleno;
+    return result;
   }
 
   async delete(id: number) {
