@@ -3108,8 +3108,31 @@ export default function PengajuanSkemaPage() {
                         );
                         return;
                       }
+                      
+                      const ttdAsesi = (tempEFormData as Record<string, unknown>)?.ttdAsesi || (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan;
+                      if (!ttdAsesi) {
+                        showNotification("Harap lengkapi tanda tangan Anda", "error");
+                        window.dispatchEvent(
+                          new CustomEvent("scroll-to-apl01-signature-error"),
+                        );
+                        return;
+                      }
+                      
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
+                      let totalElements = 0;
+                      (selectedScheme?.unitKompetensi || []).forEach((u: any) => {
+                        totalElements += (u.elemen || u.elemenKompetensi || []).length;
+                      });
+                      
+                      const kompetensi = (tempEFormData as Record<string, unknown>)?.kompetensi as Record<string, string> || {};
+                      const filledCount = Object.values(kompetensi).filter(v => v === "K" || v === "BK").length;
+                      
+                      if (totalElements > 0 && filledCount < totalElements) {
+                         showNotification("Harap lengkapi penilaian K/BK pada semua unit kompetensi", "error");
+                         return;
+                      }
+                      
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     }
                     const key = String(activeModalDoc?.name ?? "");

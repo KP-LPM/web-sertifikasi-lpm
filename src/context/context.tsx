@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { BadgeCheck, X, AlertTriangle } from "lucide-react";
+import { BadgeCheck, X, AlertTriangle, LogOut } from "lucide-react";
 import {
   AssessmentItem,
   PertanyaanAsesmenItem,
@@ -99,7 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // --- GLOBAL CONFIRMATION MODAL STATE ---
   const [globalConfirm, setGlobalConfirm] = useState<{
     isOpen: boolean;
-    type: "save" | "delete";
+    type: "save" | "delete" | "logout";
     title: string;
     message: string;
     onConfirm: () => void;
@@ -119,10 +119,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ? (button.value || "").toLowerCase()
         : (button.innerText || button.getAttribute("aria-label") || button.title || "").toLowerCase();
 
-      const isSave = text.includes("simpan") && !text.includes("batal") && !text.includes("batal simpan");
       const isDelete = (text.includes("hapus") || text.includes("delete")) && !text.includes("batal");
 
-      if (isSave || isDelete) {
+      if (isDelete) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -132,11 +131,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         setGlobalConfirm({
           isOpen: true,
-          type: isSave ? "save" : "delete",
-          title: isSave ? "Konfirmasi Simpan" : "Konfirmasi Hapus",
-          message: isSave
-            ? "Apakah Anda yakin ingin menyimpan data ini?"
-            : "Apakah Anda yakin ingin menghapus data ini?",
+          type: "delete",
+          title: "Konfirmasi Hapus",
+          message: "Apakah Anda yakin ingin menghapus data ini?",
           onConfirm: () => {
             setGlobalConfirm(null);
 
@@ -419,12 +416,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const logout = async () => {
-    showNotification("Berhasil keluar dari akun.", "success");
-    setIsLoggingOut(true);
-    await signOut({ redirect: false });
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 1500);
+    setGlobalConfirm({
+      isOpen: true,
+      type: "logout",
+      title: "Konfirmasi Logout",
+      message: "Apakah Anda yakin ingin keluar dari akun ini?",
+      onConfirm: async () => {
+        setGlobalConfirm(null);
+        showNotification("Berhasil keluar dari akun.", "success");
+        setIsLoggingOut(true);
+        await signOut({ redirect: false });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 1500);
+      }
+    });
   };
   return (
     <AppContext.Provider
@@ -513,8 +519,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
               <div className="p-5 flex gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${globalConfirm.type === 'delete' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-[#008BE3]'}`}>
-                  <AlertTriangle size={24} />
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${(globalConfirm.type === 'delete' || globalConfirm.type === 'logout') ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-[#008BE3]'}`}>
+                  {globalConfirm.type === 'logout' ? <LogOut size={24} /> : <AlertTriangle size={24} />}
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mt-1 leading-relaxed">
@@ -532,7 +538,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 </button>
                 <button
                   onClick={globalConfirm.onConfirm}
-                  className={`px-4 py-2 text-white rounded-lg text-sm font-bold shadow-xs transition-colors ${globalConfirm.type === "delete"
+                  className={`px-4 py-2 text-white rounded-lg text-sm font-bold shadow-xs transition-colors ${(globalConfirm.type === "delete" || globalConfirm.type === "logout")
                     ? "bg-red-600 hover:bg-red-700"
                     : "bg-[#008BE3] hover:bg-[#0076C2]"
                     }`}
