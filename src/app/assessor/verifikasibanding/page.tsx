@@ -10,7 +10,6 @@ import {
   MapPin,
   FileText,
   Eye,
-  FileDown,
   ShieldCheck,
   AlertCircle,
   XCircle,
@@ -21,7 +20,12 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { AssessmentItem, HasilAsesmen } from "@/types/types";
-import { getBandingList, verifikasiBanding } from "@/lib/api";
+import {
+  FormFRIA04A,
+  FormFRIA04B,
+  FormFRIA07,
+} from "@/components/forms";
+import { getBandingList, verifikasiBanding, getRiwayatAsesmen } from "@/lib/api";
 
 interface BackendBandingRecord {
   id: number;
@@ -35,7 +39,9 @@ interface BackendBandingRecord {
   melibatkanOrangLain?: boolean;
   hasil_asesmen?: {
     hasil?: string;
+    pengajuan_id?: number;
     pengajuan_skema?: {
+      id?: number;
       dataPribadi?: {
         namaLengkap?: string;
         nik?: string;
@@ -44,6 +50,7 @@ interface BackendBandingRecord {
         username?: string;
       };
       skema?: {
+        id?: number;
         namaSkema?: string;
         kodeSkema?: string;
       };
@@ -127,7 +134,9 @@ function VerifikasiBandingList({
               catatan: item.penjelasan || item.alasan || "",
               alasanBanding: item.alasan,
               bandingId: item.id,
-            } as AssessmentItem & { bandingId?: number; alasanBanding?: string };
+              pengajuanId: item.hasil_asesmen?.pengajuan_id || pengajuan?.id,
+              skemaId: pengajuan?.skema?.id,
+            } as AssessmentItem & { bandingId?: number; alasanBanding?: string; pengajuanId?: number; skemaId?: number };
           });
           setRealBandingItems(mapped);
         }
@@ -214,6 +223,9 @@ function VerifikasiBandingList({
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                   Skema
                 </th>
+                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap">
+                  Status Banding
+                </th>
                 <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 whitespace-nowrap">
                   Aksi
                 </th>
@@ -264,14 +276,32 @@ function VerifikasiBandingList({
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-bold text-[#008BE3] whitespace-nowrap">
                       {item.skema}
                     </td>
+                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                        item.statusBanding === 'Disetujui' || item.status === 'Disetujui'
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : item.statusBanding === 'Ditolak' || item.status === 'Ditolak'
+                          ? 'bg-red-50 text-red-700 border-red-200'
+                          : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                      }`}> {item.statusBanding || item.status || 'Menunggu'} </span>
+                    </td>
                     <td className="px-2.5 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
                       <div className="flex justify-center">
-                        <button
-                          onClick={() => onVerify(item)}
-                          className="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 px-2.5 sm:px-4 py-1 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                          <ShieldCheck size={12} /> Verifikasi Banding
-                        </button>
+                        {item.statusBanding === 'Disetujui' || item.status === 'Disetujui' || item.statusBanding === 'Ditolak' || item.status === 'Ditolak' ? (
+                          <button
+                            onClick={() => onVerify(item)}
+                            className="bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 px-2.5 sm:px-4 py-1 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Eye size={12} /> Lihat Detail
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onVerify(item)}
+                            className="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 px-2.5 sm:px-4 py-1 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <ShieldCheck size={12} /> Verifikasi Banding
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -317,25 +347,77 @@ function VerifikasiBandingList({
 function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem, showNotification } =
     useAppContext();
-  const [modalAction, setModalAction] = useState<"approve" | "reject" | null>(
-    null,
-  );
   const [catatanBaru, setCatatanBaru] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
+  const [previewForm, setPreviewForm] = useState<string | null>(null);
+  interface PenyusunValidatorItem {
+    nama: string;
+    noReg: string;
+    tandaTangan?: string;
+    noMet: string;
+    ttdTanggal: string;
+  }
+  interface QuestionItem {
+    id: string;
+    skenario: string;
+    pertanyaan: string;
+    elemen: string;
+    kunci: string;
+  }
+  interface AnswerItem {
+    answer: string;
+    achievement: boolean | null;
+  }
+  interface RiwayatFormData {
+    umpanBalik?: string;
+    penyusun?: PenyusunValidatorItem[];
+    validator?: PenyusunValidatorItem[];
+    questions?: QuestionItem[];
+    step3Questions?: QuestionItem[];
+    answers?: Record<string, AnswerItem>;
+    step3Answers?: Record<string, AnswerItem>;
+    rekomendasi?: string;
+    step4Questions?: QuestionItem[];
+    step4Answers?: Record<string, AnswerItem>;
+    [key: string]: unknown;
+  }
+
+  interface RiwayatItem {
+    form_type: string;
+    form_data: RiwayatFormData;
+    [key: string]: unknown;
+  }
+
+  const [riwayatData, setRiwayatData] = useState<RiwayatItem[]>([]);
+
+  useEffect(() => {
+    async function loadRiwayat() {
+      if (!selectedAsesmen) return;
+      const targetId = Number(
+        (selectedAsesmen as AssessmentItem & { pengajuanId?: number }).pengajuanId ||
+          (selectedAsesmen as AssessmentItem & { bandingId?: number }).bandingId ||
+          selectedAsesmen.id
+      );
+      if (!targetId) return;
+      try {
+        const data = await getRiwayatAsesmen(targetId);
+        if (Array.isArray(data)) setRiwayatData(data);
+      } catch (err) {
+        console.error("Gagal memuat riwayat", err);
+      }
+    }
+    loadRiwayat();
+  }, [selectedAsesmen]);
+
   if (!selectedAsesmen) return null;
 
-  const openModal = (action: "approve" | "reject") => {
-    setModalAction(action);
-    if (action === "approve") {
-      setCatatanBaru("asesi sudah memenuhi kriteria");
-    } else {
-      setCatatanBaru("alasan banding masih kurang cukup kuat untuk disetujui");
+  const handleSubmit = async (action: "approve" | "reject") => {
+    if (!selectedAsesmen) return;
+    if (!catatanBaru.trim()) {
+      showNotification("Catatan asesor tidak boleh kosong", "error");
+      return;
     }
-  };
-
-  const handleConfirmModal = async () => {
-    if (!catatanBaru.trim()) return;
     setLoadingSubmit(true);
 
     try {
@@ -345,13 +427,13 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
       );
       if (targetBandingId) {
         await verifikasiBanding(targetBandingId, {
-          status: modalAction === "approve" ? "Disetujui" : "Ditolak",
+          status: action === "approve" ? "Disetujui" : "Ditolak",
           keputusanAdmin: catatanBaru.trim(),
         });
       }
 
       const updatedData =
-        modalAction === "approve"
+        action === "approve"
           ? {
               hasil: "Kompeten" as HasilAsesmen,
               isBanding: false,
@@ -368,10 +450,8 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
       updateAssessmentItem(selectedAsesmen.id, updatedData);
       setSelectedAsesmen({ ...selectedAsesmen, ...updatedData });
       setLoadingSubmit(false);
-      setModalAction(null);
 
-      const actionText =
-        modalAction === "approve" ? "Banding Disetujui" : "Banding Ditolak";
+      const actionText = action === "approve" ? "Banding Disetujui" : "Banding Ditolak";
       showNotification(
         `Status & keputusan banding berhasil diperbarui: ${actionText}`,
         "success",
@@ -489,23 +569,6 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 "Saya merasa jawaban saya pada saat wawancara teknis sudah sesuai dengan KUK yang diujikan, namun asesor menyatakan belum kompeten."}
             </p>
           </div>
-
-          <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <button
-              onClick={() => openModal("reject")}
-              className="px-6 py-2.5 bg-white border-2 border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <XCircle size={18} />
-              Tolak Banding
-            </button>
-            <button
-              onClick={() => openModal("approve")}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <CheckCircle size={18} />
-              Setujui Banding (Ubah ke Kompeten)
-            </button>
-          </div>
         </div>
 
         {/* Detail Penilaian (Read-only) */}
@@ -535,20 +598,10 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() =>
-                      showNotification("Pratinjau dokumen: FR_AK_04A_Signed.pdf", "success")
-                    }
+                    onClick={() => setPreviewForm("FR.IA.04A")}
                     className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors"
                   >
                     <Eye size={16} /> Pratinjau
-                  </button>
-                  <button
-                    onClick={() =>
-                      showNotification("Mengunduh dokumen: FR_AK_04A_Signed.pdf", "success")
-                    }
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
-                  >
-                    <FileDown size={16} /> Unduh
                   </button>
                 </div>
               </div>
@@ -574,20 +627,10 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() =>
-                      showNotification("Pratinjau dokumen: FR_AK_04B_Signed.pdf", "success")
-                    }
+                    onClick={() => setPreviewForm("FR.IA.04B")}
                     className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors"
                   >
                     <Eye size={16} /> Pratinjau
-                  </button>
-                  <button
-                    onClick={() =>
-                      showNotification("Mengunduh dokumen: FR_AK_04B_Signed.pdf", "success")
-                    }
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
-                  >
-                    <FileDown size={16} /> Unduh
                   </button>
                 </div>
               </div>
@@ -613,20 +656,10 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() =>
-                      showNotification("Pratinjau dokumen: FR_IA_07_Signed.pdf", "success")
-                    }
+                    onClick={() => setPreviewForm("FR.IA.07")}
                     className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors"
                   >
                     <Eye size={16} /> Pratinjau
-                  </button>
-                  <button
-                    onClick={() =>
-                      showNotification("Mengunduh dokumen: FR_IA_07_Signed.pdf", "success")
-                    }
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors"
-                  >
-                    <FileDown size={16} /> Unduh
                   </button>
                 </div>
               </div>
@@ -641,17 +674,37 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                   </span>
                 )}
               </div>
-              <div className="p-6 bg-white space-y-4">
+              <div className="p-6 bg-white space-y-6">
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-2">
-                    Catatan Observasi
-                  </p>
-                  <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-slate-800 text-sm font-medium min-h-15 leading-relaxed">
-                    {String(
-                      selectedAsesmen.catatan ||
-                        "asesi masih perlu pendalaman pada aspek praktik lanjutan",
-                    )}
-                  </div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-1.5 flex items-center justify-between">
+
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={catatanBaru}
+                    onChange={(e) => setCatatanBaru(e.target.value)}
+                    placeholder="Tuliskan alasan persetujuan atau penolakan banding..."
+                    className="w-full p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    onClick={() => handleSubmit("reject")}
+                    disabled={!catatanBaru.trim() || loadingSubmit}
+                    className="px-6 py-2.5 bg-white border-2 border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <XCircle size={18} />
+                    Tolak Banding
+                  </button>
+                  <button
+                    onClick={() => handleSubmit("approve")}
+                    disabled={!catatanBaru.trim() || loadingSubmit}
+                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircle size={18} />
+                    Setujui Banding (Ubah ke Kompeten)
+                  </button>
                 </div>
               </div>
             </div>
@@ -659,110 +712,100 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Modal Dialog Catatan Asesor */}
-      {modalAction && (
+      {/* Modal Preview Form */}
+      {previewForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div
-              className={`p-5 border-b flex items-center justify-between ${
-                modalAction === "approve"
-                  ? "bg-emerald-50/80 border-emerald-100"
-                  : "bg-red-50/80 border-red-100"
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`p-2 rounded-xl ${
-                    modalAction === "approve"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {modalAction === "approve" ? (
-                    <CheckCircle size={22} />
-                  ) : (
-                    <XCircle size={22} />
-                  )}
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                  <FileText size={20} />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-black text-slate-900 text-base">
-                    {modalAction === "approve"
-                      ? "Setujui Banding Asesi"
-                      : "Tolak Banding Asesi"}
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base">
+                    Pratinjau Dokumen
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500">
-                    Isi catatan asesor untuk memperbarui hasil verifikasi
-                    banding.
+                  <p className="text-xs text-slate-500 font-medium">
+                    {previewForm}
                   </p>
                 </div>
               </div>
               <button
-                onClick={() => setModalAction(null)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors"
+                onClick={() => setPreviewForm(null)}
+                className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-4 text-xs md:text-sm">
-              {/* Catatan Asesor Sebelumnya */}
-              <div className="min-w-0">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                  Catatan Asesor Sebelumnya
-                </label>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 font-medium italic text-xs leading-relaxed">
-                  {`"${String(selectedAsesmen?.catatan || "-")}"`}
-                </div>
+            <div className="p-4 sm:p-8 overflow-y-auto bg-slate-50/50 flex-1">
+              <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
+                {previewForm === "FR.IA.04A" && (() => {
+                  const riwayat = riwayatData.find(r => r.form_type === "FR.IA.04A");
+                  const dataForm = riwayat?.form_data || {} as RiwayatFormData;
+                  return (
+                    <FormFRIA04A
+                      asesmenData={{
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: selectedAsesmen.noSkema || "-",
+                        tipeTuk: selectedAsesmen.tipeTuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: selectedAsesmen.asesor || "Asesor",
+                        asesorReg: selectedAsesmen.asesorReg || "-",
+                      }}
+                      readOnly={true}
+                      umpanBalik={dataForm.umpanBalik}
+                      asesiSignature={selectedAsesmen.nama}
+                      asesorSignature={selectedAsesmen.asesor || "Asesor"}
+                    />
+                  );
+                })()}
+                {previewForm === "FR.IA.04B" && (() => {
+                  const riwayat = riwayatData.find(r => r.form_type === "FR.IA.04B");
+                  const dataForm = riwayat?.form_data || {} as RiwayatFormData;
+                  return (
+                    <FormFRIA04B
+                      asesmenData={{
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        tipeTuk: selectedAsesmen.tipeTuk,
+                        t: selectedAsesmen.tglAsesmen,
+                        asesor: selectedAsesmen.asesor || "Asesor",
+                        asesorReg: selectedAsesmen.asesorReg || "-",
+                      }}
+                      readOnly={true}
+                      questions={dataForm.questions || dataForm.step3Questions}
+                      answers={dataForm.answers || dataForm.step3Answers}
+                      rekomendasi={dataForm.rekomendasi}
+                      asesiSignature={selectedAsesmen.nama}
+                      asesorSignature={selectedAsesmen.asesor || "Asesor"}
+                    />
+                  );
+                })()}
+                {previewForm === "FR.IA.07" && (() => {
+                  const riwayat = riwayatData.find(r => r.form_type === "FR.IA.07");
+                  const dataForm = riwayat?.form_data || {} as RiwayatFormData;
+                  return (
+                    <FormFRIA07
+                      asesmenData={{
+                        nama: selectedAsesmen.nama,
+                        skema: selectedAsesmen.skema,
+                        noSkema: selectedAsesmen.noSkema || "-",
+                        tipeTuk: selectedAsesmen.tipeTuk,
+                        tanggal: selectedAsesmen.tglAsesmen,
+                        asesor: selectedAsesmen.asesor || "Asesor",
+                        asesorReg: selectedAsesmen.asesorReg || "-",
+                      }}
+                      readOnly={true}
+                      questions={dataForm.questions || dataForm.step4Questions}
+                      answers={dataForm.answers || dataForm.step4Answers}
+                      umpanBalik={dataForm.umpanBalik}
+                      asesiSignature={selectedAsesmen.nama}
+                      asesorSignature={selectedAsesmen.asesor || "Asesor"}
+                    />
+                  );
+                })()}
               </div>
-
-              {/* Catatan Asesor Baru */}
-              <div className="min-w-0">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-1.5 flex items-center justify-between">
-                  <span>
-                    Catatan Asesor Baru <span className="text-red-500">*</span>
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-normal">
-                    Dapat disesuaikan kembali
-                  </span>
-                </label>
-                <textarea
-                  rows={4}
-                  value={catatanBaru}
-                  onChange={(e) => setCatatanBaru(e.target.value)}
-                  placeholder="Tuliskan catatan asesor yang baru..."
-                  className="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] font-medium text-slate-800 text-xs md:text-sm leading-relaxed"
-                />
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setModalAction(null)}
-                disabled={loadingSubmit}
-                className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs md:text-sm transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleConfirmModal}
-                disabled={loadingSubmit || !catatanBaru.trim()}
-                className={`px-5 py-2 text-white font-bold rounded-lg text-xs md:text-sm transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50 ${
-                  modalAction === "approve"
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {loadingSubmit ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : modalAction === "approve" ? (
-                  "Simpan & Setujui"
-                ) : (
-                  "Simpan & Tolak"
-                )}
-              </button>
             </div>
           </div>
         </div>

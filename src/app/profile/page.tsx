@@ -295,14 +295,14 @@ export default function Profile() {
         const signatureFileName = `signature-${(user as SessionUser)?.id || Date.now()}-${Date.now()}.png`;
 
         const { error: signatureUploadError } = await supabase.storage
-          .from("signatures")
+          .from("avatars")
           .upload(signatureFileName, blob);
 
         if (signatureUploadError)
           throw new Error("Gagal upload tanda tangan: " + signatureUploadError.message);
 
         const { data: signatureUrlData } = supabase.storage
-          .from("signatures")
+          .from("avatars")
           .getPublicUrl(signatureFileName);
 
         finalSignatureUrl = signatureUrlData.publicUrl;

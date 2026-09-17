@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
 
 // IMPORT DARI types.ts
-import type { AssessmentHistory, AppealRecord, TipeTuk } from "@/types/types";
+import type { AssessmentHistory, TipeTuk } from "@/types/types";
 import { getPengajuanList, createBanding } from "@/lib/api";
 
 const formatDateID = (dateVal: string | Date | undefined | null) => {
@@ -35,7 +35,7 @@ const formatDateID = (dateVal: string | Date | undefined | null) => {
 };
 
 export default function AsesiHistoryPage() {
-  const { user, setExtraCrumbs, showNotification } = useAppContext();
+  const { user, setExtraCrumbs, showNotification, registeredProfile } = useAppContext();
   const router = useRouter();
 
   const [historyData, setHistoryData] = useState<AssessmentHistory[]>([]);
@@ -54,7 +54,7 @@ export default function AsesiHistoryPage() {
           status?: string;
           createdAt?: string | Date;
           tglPengajuan?: string | Date;
-          skema?: { namaSkema?: string };
+          skema?: { namaSkema?: string; kodeSkema?: string; kode_skema?: string; };
           master_tuk?: { nama?: string; alamat?: string; tipe?: string };
           hasil_asesmen?: { id?: number; hasil?: string; link_video?: string; created_at?: string | Date };
           sertifikat?: { nomor_sertifikat?: string; tanggal_kadaluarsa?: string | Date; status?: string };
@@ -72,7 +72,10 @@ export default function AsesiHistoryPage() {
         }
 
         const mapped: AssessmentHistory[] = (data as RawPengajuan[])
-          .filter(item => item.status === "Selesai")
+          .filter(item => {
+            const s = (item.status || "").toLowerCase();
+            return ["menunggu pleno", "selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(s);
+          })
           .map((item) => {
           const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
           const asesorName =
@@ -117,6 +120,7 @@ export default function AsesiHistoryPage() {
             id: item.id,
             asesmen: item.jenisMetode || "Offline",
             skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
+            kodeSkema: item.skema?.kodeSkema || item.skema?.kode_skema || "-",
             tipeTuk,
             alamat,
             tanggalAsesmen: formattedDate,
@@ -283,34 +287,8 @@ export default function AsesiHistoryPage() {
         dijelaskan: bandingForm.dijelaskan ?? false,
         didiskusikan: bandingForm.didiskusikan ?? false,
         melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
-        ttdAsesi: bandingForm.ttdAsesi,
+        ttdAsesi: !!(registeredProfile?.tandaTangan || bandingForm.ttdAsesi),
       });
-
-      // Objek ini juga disimpan ke localStorage sebagai sinkronisasi
-      const savedAppeals = JSON.parse(
-        localStorage.getItem("appeals") || "[]",
-      ) as AppealRecord[];
-
-      const newAppeal: AppealRecord = {
-        id: Date.now(),
-        tanggalPengajuan: new Date().toLocaleDateString("en-GB"),
-        namaAsesi: user?.username || "Asesi",
-        asesmen: selectedAssessment?.asesmen || "",
-        skemaSertifikasi: selectedAssessment?.skemaSertifikasi || "",
-        status: "Menunggu Verifikasi",
-        alasan: bandingForm.alasan,
-        penjelasan: bandingForm.alasan,
-        dijelaskan: bandingForm.dijelaskan ?? false,
-        didiskusikan: bandingForm.didiskusikan ?? false,
-        melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
-        namaAsesor: bandingForm.namaAsesor,
-        ttdAsesi: bandingForm.ttdAsesi,
-      };
-
-      localStorage.setItem(
-        "appeals",
-        JSON.stringify([newAppeal, ...savedAppeals]),
-      );
 
       showNotification("Banding berhasil diajukan!", "success");
       setShowSubmitModal(false);
@@ -617,8 +595,18 @@ export default function AsesiHistoryPage() {
                           <span className="font-semibold mb-2 block">
                             Tanda tangan Asesi :
                           </span>
-                          <div className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[#008BE3] italic">
-                            Telah ditandatangani oleh {user?.username || "Ahmad Fauzi"}
+                          <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col items-center justify-center min-h-[80px]">
+                            {registeredProfile?.tandaTangan ? (
+                              <img
+                                src={registeredProfile.tandaTangan as string}
+                                alt="Tanda Tangan Asesi"
+                                className="max-h-16 object-contain"
+                              />
+                            ) : (
+                              <span className="font-mono text-slate-400 italic text-xs text-center">
+                                Telah ditandatangani oleh {user?.username || "Ahmad Fauzi"}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="min-w-0">
@@ -999,8 +987,8 @@ export default function AsesiHistoryPage() {
                               Unduh Sertifikat
                             </button>
                           )}
-                        {item.statusAsesmen === "Selesai" &&
-                          item.rekomendasi === "Belum Kompeten" && (
+                        {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes((item.statusAsesmen || "").toLowerCase()) &&
+                          ((item.rekomendasi || "").toLowerCase() === "belum kompeten" || (item.statusAsesmen || "").toLowerCase() === "belum kompeten") && (
                             <button
                               onClick={() => {
                                 setSelectedAssessment(item);

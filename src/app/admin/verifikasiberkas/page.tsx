@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
-// import { EFormApl02 } from "@/components/forms/asesi/FormFRAPL02";
 import { useAppContext } from "@/context/context";
 import { UserItem, Apl01FormData, Apl02FormData } from "@/types/types";
 import {
@@ -29,9 +28,8 @@ import {
 } from "@/lib/api";
 
 export default function UsersManagement() {
-  // 👇 INI BAGIAN YANG DITAMBAHIN setExtraCrumbs 👇
-  const { user, setExtraCrumbs } = useAppContext();
-  const readOnly = user?.role === "direktur" || user?.role === "manajer";
+  const { user: userContext, registeredProfile, setExtraCrumbs } = useAppContext();
+  const readOnly = userContext?.role === "direktur" || userContext?.role === "manajer";
 
   const [mainTab, setMainTab] = useState<"asesi" | "asesor">("asesi");
 
@@ -623,7 +621,8 @@ export default function UsersManagement() {
           catatan: user.verificationData?.catatan || "",
           statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
           sumberAnggaran: user.verificationData?.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
-          ttdAdmin: user.verificationData?.adminSignatureUrl || null,
+          ttdAdmin: user.verificationData?.adminSignatureUrl || (registeredProfile as Record<string, unknown>)?.tandaTangan as string || null,
+          namaAdmin: (registeredProfile as Record<string, unknown>)?.namaLengkap as string || userContext?.username || "Admin LSP",
           ttdAsesi: (dp?.tandaTangan as string) || null,
           
           namaSkema: detail.skema?.namaSkema || "",

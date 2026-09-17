@@ -424,6 +424,19 @@ export async function getBandingList() {
   return json.data;
 }
 
+export async function getAsesiBandingList() {
+  const res = await fetch(`${BASE_URL}/banding/my`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal mengambil daftar banding asesi");
+  }
+  return json.data;
+}
+
 export async function verifikasiBanding(
   id: number,
   data: { status: string; keputusanAdmin?: string },
@@ -772,6 +785,22 @@ export async function upsertRiwayatAsesmen(
   const json = await res.json();
   if (!res.ok) {
     throw new Error(json.message || "Gagal menyimpan riwayat asesmen");
+  }
+  return json.data;
+}
+
+export async function getRiwayatAsesmen(pengajuanId: number) {
+  const res = await fetch(
+    `${BASE_URL}/pengajuanskema/${pengajuanId}/riwayat-asesmen`,
+    {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal mengambil riwayat asesmen");
   }
   return json.data;
 }

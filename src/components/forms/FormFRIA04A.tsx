@@ -441,15 +441,21 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                               Tanda Tangan Asesi
                             </div>
                             {asesiSignature ? (
-                              <img
-                                src={asesiSignature}
-                                alt="Tanda Tangan Asesi"
-                                className="h-20 object-contain cursor-pointer"
-                                onClick={() =>
-                                  !props.readOnly &&
-                                  setIsAsesiSigModalOpen(true)
-                                }
-                              />
+                              asesiSignature.startsWith("data:image") || asesiSignature.startsWith("http") || asesiSignature.startsWith("/") ? (
+                                <img
+                                  src={asesiSignature}
+                                  alt="Tanda Tangan Asesi"
+                                  className="h-20 object-contain cursor-pointer"
+                                  onClick={() =>
+                                    !props.readOnly &&
+                                    setIsAsesiSigModalOpen(true)
+                                  }
+                                />
+                              ) : (
+                                <div className="h-20 flex items-center justify-center text-slate-700 italic text-sm font-semibold bg-slate-50 border border-slate-200 rounded">
+                                  Ditandatangani oleh {asesiSignature}
+                                </div>
+                              )
                             ) : (
                               <button
                                 type="button"
@@ -466,16 +472,22 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                               Tanda Tangan Asesor
                             </div>
                             {asesorSignature ? (
-                              <img
-                                src={asesorSignature}
-                                alt="Tanda Tangan Asesor"
-                                className="h-20 object-contain cursor-pointer"
-                                onClick={() =>
-                                  !props.readOnly &&
-                                  !props.isAsesi &&
-                                  setIsAsesorSigModalOpen(true)
-                                }
-                              />
+                              asesorSignature.startsWith("data:image") || asesorSignature.startsWith("http") || asesorSignature.startsWith("/") ? (
+                                <img
+                                  src={asesorSignature}
+                                  alt="Tanda Tangan Asesor"
+                                  className="h-20 object-contain cursor-pointer"
+                                  onClick={() =>
+                                    !props.readOnly &&
+                                    !props.isAsesi &&
+                                    setIsAsesorSigModalOpen(true)
+                                  }
+                                />
+                              ) : (
+                                <div className="h-20 flex items-center justify-center text-slate-700 italic text-sm font-semibold bg-slate-50 border border-slate-200 rounded">
+                                  Ditandatangani oleh {asesorSignature}
+                                </div>
+                              )
                             ) : (
                               <button
                                 type="button"

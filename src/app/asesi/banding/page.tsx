@@ -1,95 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Search, Scale, AlertTriangle, Eye, ArrowLeft 
+  Search, Scale, AlertTriangle, Eye, ArrowLeft, CheckCircle, XCircle, Clock
 } from 'lucide-react';
 
 // IMPORT DARI types.ts
 import type { AppealRecord } from '@/types/types';
-
-const INITIAL_APPEALS: AppealRecord[] = [
-  {
-    id: 1,
-    tanggalPengajuan: '08/07/2026',
-    namaAsesi: 'Ahmad Fauzi',
-    asesmen: 'Uji Kompetensi',
-    skemaSertifikasi: 'Jenjang 5 Bidang Kewirausahaan Industri',
-    status: 'Dalam Penyelidikan',
-    alasan: 'Ketidaksesuaian penilaian unjuk kerja',
-    penjelasan: 'Menurut pendapat saya, semua kriteria unjuk kerja pada elemen 2 telah didemonstrasikan dengan baik. Namun asesor mencatat kegagalan koneksi.',
-    dijelaskan: true,
-    didiskusikan: true,
-    melibatkanOrangLain: false,
-    ttdAsesi: true,
-    namaAsesor: 'Asesor Budi'
-  },
-  {
-    id: 2,
-    tanggalPengajuan: '20/06/2026',
-    namaAsesi: 'Ahmad Fauzi',
-    asesmen: 'Uji Teori & Praktik',
-    skemaSertifikasi: 'Melaksanakan Komunikasi Dengan Pemangku Kepentingan',
-    status: 'Disetujui',
-    alasan: 'Kesalahan input hasil tes',
-    penjelasan: 'Terdapat selisih hasil tes tertulis antara lembar jawaban fisik (Kompeten) dengan yang diinput di portal sistem (tercatat Belum Kompeten).',
-    keputusanAdmin: 'Banding disetujui. Status asesi telah diperbarui menjadi Kompeten berdasarkan verifikasi lembar fisik bersama asesor.',
-    dijelaskan: true,
-    didiskusikan: true,
-    melibatkanOrangLain: false,
-    ttdAsesi: true,
-    namaAsesor: 'Asesor Andi'
-  },
-  {
-    id: 3,
-    tanggalPengajuan: '15/07/2026',
-    namaAsesi: 'Ahmad Fauzi',
-    asesmen: 'Asesmen Mandiri',
-    skemaSertifikasi: 'Penerjemah Teks Umum',
-    status: 'Ditolak',
-    alasan: 'Bukti portofolio tidak terbaca',
-    penjelasan: 'Sistem menolak dokumen saya namun file aslinya masih dapat dibuka dengan baik.',
-    keputusanAdmin: 'Banding ditolak. Dokumen tidak terbaca oleh sistem LSP.',
-    dijelaskan: true,
-    didiskusikan: true,
-    melibatkanOrangLain: false,
-    ttdAsesi: true,
-    namaAsesor: 'Asesor Citra'
-  },
-  {
-    id: 4,
-    tanggalPengajuan: '10/07/2026',
-    namaAsesi: 'Ahmad Fauzi',
-    asesmen: 'Asesmen Mandiri',
-    skemaSertifikasi: 'Auditor Halal',
-    status: 'Dalam Penyelidikan',
-    alasan: 'Sistem error saat tes online',
-    penjelasan: 'Saat mengerjakan tes, sistem log out tiba-tiba dan waktu terus berjalan.',
-    dijelaskan: true,
-    didiskusikan: false,
-    melibatkanOrangLain: false,
-    ttdAsesi: true,
-    namaAsesor: 'Asesor Budi'
-  },
-  {
-    id: 5,
-    tanggalPengajuan: '05/07/2026',
-    namaAsesi: 'Ahmad Fauzi',
-    asesmen: 'Asesmen Mandiri',
-    skemaSertifikasi: 'Penyelia Halal',
-    status: 'Dalam Penyelidikan',
-    alasan: 'Revisi tugas praktik',
-    penjelasan: 'Saya telah mengirim revisi namun statusnya masih belum kompeten.',
-    dijelaskan: true,
-    didiskusikan: true,
-    melibatkanOrangLain: true,
-    ttdAsesi: true,
-    namaAsesor: 'Asesor Dina'
-  }
-];
+import { getAsesiBandingList } from '@/lib/api';
 
 export default function AsesiAppeals() {
-  const [appeals, setAppeals] = useState<AppealRecord[]>(INITIAL_APPEALS);
+  const [appeals, setAppeals] = useState<AppealRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
   const [dateFilter, setDateFilter] = useState('');
@@ -97,17 +19,76 @@ export default function AsesiAppeals() {
   const itemsPerPage = 5;
   const [selectedAppeal, setSelectedAppeal] = useState<AppealRecord | null>(null);
   
-  React.useEffect(() => {
-    // Mencegah any dari JSON.parse
-    const savedAppeals = JSON.parse(localStorage.getItem('appeals') || '[]') as Partial<AppealRecord>[];
-    if (savedAppeals.length > 0) {
-      const migratedAppeals = savedAppeals.map(appeal => ({
-        ...appeal,
-        status: appeal.status === 'Menunggu Verifikasi' ? 'Dalam Penyelidikan' : (appeal.status || 'Dalam Penyelidikan')
-      })) as AppealRecord[];
-      setAppeals([...migratedAppeals, ...INITIAL_APPEALS]);
+  useEffect(() => {
+    async function loadBanding() {
+      setIsLoading(true);
+      try {
+        const data = await getAsesiBandingList();
+        if (Array.isArray(data)) {
+          interface BandingApiResponse {
+            id: number;
+            tanggal_pengajuan?: string;
+            status_banding?: "Menunggu Verifikasi" | "Disetujui" | "Ditolak" | "Dalam Penyelidikan";
+            status?: "Menunggu Verifikasi" | "Disetujui" | "Ditolak" | "Dalam Penyelidikan";
+            alasan?: string;
+            penjelasan?: string;
+            keputusan_admin?: string;
+            keputusanAdmin?: string;
+            dijelaskan?: boolean;
+            didiskusikan?: boolean;
+            melibatkanOrangLain?: boolean;
+            hasil_asesmen?: {
+              jadwal_asesmen?: {
+                metode?: string;
+              };
+              pengajuan_skema?: {
+                dataPribadi?: {
+                  namaLengkap?: string;
+                };
+                skema?: {
+                  namaSkema?: string;
+                };
+                user?: {
+                  username?: string;
+                };
+              };
+            };
+          }
+
+          // Map backend data to AppealRecord shape
+          const mapped: AppealRecord[] = data.map((item: BandingApiResponse) => ({
+            id: item.id,
+            tanggalPengajuan: item.tanggal_pengajuan
+              ? new Date(item.tanggal_pengajuan).toLocaleDateString('en-GB')
+              : '-',
+            namaAsesi: item.hasil_asesmen?.pengajuan_skema?.dataPribadi?.namaLengkap || '-',
+            asesmen: item.hasil_asesmen?.jadwal_asesmen?.metode || 'Uji Kompetensi',
+            skemaSertifikasi: item.hasil_asesmen?.pengajuan_skema?.skema?.namaSkema || '-',
+            status: item.status_banding || item.status || 'Dalam Penyelidikan',
+            alasan: item.alasan || item.penjelasan || '-',
+            penjelasan: item.penjelasan || '-',
+            keputusanAdmin: item.keputusan_admin || item.keputusanAdmin || undefined,
+            dijelaskan: item.dijelaskan ?? true,
+            didiskusikan: item.didiskusikan ?? true,
+            melibatkanOrangLain: item.melibatkanOrangLain ?? false,
+            ttdAsesi: true,
+            namaAsesor: item.hasil_asesmen?.pengajuan_skema?.user?.username || 'Asesor',
+          }));
+          setAppeals(mapped);
+        } else {
+          setAppeals([]);
+        }
+      } catch (error) {
+        console.error("Gagal memuat banding dari API:", error);
+        setAppeals([]);
+      } finally {
+        setIsLoading(false);
+      }
     }
+    loadBanding();
   }, []);
+
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -272,12 +253,38 @@ export default function AsesiAppeals() {
                 </tbody>
               </table>
 
-              {selectedAppeal.keputusanAdmin && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-2 mt-4">
-                  <span className="font-bold text-green-800 uppercase tracking-wider block">Keputusan & Tanggapan LSP</span>
+              {selectedAppeal.keputusanAdmin ? (
+                <div className={`p-4 rounded-lg space-y-2 mt-4 border ${
+                  selectedAppeal.status === 'Disetujui'
+                    ? 'bg-green-50 border-green-200'
+                    : selectedAppeal.status === 'Ditolak'
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-blue-50 border-blue-200'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {selectedAppeal.status === 'Disetujui' ? (
+                      <CheckCircle size={18} className="text-green-600 shrink-0" />
+                    ) : selectedAppeal.status === 'Ditolak' ? (
+                      <XCircle size={18} className="text-red-600 shrink-0" />
+                    ) : (
+                      <Clock size={18} className="text-blue-600 shrink-0" />
+                    )}
+                    <span className={`font-bold uppercase tracking-wider text-sm ${
+                      selectedAppeal.status === 'Disetujui' ? 'text-green-800'
+                      : selectedAppeal.status === 'Ditolak' ? 'text-red-800'
+                      : 'text-blue-800'
+                    }`}>
+                      Keputusan Asesor / LSP — {selectedAppeal.status}
+                    </span>
+                  </div>
                   <p className="font-semibold text-slate-800 leading-relaxed">
                     {selectedAppeal.keputusanAdmin}
                   </p>
+                </div>
+              ) : (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mt-4 flex items-center gap-3">
+                  <Clock size={18} className="text-amber-600 shrink-0" />
+                  <p className="text-amber-800 font-semibold text-sm">Banding Anda sedang dalam proses penyelidikan. Keputusan akan muncul di sini setelah asesor memberikan penilaian.</p>
                 </div>
               )}
             </div>
@@ -369,7 +376,16 @@ export default function AsesiAppeals() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
-              {currentRecords.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex items-center justify-center gap-3 text-slate-500">
+                      <div className="w-5 h-5 border-2 border-slate-300 border-t-[#008BE3] rounded-full animate-spin" />
+                      <span className="text-sm font-medium">Memuat data banding...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentRecords.length > 0 ? (
                 currentRecords.map((rec, idx) => (
                   <tr key={rec.id} className="group/row hover:bg-[#F9FAFC] transition-colors">
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">

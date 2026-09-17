@@ -357,6 +357,8 @@ export default function PengajuanSkemaPage() {
   const [berpengalaman, setBerpengalaman] = useState(false);
   const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
+  const [lockedFields, setLockedFields] = useState<Record<string, boolean>>({});
+
   React.useEffect(() => {
     const fetchProfil = async () => {
       const userId = Number(user?.id);
@@ -370,41 +372,45 @@ export default function PengajuanSkemaPage() {
 
         if (!dataProfil) return;
 
-        const profileSetters: [unknown, (val: string) => void][] = [
-          [dataProfil.namaLengkap, setNamaLengkap],
-          [dataProfil.nik, setNik],
-          [dataProfil.tempatLahir, setTempatLahir],
+        const loaded: Record<string, boolean> = {};
+
+        const profileSetters: [unknown, (val: string) => void, string][] = [
+          [dataProfil.namaLengkap, setNamaLengkap, 'namaLengkap'],
+          [dataProfil.nik, setNik, 'nik'],
+          [dataProfil.tempatLahir, setTempatLahir, 'tempatLahir'],
           [
             dataProfil.tanggalLahir
               ? new Date(String(dataProfil.tanggalLahir))
                 .toISOString()
                 .split("T")[0]
               : null,
-            setTanggalLahir,
+            setTanggalLahir, 'tanggalLahir'
           ],
-          [dataProfil.jenisKelamin, setJenisKelamin],
-          [dataProfil.kewarganegaraan, setKewarganegaraan],
-          [dataProfil.noHp, setNoTelp],
-          [dataProfil.alamat, setAlamat],
-          [dataProfil.kodeProvinsi, setProvinsi],
-          [dataProfil.kodeKota, setKota],
-          [dataProfil.kodePos, setKodePos],
-          [dataProfil.pendidikanTerakhir, setPendidikanTerakhir],
-          [dataProfil.pekerjaan, setPekerjaan],
-          [dataProfil.namaInstitusi, setInstitusiPerusahaan],
-          [dataProfil.jabatan, setJabatan],
-          [dataProfil.emailInstitusi, setEmailInstitusi],
-          [dataProfil.kodePosInstitusi, setKodePosInstitusi],
-          [dataProfil.telpInstitusi, setTelpInstitusi],
-          [dataProfil.alamatInstitusi, setAlamatInstitusi],
-          [dataProfil.faxInstitusi, setFaxInstitusi],
+          [dataProfil.jenisKelamin, setJenisKelamin, 'jenisKelamin'],
+          [dataProfil.kewarganegaraan, setKewarganegaraan, 'kewarganegaraan'],
+          [dataProfil.noHp, setNoTelp, 'noTelp'],
+          [dataProfil.alamat, setAlamat, 'alamat'],
+          [dataProfil.kodeProvinsi, setProvinsi, 'provinsi'],
+          [dataProfil.kodeKota, setKota, 'kota'],
+          [dataProfil.kodePos, setKodePos, 'kodePos'],
+          [dataProfil.pendidikanTerakhir, setPendidikanTerakhir, 'pendidikanTerakhir'],
+          [dataProfil.pekerjaan, setPekerjaan, 'pekerjaan'],
+          [dataProfil.namaInstitusi, setInstitusiPerusahaan, 'institusiPerusahaan'],
+          [dataProfil.jabatan, setJabatan, 'jabatan'],
+          [dataProfil.emailInstitusi, setEmailInstitusi, 'emailInstitusi'],
+          [dataProfil.kodePosInstitusi, setKodePosInstitusi, 'kodePosInstitusi'],
+          [dataProfil.telpInstitusi, setTelpInstitusi, 'telpInstitusi'],
+          [dataProfil.alamatInstitusi, setAlamatInstitusi, 'alamatInstitusi'],
+          [dataProfil.faxInstitusi, setFaxInstitusi, 'faxInstitusi'],
         ];
 
-        profileSetters.forEach(([val, setter]) => {
+        profileSetters.forEach(([val, setter, key]) => {
           if (val !== undefined && val !== null && val !== "") {
             setter(String(val));
+            loaded[key] = true;
           }
         });
+        setLockedFields(loaded);
       } catch (error) {
         console.error("Gagal mengambil data profil:", error);
       }
@@ -900,6 +906,11 @@ export default function PengajuanSkemaPage() {
   };
 
   const filteredSubmissions = submissions.filter((item) => {
+    const s = (item.status || "").toLowerCase();
+    if (["menunggu pleno", "selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(s)) {
+      return false;
+    }
+
     const matchesSearch =
       item.name.toLowerCase().includes(searchSub.toLowerCase()) ||
       item.kode.toLowerCase().includes(searchSub.toLowerCase());
@@ -1065,8 +1076,6 @@ export default function PengajuanSkemaPage() {
                       <option value="Terverifikasi">Terverifikasi</option>
                       <option value="Terjadwal">Terjadwal</option>
                       <option value="Revisi">Revisi</option>
-                      <option value="Perlu Perbaikan">Perlu Perbaikan</option>
-                      <option value="Selesai">Selesai</option>
                     </select>
 
                     <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10 w-full sm:w-48 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
@@ -2214,7 +2223,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={namaLengkap}
-                      onChange={(e) => setNamaLengkap(e.target.value)}
+                      disabled={lockedFields.namaLengkap} onChange={(e) => setNamaLengkap(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-[#008BE3] font-semibold text-slate-800"
                     />
                   </div>
@@ -2225,7 +2234,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={tempatLahir}
-                      onChange={(e) => {
+                      disabled={lockedFields.tempatLahir} onChange={(e) => {
                         setTempatLahir(e.target.value);
                         if (errors.tempatLahir)
                           setErrors({ ...errors, tempatLahir: false });
@@ -2252,7 +2261,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="date"
                       value={tanggalLahir}
-                      onChange={(e) => {
+                      disabled={lockedFields.tanggalLahir} onChange={(e) => {
                         setTanggalLahir(e.target.value);
                         if (errors.tanggalLahir)
                           setErrors({ ...errors, tanggalLahir: false });
@@ -2282,6 +2291,7 @@ export default function PengajuanSkemaPage() {
                         <input
                           type="radio"
                           name="jenisKelamin"
+                          disabled={lockedFields.jenisKelamin}
                           value="Laki-laki"
                           checked={jenisKelamin === "Laki-laki"}
                           onChange={() => {
@@ -2297,6 +2307,7 @@ export default function PengajuanSkemaPage() {
                         <input
                           type="radio"
                           name="jenisKelamin"
+                          disabled={lockedFields.jenisKelamin}
                           value="Perempuan"
                           checked={jenisKelamin === "Perempuan"}
                           onChange={() => {
@@ -2321,7 +2332,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={provinsi}
-                      onChange={(e) => {
+                      disabled={lockedFields.provinsi} onChange={(e) => {
                         setProvinsi(e.target.value);
                         setKota("");
                         if (errors.provinsi)
@@ -2351,11 +2362,11 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={kota}
+                      disabled={lockedFields.kota || !provinsi}
                       onChange={(e) => {
                         setKota(e.target.value);
                         if (errors.kota) setErrors({ ...errors, kota: false });
                       }}
-                      disabled={!provinsi}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${!provinsi
                         ? "bg-slate-100 cursor-not-allowed"
                         : "bg-white cursor-pointer"
@@ -2389,7 +2400,7 @@ export default function PengajuanSkemaPage() {
                   <input
                     type="text"
                     value={alamat}
-                    onChange={(e) => {
+                    disabled={lockedFields.alamat} onChange={(e) => {
                       setAlamat(e.target.value);
                       if (errors.alamat)
                         setErrors({ ...errors, alamat: false });
@@ -2415,7 +2426,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={nik}
-                      onChange={(e) => {
+                      disabled={lockedFields.nik} onChange={(e) => {
                         setNik(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.nik) setErrors({ ...errors, nik: false });
                       }}
@@ -2440,7 +2451,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={kewarganegaraan}
-                      onChange={(e) => setKewarganegaraan(e.target.value)}
+                      disabled={lockedFields.kewarganegaraan} onChange={(e) => setKewarganegaraan(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
                     >
                       <option value="WNI">WNI</option>
@@ -2454,7 +2465,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={kodePos}
-                      onChange={(e) => {
+                      disabled={lockedFields.kodePos} onChange={(e) => {
                         setKodePos(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.kodePos)
                           setErrors({ ...errors, kodePos: false });
@@ -2481,7 +2492,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={noTelp}
-                      onChange={(e) => {
+                      disabled={lockedFields.noHp} onChange={(e) => {
                         setNoTelp(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.noTelp)
                           setErrors({ ...errors, noTelp: false });
@@ -2515,7 +2526,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={pendidikanTerakhir}
-                      onChange={(e) => {
+                      disabled={lockedFields.pendidikanTerakhir} onChange={(e) => {
                         setPendidikanTerakhir(e.target.value);
                         if (errors.pendidikanTerakhir)
                           setErrors({ ...errors, pendidikanTerakhir: false });
@@ -2557,7 +2568,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={pekerjaan}
-                      onChange={(e) => {
+                      disabled={lockedFields.pekerjaan} onChange={(e) => {
                         setPekerjaan(e.target.value);
                         if (errors.pekerjaan)
                           setErrors({ ...errors, pekerjaan: false });
@@ -2589,7 +2600,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={institusiPerusahaan}
-                      onChange={(e) => {
+                      disabled={lockedFields.institusiPerusahaan} onChange={(e) => {
                         setInstitusiPerusahaan(e.target.value);
                         if (errors.institusiPerusahaan)
                           setErrors({ ...errors, institusiPerusahaan: false });
@@ -2621,7 +2632,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={jabatan}
-                      onChange={(e) => {
+                      disabled={lockedFields.jabatan} onChange={(e) => {
                         setJabatan(e.target.value);
                         if (errors.jabatan)
                           setErrors({ ...errors, jabatan: false });
@@ -2645,7 +2656,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="email"
                       value={emailInstitusi}
-                      onChange={(e) => {
+                      disabled={lockedFields.emailInstitusi} onChange={(e) => {
                         setEmailInstitusi(e.target.value);
                         if (errors.emailInstitusi)
                           setErrors({ ...errors, emailInstitusi: false });
@@ -2668,7 +2679,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={kodePosInstitusi}
-                      onChange={(e) =>
+                      disabled={lockedFields.kodePosInstitusi} onChange={(e) =>
                         setKodePosInstitusi(
                           e.target.value.replace(/[^0-9]/g, ""),
                         )
@@ -2684,7 +2695,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={telpInstitusi}
-                      onChange={(e) => {
+                      disabled={lockedFields.telpInstitusi} onChange={(e) => {
                         setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.telpInstitusi)
                           setErrors({ ...errors, telpInstitusi: false });
@@ -2707,7 +2718,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <textarea
                       value={alamatInstitusi}
-                      onChange={(e) => {
+                      disabled={lockedFields.alamatInstitusi} onChange={(e) => {
                         setAlamatInstitusi(e.target.value);
                         if (errors.alamatInstitusi)
                           setErrors({ ...errors, alamatInstitusi: false });
@@ -2730,7 +2741,7 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={faxInstitusi}
-                      onChange={(e) =>
+                      disabled={lockedFields.faxInstitusi} onChange={(e) =>
                         setFaxInstitusi(e.target.value.replace(/[^0-9]/g, ""))
                       }
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
