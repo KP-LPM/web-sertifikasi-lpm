@@ -1,5 +1,3 @@
-﻿/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
@@ -187,21 +185,14 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
   const [localAsesiName, setLocalAsesiName] = useState(
     props.asesmenData?.nama || "Ahmad Supriyadi",
   );
-  const [localAsesiSig, setLocalAsesiSig] = useState("");
+  const [localAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState("");
   const [localAsesorName, setLocalAsesorName] = useState(
     props.asesmenData?.asesor || "Ichsan Taufik",
   );
   const [localAsesorReg, setLocalAsesorReg] = useState("");
-  const [localAsesorSig, setLocalAsesorSig] = useState("");
+  const [localAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState("");
-
-  const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
-    [],
-  );
-  const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
-    [],
-  );
 
   const answers = props.step3Answers || props.answers || localAnswers;
   const rekomendasi =
@@ -252,8 +243,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
       : props.asesorDate !== undefined
         ? props.asesorDate
         : localAsesorDate;
-  const penyusun = props.penyusunStep3 || props.penyusun || localPenyusun;
-  const validator = props.validatorStep3 || props.validator || localValidator;
+
 
   const handleAnswerChangeInternal = (
     id: string,
@@ -288,13 +278,6 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
     setLocalAsesiName(val);
   };
 
-  const handleAsesiSignatureChange = (val: string) => {
-    if (props.onAsesiSignatureStep3Change)
-      props.onAsesiSignatureStep3Change(val);
-    if (props.onAsesiSignatureChange) props.onAsesiSignatureChange(val);
-    setLocalAsesiSig(val);
-  };
-
   const handleAsesiDateChange = (val: string) => {
     if (props.onAsesiDateStep3Change) props.onAsesiDateStep3Change(val);
     if (props.onAsesiDateChange) props.onAsesiDateChange(val);
@@ -313,41 +296,10 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
     setLocalAsesorReg(val);
   };
 
-  const handleAsesorSignatureChange = (val: string) => {
-    if (props.onAsesorSignatureStep3Change)
-      props.onAsesorSignatureStep3Change(val);
-    if (props.onAsesorSignatureChange) props.onAsesorSignatureChange(val);
-    setLocalAsesorSig(val);
-  };
-
   const handleAsesorDateChange = (val: string) => {
     if (props.onAsesorDateStep3Change) props.onAsesorDateStep3Change(val);
     if (props.onAsesorDateChange) props.onAsesorDateChange(val);
     setLocalAsesorDate(val);
-  };
-
-  const handlePenyusunChangeInternal = (
-    idx: number,
-    field: string,
-    val: string,
-  ) => {
-    const updated = [...penyusun];
-    updated[idx] = { ...updated[idx], [field]: val };
-    if (props.onPenyusunStep3Change) props.onPenyusunStep3Change(updated);
-    if (props.onPenyusunChange) props.onPenyusunChange(updated);
-    setLocalPenyusun(updated);
-  };
-
-  const handleValidatorChangeInternal = (
-    idx: number,
-    field: string,
-    val: string,
-  ) => {
-    const updated = [...validator];
-    updated[idx] = { ...updated[idx], [field]: val };
-    if (props.onValidatorStep3Change) props.onValidatorStep3Change(updated);
-    if (props.onValidatorChange) props.onValidatorChange(updated);
-    setLocalValidator(updated);
   };
 
   const lingkupList = [

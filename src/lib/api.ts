@@ -24,7 +24,7 @@ export async function getUsersProfile(id: number): Promise<User[]> {
 export async function registerUsers(
   data: RegisterPayload,
 ): Promise<{ message: string; user?: User }> {
-  const res = await fetch(`${BASE_URL}/auth/register`, {
+  const res = await fetch(`${BASE_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -32,10 +32,10 @@ export async function registerUsers(
     body: JSON.stringify(data),
   });
 
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(json.message || "Gagal melakukan regi strasi");
+    throw new Error(json.message || "Gagal melakukan registrasi");
   }
 
   return json;

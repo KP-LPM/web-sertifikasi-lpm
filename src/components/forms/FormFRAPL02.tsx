@@ -1,7 +1,6 @@
-﻿﻿/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
+
 import React, { useState, useEffect } from "react";
-import { Eye, CheckCircle, AlertTriangle, FastForward, ChevronRight, ArrowLeft, AlertCircle } from "lucide-react";
+import { Eye, CheckCircle, AlertTriangle, FastForward } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import {
@@ -266,10 +265,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
       ? String(props.asesmenData.tglAsesmen).split("T")[0]
       : new Date().toISOString().split("T")[0]
   );
-
-  const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
-  const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
-
   const answers = props.answers || localAnswers;
   const rekomendasi =
     props.rekomendasi !== undefined ? props.rekomendasi : localRekomendasi;

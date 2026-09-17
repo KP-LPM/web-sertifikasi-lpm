@@ -15,7 +15,72 @@ export async function POST(req: NextRequest) {
       windowMs: 60 * 1000,
       key: "post-surat-sertifikat-pdf",
     });
-    const payload: SertifikatPayload = await req.json();
+    const body = await req.json();
+    let payload: SertifikatPayload;
+
+    if (body.pengajuanId) {
+      const { db } = await import("@/lib/db");
+      let pengajuan = await db.pengajuanSkema.findUnique({
+        where: { id: body.pengajuanId },
+        include: {
+          sertifikat: true,
+          dataPribadi: true,
+          user: {
+            select: {
+              profil: { select: { namaLengkap: true } },
+            },
+          },
+          skema: { include: { unitKompetensi: { orderBy: { urutan: 'asc' } } } },
+        },
+      });
+
+      if (!pengajuan) {
+        return NextResponse.json({ error: "Pengajuan tidak ditemukan" }, { status: 404 });
+      }
+
+      // Check if sertifikat number is already generated
+      let sertifikat = pengajuan.sertifikat;
+      if (!sertifikat || !sertifikat.no_sertifikat) {
+        const { sertifikatService } = await import("@/services/sertifikat.service");
+        const reqTanggalTerbit = body.tanggalTerbit ? new Date(body.tanggalTerbit) : undefined;
+        try {
+          sertifikat = await sertifikatService.terbitkan(body.pengajuanId, reqTanggalTerbit);
+        } catch (e) {
+          console.error("Gagal men-generate nomor otomatis:", e);
+        }
+      }
+
+      const bulanId = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const bulanEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+      const tglTerbit = sertifikat?.tanggal_terbit || (body.tanggalTerbit ? new Date(body.tanggalTerbit) : new Date());
+      const day = tglTerbit.getDate();
+      const monthIndex = tglTerbit.getMonth();
+      const year = tglTerbit.getFullYear();
+
+      payload = {
+        nomorSertifikat: sertifikat?.no_sertifikat || body.nomorSertifikat || "-",
+        nomorRegistrasi: sertifikat?.no_registrasi || body.nomorRegistrasi || "-",
+        namaPemegang: pengajuan.user?.profil?.namaLengkap || "-",
+        bidangId: pengajuan.skema?.kategori || body.bidangId || "-",
+        bidangEn: body.bidangEn || "Public Relation",
+        kualifikasiId: pengajuan.skema?.namaSkema || body.kualifikasiId || "-",
+        kualifikasiEn: body.kualifikasiEn || "Cluster Implementing Communication with Stakeholders",
+        kotaTerbit: "Bandung",
+        tanggalTerbitId: `${day} ${bulanId[monthIndex]} ${year}`,
+        tanggalTerbitEn: `${bulanEn[monthIndex]} ${day}, ${year}`,
+        namaDirektur: "Prof. Dr. H. Ija Suntana, M.Ag., CLA.",
+        namaManajerSertifikasi: "Ichsan Taufik, MT., CIQA",
+        unitList: pengajuan.skema?.unitKompetensi.map((u, i) => ({
+          no: i + 1,
+          kodeUnit: u.kodeUnit,
+          judulUnitId: u.judulUnit,
+          judulUnitEn: "Implementing " + u.judulUnit,
+        })) || [],
+      };
+    } else {
+      payload = body as SertifikatPayload;
+    }
 
     // Baca logo Garuda dari folder public menjadi Base64 Data URI
     const garudaPath = path.join(process.cwd(), "public", "logo-garuda.png");

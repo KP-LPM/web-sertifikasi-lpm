@@ -108,7 +108,7 @@ export class PengajuanRepository {
         }),
       },
       include: {
-        user: { select: { id: true, username: true, email: true } },
+        user: { select: { id: true, username: true, email: true, profil: { select: { namaLengkap: true } } } },
         dataPribadi: true,
         skema: { select: { id: true, namaSkema: true, kodeSkema: true } },
         master_tuk: true,
@@ -144,7 +144,7 @@ export class PengajuanRepository {
     return await db.pengajuanSkema.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, username: true, email: true } },
+        user: { select: { id: true, username: true, email: true, profil: { select: { namaLengkap: true } } } },
         dataPribadi: true,
         dokumen: {
           orderBy: { createdAt: "asc" },

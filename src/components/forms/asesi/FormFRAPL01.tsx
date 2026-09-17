@@ -212,7 +212,7 @@ export function EFormApl01({
                   Judul :
                 </td>
                 <td className="border border-slate-300 p-2 whitespace-nowrap font-medium text-slate-800">
-                  {(formData?.namaSkema as string) || ""}
+                  {(formData?.namaSkema as string) || (formData?.skema as string) || ""}
                 </td>
               </tr>
               <tr>
@@ -220,7 +220,7 @@ export function EFormApl01({
                   Nomor :
                 </td>
                 <td className="border border-slate-300 p-2">
-                  {(formData?.kodeSkema as string) || ""}
+                  {(formData?.kodeSkema as string) || (formData?.nomorSkema as string) || ""}
                 </td>
               </tr>
 
@@ -381,9 +381,9 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                            typeof req === "string"
-                              ? req
-                              : req.namaDokumen || ""
+                          typeof req === "string"
+                            ? req
+                            : req.namaDokumen || ""
                           ] === "memenuhi"
                         }
                         onChange={() =>
@@ -403,9 +403,9 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                            typeof req === "string"
-                              ? req
-                              : req.namaDokumen || ""
+                          typeof req === "string"
+                            ? req
+                            : req.namaDokumen || ""
                           ] === "tidak memenuhi"
                         }
                         onChange={() =>
@@ -610,11 +610,11 @@ export function EFormApl01({
                         formData.ttdAsesi
                           ? getSignatureValue(formData.ttdAsesi)
                           : {
-                              type: formData.signature ? "upload" : "auto",
-                              data: formData.signature as string,
-                            }
+                            type: formData.signature ? "upload" : "auto",
+                            data: formData.signature as string,
+                          }
                       }
-                      onChange={() => {}}
+                      onChange={() => { }}
                       readOnly={true}
                       fallbackName={
                         (formData.signature as string) ||

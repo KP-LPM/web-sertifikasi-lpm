@@ -290,8 +290,8 @@ export default function KelolaSurat() {
               setSelectedSubJenis("all");
             }}
             className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "all"
-                ? "bg-[#E6F4FF] border-[#008BE3] ring-2 ring-offset-1 ring-[#008BE3]/30"
-                : "bg-[#E6F4FF] border-[#BCE0FD]"
+              ? "bg-[#E6F4FF] border-[#008BE3] ring-2 ring-offset-1 ring-[#008BE3]/30"
+              : "bg-[#E6F4FF] border-[#BCE0FD]"
               }`}
           >
             <div className="flex items-center justify-between mb-1">
@@ -320,8 +320,8 @@ export default function KelolaSurat() {
               setSelectedSubJenis("all");
             }}
             className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "surat_masuk"
-                ? "bg-[#F4FBF7] border-[#84CC16] ring-2 ring-offset-1 ring-[#84CC16]/30"
-                : "bg-[#F4FBF7] border-[#A7F3D0]"
+              ? "bg-[#F4FBF7] border-[#84CC16] ring-2 ring-offset-1 ring-[#84CC16]/30"
+              : "bg-[#F4FBF7] border-[#A7F3D0]"
               }`}
           >
             <div className="flex items-center justify-between mb-1">
@@ -350,8 +350,8 @@ export default function KelolaSurat() {
               setSelectedSubJenis("all");
             }}
             className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "surat_keluar"
-                ? "bg-[#F1F5F9] border-slate-500 ring-2 ring-offset-1 ring-slate-500/30"
-                : "bg-[#F1F5F9] border-[#CBD5E1]"
+              ? "bg-[#F1F5F9] border-slate-500 ring-2 ring-offset-1 ring-slate-500/30"
+              : "bg-[#F1F5F9] border-[#CBD5E1]"
               }`}
           >
             <div className="flex items-center justify-between mb-1">
@@ -380,8 +380,8 @@ export default function KelolaSurat() {
               setSelectedSubJenis("all");
             }}
             className={`p-4 rounded-lg border flex flex-col justify-center shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-pointer ${activeCategory === "sertifikat"
-                ? "bg-[#FFFBEB] border-amber-500 ring-2 ring-offset-1 ring-amber-500/30"
-                : "bg-[#FFFBEB] border-[#FDE68A]"
+              ? "bg-[#FFFBEB] border-amber-500 ring-2 ring-offset-1 ring-amber-500/30"
+              : "bg-[#FFFBEB] border-[#FDE68A]"
               }`}
           >
             <div className="flex items-center justify-between mb-1">
@@ -414,8 +414,8 @@ export default function KelolaSurat() {
             setSelectedSubJenis("all");
           }}
           className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "all"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
         >
           <FileSpreadsheet size={15} />
@@ -428,8 +428,8 @@ export default function KelolaSurat() {
             setSelectedSubJenis("all");
           }}
           className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "surat_masuk"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
         >
           <Inbox size={15} />
@@ -442,8 +442,8 @@ export default function KelolaSurat() {
             setSelectedSubJenis("all");
           }}
           className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "surat_keluar"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
         >
           <Send size={15} />
@@ -456,8 +456,8 @@ export default function KelolaSurat() {
             setSelectedSubJenis("all");
           }}
           className={`py-2 px-4 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${activeCategory === "sertifikat"
-              ? "bg-[#008BE3] text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            ? "bg-[#008BE3] text-white shadow-xs"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
         >
           <Award size={15} />
@@ -565,7 +565,7 @@ export default function KelolaSurat() {
               ) : filteredDocuments.length > 0 ? (
                 filteredDocuments.map((doc) => (
                   <tr
-                    key={doc.id}
+                    key={`${doc.kategori}-${doc.id}`}
                     className="group/row hover:bg-[#F9FAFC] transition-colors"
                   >
                     <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600 whitespace-nowrap">

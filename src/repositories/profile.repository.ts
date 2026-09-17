@@ -31,6 +31,12 @@ export class ProfileRepository {
     });
   }
 
+  async findProfileByNik(nik: string) {
+    return await db.profilPengguna.findUnique({
+      where: { nik },
+    });
+  }
+
   async registerWithProfile(
     userData: { username: string; email: string; password: string; role: Role },
     profileData: Prisma.ProfilPenggunaCreateWithoutUserInput,

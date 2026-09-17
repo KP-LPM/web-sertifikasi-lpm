@@ -17,7 +17,17 @@ export class PlenoRepository {
         pleno_asesi: {
           include: {
             pengajuan_skema: {
-              include: { skema: { select: { namaSkema: true } } }
+              include: {
+                skema: { select: { namaSkema: true } },
+                dataPribadi: { select: { namaLengkap: true, nik: true } },
+                user: { select: { username: true, profil: { select: { namaLengkap: true } } } }
+              }
+            },
+            users: {
+              select: {
+                username: true,
+                profil: { select: { namaLengkap: true } }
+              }
             }
           }
         },
@@ -37,6 +47,7 @@ export class PlenoRepository {
               include: {
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
                 skema: { select: { namaSkema: true } },
+                user: { select: { username: true, profil: { select: { namaLengkap: true } } } }
               }
             },
             users: {

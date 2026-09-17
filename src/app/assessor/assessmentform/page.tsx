@@ -1,15 +1,11 @@
-﻿/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
+
 "use client";
-import Link from "next/link";
-import { Breadcrumb } from "@/components/Breadcrumb";
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Check,
   ChevronRight,
   Save,
-  X,
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
@@ -36,13 +32,6 @@ type AsesmenData = {
   asesor: string;
   asesorReg?: string;
   [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-};
-
-type SignatureCanvasRef = {
-  clear: () => void;
-  fromDataURL: (dataURL: string) => void;
-  toDataURL: () => string;
-  isEmpty: () => boolean;
 };
 
 function AssessmentFormContent() {
@@ -77,7 +66,7 @@ function AssessmentFormContent() {
           });
           setEvidenceFiles(files);
         }
-        
+
         // Auto-fill Asesi Signature (from pengajuan dataPribadi)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const asesiSig = data?.dataPribadi?.tandaTangan || (data?.dataPribadi as any)?.tanda_tangan || "";
@@ -167,55 +156,7 @@ function AssessmentFormContent() {
   const [asesorDate, setAsesorDate] = useState("");
   const [asesiDate, setAsesiDate] = useState("");
 
-  // Signature Modals
-  const [isAsesorSigOpen, setIsAsesorSigOpen] = useState(false);
-  const [isAsesiSigOpen, setIsAsesiSigOpen] = useState(false);
-  const asesorSigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesiSigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesorFileRef = React.useRef<HTMLInputElement | null>(null);
-  const asesiFileRef = React.useRef<HTMLInputElement | null>(null);
 
-  const handleAsesorFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (asesorSigRef.current && result) {
-          asesorSigRef.current.fromDataURL(result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAsesiFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (asesiSigRef.current && result) {
-          asesiSigRef.current.fromDataURL(result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const saveAsesorSig = () => {
-    if (asesorSigRef.current && !asesorSigRef.current.isEmpty()) {
-      setAsesorSignature(asesorSigRef.current.toDataURL());
-      setIsAsesorSigOpen(false);
-    }
-  };
-
-  const saveAsesiSig = () => {
-    if (asesiSigRef.current && !asesiSigRef.current.isEmpty()) {
-      setAsesiSignature(asesiSigRef.current.toDataURL());
-      setIsAsesiSigOpen(false);
-    }
-  };
 
   // Step 2 State
   const [umpanBalikStep2, setUmpanBalikStep2] = useState("");
@@ -234,114 +175,7 @@ function AssessmentFormContent() {
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
 
-  const [isAsesiStep2SigOpen, setIsAsesiStep2SigOpen] = useState(false);
-  const [isAsesorStep2SigOpen, setIsAsesorStep2SigOpen] = useState(false);
-  const [isSupervisorSigOpen, setIsSupervisorSigOpen] = useState(false);
 
-  const asesiStep2SigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesorStep2SigRef = React.useRef<SignatureCanvasRef>(null);
-  const supervisorSigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesiStep2FileRef = React.useRef<HTMLInputElement | null>(null);
-  const asesorStep2FileRef = React.useRef<HTMLInputElement | null>(null);
-  const supervisorFileRef = React.useRef<HTMLInputElement | null>(null);
-
-  const saveAsesiStep2Sig = () => {
-    if (asesiStep2SigRef.current && !asesiStep2SigRef.current.isEmpty()) {
-      setAsesiSignatureStep2(asesiStep2SigRef.current.toDataURL());
-      setIsAsesiStep2SigOpen(false);
-    }
-  };
-  const saveAsesorStep2Sig = () => {
-    if (asesorStep2SigRef.current && !asesorStep2SigRef.current.isEmpty()) {
-      setAsesorSignatureStep2(asesorStep2SigRef.current.toDataURL());
-      setIsAsesorStep2SigOpen(false);
-    }
-  };
-  const saveSupervisorSig = () => {
-    if (supervisorSigRef.current && !supervisorSigRef.current.isEmpty()) {
-      setSupervisorSignatureStep2(supervisorSigRef.current.toDataURL());
-      setIsSupervisorSigOpen(false);
-    }
-  };
-
-  const handleAsesiStep2FileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (asesiStep2SigRef.current && result)
-          asesiStep2SigRef.current.fromDataURL(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  const handleAsesorStep2FileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (asesorStep2SigRef.current && result)
-          asesorStep2SigRef.current.fromDataURL(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  const handleSupervisorFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (supervisorSigRef.current && result)
-          supervisorSigRef.current.fromDataURL(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  React.useEffect(() => {
-    if (
-      isAsesiStep2SigOpen &&
-      asesiSignatureStep2 &&
-      asesiStep2SigRef.current
-    ) {
-      setTimeout(
-        () => asesiStep2SigRef.current?.fromDataURL(asesiSignatureStep2),
-        50,
-      );
-    }
-  }, [isAsesiStep2SigOpen, asesiSignatureStep2]);
-
-  React.useEffect(() => {
-    if (
-      isAsesorStep2SigOpen &&
-      asesorSignatureStep2 &&
-      asesorStep2SigRef.current
-    ) {
-      setTimeout(
-        () => asesorStep2SigRef.current?.fromDataURL(asesorSignatureStep2),
-        50,
-      );
-    }
-  }, [isAsesorStep2SigOpen, asesorSignatureStep2]);
-
-  React.useEffect(() => {
-    if (
-      isSupervisorSigOpen &&
-      supervisorSignatureStep2 &&
-      supervisorSigRef.current
-    ) {
-      setTimeout(
-        () => supervisorSigRef.current?.fromDataURL(supervisorSignatureStep2),
-        50,
-      );
-    }
-  }, [isSupervisorSigOpen, supervisorSignatureStep2]);
 
   // Step 3 State
   const [rekomendasiStep3, setRekomendasiStep3] = useState("");
@@ -363,172 +197,11 @@ function AssessmentFormContent() {
     { nama: "", noMet: "", ttdTanggal: "" },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
-
-  const [isAsesiStep3SigOpen, setIsAsesiStep3SigOpen] = useState(false);
-  const [isAsesorStep3SigOpen, setIsAsesorStep3SigOpen] = useState(false);
-
-  const asesiStep3SigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesorStep3SigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesiStep3FileRef = React.useRef<HTMLInputElement | null>(null);
-  const asesorStep3FileRef = React.useRef<HTMLInputElement | null>(null);
-
-  const saveAsesiStep3Sig = () => {
-    if (asesiStep3SigRef.current && !asesiStep3SigRef.current.isEmpty()) {
-      setAsesiSignatureStep3(asesiStep3SigRef.current.toDataURL());
-      setIsAsesiStep3SigOpen(false);
-    }
-  };
-  const saveAsesorStep3Sig = () => {
-    if (asesorStep3SigRef.current && !asesorStep3SigRef.current.isEmpty()) {
-      setAsesorSignatureStep3(asesorStep3SigRef.current.toDataURL());
-      setIsAsesorStep3SigOpen(false);
-    }
-  };
-
-  const handleAsesiStep3FileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result;
-        if (asesiStep3SigRef.current && typeof result === "string") {
-          asesiStep3SigRef.current.fromDataURL(result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAsesorStep3FileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result;
-        if (asesorStep3SigRef.current && typeof result === "string") {
-          asesorStep3SigRef.current.fromDataURL(result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  React.useEffect(() => {
-    if (
-      isAsesiStep3SigOpen &&
-      asesiSignatureStep3 &&
-      asesiStep3SigRef.current
-    ) {
-      setTimeout(
-        () => asesiStep3SigRef.current?.fromDataURL(asesiSignatureStep3),
-        50,
-      );
-    }
-  }, [isAsesiStep3SigOpen, asesiSignatureStep3]);
-
-  React.useEffect(() => {
-    if (
-      isAsesorStep3SigOpen &&
-      asesorSignatureStep3 &&
-      asesorStep3SigRef.current
-    ) {
-      setTimeout(
-        () => asesorStep3SigRef.current?.fromDataURL(asesorSignatureStep3),
-        50,
-      );
-    }
-  }, [isAsesorStep3SigOpen, asesorSignatureStep3]);
-
   // State Step 1
   const [potensiAsesi, setPotensiAsesi] = useState<string[]>([
     "Hasil pelatihan dan / atau pendidikan, dimana Kurikulum dan fasilitas praktek mampu telusur terhadap standar kompetensi",
   ]);
   const [noAdjustment, setNoAdjustment] = useState(false);
-  const adjustmentOptions = [
-    {
-      id: "adj1",
-      label:
-        "Keterbatasan asesi terhadap persyaratan bahasa, literasi, numerasi",
-      options: [
-        "Memerlukan dukungan pembaca, penerjemah, pelayan, penulis. untuk merekam jawaban asesi.",
-        "Melakukan asesmen verbal (gunakan pertanyaan lisan/pertanyaan wawancara) dengan dilengkapi gambar diagram dan bentuk-bentuk visual.",
-        "Menggunakan Hasil produksi",
-        "Menggunakan Ceklis observasi/demonstrasi.",
-        "Menggunakan daftar instruksi terstruktur.",
-      ],
-    },
-    {
-      id: "adj2",
-      label: "Penyediaan dukungan pembaca, penerjemah, pelayan, penulis",
-      options: [
-        "Menggunakan pertanyaan lisan dengan dilengkapi gambar diagram dan bentuk-bentuk visual.",
-      ],
-    },
-    {
-      id: "adj3",
-      label: "Penggunaan teknologi adaptif atau peralatan khusus",
-      options: [
-        "Ceklis observasi/demonstrasi Demonstrasi.",
-        "Pertanyaan lisan",
-        "Pertanyaan tertulis.",
-        "Pertanyaan wawancara.",
-        "Daftar instruksi terstruktur.",
-        "Ceklis verifikasi portofolio.",
-        "Menggunakan dukungan operator komputer.",
-      ],
-    },
-    {
-      id: "adj4",
-      label:
-        "Pelaksanaan asesmen secara fleksibel karena alasan keletihan atau keperluan pengobatan",
-      options: [
-        "Menggunakan juru tulis.",
-        "Menggunakan kamaramen perekam vidio/ataudio.",
-        "Memperbolehkan periode waktu yang lebih panjang untuk menyelesaikan tugas pekerjaan dalam asesmen.",
-        "Melakukan tugas pekerjaan dalam asesmen dengan waktu lebih pendek.",
-        "Menggunakan instruksi-instruksi spesifik pada proyek yang dapat dilakukan pada berbagai tingkatan.",
-      ],
-    },
-    {
-      id: "adj5",
-      label: "Penyediaan peralatan asesmen berupa braille, audio/video-tape",
-      options: [
-        "Menggunakan pertanyaan lisan.",
-        "Menggunakan pertanyaan wawancara.",
-      ],
-    },
-    {
-      id: "adj6",
-      label: "Penyesuaian tempat fisik/lingkungan asesmen",
-      options: [
-        "Pertanyaan lisan.",
-        "Pertanyaan tulis.",
-        "Pertanyaan wawancara.",
-        "Ceklis Verifikasi portofolio.",
-        "Ceklis reviu produk.",
-        "Daftar instruksi terstruktur.",
-      ],
-    },
-    {
-      id: "adj7",
-      label: "Pertimbangan umur/usia lanjut/gender asesi",
-      options: [
-        "Menggunakan studi kasus/daftar instruksi terstrukut",
-        "Menggunakan instrumen asesmen dengan huruf normal jangan terlalu kecil.",
-        "Menggunakan asesor dengan jenis kelamin yang sama dengan asesi.",
-        "Menggunakan instrumen asesmen yang sama walaupun berbeda jenis kelamain (tidak boleh memberi tanda tambahan pada instrumen asesmen yang digunakan dengan tujuan untuk membedakan jenis kelamin).",
-      ],
-    },
-    {
-      id: "adj8",
-      label: "Pertimbangan budaya/tradisi/agama",
-      options: [
-        "Menggunakan studi kasus daftar instruksi terstrukut",
-        "Menggunakan asesor tanpa pertimbangan budaya/tradisi/agama.",
-        "Menggunakan instrumen asesmen yang sama walaupun berbeda budaya/tradisi/agama).",
-      ],
-    },
-  ];
 
   const [adjustments, setAdjustments] = useState<
     Record<
@@ -747,83 +420,7 @@ function AssessmentFormContent() {
   const [asesorSignatureStep4, setAsesorSignatureStep4] = useState("");
   const [asesorDateStep4, setAsesorDateStep4] = useState("");
 
-  const [isAsesiStep4SigOpen, setIsAsesiStep4SigOpen] = useState(false);
-  const [isAsesorStep4SigOpen, setIsAsesorStep4SigOpen] = useState(false);
 
-  const asesiStep4SigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesiStep4FileRef = React.useRef<HTMLInputElement>(null);
-  const asesorStep4SigRef = React.useRef<SignatureCanvasRef>(null);
-  const asesorStep4FileRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    if (
-      isAsesiStep4SigOpen &&
-      asesiSignatureStep4 &&
-      asesiStep4SigRef.current
-    ) {
-      setTimeout(
-        () => asesiStep4SigRef.current?.fromDataURL(asesiSignatureStep4),
-        50,
-      );
-    }
-  }, [isAsesiStep4SigOpen, asesiSignatureStep4]);
-
-  React.useEffect(() => {
-    if (
-      isAsesorStep4SigOpen &&
-      asesorSignatureStep4 &&
-      asesorStep4SigRef.current
-    ) {
-      setTimeout(
-        () => asesorStep4SigRef.current?.fromDataURL(asesorSignatureStep4),
-        50,
-      );
-    }
-  }, [isAsesorStep4SigOpen, asesorSignatureStep4]);
-
-  const handleAsesiStep4FileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (asesiStep4SigRef.current && event.target?.result) {
-          asesiStep4SigRef.current.fromDataURL(event.target.result.toString());
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAsesorStep4FileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (asesorStep4SigRef.current && event.target?.result) {
-          asesorStep4SigRef.current.fromDataURL(event.target.result.toString());
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const saveAsesiStep4Sig = () => {
-    if (asesiStep4SigRef.current) {
-      setAsesiSignatureStep4(asesiStep4SigRef.current.toDataURL());
-      setIsAsesiStep4SigOpen(false);
-    }
-  };
-
-  const saveAsesorStep4Sig = () => {
-    if (asesorStep4SigRef.current) {
-      setAsesorSignatureStep4(asesorStep4SigRef.current.toDataURL());
-      setIsAsesorStep4SigOpen(false);
-    }
-  };
 
   const [penyusunStep4, setPenyusunStep4] = useState([
     { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
@@ -1023,17 +620,6 @@ function AssessmentFormContent() {
     </div>
   );
 
-  React.useEffect(() => {
-    if (isAsesorSigOpen && asesorSignature && asesorSigRef.current) {
-      setTimeout(() => asesorSigRef.current?.fromDataURL(asesorSignature), 50);
-    }
-  }, [isAsesorSigOpen, asesorSignature]);
-
-  React.useEffect(() => {
-    if (isAsesiSigOpen && asesiSignature && asesiSigRef.current) {
-      setTimeout(() => asesiSigRef.current?.fromDataURL(asesiSignature), 50);
-    }
-  }, [isAsesiSigOpen, asesiSignature]);
 
 
   const renderStep1 = () => {
@@ -1476,13 +1062,13 @@ function AssessmentFormContent() {
       {/* Main Document Container */}
       <div className="w-full max-w-full mx-auto px-4 md:px-8">
         <div className="w-full bg-white shadow-xl p-4 sm:p-8 md:p-12 min-h-280.75 relative mb-8 text-slate-900 text-sm">
-        {currentStep === 1 && renderStep1()}
-        {currentStep === 2 && renderStep2()}
-        {currentStep === 3 && renderStep3()}
-        {currentStep === 4 && renderStep4()}
-        {currentStep === 5 && renderStep5()}
-        {currentStep === 6 && renderStep6()}
-      </div>
+          {currentStep === 1 && renderStep1()}
+          {currentStep === 2 && renderStep2()}
+          {currentStep === 3 && renderStep3()}
+          {currentStep === 4 && renderStep4()}
+          {currentStep === 5 && renderStep5()}
+          {currentStep === 6 && renderStep6()}
+        </div>
       </div>
     </div>
   );

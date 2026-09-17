@@ -648,10 +648,7 @@ export default function AssessmentSchedule() {
       id: p.id,
       nik: p.dataPribadi?.nik || p.user?.profil?.nik || p.nik || "-",
       nama:
-        p.dataPribadi?.namaLengkap ||
         p.user?.profil?.namaLengkap ||
-        p.nama ||
-        p.user?.username ||
         "Asesi",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       skema: (p.skema as any)?.namaSkema || "Skema Tersertifikasi",
@@ -880,11 +877,11 @@ export default function AssessmentSchedule() {
       .map((a) => ({
         id: a.id,
         nama:
-          a.dataPribadi?.namaLengkap ||
-          a.user?.profil?.namaLengkap ||
-          a.user?.username ||
-          a.nama ||
-          "Asesi",
+          (a.user?.profil?.namaLengkap && a.user.profil.namaLengkap.trim() !== "")
+            ? a.user.profil.namaLengkap
+            : (a.dataPribadi?.namaLengkap && a.dataPribadi.namaLengkap.trim() !== "")
+              ? a.dataPribadi.namaLengkap
+              : a.user?.username || a.nama || "Asesi",
         skema:
           typeof a.skema === "object" ? a.skema?.namaSkema || a.skema?.nama || "" : a.skema || "",
         metode: a.jenisMetode || a.metode || "Offline",

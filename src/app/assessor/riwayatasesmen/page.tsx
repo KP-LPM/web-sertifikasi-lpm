@@ -13,18 +13,24 @@ interface CandidateCandidateItem {
   namaSkema?: string;
   kodeSkema?: string;
   namaAsesor?: string;
+  asesorReg?: string;
   hasilAsesmen?: string;
   statusPengajuan?: string;
   tanggalJadwal?: string;
+  waktuMulai?: string;
+  tipeTuk?: string;
+  metode?: string;
+  alamat?: string;
+  namaTuk?: string;
 }
 
 export default function RiwayatAsesmen() {
   const router = useRouter();
-  const { setSelectedAsesmen, AssessmentItems } = useAppContext();
+  const { setSelectedAsesmen } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [hasilFilter, setHasilFilter] = useState("");
   const [tanggalFilter, setTanggalFilter] = useState("");
-  const [items, setItems] = useState<AssessmentItem[]>(AssessmentItems);
+  const [items, setItems] = useState<AssessmentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -42,38 +48,44 @@ export default function RiwayatAsesmen() {
           if (completed.length > 0) {
             const mapped: AssessmentItem[] = completed.map((c) => ({
               id: c.pengajuanId,
-              nik: c.nik || "3204010000000000",
+              nik: c.nik || "-",
               nama: c.namaLengkap || c.nik || "Asesi",
               skema: c.namaSkema || "Skema Sertifikasi",
-              tipeTuk: "Sewaktu" as TipeTuk,
-              metode: "Online" as JenisMetode,
-              waktu: "09:00 - 12:00 WIB",
+              tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
+              metode: (c.metode || "Online") as JenisMetode,
+              waktu: c.waktuMulai || "09:00 - 12:00 WIB",
               tglAsesmen: c.tanggalJadwal
                 ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
                   })
-                : "10 Sep 2026",
+                : "-",
               hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
-              status: "Selesai",
-              alamat: "UIN Sunan Gunung Djati Bandung",
-              noSkema: c.kodeSkema || "SKM-01",
-              tuk: "Lab Komputer Terpadu",
-              metodeAsesmen: "Online",
+              status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
+              alamat: c.alamat || "UIN Sunan Gunung Djati Bandung",
+              noSkema: c.kodeSkema || "-",
+              tuk: c.namaTuk || "Lab Komputer Terpadu",
+              metodeAsesmen: (c.metode as JenisMetode) || "Online",
               asesor: c.namaAsesor || "Asesor Penguji",
+              asesorReg: c.asesorReg || "",
             }));
             setItems(mapped);
+          } else {
+            setItems([]);
           }
+        } else {
+          setItems([]);
         }
       } catch (err) {
         console.warn("Menggunakan data histori lokal:", err);
+        setItems([]);
       } finally {
         setIsLoading(false);
       }
     }
     loadData();
-  }, [AssessmentItems]);
+  }, []);
 
   // Dummy data - we filter only 'Selesai'
   const parseDateToISO = (dateStr: string): string => {

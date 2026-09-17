@@ -35,7 +35,7 @@ export class SertifikatService {
     }
     return result;
   }
-  async terbitkan(pengajuanId: number) {
+  async terbitkan(pengajuanId: number, reqTanggalTerbit?: Date) {
     // 1. Ambil data pengajuan beserta MasterSkema-nya (Join Relasi)
     const pengajuan = await this.repo.getPengajuanWithSkema(pengajuanId);
 
@@ -47,12 +47,12 @@ export class SertifikatService {
     }
 
     const sertifikat = await this.repo.getByPengajuanId(pengajuanId);
-    if (sertifikat?.status === "Terbit") {
+    if (sertifikat?.status === "Terbit" && sertifikat.no_sertifikat) {
       throw new InvariantError("Sertifikat ini sudah diterbitkan sebelumnya.");
     }
 
     // 2. Tentukan Tanggal Terbit dan Tahun (misal: "2025")
-    const tanggalTerbit = sertifikat?.tanggal_terbit || new Date();
+    const tanggalTerbit = reqTanggalTerbit || sertifikat?.tanggal_terbit || new Date();
     const tahun = tanggalTerbit.getFullYear().toString();
 
     // 3. Cari Sertifikat terakhir yang diterbitkan PADA TAHUN TERSEBUT

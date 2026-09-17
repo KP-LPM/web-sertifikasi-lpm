@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { signIn } from "next-auth/react";
@@ -17,8 +16,10 @@ import {
   Save,
   Eye,
   EyeOff,
+  PenTool,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import SignatureCanvas from "react-signature-canvas";
 import {
   forgotPassword,
   registerUsers,
@@ -60,6 +61,18 @@ export default function Login() {
   // State Signature
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tandaTangan, setTandaTangan] = useState("");
+  const signaturePadRef = useRef<SignatureCanvas>(null);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+
+  const handleSaveSignature = () => {
+    if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+      const dataURL = signaturePadRef.current.getCanvas().toDataURL("image/png");
+      setTandaTangan(dataURL);
+      setIsSignatureModalOpen(false);
+    } else {
+      showNotification("Tanda tangan masih kosong!", "error");
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -375,6 +388,28 @@ export default function Login() {
             "linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.8)), url('/bg-lpm.jpeg')",
         }}
       >
+        {notification.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${notification.type === "success"
+              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+              : "bg-rose-50/90 border-rose-200 text-rose-800"
+              }`}
+          >
+            {notification.type === "success" ? (
+              <BadgeCheck size={20} className="text-emerald-500" />
+            ) : (
+              <X
+                size={20}
+                className="text-rose-500 bg-rose-100 rounded-full p-0.5"
+              />
+            )}
+            <p className="text-sm font-bold tracking-wide">
+              {notification.message}
+            </p>
+          </motion.div>
+        )}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -665,21 +700,35 @@ export default function Login() {
                   </div>
 
                   {mode === "asesor" && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Pendidikan Terakhir
-                      </label>
-                      <select
-                        name="pendidikan_terakhir"
-                        className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
-                        required
-                      >
-                        <option value="">Pilih Pendidikan Terakhir</option>
-                        <option value="S1">S1 (Sarjana)</option>
-                        <option value="S2">S2 (Magister)</option>
-                        <option value="S3">S3 (Doktor)</option>
-                      </select>
-                    </div>
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                          Pendidikan Terakhir
+                        </label>
+                        <select
+                          name="pendidikan_terakhir"
+                          className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
+                          required
+                        >
+                          <option value="">Pilih Pendidikan Terakhir</option>
+                          <option value="S1">S1 (Sarjana)</option>
+                          <option value="S2">S2 (Magister)</option>
+                          <option value="S3">S3 (Doktor)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                          Alamat / Wilayah
+                        </label>
+                        <input
+                          type="text"
+                          name="alamat_wilayah"
+                          className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
+                          placeholder="Masukkan alamat domisili / wilayah"
+                          required
+                        />
+                      </div>
+                    </>
                   )}
 
                   <div>
@@ -724,11 +773,19 @@ export default function Login() {
                     <div className="flex gap-2">
                       <button
                         type="button"
+                        onClick={() => setIsSignatureModalOpen(true)}
+                        className="w-full py-2.5 border border-[#008BE3] text-[#008BE3] hover:bg-sky-50 rounded-lg text-xs font-bold flex justify-center gap-2 items-center transition-all cursor-pointer"
+                      >
+                        <PenTool size={14} />
+                        Gambar
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full py-2.5 border border-[#008BE3] text-[#008BE3] hover:bg-sky-50 rounded-lg text-xs font-bold flex justify-center gap-2 items-center transition-all cursor-pointer"
                       >
                         <Upload size={14} />
-                        {tandaTangan ? "Ubah Tanda Tangan" : "Upload Tanda Tangan"}
+                        Upload
                       </button>
                       {tandaTangan && (
                         <button
@@ -764,6 +821,56 @@ export default function Login() {
           </div>
         </motion.div>
 
+        {/* Signature Canvas Modal */}
+        {isSignatureModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-black text-slate-800 text-sm">
+                  Gambar Tanda Tangan
+                </h3>
+                <button
+                  onClick={() => setIsSignatureModalOpen(false)}
+                  className="p-1 hover:bg-slate-200 rounded-md text-slate-500 transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-4">
+                <div className="border border-slate-200 rounded-lg overflow-hidden bg-white mb-4">
+                  <SignatureCanvas
+                    ref={signaturePadRef}
+                    penColor="blue"
+                    canvasProps={{
+                      className: "w-full h-48 cursor-crosshair bg-slate-50",
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => signaturePadRef.current?.clear()}
+                    className="flex-1 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Hapus Ulang
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveSignature}
+                    className="flex-1 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-2 cursor-pointer"
+                  >
+                    <Save size={14} />
+                    Simpan
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
       </div>
     );
@@ -783,8 +890,8 @@ export default function Login() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${notification.type === "success"
-                ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
-                : "bg-rose-50/90 border-rose-200 text-rose-800"
+              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+              : "bg-rose-50/90 border-rose-200 text-rose-800"
               }`}
           >
             {notification.type === "success" ? (
@@ -883,8 +990,8 @@ export default function Login() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${notification.type === "success"
-                ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
-                : "bg-rose-50/90 border-rose-200 text-rose-800"
+              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+              : "bg-rose-50/90 border-rose-200 text-rose-800"
               }`}
           >
             {notification.type === "success" ? (
@@ -965,8 +1072,8 @@ export default function Login() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           className={`fixed top-6 left-1/2 -translate-x-1/2 z-100 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 border backdrop-blur-md ${notification.type === "success"
-              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
-              : "bg-rose-50/90 border-rose-200 text-rose-800"
+            ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
+            : "bg-rose-50/90 border-rose-200 text-rose-800"
             }`}
         >
           {notification.type === "success" ? (

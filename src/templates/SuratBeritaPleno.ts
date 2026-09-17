@@ -18,7 +18,7 @@ export interface BeritaAcaraPayload {
   totalBelumKompeten: number;
   kotaPleno: string;
   tanggalSurat: string;
-  logoBase64?: string;  
+  logoBase64?: string;
   asesiList: AsesiBeritaAcaraItem[];
   anggotaKomiteList: AnggotaKomiteItem[];
 }
@@ -92,11 +92,10 @@ export function generateBeritaAcaraHtml(data: BeritaAcaraPayload): string {
         <td style="border: none; padding: 10px 0; vertical-align: middle; width: 50%;">
           <div style="display: flex; align-items: center; height: 40px;">
             <span style="min-width: 20px;">${num}.</span>
-            ${
-              anggota.ttdBase64
-                ? `<img src="${anggota.ttdBase64}" style="max-height: 38px; max-width: 100px; object-fit: contain; margin-left: 8px;" alt="TTD" />`
-                : `<span style="display: inline-block; width: 120px; border-bottom: 1px dotted #555; height: 18px; margin-left: 8px;"></span>`
-            }
+            ${anggota.ttdBase64
+          ? `<img src="${anggota.ttdBase64}" style="max-height: 38px; max-width: 100px; object-fit: contain; margin-left: 8px;" alt="TTD" />`
+          : `<span style="display: inline-block; width: 120px; border-bottom: 1px dotted #555; height: 18px; margin-left: 8px;"></span>`
+        }
           </div>
         </td>
       </tr>
@@ -284,18 +283,16 @@ export function generateBeritaAcaraHtml(data: BeritaAcaraPayload): string {
         </tbody>
       </table>
 
-      ${
-        page2Items.length === 0
-          ? `
+      ${page2Items.length === 0
+      ? `
           <div class="tanda-tangan-section">
             <p style="margin: 0; font-weight: normal;">${data.kotaPleno || "Bandung"}, ${data.tanggalSurat || "-"}</p>
-            <p style="margin: 2px 0 0 0; font-weight: normal;">Peserta rapat pleno anggota Komite Teknis</p>
 
-            <table class="tabel-komite" style="border: none;">
+            <table class="tabel-komite" style="border: none; width: 100%;">
               <thead>
                 <tr>
-                  <th style="border: none; text-align: left; padding: 2px 0; width: 55%; font-weight: normal;"></th>
-                  <th style="border: none; text-align: left; padding: 2px 0; width: 45%; font-weight: normal;">Tanda tangan</th>
+                  <th style="border: none; text-align: left; padding: 16px 0 8px 0; width: 60%; font-weight: bold;">Peserta rapat pleno anggota Komite Teknis</th>
+                  <th style="border: none; text-align: left; padding: 16px 0 8px 0; width: 40%; font-weight: bold;">Tanda tangan</th>
                 </tr>
               </thead>
               <tbody>
@@ -304,14 +301,13 @@ export function generateBeritaAcaraHtml(data: BeritaAcaraPayload): string {
             </table>
           </div>
           `
-          : ""
-      }
+      : ""
+    }
     </div>
 
     <!-- HALAMAN 2 (Jika data lebih dari 18 asesi) -->
-    ${
-      page2Items.length > 0
-        ? `
+    ${page2Items.length > 0
+      ? `
       <div class="page">
         ${kopSuratHtml}
 
@@ -339,10 +335,10 @@ export function generateBeritaAcaraHtml(data: BeritaAcaraPayload): string {
         <table class="tabel-komite" style="border: none; width: 100%;">
           <thead>
             <tr>
-              <th style="border: none; text-align: left; padding: 0 0 16px 0; width: 50%; font-weight: bold;">
+              <th style="border: none; text-align: left; padding: 0 0 16px 0; width: 60%; font-weight: bold;">
                 Peserta rapat pleno anggota Komite Teknis
               </th>
-              <th style="border: none; text-align: left; padding: 0 0 16px 0; width: 50%; font-weight: bold;">
+              <th style="border: none; text-align: left; padding: 0 0 16px 0; width: 40%; font-weight: bold;">
                 Tanda tangan
               </th>
             </tr>
@@ -353,7 +349,7 @@ export function generateBeritaAcaraHtml(data: BeritaAcaraPayload): string {
         </table>
       </div>
       `
-        : ""
+      : ""
     }
   </body>
 </html>

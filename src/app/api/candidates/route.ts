@@ -68,9 +68,19 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 tanggal: true,
+                waktu_mulai: true,
+                tipe_tuk: true,
+                metode: true,
+                alamat: true,
+                noRegMet: true,
                 asesor_id: true,
+                master_tuk: { select: { nama: true } },
                 users: {
-                  select: { profil: { select: { namaLengkap: true } } },
+                  select: {
+                    profil: {
+                      select: { namaLengkap: true, nomorRegistrasiMet: true },
+                    },
+                  },
                 },
               },
             },
@@ -83,6 +93,18 @@ export async function GET(request: NextRequest) {
     // Format output (menyerupai v_candidate_list)
     const formattedCandidates = candidates.map((c) => {
       const jadwal = c.jadwal_asesmen_peserta[0]?.jadwal_asesmen;
+      let formattedWaktu = "09:00 - 12:00 WIB";
+      if (jadwal?.waktu_mulai) {
+        try {
+          const w = new Date(jadwal.waktu_mulai);
+          if (!isNaN(w.getTime())) {
+            formattedWaktu = `${String(w.getUTCHours()).padStart(2, "0")}:${String(w.getUTCMinutes()).padStart(2, "0")} WIB`;
+          }
+        } catch {
+          // fallback
+        }
+      }
+
       return {
         pengajuanId: c.id,
         nomorPengajuan: c.nomorPengajuan,
@@ -97,8 +119,17 @@ export async function GET(request: NextRequest) {
         hasilAsesmen: c.hasil_asesmen?.hasil || "Belum Dinilai",
         jadwalId: jadwal?.id,
         tanggalJadwal: jadwal?.tanggal,
+        waktuMulai: formattedWaktu,
+        tipeTuk: jadwal?.tipe_tuk,
+        metode: jadwal?.metode,
+        alamat: jadwal?.alamat,
+        namaTuk: jadwal?.master_tuk?.nama,
         asesorId: jadwal?.asesor_id,
         namaAsesor: jadwal?.users?.profil?.namaLengkap,
+        asesorReg:
+          jadwal?.noRegMet ||
+          jadwal?.users?.profil?.nomorRegistrasiMet ||
+          "",
       };
     });
 

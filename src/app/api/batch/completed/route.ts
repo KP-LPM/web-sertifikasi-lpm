@@ -35,6 +35,12 @@ export async function GET(request: NextRequest) {
             pengajuan_skema: {
               include: {
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
+                user: {
+                  select: {
+                    username: true,
+                    profil: { select: { namaLengkap: true } },
+                  },
+                },
                 skema: { select: { namaSkema: true } },
                 sertifikat: true,
                 hasil_asesmen: true,
@@ -77,7 +83,7 @@ export async function GET(request: NextRequest) {
           const cert = a.pengajuan_skema?.sertifikat;
           // In Prisma, if it's one-to-one it's an object. If one-to-many, it's an array.
           // In schema it says `sertifikat sertifikat?`, so it's an object.
-          
+
           const rek = a.rekomendasi_asesor || a.pengajuan_skema?.hasil_asesmen?.hasil || "BK";
           const pln = a.status_pleno || rek;
           const isRekK = rek === "K" || rek.toLowerCase() === "kompeten";
@@ -85,7 +91,7 @@ export async function GET(request: NextRequest) {
 
           return {
             id: a.pengajuan_id,
-            nama: a.pengajuan_skema?.dataPribadi?.namaLengkap || "Tanpa Nama",
+            nama: a.pengajuan_skema?.user?.profil?.namaLengkap || "Tanpa Nama",
             nik: a.pengajuan_skema?.dataPribadi?.nik || "-",
             skema: a.pengajuan_skema?.skema?.namaSkema || "-",
             asesor: "Asesor LSP", // Can fetch from jadwal_asesmen or user if available

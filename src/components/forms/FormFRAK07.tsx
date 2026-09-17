@@ -1,5 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
+
 import React, { useState } from "react";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { FormHeader } from "./FormHeader";
@@ -156,12 +155,12 @@ export function FormFRAK07(props: FormFRAK07Props) {
   const [localAsesorName, setLocalAsesorName] = useState(
     props.asesmenData?.asesor || "Ichsan Taufik",
   );
-  const [localAsesorSig, setLocalAsesorSig] = useState("");
+  const [localAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState("");
   const [localAsesiName, setLocalAsesiName] = useState(
     props.asesmenData?.nama || "Ahmad Supriyadi",
   );
-  const [localAsesiSig, setLocalAsesiSig] = useState("");
+  const [localAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState("");
 
   const potensiAsesi =

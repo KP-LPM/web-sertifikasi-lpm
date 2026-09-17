@@ -9,6 +9,7 @@ import {
   UpdateAsesiPlenoInput,
 } from "@/schemas/pleno.schema";
 import { NotFoundError, InvariantError } from "@/error/index";
+import { suratService } from "@/services/surat.service";
 
 export class PlenoService {
   constructor(private repo: PlenoRepository = plenoRepository) { }
@@ -67,6 +68,55 @@ export class PlenoService {
       }
       return pleno;
     });
+
+    if (data.status === "Selesai") {
+      try {
+        const d = new Date();
+        const baseNomor = `PLENO-${id}-${d.getFullYear()}`;
+        
+        if (data.link_surat_berita_pleno) {
+          await suratService.create({
+            nomor_surat: `BAP-${baseNomor}`,
+            judul: "Surat Berita Acara Pleno",
+            kategori: "surat_masuk",
+            jenis_surat: "berita_acara_pleno",
+            nama_jenis_surat: "Surat Berita Acara Pleno",
+            tanggal_terbit: d,
+            status: "Terbit",
+            url_gdrive: data.link_surat_berita_pleno,
+            url_dokumen: data.link_surat_berita_pleno,
+          });
+        }
+        if (data.link_surat_keputusan_direktur) {
+          await suratService.create({
+            nomor_surat: `SK-${baseNomor}`,
+            judul: "Surat Keputusan Direktur",
+            kategori: "surat_keluar",
+            jenis_surat: "keputusan_pleno",
+            nama_jenis_surat: "Surat Hasil Keputusan Pleno",
+            tanggal_terbit: d,
+            status: "Terbit",
+            url_gdrive: data.link_surat_keputusan_direktur,
+            url_dokumen: data.link_surat_keputusan_direktur,
+          });
+        }
+        if (data.link_surat_blanko_bnsp) {
+          await suratService.create({
+            nomor_surat: `BLNK-${baseNomor}`,
+            judul: "Surat Blanko BNSP",
+            kategori: "surat_keluar",
+            jenis_surat: "blanko_bnsp",
+            nama_jenis_surat: "Surat Blanko BNSP",
+            tanggal_terbit: d,
+            status: "Terbit",
+            url_gdrive: data.link_surat_blanko_bnsp,
+            url_dokumen: data.link_surat_blanko_bnsp,
+          });
+        }
+      } catch (err) {
+        console.error("Gagal menyimpan surat-surat pleno secara otomatis:", err);
+      }
+    }
 
     return result;
   }

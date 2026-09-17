@@ -67,6 +67,10 @@ export default function SidangPleno() {
     pengajuan_skema?: {
       dataPribadi?: { nik?: string; namaLengkap?: string };
       skema?: { namaSkema?: string };
+      user?: {
+        username?: string;
+        profil?: { namaLengkap?: string };
+      };
     };
     users?: {
       username?: string;
@@ -118,8 +122,7 @@ export default function SidangPleno() {
         id: a.id,
         nik: a.pengajuan_skema?.dataPribadi?.nik || `121705${a.id}`,
         nama:
-          a.pengajuan_skema?.dataPribadi?.namaLengkap ||
-          a.nama ||
+          a.pengajuan_skema?.user?.profil?.namaLengkap ||
           `Asesi ${a.id}`,
         skema: a.pengajuan_skema?.skema?.namaSkema || skemaStr,
         asesor:
@@ -305,7 +308,7 @@ export default function SidangPleno() {
           };
         }),
         anggotaKomiteList: formData?.plenoAttendees
-          ?.filter(a => a.role === "komite_skema")
+          ?.filter(a => a.nama && a.nama.trim() !== "")
           ?.map(a => ({ nama: a.nama })) || [],
       };
 

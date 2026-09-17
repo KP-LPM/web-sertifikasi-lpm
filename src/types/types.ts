@@ -193,7 +193,6 @@ export interface PlenoSchedule {
   batchCode?: string;
   title?: string;
   tanggal: string;
-  waktu: string;
   jenisTuk?: TipeTuk;
   skema: string;
   jumlahAsesi: number;
@@ -215,7 +214,6 @@ export interface PlenoGroup {
   plenoTitle: string;
   skemaList: string[];
   tanggal: string;
-  waktu: string;
   alamat: string;
   isOnline: boolean;
   status: "Belum Selesai" | "Selesai" | string;

@@ -36,19 +36,40 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { getJadwalCompleted, getBatchCompleted } from "@/lib/api";
+import { getJadwalCompleted, getBatchCompleted, getCandidatesList } from "@/lib/api";
 import {
   CompletedBatchAsesi,
   CompletedBatchItem,
   AsesiPlenoItem,
   PlenoDetailData,
   AssessmentItem,
+  TipeTuk,
+  JenisMetode,
 } from "@/types/types";
 
+interface CandidateCandidateItem {
+  pengajuanId: number;
+  nik?: string;
+  namaLengkap?: string;
+  namaSkema?: string;
+  kodeSkema?: string;
+  namaAsesor?: string;
+  asesorReg?: string;
+  hasilAsesmen?: string;
+  statusPengajuan?: string;
+  tanggalJadwal?: string;
+  waktuMulai?: string;
+  tipeTuk?: string;
+  metode?: string;
+  alamat?: string;
+  namaTuk?: string;
+}
+
 export default function RiwayatAsesmenAdmin() {
-  const { AssessmentItems, setExtraCrumbs } = useAppContext();
+  const { setExtraCrumbs } = useAppContext();
 
   const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">("asesmen");
+  const [assessmentList, setAssessmentList] = useState<AssessmentItem[]>([]);
   const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
   const [completedPleno, setCompletedPleno] = useState<PlenoDetailData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -119,10 +140,47 @@ export default function RiwayatAsesmenAdmin() {
   const fetchHistoryData = async () => {
     setIsLoading(true);
     try {
-      const [batchData, plenoData] = await Promise.all([
+      const [candidatesData, batchData, plenoData] = await Promise.all([
+        getCandidatesList(),
         getJadwalCompleted(),
         getBatchCompleted(),
       ]);
+
+      if (Array.isArray(candidatesData)) {
+        const completed = (candidatesData as unknown as CandidateCandidateItem[]).filter(
+          (c) =>
+            (c.hasilAsesmen && c.hasilAsesmen !== "Belum Dinilai") ||
+            c.statusPengajuan === "Selesai" ||
+            c.statusPengajuan === "Menunggu Pleno",
+        );
+        const mapped: AssessmentItem[] = completed.map((c) => ({
+          id: c.pengajuanId,
+          nik: c.nik || "-",
+          nama: c.namaLengkap || c.nik || "Asesi",
+          skema: c.namaSkema || "Skema Sertifikasi",
+          tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
+          metode: (c.metode || "Online") as JenisMetode,
+          waktu: c.waktuMulai || "09:00 - 12:00 WIB",
+          tglAsesmen: c.tanggalJadwal
+            ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })
+            : "-",
+          hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
+          status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
+          alamat: c.alamat || "UIN Sunan Gunung Djati Bandung",
+          noSkema: c.kodeSkema || "-",
+          tuk: c.namaTuk || "Lab Komputer Terpadu",
+          metodeAsesmen: (c.metode as JenisMetode) || "Online",
+          asesor: c.namaAsesor || "Asesor Penguji",
+          asesorReg: c.asesorReg || "",
+        }));
+        setAssessmentList(mapped);
+      } else {
+        setAssessmentList([]);
+      }
 
       const batchList = Array.isArray(batchData) ? batchData : (batchData?.data && Array.isArray(batchData.data) ? batchData.data : []);
       const plenoList = Array.isArray(plenoData) ? plenoData : (plenoData?.data && Array.isArray(plenoData.data) ? plenoData.data : []);
@@ -131,6 +189,7 @@ export default function RiwayatAsesmenAdmin() {
       setCompletedPleno(plenoList);
     } catch (error) {
       console.error("Error fetching history data:", error);
+      setAssessmentList([]);
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +228,7 @@ export default function RiwayatAsesmenAdmin() {
   };
 
   // Filtered Assessments
-  const filteredAssessments = AssessmentItems.filter((item: AssessmentItem) => {
+  const filteredAssessments = assessmentList.filter((item: AssessmentItem) => {
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (statusFilter && item.status !== statusFilter) return false;
     if (searchTerm) {
@@ -727,7 +786,18 @@ export default function RiwayatAsesmenAdmin() {
                   </tr>
                 </thead>
                 <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-                  {filteredAssessments.length > 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={9} className="px-6 py-16 text-center text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="w-8 h-8 border-4 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+                          <span className="font-medium text-sm text-slate-500">
+                            Memuat riwayat asesmen...
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredAssessments.length > 0 ? (
                     filteredAssessments.map((item: AssessmentItem) => (
                       <tr
                         key={item.id}
@@ -800,7 +870,7 @@ export default function RiwayatAsesmenAdmin() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="px-6 py-16 text-center">
+                      <td colSpan={9} className="px-6 py-16 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-400">
                           <History size={36} className="mb-2 text-slate-300" />
                           <p className="font-bold text-slate-700 text-base">
@@ -1021,7 +1091,7 @@ export default function RiwayatAsesmenAdmin() {
                             <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover:bg-slate-50/80 border-l border-gray-100">
                               <button
                                 onClick={() => {
-                                  const found = AssessmentItems.find(
+                                  const found = assessmentList.find(
                                     (a: AssessmentItem) =>
                                       a.nama?.toLowerCase() ===
                                       asesi.nama.toLowerCase(),
