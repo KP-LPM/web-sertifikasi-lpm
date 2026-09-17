@@ -100,6 +100,7 @@ export default function AssessmentSchedule() {
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
+      linkVideo: item.linkVideo || "",
       namaAsesor: item.namaAsesor || "",
       suratTugasUrl: item.suratTugasUrl || "",
       totalKandidat: item.totalKandidat || 0,
@@ -175,6 +176,7 @@ export default function AssessmentSchedule() {
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
+      linkVideo: item.linkVideo || "",
       namaAsesor: item.namaAsesor || "",
       suratTugasUrl: item.suratTugasUrl || "",
       totalKandidat: item.totalKandidat || 0,
@@ -279,6 +281,7 @@ export default function AssessmentSchedule() {
     tipe_tuk?: string;
     alamat?: string;
     nama_asesor?: string;
+    link_video?: string;
     surat_tugas_url?: string;
     status?: string;
     master_skema?: { namaSkema?: string };
@@ -383,6 +386,7 @@ export default function AssessmentSchedule() {
           minute: "2-digit",
         })
         : "08:00",
+      linkVideo: item.link_video || "",
       tipeTuk: item.tipe_tuk || "Sewaktu",
       tuk: item.master_tuk?.nama || item.alamat || "TUK Kantor LSP",
       alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
@@ -525,6 +529,7 @@ export default function AssessmentSchedule() {
     suratTugasUrl: "",
     totalKandidat: 0,
     status: "Terjadwal",
+    linkVideo: "",
   });
 
   const handleAddSchedule = async () => {
@@ -559,6 +564,10 @@ export default function AssessmentSchedule() {
         tuk_id: matchedTuk?.id || undefined,
         alamat: formData.alamat,
         tanggal: validDate.toISOString(),
+        waktu_mulai: formData.waktuMulai
+          ? new Date(`1970-01-01T${formData.waktuMulai}:00.000Z`).toISOString()
+          : undefined,
+        link_video: formData.metode === "Online" ? formData.linkVideo || undefined : undefined,
         asesor_id: matchedAsesor?.id || undefined,
         surat_tugas_url: formData.suratTugasUrl || undefined,
         status: formData.status || "Terjadwal",
@@ -585,6 +594,13 @@ export default function AssessmentSchedule() {
               ? {
                 ...s,
                 ...formData,
+                waktu_mulai: formData.waktuMulai
+                  ? new Date(`1970-01-01T${formData.waktuMulai}:00.000Z`)
+                  : undefined,
+                link_video:
+                  formData.metode === "Online"
+                    ? formData.linkVideo || undefined
+                    : undefined,
                 inisialAsesor: formData.namaAsesor
                   .split(" ")
                   .map((n) => n[0])
@@ -629,6 +645,7 @@ export default function AssessmentSchedule() {
       suratTugasUrl: "",
       totalKandidat: 0,
       status: "Terjadwal",
+      linkVideo: "",
     });
     setSelectedAsesiForJadwal([]);
   };
@@ -974,6 +991,24 @@ export default function AssessmentSchedule() {
                   <option value="Online">Online (Daring)</option>
                 </select>
               </div>
+
+              {formData.metode === "Online" && (
+                <div className="min-w-0 md:col-span-2">
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    Link Meeting Online (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: https://zoom.us/j/..."
+                    value={formData.linkVideo || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, linkVideo: e.target.value })
+                    }
+                    disabled={isPreviewMode}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 font-medium text-slate-900"
+                  />
+                </div>
+              )}
 
               {/* 4. Jenis TUK & 5. Alamat TUK */}
               <div className="min-w-0">
@@ -1848,6 +1883,7 @@ export default function AssessmentSchedule() {
                     tipeTuk: "Sewaktu",
                     alamat: "UIN Sunan Gunung Djati Bandung",
                     tanggal: "",
+                    linkVideo: "",
                     waktuMulai: "08:00",
                     tuk: "",
                     totalKandidat: 0,

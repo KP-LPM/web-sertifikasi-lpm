@@ -128,6 +128,7 @@ export interface User {
   email: string;
   role: Role;
   avatar?: string;
+  namaLengkap?: string;
 }
 
 export interface UserItem {

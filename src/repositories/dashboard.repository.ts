@@ -11,7 +11,7 @@ export class DashboardRepository {
 
   async countVerifikasiPending() {
     return await db.pengajuanSkema.count({
-      where: { status: "Diajukan" },
+      where: { status: "Menunggu Verifikasi" },
     });
   }
 
