@@ -108,7 +108,7 @@ export class PengajuanRepository {
         }),
       },
       include: {
-        user: { select: { id: true, username: true, email: true } },
+        user: { select: { id: true, username: true, email: true, profil: { select: { namaLengkap: true } } } },
         dataPribadi: true,
         skema: { select: { id: true, namaSkema: true, kodeSkema: true } },
         master_tuk: true,
@@ -116,10 +116,15 @@ export class PengajuanRepository {
         sertifikat: true,
         apl02_penilaian: true,
         jadwal_asesmen_peserta: {
-          select: {
-            id: true,
-            jadwal_id: true,
-            pengajuan_id: true,
+          include: {
+            jadwal_asesmen: {
+              include: {
+                users: {
+                  select: { username: true, profil: true },
+                },
+                master_tuk: true,
+              },
+            },
           },
         },
         _count: {
@@ -139,7 +144,7 @@ export class PengajuanRepository {
     return await db.pengajuanSkema.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, username: true, email: true } },
+        user: { select: { id: true, username: true, email: true, profil: { select: { namaLengkap: true } } } },
         dataPribadi: true,
         dokumen: {
           orderBy: { createdAt: "asc" },

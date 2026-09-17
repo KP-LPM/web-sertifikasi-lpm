@@ -46,88 +46,22 @@ export default function UploadSertifikat() {
     try {
       setIsLoading(true);
 
-      const samplePayload = {
-        nomorSertifikat: "70203 2432 0000000 2025",
-        nomorRegistrasi: "HMS 001 00000 2025",
-        namaPemegang: "Intan Tania",
-        bidangId: "Kehumasan",
-        bidangEn: "Public Relation",
-        kualifikasiId:
-          "Klaster Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-        kualifikasiEn: "Cluster Implementing Communication with Stakeholders",
-        kotaTerbit: "Bandung",
-        tanggalTerbitId: "22 Desember 2025",
-        tanggalTerbitEn: "December 22, 2025",
-        namaDirektur: "Prof. Dr. H. Ija Suntana, M.Ag., CLA.",
-        namaManajerSertifikasi: "Ichsan Taufik, MT., CIQA",
-        unitList: [
-          {
-            no: 1,
-            kodeUnit: "M.70HMS00.031.3",
-            judulUnitId: "Melaksanakan Media Relations",
-            judulUnitEn: "Implementing Media Relations",
-          },
-          {
-            no: 2,
-            kodeUnit: "M.70HMS00.032.2",
-            judulUnitId: "Melaksanakan Community Relations",
-            judulUnitEn: "Implementing Community Relations",
-          },
-          {
-            no: 3,
-            kodeUnit: "M.70HMS00.033.3",
-            judulUnitId: "Melaksanakan Corporate Social Responsibility (CSR)",
-            judulUnitEn: "Implementing Corporate Social Responsibility (CSR)",
-          },
-          {
-            no: 4,
-            kodeUnit: "M.70HMS00.034.1",
-            judulUnitId: "Melaksanakan Industrial Relations",
-            judulUnitEn: "Implementing Industrial Relations",
-          },
-          {
-            no: 5,
-            kodeUnit: "M.70HMS00.035.3",
-            judulUnitId: "Melaksanakan Government Relations",
-            judulUnitEn: "Implementing Government Relations",
-          },
-          {
-            no: 6,
-            kodeUnit: "M.70HMS00.036.1",
-            judulUnitId: "Melaksanakan Institusional Relations",
-            judulUnitEn: "Implementing Institutional Relations",
-          },
-          {
-            no: 7,
-            kodeUnit: "M.70HMS00.037.3",
-            judulUnitId: "Melaksanakan Internal Relations",
-            judulUnitEn: "Implementing Internal Relations",
-          },
-          {
-            no: 8,
-            kodeUnit: "M.70HMS00.038.3",
-            judulUnitId: "Melaksanakan Marketing Public Relations",
-            judulUnitEn: "Implementing Marketing Public Relations",
-          },
-          {
-            no: 9,
-            kodeUnit: "M.70HMS00.039.1",
-            judulUnitId: "Melaksanakan Customer Relations",
-            judulUnitEn: "Implementing Customer Relations",
-          },
-          {
-            no: 10,
-            kodeUnit: "M.70HMS00.040.3",
-            judulUnitId: "Melaksanakan Investor Relations",
-            judulUnitEn: "Implementing Investor Relations",
-          },
-        ],
+      if (!editingAsesi) {
+        showNotification("Asesi belum dipilih.", "error");
+        return;
+      }
+
+      const payloadBody = {
+        pengajuanId: editingAsesi.asesi.id,
+        nomorSertifikat: inputForm.n || `50${Math.floor(100 + Math.random() * 900)}/LSP-SGD/VIII/2026`,
+        nomorRegistrasi: `HMS ${Math.floor(100 + Math.random() * 900)} 00000 2026`,
+        tanggalTerbit: inputForm.issueDate
       };
 
       const res = await fetch("/api/surat/sertifikat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(samplePayload),
+        body: JSON.stringify(payloadBody),
       });
 
       if (!res.ok) throw new Error("Gagal download sertifikat");
@@ -136,7 +70,7 @@ export default function UploadSertifikat() {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `Sertifikat_${samplePayload.namaPemegang}.pdf`;
+      link.download = `Sertifikat_${editingAsesi.asesi.nama}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -171,7 +105,7 @@ export default function UploadSertifikat() {
         setExtraCrumbs([]);
       }
     }
-    
+
     // Cleanup saat unmount atau pindah halaman
     return () => {
       if (setExtraCrumbs) {
@@ -185,7 +119,7 @@ export default function UploadSertifikat() {
     const handleResetModal = () => {
       setSelectedPlenoId(null);
     };
-    
+
     window.addEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
     return () => {
       window.removeEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
@@ -212,7 +146,7 @@ export default function UploadSertifikat() {
     try {
       setIsDataLoading(true);
       const res = await getBatchCompleted();
-      
+
       if (Array.isArray(res)) {
         const mapped: PlenoGroup[] = res.map((p) => {
           return {
@@ -220,9 +154,7 @@ export default function UploadSertifikat() {
             plenoTitle: p.title || p.batchCode || `Sidang Pleno Batch ${p.id}`,
             skemaList: p.skemaList || [],
             tanggal: p.tanggal
-              ? new Date(p.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })
-              : "-",
-            waktu: p.waktu ? new Date(p.waktu).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB" : "09:00 - 12:00 WIB",
+              || "-",
             alamat: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
             isOnline: !!p.isOnline,
             status: p.status === "Selesai" ? "Selesai" : "Terjadwal",
@@ -582,8 +514,8 @@ export default function UploadSertifikat() {
                         {/* Online / Offline / Status Badge */}
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${pleno.status === "Selesai"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-amber-50 text-amber-700 border-amber-200"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
                             }`}
                         >
                           {pleno.status === "Selesai" ? (
@@ -614,15 +546,7 @@ export default function UploadSertifikat() {
                             <span>{pleno.tanggal}</span>
                           </div>
                           <span className="text-slate-300">•</span>
-                          <div className="flex items-center gap-1.5">
-                            <Clock
-                              size={14}
-                              className="text-slate-400 shrink-0"
-                            />
-                            <span className="font-semibold text-slate-700">
-                              {pleno.waktu}
-                            </span>
-                          </div>
+
                         </div>
 
                         {/* Location */}
@@ -660,8 +584,8 @@ export default function UploadSertifikat() {
                         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div
                             className={`h-full transition-all duration-500 ${progressPercent === 100
-                                ? "bg-emerald-500"
-                                : "bg-[#008BE3]"
+                              ? "bg-emerald-500"
+                              : "bg-[#008BE3]"
                               }`}
                             style={{ width: `${progressPercent}%` }}
                           />
@@ -712,7 +636,7 @@ export default function UploadSertifikat() {
           {/* Header Card Info for Selected Pleno */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
             <div className="p-4 sm:p-6 border-b border-slate-100 space-y-4">
-              
+
               {/* Desain Baru Bagian Kiri (Back, Judul) & Kanan (Badge) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 {/* Bagian Kiri */}
@@ -739,11 +663,10 @@ export default function UploadSertifikat() {
                 {/* Bagian Kanan */}
                 <div className="shrink-0 flex items-center">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
-                      selectedPlenoGroup?.status === "Selesai"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
-                    }`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${selectedPlenoGroup?.status === "Selesai"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border-amber-200"
+                      }`}
                   >
                     {selectedPlenoGroup?.status === "Selesai" ? (
                       <CheckCircle2 size={14} className="stroke-[2.5]" />
@@ -757,14 +680,6 @@ export default function UploadSertifikat() {
 
               {/* Meta Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100 text-xs">
-                <div>
-                  <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    Rentang Waktu
-                  </p>
-                  <p className="font-bold text-slate-800 text-xs sm:text-sm mt-0.5">
-                    {selectedPlenoGroup?.tanggal} ({selectedPlenoGroup?.waktu})
-                  </p>
-                </div>
                 <div>
                   <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                     TUK
@@ -887,7 +802,7 @@ export default function UploadSertifikat() {
 
                         {/* Nama Asesi */}
                         <td className="px-6 py-4 align-middle whitespace-nowrap">
-                          <p className="font-bold text-slate-900 text-[14px] whitespace-nowrap">
+                          <p className="font-medium text-slate-900 text-[14px] whitespace-nowrap">
                             {candidate.nama}
                           </p>
                         </td>
@@ -902,7 +817,7 @@ export default function UploadSertifikat() {
                         {/* Nomor Sertifikat */}
                         <td className="px-6 py-4 align-middle whitespace-nowrap">
                           {candidate.noSertifikat ? (
-                            <p className="font-bold text-slate-900 text-[14px] whitespace-nowrap">
+                            <p className="font-medium text-slate-900 text-[14px] whitespace-nowrap">
                               {candidate.noSertifikat}
                             </p>
                           ) : (
@@ -1115,8 +1030,8 @@ export default function UploadSertifikat() {
                       setInputForm({ ...inputForm, issueDate: e.target.value })
                     }
                     className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold outline-none transition-all ${readOnly
-                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                        : "bg-slate-50 focus:border-[#008BE3] focus:bg-white"
+                      ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                      : "bg-slate-50 focus:border-[#008BE3] focus:bg-white"
                       }`}
                   />
                 </div>
@@ -1126,9 +1041,6 @@ export default function UploadSertifikat() {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 items-center justify-between">
                   <span>Tautan Google Drive Sertifikat {!readOnly && "*"}</span>
-                  <span className="text-[10px] text-[#008BE3] font-bold">
-                    PDF / Google Drive URL
-                  </span>
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                   <div className="relative flex-1 flex items-center">
@@ -1153,8 +1065,8 @@ export default function UploadSertifikat() {
                         })
                       }
                       className={`w-full border border-sky-200 rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm font-semibold outline-none transition-all ${readOnly
-                          ? "bg-slate-100 text-slate-700 cursor-not-allowed"
-                          : "bg-sky-50/50 text-slate-800 focus:border-[#008BE3] focus:bg-white"
+                        ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                        : "bg-sky-50/50 text-slate-800 focus:border-[#008BE3] focus:bg-white"
                         }`}
                     />
                   </div>
@@ -1164,8 +1076,8 @@ export default function UploadSertifikat() {
                       disabled={isLoading}
                       onClick={() => handleDownloadSertifikat()}
                       className={`px-3.5 py-2.5 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95 ${isLoading
-                          ? "bg-slate-400 cursor-not-allowed"
-                          : "bg-emerald-600 hover:bg-emerald-700"
+                        ? "bg-slate-400 cursor-not-allowed"
+                        : "bg-emerald-600 hover:bg-emerald-700"
                         }`}
                       title="Generate otomatis tautan Google Drive sertifikat"
                     >
@@ -1234,7 +1146,7 @@ export default function UploadSertifikat() {
                       type="submit"
                       className="px-5 py-2 text-xs font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
                     >
-                      <Check size={16} /> Simpan Link Sertifikat
+                      Simpan
                     </button>
                   </>
                 )}

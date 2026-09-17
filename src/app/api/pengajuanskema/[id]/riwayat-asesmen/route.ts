@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { getToken } from "next-auth/jwt";
 import z from "zod";
 import { riwayatAsesmenService } from "@/services/riwayat-asesmen.service";
+import { pengajuanService } from "@/services/pengajuanskema.service";
 import { CreateRiwayatAsesmenSchema } from "@/schemas/riwayat-asesmen.schema";
 import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
@@ -62,15 +63,17 @@ export async function POST(request: NextRequest, context: Context) {
       return sendResponse(401, "Anda harus login terlebih dahulu");
     }
 
-    if (token.role !== "admin" && token.role !== "asesor") {
-      return sendResponse(403, "Akses ditolak");
-    }
-
     const { id } = await context.params;
     const pengajuanId = Number(id);
     if (isNaN(pengajuanId)) {
       return sendResponse(400, "ID pengajuan tidak valid");
     }
+
+    // Verifikasi kepemilikan atau hak akses pengajuan
+    await pengajuanService.getById(pengajuanId, {
+      id: Number(token.id),
+      role: token.role as string,
+    });
 
     const body = await request.json();
     const validatedData = CreateRiwayatAsesmenSchema.parse({

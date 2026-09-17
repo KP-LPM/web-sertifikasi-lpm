@@ -9,6 +9,7 @@ import {
   UpdateAsesiPlenoInput,
 } from "@/schemas/pleno.schema";
 import { NotFoundError, InvariantError } from "@/error/index";
+import { suratService } from "@/services/surat.service";
 
 export class PlenoService {
   constructor(private repo: PlenoRepository = plenoRepository) { }
@@ -36,35 +37,88 @@ export class PlenoService {
 
   async update(id: number, data: UpdatePlenoInput) {
     await this.getById(id);
-    const pleno = await this.repo.update(id, data);
-    if (!pleno) throw new InvariantError("Gagal memperbarui jadwal pleno");
-    
-    // Jika status sidang pleno diubah menjadi "Selesai"
-    if (data.status === "Selesai") {
-      const asesiList = await this.repo.getAsesiByPlenoBatchId(id);
-      const pengajuanIds = asesiList.map(a => a.pengajuan_id);
+    // Wrap di dalam transaction agar atomik
+    const { db } = await import("@/lib/db");
+    const result = await db.$transaction(async (tx) => {
+      const pleno = await this.repo.update(id, data, tx);
+      if (!pleno) throw new InvariantError("Gagal memperbarui jadwal pleno");
       
-      if (pengajuanIds.length > 0) {
-        // Update status pengajuan skema menjadi "Selesai"
-        const { db } = await import("@/lib/db");
-        await db.pengajuanSkema.updateMany({
-          where: { id: { in: pengajuanIds } },
-          data: { status: "Selesai" }
-        });
+      // Jika status sidang pleno diubah menjadi "Selesai"
+      if (data.status === "Selesai") {
+        const asesiList = await this.repo.getAsesiByPlenoBatchId(id);
+        const pengajuanIds = asesiList.map(a => a.pengajuan_id);
+        
+        if (pengajuanIds.length > 0) {
+          // Update status pengajuan skema menjadi "Selesai"
+          await tx.pengajuanSkema.updateMany({
+            where: { id: { in: pengajuanIds } },
+            data: { status: "Selesai" }
+          });
 
-        // Update status_pleno berdasarkan rekomendasi_asesor
-        await db.pleno_asesi.updateMany({
-          where: { pleno_batch_id: id, rekomendasi_asesor: "K" },
-          data: { status_pleno: "Kompeten" }
-        });
-        await db.pleno_asesi.updateMany({
-          where: { pleno_batch_id: id, rekomendasi_asesor: "BK" },
-          data: { status_pleno: "Belum Kompeten" }
-        });
+          // Update status_pleno berdasarkan rekomendasi_asesor
+          await tx.pleno_asesi.updateMany({
+            where: { pleno_batch_id: id, rekomendasi_asesor: "K" },
+            data: { status_pleno: "K" }
+          });
+          await tx.pleno_asesi.updateMany({
+            where: { pleno_batch_id: id, rekomendasi_asesor: "BK" },
+            data: { status_pleno: "BK" }
+          });
+        }
+      }
+      return pleno;
+    });
+
+    if (data.status === "Selesai") {
+      try {
+        const d = new Date();
+        const baseNomor = `PLENO-${id}-${d.getFullYear()}`;
+        
+        if (data.link_surat_berita_pleno) {
+          await suratService.create({
+            nomor_surat: `BAP-${baseNomor}`,
+            judul: "Surat Berita Acara Pleno",
+            kategori: "surat_masuk",
+            jenis_surat: "berita_acara_pleno",
+            nama_jenis_surat: "Surat Berita Acara Pleno",
+            tanggal_terbit: d,
+            status: "Terbit",
+            url_gdrive: data.link_surat_berita_pleno,
+            url_dokumen: data.link_surat_berita_pleno,
+          });
+        }
+        if (data.link_surat_keputusan_direktur) {
+          await suratService.create({
+            nomor_surat: `SK-${baseNomor}`,
+            judul: "Surat Keputusan Direktur",
+            kategori: "surat_keluar",
+            jenis_surat: "keputusan_pleno",
+            nama_jenis_surat: "Surat Hasil Keputusan Pleno",
+            tanggal_terbit: d,
+            status: "Terbit",
+            url_gdrive: data.link_surat_keputusan_direktur,
+            url_dokumen: data.link_surat_keputusan_direktur,
+          });
+        }
+        if (data.link_surat_blanko_bnsp) {
+          await suratService.create({
+            nomor_surat: `BLNK-${baseNomor}`,
+            judul: "Surat Blanko BNSP",
+            kategori: "surat_keluar",
+            jenis_surat: "blanko_bnsp",
+            nama_jenis_surat: "Surat Blanko BNSP",
+            tanggal_terbit: d,
+            status: "Terbit",
+            url_gdrive: data.link_surat_blanko_bnsp,
+            url_dokumen: data.link_surat_blanko_bnsp,
+          });
+        }
+      } catch (err) {
+        console.error("Gagal menyimpan surat-surat pleno secara otomatis:", err);
       }
     }
 
-    return pleno;
+    return result;
   }
 
   async delete(id: number) {

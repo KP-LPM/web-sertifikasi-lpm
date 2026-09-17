@@ -67,6 +67,10 @@ export default function SidangPleno() {
     pengajuan_skema?: {
       dataPribadi?: { nik?: string; namaLengkap?: string };
       skema?: { namaSkema?: string };
+      user?: {
+        username?: string;
+        profil?: { namaLengkap?: string };
+      };
     };
     users?: {
       username?: string;
@@ -118,8 +122,7 @@ export default function SidangPleno() {
         id: a.id,
         nik: a.pengajuan_skema?.dataPribadi?.nik || `121705${a.id}`,
         nama:
-          a.pengajuan_skema?.dataPribadi?.namaLengkap ||
-          a.nama ||
+          a.pengajuan_skema?.user?.profil?.namaLengkap ||
           `Asesi ${a.id}`,
         skema: a.pengajuan_skema?.skema?.namaSkema || skemaStr,
         asesor:
@@ -234,34 +237,23 @@ export default function SidangPleno() {
     try {
       setIsLoading(true);
 
-      // Data payload (dapat diambil dari state tabel atau form input admin)
+      // Data payload dari formData
       const payload = {
-        nomorSk: "001/SKKL/LSPP1UINSGD/XII/2025",
-        tanggalPelaksanaan: "16-19 Desember 2025",
-        tempatUji: "Kantor LSP P1 UIN Sunan Gunung Djati Bandung",
-        lokasiDitetapkan: "Bandung",
-        tanggalDitetapkan: "22 Desember 2025",
-        namaDirektur: "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
-        asesiList: [
-          {
-            no: 1,
-            nama: "Intan Tania",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 2,
-            nama: "Anggita Firdayanti",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 3,
-            nama: "Mila Fajariah",
-            skema: "Auditor Halal",
-            isKompeten: true,
-          },
-        ],
+        nomorSk: skDirekturNomor || formData?.noSK || "SK/LSP-UIN/PLN/2026/001",
+        tanggalPelaksanaan: formData?.tanggal || "-",
+        tempatUji: formData?.alamat || "-",
+        lokasiDitetapkan: skDirekturKota || "Bandung",
+        tanggalDitetapkan: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+        namaDirektur: formData?.plenoAttendees?.find(a => a.role === "direktur")?.nama || "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
+        asesiList: (formData?.asesiList || []).map((a, i) => {
+          const asesiObj = typeof a === "object" ? a as AsesiPlenoItem : {} as AsesiPlenoItem;
+          return {
+            no: i + 1,
+            nama: typeof a === "object" ? asesiObj.nama : String(a),
+            skema: typeof a === "object" ? asesiObj.skema : formData?.skema || "-",
+            isKompeten: typeof a === "object" ? asesiObj.statusPleno === "K" : true,
+          };
+        }),
       };
 
       const response = await fetch("/api/surat/hasilsidangpleno", {
@@ -294,209 +286,30 @@ export default function SidangPleno() {
     try {
       setIsLoading(true);
 
-      // Data fallback jika tidak dipassing lewat props
+      const totalAsesi = formData?.asesiList?.length || 0;
+      const totalKompeten = formData?.asesiList?.filter(a => typeof a === "object" ? a.statusPleno === "K" : true).length || 0;
+      const totalBelumKompeten = totalAsesi - totalKompeten;
+
       const payloadBeritaAcara = {
-        tanggalPleno: "22 Desember tahun 2025",
-        tanggalPelaksanaan: "16-19 Desember 2025",
-        totalAsesi: 30,
-        totalKompeten: 29,
-        totalBelumKompeten: 1,
-        kotaPleno: "Bandung",
-        tanggalSurat: "22 Desember 2025",
-        asesiList: [
-          // Skema 1: Melaksanakan Komunikasi dengan Pemangku Kepentingan (11 Asesi)
-          {
-            no: 1,
-            nama: "Intan Tania",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 2,
-            nama: "Anggita Firdayanti",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 3,
-            nama: "Hasna Zahra Annabilah",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 4,
-            nama: "Ananda Anggunistiani",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 5,
-            nama: "Nurul Hasanah",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 6,
-            nama: "Anisa Sapitri",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 7,
-            nama: "Nurul Aini",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 8,
-            nama: "Puji Anggraeni",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 9,
-            nama: "Ira Dian Nurmala",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 10,
-            nama: "Sara Magdi Mamdouh Salama",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-          {
-            no: 11,
-            nama: "Raisha Srikandi Sekartaji",
-            skema: "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
-            isKompeten: true,
-          },
-
-          // Skema 2: Penerjemah Teks Umum (9 Asesi)
-          {
-            no: 12,
-            nama: "Tri Ramadani",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 13,
-            nama: "Intan Permata Sari",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 14,
-            nama: "Zuvika Amoret Syarifatul Ainiyyah",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 15,
-            nama: "Muhammad Aditia",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 16,
-            nama: "Khadijah",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 17,
-            nama: "Rr. Ririh Widowati",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 18,
-            nama: "Khoerul Amin",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 19,
-            nama: "Anwar Sudirja",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-          {
-            no: 20,
-            nama: "Nur Irmandi",
-            skema: "Penerjemah Teks Umum",
-            isKompeten: true,
-          },
-
-          // Skema 3: Penyelia Halal (8 Asesi)
-          {
-            no: 21,
-            nama: "Gisna Maulida Qurosyiyah",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-          {
-            no: 22,
-            nama: "Irfan Muhammad Ihsanuddin",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-          {
-            no: 23,
-            nama: "Annisa Hakim",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-          {
-            no: 24,
-            nama: "Mayang Sri Rahayu",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-          {
-            no: 25,
-            nama: "Hanny Aurelya",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-          {
-            no: 26,
-            nama: "Zulfa Ayu Zahra",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-          {
-            no: 27,
-            nama: "Falama Fauzia",
-            skema: "Penyelia Halal",
-            isKompeten: false,
-          }, // Contoh asesi Belum Kompeten (BK)
-          {
-            no: 28,
-            nama: "Milatul Afifah",
-            skema: "Penyelia Halal",
-            isKompeten: true,
-          },
-
-          // Skema 4: Auditor Halal (2 Asesi)
-          {
-            no: 29,
-            nama: "Asep Andri",
-            skema: "Auditor Halal",
-            isKompeten: true,
-          },
-          {
-            no: 30,
-            nama: "Muhammad Algi Al Hanafi",
-            skema: "Auditor Halal",
-            isKompeten: true,
-          },
-        ],
-        anggotaKomiteList: [
-          { nama: "Prof. Dr. H. Ija Suntana, M. Ag., CLA" },
-          { nama: "Ichsan Taufik, M.T." },
-          { nama: "Dr. Elis Ratna Wulan, S. Si., MT" },
-        ],
+        tanggalPleno: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+        tanggalPelaksanaan: formData?.tanggal || "-",
+        totalAsesi: totalAsesi,
+        totalKompeten: totalKompeten,
+        totalBelumKompeten: totalBelumKompeten,
+        kotaPleno: beritaAcaraKota || "Bandung",
+        tanggalSurat: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+        asesiList: (formData?.asesiList || []).map((a, i) => {
+          const asesiObj = typeof a === "object" ? a as AsesiPlenoItem : {} as AsesiPlenoItem;
+          return {
+            no: i + 1,
+            nama: typeof a === "object" ? asesiObj.nama : String(a),
+            skema: typeof a === "object" ? asesiObj.skema : formData?.skema || "-",
+            isKompeten: typeof a === "object" ? asesiObj.statusPleno === "K" : true,
+          };
+        }),
+        anggotaKomiteList: formData?.plenoAttendees
+          ?.filter(a => a.nama && a.nama.trim() !== "")
+          ?.map(a => ({ nama: a.nama })) || [],
       };
 
       const res = await fetch("/api/surat/beritasidangpleno", {
@@ -533,23 +346,37 @@ export default function SidangPleno() {
     try {
       setIsLoading(true);
 
+      const totalAsesi = formData?.asesiList?.length || 0;
+      const totalKompeten = formData?.asesiList?.filter(a => typeof a === "object" ? a.statusPleno === "K" : true).length || 0;
+      const totalBelumKompeten = totalAsesi - totalKompeten;
+
+      const terbilang = (num: number): string => {
+        const words = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+        if (num < 12) return words[num];
+        if (num < 20) return words[num - 10] + " belas";
+        if (num < 100) return words[Math.floor(num / 10)] + (num % 10 !== 0 ? " puluh " + words[num % 10] : " puluh");
+        if (num < 200) return "seratus " + terbilang(num - 100);
+        if (num < 1000) return words[Math.floor(num / 100)] + " ratus " + terbilang(num % 100);
+        return num.toString();
+      };
+
       const payload = {
-        kotaSurat: "Bandung",
-        tanggalSurat: "22 Desember 2025",
-        nomorSurat: "003/SP/LSPP1UINSGD/XII/2025",
+        kotaSurat: blankoBNSPKota || "Bandung",
+        tanggalSurat: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+        nomorSurat: formData?.noSK || "003/SP/LSPP1UINSGD/XII/2025",
         lampiran: "1 (Satu) berkas",
         tujuanYth: "Ketua Badan Nasional Sertifikasi Profesi (BNSP)",
         kotaTujuan: "Jakarta",
-        jumlahPeserta: 44,
+        jumlahPeserta: totalAsesi,
         kompetenBnsp: "-",
         kompetenKementerian: "-",
-        kompetenMandiri: 43,
+        kompetenMandiri: totalKompeten,
         kompetenRcc: "-",
-        belumKompeten: 1,
-        totalJumlah: 44,
-        jumlahLembarBlanko: 43,
-        terbilangLembarBlanko: "empat puluh tiga",
-        namaKetua: "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
+        belumKompeten: totalBelumKompeten,
+        totalJumlah: totalAsesi,
+        jumlahLembarBlanko: totalKompeten,
+        terbilangLembarBlanko: terbilang(totalKompeten).trim(),
+        namaKetua: formData?.plenoAttendees?.find(a => a.role === "direktur")?.nama || "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
       };
 
       const res = await fetch("/api/surat/blankobnsp", {

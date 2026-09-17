@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
-import React, { useRef, useState, useEffect } from "react";
-import { X, PenTool } from "lucide-react";
+
+import React, { useState, useEffect } from "react";
 
 
 export function SignatureField({
@@ -96,7 +94,7 @@ export function SignatureField({
           </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center relative">
-             <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400">
               Harap centang profil untuk menggunakan tanda tangan profil.
             </span>
           </div>

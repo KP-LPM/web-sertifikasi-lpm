@@ -8,6 +8,7 @@ import {
   FileText,
   Calendar,
   X,
+  XCircle,
   ArrowLeft,
   MapPin,
   Building,
@@ -35,19 +36,40 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { getJadwalCompleted, getBatchCompleted } from "@/lib/api";
+import { getJadwalCompleted, getBatchCompleted, getCandidatesList } from "@/lib/api";
 import {
   CompletedBatchAsesi,
   CompletedBatchItem,
   AsesiPlenoItem,
   PlenoDetailData,
   AssessmentItem,
+  TipeTuk,
+  JenisMetode,
 } from "@/types/types";
 
+interface CandidateCandidateItem {
+  pengajuanId: number;
+  nik?: string;
+  namaLengkap?: string;
+  namaSkema?: string;
+  kodeSkema?: string;
+  namaAsesor?: string;
+  asesorReg?: string;
+  hasilAsesmen?: string;
+  statusPengajuan?: string;
+  tanggalJadwal?: string;
+  waktuMulai?: string;
+  tipeTuk?: string;
+  metode?: string;
+  alamat?: string;
+  namaTuk?: string;
+}
+
 export default function RiwayatAsesmenAdmin() {
-  const { AssessmentItems, setExtraCrumbs } = useAppContext();
+  const { setExtraCrumbs } = useAppContext();
 
   const [mainTab, setMainTab] = useState<"asesmen" | "batch" | "pleno">("asesmen");
+  const [assessmentList, setAssessmentList] = useState<AssessmentItem[]>([]);
   const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
   const [completedPleno, setCompletedPleno] = useState<PlenoDetailData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,7 +108,7 @@ export default function RiwayatAsesmenAdmin() {
         setExtraCrumbs([]);
       }
     }
-    
+
     // Cleanup saat pindah halaman
     return () => {
       if (setExtraCrumbs) {
@@ -104,7 +126,7 @@ export default function RiwayatAsesmenAdmin() {
       setPreviewForm(null);
       setPreviewPlenoDoc(null);
     };
-    
+
     window.addEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
     return () => {
       window.removeEventListener("BREADCRUMB_RESET_MODAL", handleResetModal);
@@ -118,10 +140,47 @@ export default function RiwayatAsesmenAdmin() {
   const fetchHistoryData = async () => {
     setIsLoading(true);
     try {
-      const [batchData, plenoData] = await Promise.all([
+      const [candidatesData, batchData, plenoData] = await Promise.all([
+        getCandidatesList(),
         getJadwalCompleted(),
         getBatchCompleted(),
       ]);
+
+      if (Array.isArray(candidatesData)) {
+        const completed = (candidatesData as unknown as CandidateCandidateItem[]).filter(
+          (c) =>
+            (c.hasilAsesmen && c.hasilAsesmen !== "Belum Dinilai") ||
+            c.statusPengajuan === "Selesai" ||
+            c.statusPengajuan === "Menunggu Pleno",
+        );
+        const mapped: AssessmentItem[] = completed.map((c) => ({
+          id: c.pengajuanId,
+          nik: c.nik || "-",
+          nama: c.namaLengkap || c.nik || "Asesi",
+          skema: c.namaSkema || "Skema Sertifikasi",
+          tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
+          metode: (c.metode || "Online") as JenisMetode,
+          waktu: c.waktuMulai || "09:00 - 12:00 WIB",
+          tglAsesmen: c.tanggalJadwal
+            ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })
+            : "-",
+          hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
+          status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
+          alamat: c.alamat || "UIN Sunan Gunung Djati Bandung",
+          noSkema: c.kodeSkema || "-",
+          tuk: c.namaTuk || "Lab Komputer Terpadu",
+          metodeAsesmen: (c.metode as JenisMetode) || "Online",
+          asesor: c.namaAsesor || "Asesor Penguji",
+          asesorReg: c.asesorReg || "",
+        }));
+        setAssessmentList(mapped);
+      } else {
+        setAssessmentList([]);
+      }
 
       const batchList = Array.isArray(batchData) ? batchData : (batchData?.data && Array.isArray(batchData.data) ? batchData.data : []);
       const plenoList = Array.isArray(plenoData) ? plenoData : (plenoData?.data && Array.isArray(plenoData.data) ? plenoData.data : []);
@@ -130,6 +189,7 @@ export default function RiwayatAsesmenAdmin() {
       setCompletedPleno(plenoList);
     } catch (error) {
       console.error("Error fetching history data:", error);
+      setAssessmentList([]);
     } finally {
       setIsLoading(false);
     }
@@ -168,7 +228,7 @@ export default function RiwayatAsesmenAdmin() {
   };
 
   // Filtered Assessments
-  const filteredAssessments = AssessmentItems.filter((item: AssessmentItem) => {
+  const filteredAssessments = assessmentList.filter((item: AssessmentItem) => {
     if (hasilFilter && item.hasil !== hasilFilter) return false;
     if (statusFilter && item.status !== statusFilter) return false;
     if (searchTerm) {
@@ -726,7 +786,18 @@ export default function RiwayatAsesmenAdmin() {
                   </tr>
                 </thead>
                 <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-                  {filteredAssessments.length > 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={9} className="px-6 py-16 text-center text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="w-8 h-8 border-4 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+                          <span className="font-medium text-sm text-slate-500">
+                            Memuat riwayat asesmen...
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredAssessments.length > 0 ? (
                     filteredAssessments.map((item: AssessmentItem) => (
                       <tr
                         key={item.id}
@@ -799,7 +870,7 @@ export default function RiwayatAsesmenAdmin() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="px-6 py-16 text-center">
+                      <td colSpan={9} className="px-6 py-16 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-400">
                           <History size={36} className="mb-2 text-slate-300" />
                           <p className="font-bold text-slate-700 text-base">
@@ -1020,7 +1091,7 @@ export default function RiwayatAsesmenAdmin() {
                             <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover:bg-slate-50/80 border-l border-gray-100">
                               <button
                                 onClick={() => {
-                                  const found = AssessmentItems.find(
+                                  const found = assessmentList.find(
                                     (a: AssessmentItem) =>
                                       a.nama?.toLowerCase() ===
                                       asesi.nama.toLowerCase(),
@@ -1133,7 +1204,7 @@ export default function RiwayatAsesmenAdmin() {
 
                     return (
                       <div
-                        key={batch.kode}
+                        key={batch.id}
                         className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#008BE3]/50 transition-all flex flex-col justify-between overflow-hidden group"
                       >
                         {/* Card Top Header */}
@@ -1288,7 +1359,7 @@ export default function RiwayatAsesmenAdmin() {
             </div>
           )}
         </div>
-      )} 
+      )}
       {/* TAB 3: SIDANG PLENO */}
       {mainTab === "pleno" && (
         <div className="space-y-6">
@@ -1321,25 +1392,15 @@ export default function RiwayatAsesmenAdmin() {
                   <thead>
                     <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                       <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        Batch
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                         Nama Sidang Pleno
                       </th>
-                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        No. SK Keputusan
-                      </th>
+
                       <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                         Tanggal
                       </th>
+
                       <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        TUK
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        Alamat TUK
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                        Waktu
+                        Alamat
                       </th>
                       <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap text-center">
                         Jumlah Asesi
@@ -1360,11 +1421,6 @@ export default function RiwayatAsesmenAdmin() {
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-[14px] font-bold text-slate-900">
-                              {item.batchCode || item.id}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-[14px] font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors leading-snug">
                               {item.title || `Sidang Pleno ${item.skema}`}
                             </div>
@@ -1375,27 +1431,10 @@ export default function RiwayatAsesmenAdmin() {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-[14px] font-mono font-bold text-slate-700 bg-sky-50 border border-sky-100 px-2.5 py-1 rounded-md">
-                              {item.noSK}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-[14px] font-bold text-slate-800">
                               <Calendar size={13} className="text-[#008BE3]" />
                               {item.tanggal}
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${item.jenisTuk === "Sewaktu" || !item.jenisTuk
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : item.jenisTuk === "Mandiri"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-blue-50 text-blue-700 border-blue-200"
-                                }`}
-                            >
-                              {item.jenisTuk || "Sewaktu"}
-                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-slate-700 font-medium text-[14px]">
@@ -1408,15 +1447,7 @@ export default function RiwayatAsesmenAdmin() {
                               </span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 text-slate-600 font-medium text-[14px]">
-                              <Clock
-                                size={13}
-                                className="text-[#008BE3] shrink-0"
-                              />
-                              {item.waktu}
-                            </div>
-                          </td>
+
                           <td className="px-6 py-4 text-center whitespace-nowrap">
                             <span className="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-full font-bold text-[11px] inline-flex items-center gap-1">
                               <Users size={12} className="text-[#008BE3]" />
@@ -1462,123 +1493,117 @@ export default function RiwayatAsesmenAdmin() {
           ) : (
             /* DETAIL VIEW SIDANG PLENO SELESAI */
             <div className="space-y-6">
-              {/* Back button */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-                <div className="flex items-center gap-3">
+
+              {/* Header Sidang Pleno with Back Button & Title */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5 min-w-0">
                   <button
                     onClick={() => setSelectedPleno(null)}
                     className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
-                    title="Kembali ke Daftar Riwayat Pleno"
+                    title="Kembali ke Daftar Pleno"
                   >
                     <ArrowLeft size={18} />
                   </button>
-                  <span className="text-sm font-bold text-slate-800">
-                    Kembali ke Daftar Riwayat Pleno
-                  </span>
-                </div>
 
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5">
-                  <CheckCircle
-                    size={15}
-                    className="shrink-0 text-emerald-600"
-                  />
-                  Status Sidang: Selesai
-                </span>
-              </div>
-
-              {/* Header Info Pleno */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                  <span className="font-mono text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">
-                    {selectedPleno.batchCode || selectedPleno.id}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200">
-                    <CheckCircle size={12} /> Status: Selesai
-                  </span>
+                  <div className="min-w-0">
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 truncate">
+                      Detail Sidang Pleno
+                    </h2>
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-700 border-emerald-200"
+                    >
+                      <CheckCircle size={12} />
+                      Status: Selesai
+                    </span>
+                  </div>
                 </div>
-                <h2 className="text-lg md:text-xl font-black text-slate-900">
-                  {selectedPleno.title || `Sidang Pleno ${selectedPleno.skema}`}
-                </h2>
-                <p className="text-xs text-slate-600 font-medium">
-                  Skema Sertifikasi:{" "}
-                  <span className="font-bold text-slate-800">
-                    {selectedPleno.skema}
-                  </span>
-                </p>
               </div>
 
               {/* Section 1: Informasi Keputusan & Jadwal Sidang */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-5">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <Scale size={18} className="text-[#008BE3]" />
-                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-                    Informasi Keputusan &amp; Jadwal Sidang
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Scale size={20} className="text-[#008BE3]" />
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                    Informasi Keputusan & Jadwal Sidang
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
                       Nama Sidang
                     </label>
-                    <div className="font-bold text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 truncate">
-                      {selectedPleno.title || "-"}
-                    </div>
+                    <input
+                      type="text"
+                      value={selectedPleno.title || "-"}
+                      readOnly
+                      disabled
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none truncate"
+                    />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">
-                      Rentang Tanggal Pelaksanaan
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                      Tanggal Pelaksanaan
                     </label>
-                    <div className="font-bold text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5">
-                      {selectedPleno.tanggal || "-"}
-                    </div>
+                    <input
+                      type="text"
+                      value={selectedPleno.tanggal || "-"}
+                      readOnly
+                      disabled
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none"
+                    />
                   </div>
+
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">
-                      tipeTuk
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                      TUK
                     </label>
-                    <div className="font-bold text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5">
-                      {selectedPleno.alamat || "-"}
-                    </div>
+                    <input
+                      type="text"
+                      value={selectedPleno.alamat || "-"}
+                      readOnly
+                      disabled
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-800 bg-slate-50 cursor-not-allowed outline-none select-none"
+                    />
                   </div>
                 </div>
 
-                {/* Peserta Sidang (Direktur, dewan_pengarah, Komite & Notulis) */}
+                {/* Peserta Sidang */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">
+                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
                     Peserta Sidang (Direktur, Pengarah &amp; Komite)
                   </label>
-                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl min-h-11 flex flex-wrap gap-2 items-center">
+                  <div className="p-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl min-h-13 flex flex-wrap gap-2 items-center">
                     {(() => {
                       const attendees =
                         selectedPleno.plenoAttendees &&
                           selectedPleno.plenoAttendees.length > 0
                           ? selectedPleno.plenoAttendees.filter(
-                            (a) =>
-                              a.nama.trim() !== "" &&
-                              a.role !== "Pimpinan Sidang",
+                            (a: { nama: string, role: string }) => a.nama.trim() !== "" && a.role !== "direktur",
                           )
                           : [
-                            { role: "Direktur", nama: "Prof. Dr. H. Ahmad" },
+                            { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
                             {
                               role: "dewan_pengarah",
                               nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
                             },
-
                             {
                               role: "komite_skema",
                               nama: "Asep Abdul Sahid, M.T.",
                             },
                           ];
-                      return attendees.map((att, idx) => (
+                      return attendees.map((att: { nama: string, role: string }, idx: number) => (
                         <span
                           key={idx}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 text-slate-800 rounded-lg text-xs font-bold shadow-2xs"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs shadow-sm hover:border-[#008BE3]/30 transition-colors"
                         >
-                          <span className="text-[#008BE3] font-semibold">
-                            [{att.role}]
+                          <span className="text-[#008BE3] font-bold uppercase tracking-wider text-[10px] bg-blue-50 px-1.5 py-0.5 rounded-md">
+                            {att.role}
                           </span>
-                          <span>{att.nama}</span>
+                          <span className="font-bold text-[12px]">{att.nama}</span>
                         </span>
                       ));
                     })()}
@@ -1586,154 +1611,202 @@ export default function RiwayatAsesmenAdmin() {
                 </div>
               </div>
 
-              {/* Section 2: Dokumen Keputusan & Surat Hasil Pleno */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2 text-slate-900 font-bold">
-                    <Link2 size={18} className="text-[#008BE3]" />
+              {/* Section 2: 3 Link Surat Dokumen Keputusan */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-3 text-slate-800">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <Link2 size={20} className="text-[#008BE3]" />
+                    </div>
                     <span className="text-sm font-black uppercase tracking-wider">
-                      Dokumen Keputusan &amp; Surat Hasil Pleno
+                      Dokumen Keputusan & Surat Hasil Pleno
                     </span>
                   </div>
-                  <span className="text-[11px] font-bold text-[#008BE3] bg-sky-50 px-3 py-1 rounded-full border border-sky-100">
+                  <span className="text-xs font-bold text-[#008BE3] bg-blue-50 px-3.5 py-1.5 rounded-lg border border-blue-100/50 shrink-0">
                     Dokumen Penetapan Resmi
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Link 1: Surat Berita Acara Pleno */}
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="text-xs font-bold text-slate-700 block">
-                      1. Surat Berita Acara Pleno
-                    </span>
-                    {selectedPleno.linkSuratBeritaPleno ? (
-                      <a
-                        href={selectedPleno.linkSuratBeritaPleno}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:underline truncate max-w-full"
-                      >
-                        <ExternalLink size={14} className="shrink-0" />
-                        <span className="truncate">Buka Link</span>
-                      </a>
-                    ) : (
-                      <p className="text-xs text-slate-400 font-medium">
-                        Belum dilampirkan
-                      </p>
-                    )}
+                <div className="space-y-4">
+                  {/* Field 1: Link Surat Berita Acara Pleno */}
+                  <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                    <div className="flex-1 space-y-1.5">
+                      <label className="block text-[12px] font-bold text-slate-700">
+                        <span>
+                          1. Link Surat Berita Acara Pleno{" "}
+                          <span className="text-slate-400 font-normal">
+                            (URL Google Drive)
+                          </span>
+                        </span>
+                      </label>
+                      <input
+                        type="url"
+                        readOnly
+                        value={selectedPleno.linkSuratBeritaPleno || ""}
+                        placeholder="Belum ada link surat"
+                        className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                      />
+                    </div>
+                    <div className="shrink-0 flex items-center gap-2 justify-end">
+                      {selectedPleno.linkSuratBeritaPleno ? (
+                        <a
+                          href={selectedPleno.linkSuratBeritaPleno}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-xl bg-[#008BE3] hover:bg-[#0076C2] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
+                          title="Buka Link Surat Berita Acara Pleno"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
+                      ) : (
+                        <span className="px-3 py-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center">
+                          Belum Ada Link
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Link 2: Surat Keputusan Direktur */}
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="text-xs font-bold text-slate-700 block">
-                      2. Surat Keputusan Direktur
-                    </span>
-                    {selectedPleno.linkSuratKeputusanDirektur ||
-                      selectedPleno.linkSuratHasil ? (
-                      <a
-                        href={
-                          selectedPleno.linkSuratKeputusanDirektur ||
-                          selectedPleno.linkSuratHasil
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:underline truncate max-w-full"
-                      >
-                        <ExternalLink size={14} className="shrink-0" />
-                        <span className="truncate">Buka Link</span>
-                      </a>
-                    ) : (
-                      <p className="text-xs text-slate-400 font-medium">
-                        Belum dilampirkan
-                      </p>
-                    )}
+                  {/* Field 2: Link Surat Keputusan Direktur */}
+                  <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                    <div className="flex-1 space-y-1.5">
+                      <label className="block text-[12px] font-bold text-slate-700">
+                        <span>
+                          2. Link Surat Keputusan Direktur{" "}
+                          <span className="text-slate-400 font-normal">
+                            (URL Google Drive)
+                          </span>
+                        </span>
+                      </label>
+                      <input
+                        type="url"
+                        readOnly
+                        value={selectedPleno.linkSuratKeputusanDirektur || selectedPleno.linkSuratHasil || ""}
+                        placeholder="Belum ada link surat"
+                        className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                      />
+                    </div>
+                    <div className="shrink-0 flex items-center gap-2 justify-end">
+                      {selectedPleno.linkSuratKeputusanDirektur || selectedPleno.linkSuratHasil ? (
+                        <a
+                          href={selectedPleno.linkSuratKeputusanDirektur || selectedPleno.linkSuratHasil}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-xl bg-[#008BE3] hover:bg-[#0076C2] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
+                          title="Buka Link Surat Keputusan Direktur"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
+                      ) : (
+                        <span className="px-3 py-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center">
+                          Belum Ada Link
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Link 3: Surat Blanko BNSP */}
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="text-xs font-bold text-slate-700 block">
-                      3. Surat Blanko BNSP
-                    </span>
-                    {selectedPleno.linkSuratBlankoBNSP ? (
-                      <a
-                        href={selectedPleno.linkSuratBlankoBNSP}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008BE3] hover:underline truncate max-w-full"
-                      >
-                        <ExternalLink size={14} className="shrink-0" />
-                        <span className="truncate">Buka Link</span>
-                      </a>
-                    ) : (
-                      <p className="text-xs text-slate-400 font-medium">
-                        Belum dilampirkan
-                      </p>
-                    )}
+                  {/* Field 3: Link Surat Blanko BNSP */}
+                  <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                    <div className="flex-1 space-y-1.5">
+                      <label className="block text-[12px] font-bold text-slate-700">
+                        <span>
+                          3. Link Surat Blanko BNSP{" "}
+                          <span className="text-slate-400 font-normal">
+                            (URL Google Drive)
+                          </span>
+                        </span>
+                      </label>
+                      <input
+                        type="url"
+                        readOnly
+                        value={selectedPleno.linkSuratBlankoBNSP || ""}
+                        placeholder="Belum ada link surat"
+                        className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-slate-800 transition-all bg-slate-100/80 cursor-not-allowed outline-none select-none"
+                      />
+                    </div>
+                    <div className="shrink-0 flex items-center gap-2 justify-end">
+                      {selectedPleno.linkSuratBlankoBNSP ? (
+                        <a
+                          href={selectedPleno.linkSuratBlankoBNSP}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-xl bg-[#008BE3] hover:bg-[#0076C2] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
+                          title="Buka Link Surat Blanko BNSP"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
+                      ) : (
+                        <span className="px-3 py-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center">
+                          Belum Ada Link
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Section 3: Tabel Asesi & Status K / BK */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden space-y-4 p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                      <Users size={18} className="text-[#008BE3]" />
-                      Daftar Asesi &amp; Penetapan Status Kelulusan (K / BK)
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
-                      Hasil kelulusan rekomendasi asesor dan keputusan sidang
-                      pleno.
-                    </p>
+              {/* Section 3: TABEL ASESI & PERUBAHAN STATUS K / BK */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-5 p-6 hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div className="flex items-start sm:items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg shrink-0">
+                      <Users size={20} className="text-[#008BE3]" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                        Daftar Asesi & Penetapan Status Kelulusan
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-1">
+                        Ubah status hasil pleno Kompeten atau Belum Kompeten untuk
+                        setiap asesi yang didaftarkan.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold flex items-center gap-2">
+                      <CheckCircle size={14} />
                       K:{" "}
                       {selectedPleno.asesiList?.filter(
                         (a: AsesiPlenoItem | string | number) =>
-                          typeof a === "object" &&
-                          a !== null &&
-                          a.statusPleno === "K",
+                          typeof a === "object" && a !== null && a.statusPleno === "K"
                       ).length || 0}
                     </span>
-                    <span className="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold">
+                    <span className="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold flex items-center gap-2">
+                      <XCircle size={14} />
                       BK:{" "}
                       {selectedPleno.asesiList?.filter(
                         (a: AsesiPlenoItem | string | number) =>
-                          typeof a === "object" &&
-                          a !== null &&
-                          a.statusPleno === "BK",
+                          typeof a === "object" && a !== null && a.statusPleno === "BK"
                       ).length || 0}
                     </span>
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-175 ">
+                <div className="overflow-x-auto relative">
+                  <table className="w-full text-left border-collapse min-w-175">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 border-y border-slate-200">
-                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                      <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                           No
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
-                          nik / ID
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
+                          Skema
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                           Nama Asesi
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-left whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                           Asesor Penguji
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center">
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
                           Rekomendasi Asesor
                         </th>
-                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center">
-                          Status Sidang Pleno (K/BK)
+                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-center whitespace-nowrap text-white/90 sticky top-0 z-20 bg-[#0F172A]">
+                          Status Sidang Pleno
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs font-medium">
+                    <tbody className="divide-y divide-slate-100">
                       {(selectedPleno.asesiList || []).map(
                         (
                           asesiItem: AsesiPlenoItem | string | number,
@@ -1756,18 +1829,18 @@ export default function RiwayatAsesmenAdmin() {
                           return (
                             <tr
                               key={asesi.id || idx}
-                              className="hover:bg-slate-50/80 transition-colors"
+                              className="group/row hover:bg-[#F9FAFC] transition-colors"
                             >
-                              <td className="px-4 py-3 font-bold text-slate-500">
+                              <td className="px-4 py-3 text-[14px] font-medium text-slate-700">
                                 {idx + 1}
                               </td>
-                              <td className="px-4 py-3 font-mono font-bold text-slate-700">
-                                {asesi.nik}
+                              <td className="px-4 py-3 text-[14px] font-medium text-slate-700">
+                                {asesi.skema || selectedPleno.skema}
                               </td>
-                              <td className="px-4 py-3 font-bold text-slate-900">
+                              <td className="px-4 py-3 text-[14px] font-medium text-slate-900 group-hover/row:text-[#008BE3] transition-colors">
                                 {asesi.nama}
                               </td>
-                              <td className="px-4 py-3 text-slate-600">
+                              <td className="px-4 py-3 text-[14px] font-medium text-slate-600">
                                 {asesi.asesor}
                               </td>
                               <td className="px-4 py-3 text-center">

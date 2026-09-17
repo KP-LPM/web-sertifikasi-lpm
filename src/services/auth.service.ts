@@ -16,6 +16,7 @@ import { userRepository } from "@/repositories/user.repository";
 import { resend } from "@/lib/resend";
 import { InvariantError } from "@/error";
 import OtpEmail from "@/components/emails/OtpEmail";
+import { supabase } from "@/lib/supabase";
 
 export class ValidationError extends Error {
   statusCode = 400;
@@ -66,6 +67,37 @@ export class AuthService {
       throw new ConflictError("Username/Email sudah terdaftar.");
     }
 
+    const existingNik = await this.repo.findProfileByNik(nik);
+    if (existingNik) {
+      throw new ConflictError("NIK sudah terdaftar di sistem.");
+    }
+
+    let finalSignatureUrl = tanda_tangan || null;
+
+    if (tanda_tangan && tanda_tangan.startsWith("data:image")) {
+      try {
+        const fetchResponse = await fetch(tanda_tangan);
+        const blob = await fetchResponse.blob();
+        const signatureFileName = `signature-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.png`;
+
+        const { error: signatureUploadError } = await supabase.storage
+          .from("signatures")
+          .upload(signatureFileName, blob);
+
+        if (signatureUploadError) {
+          throw new Error("Gagal upload tanda tangan: " + signatureUploadError.message);
+        }
+
+        const { data: signatureUrlData } = supabase.storage
+          .from("signatures")
+          .getPublicUrl(signatureFileName);
+
+        finalSignatureUrl = signatureUrlData.publicUrl;
+      } catch (err) {
+        throw new Error("Terjadi kesalahan saat memproses tanda tangan: " + (err instanceof Error ? err.message : String(err)));
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const mappedJenisKelamin = (
       jenis_kelamin === "Laki-laki" ? "Laki_laki" : "Perempuan"
@@ -90,7 +122,7 @@ export class AuthService {
         nomorRegistrasiMet: role === "asesor" ? nomor_registrasi_met : null,
         pendidikanTerakhir: role === "asesor" ? pendidikan_terakhir : null,
         alamat: role === "asesor" ? alamat_wilayah : null,
-        tandaTangan: tanda_tangan || null,
+        tandaTangan: finalSignatureUrl,
       },
     );
   }

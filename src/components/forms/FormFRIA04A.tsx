@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
@@ -42,12 +42,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
   const [localSupervisorName, setLocalSupervisorName] = useState("");
   const [localSupervisorSig, setLocalSupervisorSig] = useState("");
 
-  const [localPenyusun, setLocalPenyusun] = useState<PenyusunValidatorItem[]>(
-    [],
-  );
-  const [localValidator, setLocalValidator] = useState<PenyusunValidatorItem[]>(
-    [],
-  );
+
   const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
   const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
   const [isSupervisorSigModalOpen, setIsSupervisorSigModalOpen] =
@@ -130,39 +125,39 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
     apiUnits.length > 0
       ? apiUnits
       : props.asesmenData?.schemeDetail?.units &&
-          props.asesmenData.schemeDetail.units.length > 0
+        props.asesmenData.schemeDetail.units.length > 0
         ? props.asesmenData.schemeDetail.units.map((u) => {
-            const item = u as Record<string, unknown>;
-            return {
-              code:
-                (item.code as string) ||
-                (item.unitCode as string) ||
-                (item.kodeUnit as string) ||
-                "",
-              title:
-                (item.title as string) ||
-                (item.unitTitle as string) ||
-                (item.judulUnit as string) ||
-                "",
-            };
-          })
+          const item = u as Record<string, unknown>;
+          return {
+            code:
+              (item.code as string) ||
+              (item.unitCode as string) ||
+              (item.kodeUnit as string) ||
+              "",
+            title:
+              (item.title as string) ||
+              (item.unitTitle as string) ||
+              (item.judulUnit as string) ||
+              "",
+          };
+        })
         : [
-            {
-              code: "M.74PEN01.002.1",
-              title:
-                "Mencari Makna Kata dan Ungkapan dalam Teks Bahasa Asal Menggunakan Alat Bantu Penerjemahan Konvensional dan Nonkonvensional",
-            },
-            {
-              code: "M.74PEN01.008.1",
-              title:
-                "Memilih Metode yang Tepat Sesuai dengan Teks atau Bagian Teks yang Sedang Diterjemahkan",
-            },
-            {
-              code: "M.74PEN01.009.1",
-              title:
-                "Memilih Teknik Penerjemahan Untuk Kata, Frasa, Klausa, dan Kalimat dalam Teks Asal",
-            },
-          ];
+          {
+            code: "M.74PEN01.002.1",
+            title:
+              "Mencari Makna Kata dan Ungkapan dalam Teks Bahasa Asal Menggunakan Alat Bantu Penerjemahan Konvensional dan Nonkonvensional",
+          },
+          {
+            code: "M.74PEN01.008.1",
+            title:
+              "Memilih Metode yang Tepat Sesuai dengan Teks atau Bagian Teks yang Sedang Diterjemahkan",
+          },
+          {
+            code: "M.74PEN01.009.1",
+            title:
+              "Memilih Teknik Penerjemahan Untuk Kata, Frasa, Klausa, dan Kalimat dalam Teks Asal",
+          },
+        ];
 
   const umpanBalik =
     props.umpanBalik !== undefined ? props.umpanBalik : localUmpanBalik;
@@ -180,36 +175,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
     props.supervisorSignature !== undefined
       ? props.supervisorSignature
       : localSupervisorSig;
-  const penyusun = props.penyusun || localPenyusun;
-  const validator = props.validator || localValidator;
 
-  const handlePenyusunChangeInternal = (
-    idx: number,
-    field: string,
-    val: string,
-  ) => {
-    const updated = [...penyusun];
-    updated[idx] = { ...updated[idx], [field]: val };
-    if (props.onPenyusunChange) {
-      props.onPenyusunChange(updated);
-    } else {
-      setLocalPenyusun(updated);
-    }
-  };
-
-  const handleValidatorChangeInternal = (
-    idx: number,
-    field: string,
-    val: string,
-  ) => {
-    const updated = [...validator];
-    updated[idx] = { ...updated[idx], [field]: val };
-    if (props.onValidatorChange) {
-      props.onValidatorChange(updated);
-    } else {
-      setLocalValidator(updated);
-    }
-  };
 
   return (
     <div className="animate-in fade-in duration-300">

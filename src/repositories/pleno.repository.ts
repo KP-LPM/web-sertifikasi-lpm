@@ -17,7 +17,17 @@ export class PlenoRepository {
         pleno_asesi: {
           include: {
             pengajuan_skema: {
-              include: { skema: { select: { namaSkema: true } } }
+              include: {
+                skema: { select: { namaSkema: true } },
+                dataPribadi: { select: { namaLengkap: true, nik: true } },
+                user: { select: { username: true, profil: { select: { namaLengkap: true } } } }
+              }
+            },
+            users: {
+              select: {
+                username: true,
+                profil: { select: { namaLengkap: true } }
+              }
             }
           }
         },
@@ -37,6 +47,7 @@ export class PlenoRepository {
               include: {
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
                 skema: { select: { namaSkema: true } },
+                user: { select: { username: true, profil: { select: { namaLengkap: true } } } }
               }
             },
             users: {
@@ -66,10 +77,11 @@ export class PlenoRepository {
     });
   }
 
-  async update(id: number, data: UpdatePlenoInput) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async update(id: number, data: UpdatePlenoInput, tx: any = db) {
     const { skema_ids, ...restData } = data;
 
-    return await db.pleno_batch.update({
+    return await tx.pleno_batch.update({
       where: { id },
       data: {
         ...restData,

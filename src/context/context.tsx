@@ -6,10 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, X, AlertTriangle } from "lucide-react";
 import {
   AssessmentItem,
-  JenisMetode,
-  TipeTuk,
-  HasilAsesmen,
-  StatusAsesmen,
   PertanyaanAsesmenItem,
   KonfigurasiPertanyaanItem,
   CrumbItem,
@@ -241,133 +237,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const [AssessmentItems, setAssessmentItems] = useState<AssessmentItem[]>(
-    () => {
-      // 1. UBAH BatchGroup[] menjadi AssessmentItem[]
-      return Array.from({ length: 25 }).map((_, idx) => {
-        const batchConfigs = [
-          {
-            batchCode: "BATCH-IT-2026-001",
-            batchName: "Batch 1 - Teknisi Jaringan",
-            skema: "Teknisi Muda Jaringan Komputer",
-            tuk: "Sewaktu",
-            metode: "Offline",
-            alamat: "Gedung L PTIPD Lab 1",
-            tglAsesmen: "05 Okt 2023",
-            waktu: "09:00 WIB",
-            linkVideo: "-",
-          },
-          {
-            batchCode: "BATCH-NET-2026-002",
-            batchName: "Batch 2 - Network Admin Online",
-            skema: "Network Administrator",
-            tuk: "Mandiri",
-            metode: "Online",
-            alamat: "Zoom Meeting",
-            tglAsesmen: "06 Okt 2023",
-            waktu: "13:00 WIB",
-            linkVideo: "https://meet.google.com/abc-defg-hij",
-          },
-          {
-            batchCode: "BATCH-PRG-2026-003",
-            batchName: "Batch 3 - Pemangku Kepentingan",
-            skema: "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-            tuk: "Sewaktu",
-            metode: "Offline",
-            alamat: "Ruang Rapat Utama",
-            tglAsesmen: "08 Okt 2023",
-            waktu: "09:00 WIB",
-            linkVideo: "-",
-          },
-          {
-            batchCode: "BATCH-SEC-2026-004",
-            batchName: "Batch 4 - Cyber Security Online",
-            skema: "Network Administrator",
-            tuk: "Mandiri",
-            metode: "Online",
-            alamat: "Google Meet",
-            tglAsesmen: "10 Okt 2023",
-            waktu: "09:00 WIB",
-            linkVideo: "https://meet.google.com/xyz-uvwx-rst",
-          },
-          {
-            batchCode: "BATCH-DES-2026-005",
-            batchName: "Batch 5 - Teknisi Jaringan Gel. 2",
-            skema: "Teknisi Muda Jaringan Komputer",
-            tuk: "Sewaktu",
-            metode: "Offline",
-            alamat: "Gedung H Lab Terpadu",
-            tglAsesmen: "12 Okt 2023",
-            waktu: "13:00 WIB",
-            linkVideo: "-",
-          },
-        ];
-
-        const batch = batchConfigs[idx % batchConfigs.length];
-
-        // 2. Tambahkan as Type untuk keamanan TypeScript
-        let metode = batch.metode as JenisMetode;
-        let status = "Belum Selesai" as StatusAsesmen;
-
-        if (metode === "Offline") {
-          status = idx % 3 === 0 ? "Selesai" : "Belum Selesai";
-        } else {
-          if (idx % 3 === 0) status = "Selesai";
-          else status = "Belum Selesai";
-        }
-
-        if (idx === 3) {
-          metode = "Online";
-          status = "Belum Selesai";
-        }
-        if (idx === 5) {
-          metode = "Online";
-          status = "Belum Selesai";
-        }
-        if (idx === 0) {
-          metode = "Offline";
-          status = "Belum Selesai";
-        }
-
-        if (idx === 3) status = "Belum Selesai";
-        if (idx === 5) status = "Belum Selesai";
-        if (idx === 0) status = "Belum Selesai";
-
-        const linkVideo = batch.linkVideo;
-
-        return {
-          id: idx + 1,
-          nama: `Kandidat ${idx + 1}`,
-          nik: `32730128${(1000 + idx).toString()}0001`,
-          aplStatus:
-            idx % 4 === 3 ? "APL-01 Valid" : "APL-01 & APL-02 Terverifikasi",
-          batchCode: batch.batchCode,
-          batchName: batch.batchName,
-          asesmen: `Asesmen Reguler - ${idx + 1}`,
-
-          tipeTuk: batch.tuk as TipeTuk, // 2. Ganti 'tuk' menjadi 'tipeTuk'
-
-          metode: metode,
-          hasil: (idx % 2 === 0
-            ? "Kompeten"
-            : "Belum Kompeten") as HasilAsesmen,
-          isBanding: idx % 2 !== 0 && idx % 3 === 0,
-          alasanBanding:
-            idx % 2 !== 0 && idx % 3 === 0
-              ? "Saya merasa sudah menjawab semua pertanyaan dengan benar saat wawancara."
-              : undefined,
-          skema: batch.skema,
-          alamat: batch.alamat,
-          tglPra: `${(idx % 28) + 1} Okt 2023`,
-          tglAsesmen: batch.tglAsesmen,
-          waktu: batch.waktu,
-          linkVideo: linkVideo,
-          status: status,
-          riwayat: idx % 3 === 0 ? "Belum ada" : "Tinjauan Awal",
-        } as AssessmentItem;
-      });
-    },
-  );
+  const [AssessmentItems, setAssessmentItems] = useState<AssessmentItem[]>([]);
 
   const [completedBatchCodes, setCompletedBatchCodes] = useState<string[]>([]);
 

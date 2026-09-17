@@ -40,9 +40,53 @@ export async function GET(request: NextRequest) {
       skema_id: skemaId ? parseInt(skemaId, 10) : undefined,
     };
 
-    const suratList = await suratService.getAll(filters);
+    let finalData: any[] = [];
 
-    return sendResponse(200, "Berhasil mengambil daftar surat", suratList);
+    // Jika kategori tidak ada (atau bukan surat_masuk/surat_keluar eksklusif), ambil sertifikat
+    if (!kategori || kategori === "sertifikat" || kategori === "all") {
+      const { sertifikatService } = await import("@/services/sertifikat.service");
+      const sertifikats = await sertifikatService.getAll({
+        status: filters.status,
+        skemaId: filters.skema_id,
+      });
+
+      const mappedSertifikatList = sertifikats.map((s) => ({
+        id: s.id,
+        nomor_surat: s.no_sertifikat || "-",
+        judul: `Sertifikat Kompetensi - ${s.pengajuan_skema?.user?.profil?.namaLengkap || s.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi"}`,
+        kategori: "sertifikat",
+        jenis_surat: "sertifikat_kompetensi",
+        nama_jenis_surat: "Sertifikat Kompetensi",
+        created_at: s.tanggal_terbit,
+        tanggal_terbit: s.tanggal_terbit,
+        penerbit: "LSP UIN Sunan Gunung Djati",
+        penerima: s.pengajuan_skema?.user?.profil?.namaLengkap || s.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi",
+        skema: s.pengajuan_skema?.skema,
+        status: s.status,
+        catatan: `No Registrasi: ${s.no_registrasi || "-"}`,
+        url_gdrive: s.gdrive_url,
+      }));
+
+      if (kategori === "sertifikat") {
+        return sendResponse(200, "Berhasil mengambil daftar sertifikat", mappedSertifikatList);
+      }
+
+      finalData = [...finalData, ...mappedSertifikatList];
+    }
+
+    if (!kategori || kategori === "surat_masuk" || kategori === "surat_keluar" || kategori === "all") {
+      const suratList = await suratService.getAll(filters);
+      finalData = [...finalData, ...suratList];
+    }
+
+    // Sort by tanggal
+    finalData.sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA; // Descending
+    });
+
+    return sendResponse(200, "Berhasil mengambil daftar surat", finalData);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");

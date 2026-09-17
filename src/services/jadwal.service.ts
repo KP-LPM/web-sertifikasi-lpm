@@ -4,6 +4,7 @@ import {
 } from "@/repositories/jadwal.repository";
 import { CreateJadwalInput, UpdateJadwalInput } from "@/schemas/jadwal.schema";
 import { NotFoundError, InvariantError } from "@/error/index";
+import { suratService } from "@/services/surat.service";
 
 export class JadwalService {
   constructor(private repo: JadwalRepository = jadwalRepository) {}
@@ -30,6 +31,27 @@ export class JadwalService {
     if (!jadwal) {
       throw new InvariantError("Gagal membuat jadwal asesmen baru");
     }
+
+    // Automatis masukkan surat penugasan asesor ke tabel surat
+    if (data.surat_tugas_url) {
+      try {
+        await suratService.create({
+          nomor_surat: data.nomor_surat || `ST-${jadwal.id}`,
+          judul: "Surat Penugasan Asesor",
+          kategori: "surat_keluar",
+          jenis_surat: "penugasan_asesor",
+          nama_jenis_surat: "Surat Penugasan Asesor",
+          tanggal_terbit: new Date(),
+          status: "Terbit",
+          url_gdrive: data.surat_tugas_url,
+          url_dokumen: data.surat_tugas_url,
+          skema_id: data.skema_id || undefined,
+        });
+      } catch (err) {
+        console.error("Gagal menambahkan surat penugasan asesor secara otomatis:", err);
+      }
+    }
+
     return jadwal;
   }
 

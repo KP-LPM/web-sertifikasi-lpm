@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Save, User as UserIcon, X, Trash2, Upload, ArrowLeft } from "lucide-react";
+import { Save, User as UserIcon, Trash2, Upload, ArrowLeft, PenTool, X } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { supabase } from "@/lib/supabase";
+import SignatureCanvas from "react-signature-canvas";
 import { useRouter } from "next/navigation";
 import { forgotPassword, getUsersProfile } from "@/lib/api";
 
@@ -22,6 +23,18 @@ export default function Profile() {
 
   // State untuk modal tanda tangan
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const signaturePadRef = useRef<SignatureCanvas>(null);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+
+  const handleSaveSignature = () => {
+    if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+      const dataURL = signaturePadRef.current.getCanvas().toDataURL("image/png");
+      setFormData((prev) => ({ ...prev, tandaTangan: dataURL }));
+      setIsSignatureModalOpen(false);
+    } else {
+      showNotification("Tanda tangan masih kosong!", "error");
+    }
+  };
 
   // State untuk upload foto profil ke Supabase
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -46,7 +59,6 @@ export default function Profile() {
     tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
     jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
     alamat: (registeredProfile?.alamatRumah as string) || "",
-    alamatWilayah: (registeredProfile?.alamatWilayah as string) || "",
     kodePos: (registeredProfile?.kodePos as string) || "",
     nik: (registeredProfile?.nik as string) || "",
     noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
@@ -151,7 +163,7 @@ export default function Profile() {
         string,
         string | undefined
       >;
-      const namaAsli = data.nama_lengkap || data.nama || user?.username || "";
+      const namaAsli = data.namaLengkap || data.nama_lengkap || data.nama || user?.username || "";
       setFormData((prev) => ({
         ...prev,
         username:
@@ -160,18 +172,18 @@ export default function Profile() {
           prev.username,
         email: data.email || user?.email || prev.email,
         namaLengkap: namaAsli,
-        tempatLahir: data.tempat_lahir || data.tempatLahir || "",
-        tanggalLahir: data.tanggal_lahir || data.tanggalLahir || "",
-        jenisKelamin: data.jenis_kelamin || data.jenisKelamin || "",
+        tempatLahir: data.tempatLahir || data.tempat_lahir || "",
+        tanggalLahir: data.tanggalLahir || data.tanggal_lahir || "",
+        jenisKelamin: data.jenisKelamin || data.jenis_kelamin || "",
         alamat: data.alamat || data.alamat_rumah || prev.alamat,
-        kodePos: data.kode_pos || data.kodePos || "",
+        kodePos: data.kodePos || data.kode_pos || "",
         nik: data.nik || "",
-        noRegistrasi: data.no_registrasi || data.noRegistrasi || "",
-        noTelp: data.no_telp || data.noTelp || "",
+        noRegistrasi: data.nomorRegistrasiMet || data.no_registrasi || data.noRegistrasi || "",
+        noTelp: data.noHp || data.no_telp || data.noTelp || "",
         pekerjaan: data.pekerjaan || "",
         pendidikanTerakhir:
-          data.pendidikan_terakhir || data.pendidikanTerakhir || "",
-        tandaTangan: data.tanda_tangan || data.tandaTangan || "",
+          data.pendidikanTerakhir || data.pendidikan_terakhir || "",
+        tandaTangan: data.tandaTangan || data.tanda_tangan || "",
       }));
     }
   }, [registeredProfile, user]);
@@ -292,7 +304,7 @@ export default function Profile() {
         const { data: signatureUrlData } = supabase.storage
           .from("signatures")
           .getPublicUrl(signatureFileName);
-        
+
         finalSignatureUrl = signatureUrlData.publicUrl;
       }
 
@@ -312,7 +324,7 @@ export default function Profile() {
         pekerjaan: formData.pekerjaan,
         pendidikan_terakhir: formData.pendidikanTerakhir,
         // Masukkan URL tanda tangan yang sudah diupload ke database
-        tanda_tangan: finalSignatureUrl, 
+        tanda_tangan: finalSignatureUrl,
         avatar: finalAvatarUrl,
       };
 
@@ -345,7 +357,7 @@ export default function Profile() {
       setFormData(prev => ({ ...prev, tandaTangan: finalSignatureUrl }));
 
       showNotification("Profil berhasil disimpan!", "success");
-      
+
       setTimeout(() => {
         router.back();
       }, 1000);
@@ -361,379 +373,425 @@ export default function Profile() {
   };
 
   return (
-    <div className="space-y-6 pb-24 text-sm text-gray-700">
-      {/* Header Title Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
-            title="Kembali"
-          >
-            <ArrowLeft size={20} className="stroke-[2.5]" />
-          </button>
-          <div className="min-w-0">
-            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
-              Profil Pengguna
-            </h2>
-            <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
-              Kelola data diri dan informasi akun Anda
-            </p>
+    <>
+      <div className="space-y-6 pb-24 text-sm text-gray-700">
+        {/* Header Title Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => router.back()}
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
+              title="Kembali"
+            >
+              <ArrowLeft size={20} className="stroke-[2.5]" />
+            </button>
+            <div className="min-w-0">
+              <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1 md:whitespace-nowrap">
+                Profil Pengguna
+              </h2>
+              <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
+                Kelola data diri dan informasi akun Anda
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
-        <div className="p-6 space-y-6">
-          {/* Avatar Section */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-            <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm shrink-0">
-              {avatarPreview || user?.avatar ? (
-                <img
-                  src={avatarPreview || (user?.avatar as string)}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <UserIcon size={48} className="text-gray-400" />
-              )}
+        <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
+          <div className="p-6 space-y-6">
+            {/* Avatar Section */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm shrink-0">
+                {avatarPreview || user?.avatar ? (
+                  <img
+                    src={avatarPreview || (user?.avatar as string)}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <UserIcon size={48} className="text-gray-400" />
+                )}
+              </div>
+              <button
+                onClick={() => fileAvatarRef.current?.click()}
+                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-xs transition-colors"
+              >
+                Ubah Gambar
+              </button>
+              <input
+                type="file"
+                ref={fileAvatarRef}
+                onChange={handleAvatarSelect}
+                accept="image/jpeg, image/png, image/webp"
+                className="hidden"
+              />
             </div>
-            <button
-              onClick={() => fileAvatarRef.current?.click()}
-              className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-xs transition-colors"
-            >
-              Ubah Gambar
-            </button>
-            <input
-              type="file"
-              ref={fileAvatarRef}
-              onChange={handleAvatarSelect}
-              accept="image/jpeg, image/png, image/webp"
-              className="hidden"
-            />
-          </div>
 
-          {/* Detail Akun */}
-          <section className="space-y-3">
-            <h3 className="text-sm font-black text-slate-900 border-b border-gray-100 pb-2">
-              Detail Akun
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Peran
-                </label>
-                <input
-                  type="text"
-                  name="peran"
-                  value={formData.peran}
-                  readOnly
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 outline-none cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Nama Pengguna
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Username tidak boleh mengandung spasi dan karakter spesial
-                </p>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Data Pribadi */}
-          <section className="space-y-3">
-            <h3 className="text-sm font-black text-slate-900 border-b border-gray-100 pb-2">
-              Data Pribadi
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Nama Lengkap
-                </label>
-                <input
-                  type="text"
-                  name="namaLengkap"
-                  value={formData.namaLengkap}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Tempat Lahir
-                </label>
-                <input
-                  type="text"
-                  name="tempatLahir"
-                  value={formData.tempatLahir}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Tanggal Lahir
-                </label>
-                <input
-                  type="date"
-                  name="tanggalLahir"
-                  value={formData.tanggalLahir}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2.5">
-                  <span className="text-red-500">*</span> Jenis Kelamin
-                </label>
-                <div className="flex items-center gap-4 mt-1.5">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="jenisKelamin"
-                      value="Laki_laki"
-                      checked={formData.jenisKelamin === "Laki_laki"}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
-                    />
-                    <span className="text-sm text-slate-700">Laki-laki</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="jenisKelamin"
-                      value="Perempuan"
-                      checked={formData.jenisKelamin === "Perempuan"}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
-                    />
-                    <span className="text-sm text-slate-700">Perempuan</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Alamat
-                </label>
-                <textarea
-                  name="alamat"
-                  value={formData.alamat}
-                  onChange={handleChange}
-                  placeholder="Masukkan alamat"
-                  rows={4}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
-                ></textarea>
-              </div>
-              <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Alamat
-                  Wilayah/Kelurahan
-                </label>
-                <input
-                  type="text"
-                  name="alamatWilayah"
-                  value={formData.alamatWilayah}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> NIK
-                </label>
-                <input
-                  type="text"
-                  name="nik"
-                  value={formData.nik}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Kode Pos
-                </label>
-                <input
-                  type="text"
-                  name="kodePos"
-                  value={formData.kodePos}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
-              </div>
-              {formData.peran === "asesor" && (
+            {/* Detail Akun */}
+            <section className="space-y-3">
+              <h3 className="text-sm font-black text-slate-900 border-b border-gray-100 pb-2">
+                Detail Akun
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="text-red-500">*</span> Nomor Registrasi/MET
+                    Peran
                   </label>
                   <input
                     type="text"
-                    name="noRegistrasi"
-                    value={formData.noRegistrasi}
+                    name="peran"
+                    value={formData.peran}
+                    readOnly
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 outline-none cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Nama Pengguna
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    Username tidak boleh mengandung spasi dan karakter spesial
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
                 </div>
-              )}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> No.Telp/Handphone
-                </label>
-                <input
-                  type="text"
-                  name="noTelp"
-                  value={formData.noTelp}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                />
               </div>
+            </section>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Pekerjaan
-                </label>
-                <select
-                  name="pekerjaan"
-                  value={formData.pekerjaan}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                >
-                  <option value="" disabled>
-                    Pilih Pekerjaan
-                  </option>
-                  <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
-                  <option value="Karyawan Swasta">Karyawan Swasta</option>
-                  <option value="PNS">PNS</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Pendidikan Terakhir
-                </label>
-                <select
-                  name="pendidikanTerakhir"
-                  value={formData.pendidikanTerakhir}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
-                >
-                  <option value="" disabled>
-                    Pilih Pendidikan
-                  </option>
-                  <option value="SMA">SMA/SMK</option>
-                  <option value="D3">D3</option>
-                  <option value="S1">S1/D4</option>
-                  <option value="S2">S2</option>
-                </select>
-              </div>
-              <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  <span className="text-red-500">*</span> Tanda Tangan
-                </label>
-                {formData.tandaTangan && (
-                  <div className="mb-2 border border-gray-200 rounded-lg p-2 bg-white flex justify-center w-full sm:w-auto sm:inline-block">
-                    <img
-                      src={formData.tandaTangan}
-                      alt="Tanda Tangan"
-                      className="h-16 object-contain"
+            {/* Data Pribadi */}
+            <section className="space-y-3">
+              <h3 className="text-sm font-black text-slate-900 border-b border-gray-100 pb-2">
+                Data Pribadi
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Nama Lengkap
+                  </label>
+                  <input
+                    type="text"
+                    name="namaLengkap"
+                    value={formData.namaLengkap}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Tempat Lahir
+                  </label>
+                  <input
+                    type="text"
+                    name="tempatLahir"
+                    value={formData.tempatLahir}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Tanggal Lahir
+                  </label>
+                  <input
+                    type="date"
+                    name="tanggalLahir"
+                    value={formData.tanggalLahir}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2.5">
+                    <span className="text-red-500">*</span> Jenis Kelamin
+                  </label>
+                  <div className="flex items-center gap-4 mt-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="jenisKelamin"
+                        value="Laki_laki"
+                        checked={formData.jenisKelamin === "Laki_laki"}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
+                      />
+                      <span className="text-sm text-slate-700">Laki-laki</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="jenisKelamin"
+                        value="Perempuan"
+                        checked={formData.jenisKelamin === "Perempuan"}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
+                      />
+                      <span className="text-sm text-slate-700">Perempuan</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 lg:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> {formData.peran === "asesor" ? "Alamat / Wilayah" : "Alamat"}
+                  </label>
+                  <textarea
+                    name="alamat"
+                    value={formData.alamat}
+                    onChange={handleChange}
+                    placeholder="Masukkan alamat"
+                    rows={4}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
+                  ></textarea>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> NIK
+                  </label>
+                  <input
+                    type="text"
+                    name="nik"
+                    value={formData.nik}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Kode Pos
+                  </label>
+                  <input
+                    type="text"
+                    name="kodePos"
+                    value={formData.kodePos}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  />
+                </div>
+                {formData.peran === "asesor" && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <span className="text-red-500">*</span> Nomor Registrasi/MET
+                    </label>
+                    <input
+                      type="text"
+                      name="noRegistrasi"
+                      value={formData.noRegistrasi}
+                      onChange={handleChange}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                     />
                   </div>
                 )}
                 <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> No.Telp/Handphone
+                  </label>
                   <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept="image/*"
-                    className="hidden"
+                    type="text"
+                    name="noTelp"
+                    value={formData.noTelp}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-sm font-bold shadow-xs transition-colors flex gap-2 items-center"
-                    >
-                      <Upload size={14} />
-                      {formData.tandaTangan
-                        ? "Ubah Tanda Tangan"
-                        : "Upload Tanda Tangan"}
-                    </button>
-                    {formData.tandaTangan && (
-                      <button
-                        onClick={() => setFormData({ ...formData, tandaTangan: "" })}
-                        className="px-3 py-2.5 border border-[#FF6B6B] text-[#FF6B6B] hover:bg-red-50 rounded-xl text-sm font-bold transition-colors flex items-center justify-center"
-                        title="Hapus Tanda Tangan"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
                 </div>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Tanda tangan ini akan digunakan dalam perangkat asesmen.
-                </p>
-              </div>
-            </div>
-          </section>
 
-          {/* Pengaturan Akun */}
-          <section className="space-y-3">
-            <h3 className="text-sm font-black text-slate-900 border-b border-gray-100 pb-2">
-              Pengaturan Akun
-            </h3>
-            <div>
-              <p className="text-sm text-slate-700 font-medium mb-3">
-                Ganti Kata Sandi
-              </p>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Pekerjaan
+                  </label>
+                  <select
+                    name="pekerjaan"
+                    value={formData.pekerjaan}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  >
+                    <option value="" disabled>
+                      Pilih Pekerjaan
+                    </option>
+                    <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
+                    <option value="Karyawan Swasta">Karyawan Swasta</option>
+                    <option value="PNS">PNS</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Pendidikan Terakhir
+                  </label>
+                  <select
+                    name="pendidikanTerakhir"
+                    value={formData.pendidikanTerakhir}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  >
+                    <option value="" disabled>
+                      Pilih Pendidikan
+                    </option>
+                    <option value="SMA">SMA/SMK</option>
+                    <option value="D3">D3</option>
+                    <option value="S1">S1/D4</option>
+                    <option value="S2">S2</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2 lg:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Tanda Tangan
+                  </label>
+                  {formData.tandaTangan && (
+                    <div className="mb-2 border border-gray-200 rounded-lg p-2 bg-white flex justify-center w-full sm:w-auto sm:inline-block">
+                      <img
+                        src={formData.tandaTangan}
+                        alt="Tanda Tangan"
+                        className="h-16 object-contain"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsSignatureModalOpen(true)}
+                        className="px-4 py-2.5 border border-[#008BE3] text-[#008BE3] hover:bg-sky-50 rounded-xl text-sm font-bold shadow-xs transition-colors flex gap-2 items-center justify-center cursor-pointer"
+                      >
+                        <PenTool size={14} />
+                        Gambar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-sm font-bold shadow-xs transition-colors flex gap-2 items-center justify-center cursor-pointer"
+                      >
+                        <Upload size={14} />
+                        Upload
+                      </button>
+                      {formData.tandaTangan && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, tandaTangan: "" })}
+                          className="px-3 py-2.5 border border-[#FF6B6B] text-[#FF6B6B] hover:bg-red-50 rounded-xl text-sm font-bold transition-colors flex items-center justify-center cursor-pointer"
+                          title="Hapus Tanda Tangan"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    Tanda tangan ini akan digunakan dalam perangkat asesmen.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Pengaturan Akun */}
+            <section className="space-y-3">
+              <h3 className="text-sm font-black text-slate-900 border-b border-gray-100 pb-2">
+                Pengaturan Akun
+              </h3>
+              <div>
+                <p className="text-sm text-slate-700 font-medium mb-3">
+                  Ganti Kata Sandi
+                </p>
+                <button
+                  onClick={() => {
+                    handleGantiPassword();
+                    showNotification("Tautan reset password telah dikirim ke email Anda!", "success");
+                  }}
+                  disabled={isSendingReset}
+                  className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSendingReset ? "Mengirim..." : "Ganti Kata Sandi"}
+                </button>
+              </div>
+            </section>
+
+            <div className="pt-6 border-t border-gray-100 flex justify-end">
               <button
-                onClick={() => {
-                  handleGantiPassword();
-                  showNotification("Tautan reset password telah dikirim ke email Anda!", "success");
-                }}
-                disabled={isSendingReset}
-                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xs transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSendingReset ? "Mengirim..." : "Ganti Kata Sandi"}
+                <Save size={18} className="stroke-[2.5]" />
+                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
-          </section>
-
-          <div className="pt-6 border-t border-gray-100 flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center gap-2 bg-[#008BE3] hover:bg-[#0076C2] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xs transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save size={18} className="stroke-[2.5]" />
-              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
-            </button>
           </div>
         </div>
+
       </div>
 
-
-    </div>
+      {/* Signature Canvas Modal */}
+      {
+        isSignatureModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-black text-slate-800 text-sm">
+                  Gambar Tanda Tangan
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsSignatureModalOpen(false)}
+                  className="p-1 hover:bg-slate-200 rounded-md text-slate-500 transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-4">
+                <div className="border border-slate-200 rounded-lg overflow-hidden bg-white mb-4">
+                  <SignatureCanvas
+                    ref={signaturePadRef}
+                    penColor="blue"
+                    canvasProps={{
+                      className: "w-full h-48 cursor-crosshair bg-slate-50",
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => signaturePadRef.current?.clear()}
+                    className="flex-1 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Hapus Ulang
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveSignature}
+                    className="flex-1 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-2 cursor-pointer"
+                  >
+                    <Save size={14} />
+                    Simpan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </>
   );
 }
