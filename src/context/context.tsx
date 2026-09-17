@@ -122,10 +122,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ? (button.value || "").toLowerCase()
         : (button.innerText || button.getAttribute("aria-label") || button.title || "").toLowerCase();
 
-      const isSave = text.includes("simpan") && !text.includes("batal") && !text.includes("batal simpan");
       const isDelete = (text.includes("hapus") || text.includes("delete")) && !text.includes("batal");
 
-      if (isSave || isDelete) {
+      if (isDelete) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -135,11 +134,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         setGlobalConfirm({
           isOpen: true,
-          type: isSave ? "save" : "delete",
-          title: isSave ? "Konfirmasi Simpan" : "Konfirmasi Hapus",
-          message: isSave
-            ? "Apakah Anda yakin ingin menyimpan data ini?"
-            : "Apakah Anda yakin ingin menghapus data ini?",
+          type: "delete",
+          title: "Konfirmasi Hapus",
+          message: "Apakah Anda yakin ingin menghapus data ini?",
           onConfirm: () => {
             setGlobalConfirm(null);
 
