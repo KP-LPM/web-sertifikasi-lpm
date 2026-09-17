@@ -36,12 +36,11 @@ interface BackendPortfolio {
 }
 
 const AVAILABLE_SCHEMES = [
-  "Pemrograman Web",
-  "Teknisi Muda Jaringan Komputer",
-  "Desain Grafis",
-  "Pengelolaan Pinjaman / Pembiayaan",
-  "Network Administrator",
-  "Kewirausahaan Industri",
+  "Auditor Halal",
+  "Jenjang 5 Bidang Kewirausahaan Industri",
+  "Melaksanakan Komunikasi dengan Pemangku Kepentingan",
+  "Penerjemah Teks Umum",
+  "Penyelia Halal",
 ];
 
 const DEFAULT_PORTFOLIOS: PortfolioItem[] = [
@@ -224,7 +223,13 @@ export default function VerifikasiPortofolio() {
       }
       if (!formData.fileJawaban && !formData.fileJawabanPlaceholder) {
         showNotification(
-          "Asesor yang dipilih adalah asesor luar, harap lengkapi form dan file pendukung.", "error"
+          "Mohon unggah File Jawaban / Konfirmasi Peminjaman dari LSP Luar.", "error"
+        );
+        return;
+      }
+      if (!formData.selectedFile && !formData.fileNamePlaceholder) {
+        showNotification(
+          "Mohon unggah file dokumen portofolio (Sertifikat).", "error"
         );
         return;
       }
@@ -246,11 +251,7 @@ export default function VerifikasiPortofolio() {
       ? formData.alamatLsp
       : "UIN Sunan Gunung Djati Bandung";
 
-    const fileNameUsed = isLuar
-      ? formData.filePeminjaman?.name ||
-      formData.filePeminjamanPlaceholder ||
-      "File_Peminjaman_Asesor.pdf"
-      : formData.selectedFile?.name ||
+    const fileNameUsed = formData.selectedFile?.name ||
       formData.fileNamePlaceholder ||
       "Dokumen_Portofolio.pdf";
 
@@ -329,12 +330,7 @@ export default function VerifikasiPortofolio() {
             namaDokumen: formData.namaDokumen,
             deskripsi: formData.deskripsi,
             tanggal: todayStr,
-            fileName: isLuar
-              ? formData.filePeminjaman?.name ||
-              formData.filePeminjamanPlaceholder ||
-              p.filePeminjamanName ||
-              p.fileName
-              : formData.selectedFile?.name ||
+            fileName: formData.selectedFile?.name ||
               formData.fileNamePlaceholder ||
               p.fileName,
             filePeminjamanName: isLuar
@@ -897,7 +893,7 @@ export default function VerifikasiPortofolio() {
             {formData.statusAsesor === "Asesor dari Luar" ? (
               <div className="space-y-3 pt-1 border-t border-slate-200">
                 <p className="text-xs font-extrabold text-purple-900 uppercase tracking-wider">
-                  Dokumen Asesor Luar (Wajib 2 File)
+                  Dokumen Asesor Luar (Wajib 3 File)
                 </p>
 
                 {/* File 1: File Peminjaman Asesor */}
@@ -966,6 +962,43 @@ export default function VerifikasiPortofolio() {
                     ) : (
                       <p className="text-xs font-semibold text-slate-600">
                         Klik / tarik File Surat Konfirmasi / Balasan LSP
+                      </p>
+                    )}
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Format PDF, PNG, JPG (Maks. 10MB)
+                    </p>
+                  </div>
+                </div>
+
+                {/* File 3: File Dokumen Sertifikat (Portofolio) */}
+                <div className="min-w-0 mt-3">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    3. File Dokumen Sertifikat (Upload Portofolio){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className="border-2 border-dashed border-emerald-300 rounded-xl p-3 text-center bg-emerald-50/40 hover:bg-emerald-50 transition-colors relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={handleSingleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload
+                      size={24}
+                      className="mx-auto text-emerald-600 mb-1"
+                    />
+                    {formData.selectedFile ? (
+                      <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                        <CheckCircle size={14} className="shrink-0" />{" "}
+                        {formData.selectedFile.name}
+                      </p>
+                    ) : formData.fileNamePlaceholder ? (
+                      <p className="text-xs font-bold text-slate-700">
+                        {formData.fileNamePlaceholder}
+                      </p>
+                    ) : (
+                      <p className="text-xs font-semibold text-slate-600">
+                        Klik / tarik File Dokumen Sertifikat
                       </p>
                     )}
                     <p className="text-[10px] text-slate-400 mt-0.5">
@@ -1459,7 +1492,7 @@ export default function VerifikasiPortofolio() {
                 {formData.statusAsesor === "Asesor dari Luar" ? (
                   <div className="space-y-3 pt-1 border-t border-slate-200">
                     <p className="text-xs font-extrabold text-purple-900 uppercase tracking-wider">
-                      Dokumen Asesor Luar (Wajib 2 File)
+                      Dokumen Asesor Luar (Wajib 3 File)
                     </p>
 
                     {/* File 1: File Peminjaman Asesor */}
@@ -1532,6 +1565,44 @@ export default function VerifikasiPortofolio() {
                             File Lama:{" "}
                             {selectedPortfolio.fileJawabanName ||
                               "Konfirmasi_Peminjaman.pdf"}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Format PDF, PNG, JPG (Klik untuk ganti)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* File 3: File Dokumen Sertifikat (Portofolio) */}
+                    <div className="min-w-0 mt-3">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        3. File Dokumen Sertifikat (Upload Portofolio){" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="border-2 border-dashed border-emerald-300 rounded-xl p-3 text-center bg-emerald-50/40 hover:bg-emerald-50 transition-colors relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg"
+                          onChange={handleSingleFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Upload
+                          size={24}
+                          className="mx-auto text-emerald-600 mb-1"
+                        />
+                        {formData.selectedFile ? (
+                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                            <CheckCircle size={14} className="shrink-0" />{" "}
+                            {formData.selectedFile.name}
+                          </p>
+                        ) : formData.fileNamePlaceholder ? (
+                          <p className="text-xs font-bold text-slate-700">
+                            {formData.fileNamePlaceholder}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-semibold text-emerald-900">
+                            File Lama:{" "}
+                            {selectedPortfolio.fileName}
                           </p>
                         )}
                         <p className="text-[10px] text-slate-400 mt-0.5">
