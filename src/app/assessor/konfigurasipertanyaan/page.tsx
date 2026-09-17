@@ -170,13 +170,12 @@ export default function KonfigurasiPertanyaanList() {
                     >
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
                         <div
-                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                            idx % 3 === 0
-                              ? "bg-[#008BE3]/10 text-[#008BE3]"
-                              : idx % 3 === 1
-                                ? "bg-[#84CC16]/10 text-[#73B412]"
-                                : "bg-slate-100 text-slate-600"
-                          }`}
+                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
+                            ? "bg-[#008BE3]/10 text-[#008BE3]"
+                            : idx % 3 === 1
+                              ? "bg-[#84CC16]/10 text-[#73B412]"
+                              : "bg-slate-100 text-slate-600"
+                            }`}
                         >
                           {idx + 1}
                         </div>
@@ -240,6 +239,7 @@ export default function KonfigurasiPertanyaanList() {
                             <Eye size={12} /> Detail
                           </button>
                           <button
+                            data-bypass-confirm="true"
                             onClick={() => {
                               setItemToDelete(item.id);
                               setIsDeleteModalOpen(true);
@@ -312,6 +312,7 @@ export default function KonfigurasiPertanyaanList() {
                   Batal
                 </button>
                 <button
+                  data-bypass-confirm="true"
                   onClick={async () => {
                     if (itemToDelete) {
                       try {

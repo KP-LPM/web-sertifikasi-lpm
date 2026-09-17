@@ -1328,6 +1328,7 @@ export default function PengajuanSkemaPage() {
                                     }}
                                     className="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
                                     title="Batalkan Pengajuan"
+                                    data-bypass-confirm="true"
                                   >
                                     Batal
                                   </button>
@@ -3354,6 +3355,7 @@ export default function PengajuanSkemaPage() {
                               setTempFiles(newFiles);
                             }}
                             className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors cursor-pointer"
+                            title="Hapus File"
                           >
                             <Trash2 size={14} />
                           </button>

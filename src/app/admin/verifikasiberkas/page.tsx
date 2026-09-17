@@ -624,7 +624,8 @@ export default function UsersManagement() {
           statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
           sumberAnggaran: user.verificationData?.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
           ttdAdmin: user.verificationData?.adminSignatureUrl || null,
-
+          ttdAsesi: (dp?.tandaTangan as string) || null,
+          
           namaSkema: detail.skema?.namaSkema || "",
           kodeSkema: detail.skema?.kodeSkema || "",
           tuk: detail.tuk || "",
@@ -1139,6 +1140,7 @@ export default function UsersManagement() {
                         ) : (
                           <>
                             <button
+                              data-bypass-confirm="true"
                               onClick={() => {
                                 setSelectedUser(user);
                                 setIsDeleteModalOpen(true);
@@ -1219,6 +1221,7 @@ export default function UsersManagement() {
                 Batal
               </button>
               <button
+                data-bypass-confirm="true"
                 onClick={handleDeleteUser}
                 className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-xs cursor-pointer"
               >

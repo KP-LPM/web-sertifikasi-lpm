@@ -21,6 +21,9 @@ export function EFormApl01({
   onChange: (val: FormDataType) => void;
 }) {
   const getSignatureValue = (value: unknown): SignatureValue | undefined => {
+    if (typeof value === "string" && value.trim() !== "") {
+      return { type: "upload", data: value };
+    }
     if (typeof value === "object" && value !== null) {
       const candidate = value as Partial<SignatureValue>;
       if (

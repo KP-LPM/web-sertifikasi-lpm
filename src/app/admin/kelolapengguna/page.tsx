@@ -816,6 +816,7 @@ export default function KelolaPengguna() {
                   Batal
                 </button>
                 <button
+                  data-bypass-confirm="true"
                   onClick={handleDeleteUser}
                   className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors cursor-pointer"
                 >

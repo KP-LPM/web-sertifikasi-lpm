@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { BadgeCheck, X } from "lucide-react";
+import { BadgeCheck, X, AlertTriangle } from "lucide-react";
 import {
   AssessmentItem,
   JenisMetode,
@@ -98,6 +98,70 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedAsesmen, setSelectedAsesmen] = useState<AssessmentItem | null>(
     null,
   );
+
+  // --- GLOBAL CONFIRMATION MODAL STATE ---
+  const [globalConfirm, setGlobalConfirm] = useState<{
+    isOpen: boolean;
+    type: "save" | "delete";
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest("button") || target.closest("input[type='submit']") || target.closest("input[type='button']");
+      if (!button) return;
+      if ((button as HTMLButtonElement | HTMLInputElement).disabled) return;
+
+      if (button.dataset.bypassConfirm === "true") return;
+      if (button.dataset.confirmed === "true") return;
+
+      const text = button instanceof HTMLInputElement
+        ? (button.value || "").toLowerCase()
+        : (button.innerText || button.getAttribute("aria-label") || button.title || "").toLowerCase();
+
+      const isSave = text.includes("simpan") && !text.includes("batal") && !text.includes("batal simpan");
+      const isDelete = (text.includes("hapus") || text.includes("delete")) && !text.includes("batal");
+
+      if (isSave || isDelete) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        setGlobalConfirm({
+          isOpen: true,
+          type: isSave ? "save" : "delete",
+          title: isSave ? "Konfirmasi Simpan" : "Konfirmasi Hapus",
+          message: isSave
+            ? "Apakah Anda yakin ingin menyimpan data ini?"
+            : "Apakah Anda yakin ingin menghapus data ini?",
+          onConfirm: () => {
+            setGlobalConfirm(null);
+
+            setTimeout(() => {
+              button.dataset.confirmed = "true";
+              button.click();
+
+              setTimeout(() => {
+                button.dataset.confirmed = "false";
+              }, 1000);
+            }, 100);
+          }
+        });
+      }
+    };
+
+    document.addEventListener("click", handleGlobalClick, { capture: true });
+
+    return () => {
+      document.removeEventListener("click", handleGlobalClick, { capture: true });
+    };
+  }, []);
 
   // --- NOTIFICATION STATE ---
   const [notification, setNotification] = useState<{
@@ -541,6 +605,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               {notification.message}
             </p>
           </motion.div>
+        )}
+
+        {globalConfirm?.isOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden"
+            >
+              <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
+                <h3 className="font-bold text-gray-900">{globalConfirm.title}</h3>
+                <button
+                  onClick={() => setGlobalConfirm(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-5 flex gap-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${globalConfirm.type === 'delete' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-[#008BE3]'}`}>
+                  <AlertTriangle size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                    {globalConfirm.message}
+                  </p>
+                </div>
+              </div>
+              <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                <button
+                  onClick={() => setGlobalConfirm(null)}
+                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                  data-bypass-confirm="true"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={globalConfirm.onConfirm}
+                  className={`px-4 py-2 text-white rounded-lg text-sm font-bold shadow-xs transition-colors ${globalConfirm.type === "delete"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-[#008BE3] hover:bg-[#0076C2]"
+                    }`}
+                  data-bypass-confirm="true"
+                >
+                  Ya, Lanjutkan
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
       {children}

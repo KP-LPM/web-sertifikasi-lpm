@@ -248,11 +248,11 @@ export default function VerifikasiPortofolio() {
 
     const fileNameUsed = isLuar
       ? formData.filePeminjaman?.name ||
-        formData.filePeminjamanPlaceholder ||
-        "File_Peminjaman_Asesor.pdf"
+      formData.filePeminjamanPlaceholder ||
+      "File_Peminjaman_Asesor.pdf"
       : formData.selectedFile?.name ||
-        formData.fileNamePlaceholder ||
-        "Dokumen_Portofolio.pdf";
+      formData.fileNamePlaceholder ||
+      "Dokumen_Portofolio.pdf";
 
     const newPortfolio: PortfolioItem = {
       id: generatedId,
@@ -265,13 +265,13 @@ export default function VerifikasiPortofolio() {
       fileName: fileNameUsed,
       filePeminjamanName: isLuar
         ? formData.filePeminjaman?.name ||
-          formData.filePeminjamanPlaceholder ||
-          "File_Peminjaman_Asesor.pdf"
+        formData.filePeminjamanPlaceholder ||
+        "File_Peminjaman_Asesor.pdf"
         : undefined,
       fileJawabanName: isLuar
         ? formData.fileJawaban?.name ||
-          formData.fileJawabanPlaceholder ||
-          "Konfirmasi_Peminjaman_LSP.pdf"
+        formData.fileJawabanPlaceholder ||
+        "Konfirmasi_Peminjaman_LSP.pdf"
         : undefined,
       fileSize: "2.0 MB",
       fileType: "application/pdf",
@@ -331,23 +331,23 @@ export default function VerifikasiPortofolio() {
             tanggal: todayStr,
             fileName: isLuar
               ? formData.filePeminjaman?.name ||
-                formData.filePeminjamanPlaceholder ||
-                p.filePeminjamanName ||
-                p.fileName
+              formData.filePeminjamanPlaceholder ||
+              p.filePeminjamanName ||
+              p.fileName
               : formData.selectedFile?.name ||
-                formData.fileNamePlaceholder ||
-                p.fileName,
+              formData.fileNamePlaceholder ||
+              p.fileName,
             filePeminjamanName: isLuar
               ? formData.filePeminjaman?.name ||
-                formData.filePeminjamanPlaceholder ||
-                p.filePeminjamanName ||
-                "File_Peminjaman_Asesor.pdf"
+              formData.filePeminjamanPlaceholder ||
+              p.filePeminjamanName ||
+              "File_Peminjaman_Asesor.pdf"
               : undefined,
             fileJawabanName: isLuar
               ? formData.fileJawaban?.name ||
-                formData.fileJawabanPlaceholder ||
-                p.fileJawabanName ||
-                "Konfirmasi_Peminjaman_LSP.pdf"
+              formData.fileJawabanPlaceholder ||
+              p.fileJawabanName ||
+              "Konfirmasi_Peminjaman_LSP.pdf"
               : undefined,
             status: "Menunggu Verifikasi",
             catatanAdmin: undefined,
@@ -455,313 +455,312 @@ export default function VerifikasiPortofolio() {
 
       {!isUploadModalOpen ? (
         <>
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[#E6F4FF] border border-[#BCE0FD] hover:border-sky-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-black uppercase tracking-wider block text-sky-800">
-              Total Dokumen
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-black text-slate-900 tracking-tight">
-                {totalCount}
-              </span>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-[#E6F4FF] border border-[#BCE0FD] hover:border-sky-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-sky-800">
+                  Total Dokumen
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {totalCount}
+                  </span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#008BE3] text-white">
+                <FileText size={20} className="stroke-[2.5]" />
+              </div>
+            </div>
+
+            <div className="bg-[#FFFBEB] border border-[#FDE68A] hover:border-amber-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-amber-800">
+                  Menunggu
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {pendingCount}
+                  </span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-amber-500 text-white">
+                <Clock size={20} className="stroke-[2.5]" />
+              </div>
+            </div>
+
+            <div className="bg-[#F4FBF7] border border-[#A7F3D0] hover:border-emerald-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-emerald-800">
+                  Terverifikasi
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {verifiedCount}
+                  </span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#84CC16] text-white">
+                <CheckCircle size={20} className="stroke-[2.5]" />
+              </div>
+            </div>
+
+            <div className="bg-[#FEF2F2] border border-[#FECACA] hover:border-red-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-red-800">
+                  Ditolak
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                    {rejectedCount}
+                  </span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-red-500 text-white">
+                <AlertCircle size={20} className="stroke-[2.5]" />
+              </div>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#008BE3] text-white">
-            <FileText size={20} className="stroke-[2.5]" />
-          </div>
-        </div>
 
-        <div className="bg-[#FFFBEB] border border-[#FDE68A] hover:border-amber-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-black uppercase tracking-wider block text-amber-800">
-              Menunggu
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-black text-slate-900 tracking-tight">
-                {pendingCount}
-              </span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-amber-500 text-white">
-            <Clock size={20} className="stroke-[2.5]" />
-          </div>
-        </div>
+          {/* Table Section */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+            {/* Table Toolbar */}
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
+              <div className="relative w-full md:max-w-md">
+                <Search
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Cari nama dokumen atau skema..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none text-xs sm:text-sm transition-all placeholder:text-slate-400"
+                />
+              </div>
 
-        <div className="bg-[#F4FBF7] border border-[#A7F3D0] hover:border-emerald-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-black uppercase tracking-wider block text-emerald-800">
-              Terverifikasi
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-black text-slate-900 tracking-tight">
-                {verifiedCount}
-              </span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-[#84CC16] text-white">
-            <CheckCircle size={20} className="stroke-[2.5]" />
-          </div>
-        </div>
-
-        <div className="bg-[#FEF2F2] border border-[#FECACA] hover:border-red-300 p-4 rounded-lg flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-all duration-200 cursor-default">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-black uppercase tracking-wider block text-red-800">
-              Ditolak
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-black text-slate-900 tracking-tight">
-                {rejectedCount}
-              </span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs bg-red-500 text-white">
-            <AlertCircle size={20} className="stroke-[2.5]" />
-          </div>
-        </div>
-      </div>
-
-      {/* Table Section */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-        {/* Table Toolbar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
-          <div className="relative w-full md:max-w-md">
-            <Search
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Cari nama dokumen atau skema..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none text-xs sm:text-sm transition-all placeholder:text-slate-400"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <div className="relative w-full md:w-auto">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full appearance-none pl-9 pr-8 py-2.5 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
-              >
-                <option value="Semua">Semua Status</option>
-                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                <option value="Terverifikasi">Terverifikasi</option>
-                <option value="Ditolak">Ditolak</option>
-              </select>
-              <Filter
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none shrink-0"
-                size={15}
-              />
-              <ChevronDown
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none shrink-0"
-                size={15}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto relative">
-          <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
-            <thead>
-              <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16 whitespace-nowrap">
-                  No
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Skema
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Nama Dokumen
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Status Asesor
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Alamat LSP
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Tanggal Verifikasi
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
-                  Status Verifikasi
-                </th>
-                <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 whitespace-nowrap">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500 font-semibold text-xs">
-                    Memuat data portofolio...
-                  </td>
-                </tr>
-              ) : filteredPortfolios.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-6 py-12 text-center text-slate-400"
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="relative w-full md:w-auto">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full appearance-none pl-9 pr-8 py-2.5 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
                   >
-                    <FileText size={40} className="mx-auto mb-3 opacity-30" />
-                    <p className="font-bold text-slate-600">
-                      Tidak ada portofolio ditemukan
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Coba sesuaikan kata kunci pencarian atau filter status
-                      Anda.
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                filteredPortfolios.map((item, idx) => (
-                  <tr
-                    key={item.id}
-                    className="group/row hover:bg-[#F9FAFC] transition-colors"
-                  >
-                    {/* No */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
-                      <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          idx % 3 === 0
-                            ? "bg-[#008BE3]/10 text-[#008BE3]"
-                            : idx % 3 === 1
-                              ? "bg-[#84CC16]/10 text-[#73B412]"
-                              : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {idx + 1}
-                      </div>
-                    </td>
+                    <option value="Semua">Semua Status</option>
+                    <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                    <option value="Terverifikasi">Terverifikasi</option>
+                    <option value="Ditolak">Ditolak</option>
+                  </select>
+                  <Filter
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none shrink-0"
+                    size={15}
+                  />
+                  <ChevronDown
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none shrink-0"
+                    size={15}
+                  />
+                </div>
+              </div>
+            </div>
 
-                    {/* Skema */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                      <span className="font-bold text-[11px] sm:text-sm text-[#008BE3] block whitespace-nowrap">
-                        {item.skema}
-                      </span>
-                    </td>
-
-                    {/* Nama Dokumen */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                      <div className="min-w-0">
-                        <p className="text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
-                          {item.namaDokumen}
-                        </p>
-                        {item.deskripsi && (
-                          <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-1 whitespace-nowrap">
-                            {item.deskripsi}
-                          </p>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Status Asesor */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                      <span
-                        className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
-                          item.statusAsesor === "Asesor dari Luar"
-                            ? "bg-purple-50 text-purple-700 border-purple-200"
-                            : "bg-sky-50 text-sky-700 border-sky-200"
-                        }`}
-                      >
-                        {item.statusAsesor || "Asesor dari UIN Bandung"}
-                      </span>
-                    </td>
-
-                    {/* Alamat LSP */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                      <span className="text-[11px] sm:text-sm text-slate-500 font-medium truncate max-w-45 block">
-                        {item.alamatLsp || "-"}
-                      </span>
-                    </td>
-
-                    {/* Tanggal Verifikasi */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-slate-500 text-[11px] sm:text-sm font-medium">
-                        <Calendar size={14} className="text-slate-400" />
-                        <span>{item.tanggal}</span>
-                      </div>
-                    </td>
-
-                    {/* Status Verifikasi */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                      {item.status === "Terverifikasi" && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5">
-                          <CheckCircle size={14} className="stroke-[2.5]" />{" "}
-                          Terverifikasi
-                        </span>
-                      )}
-                      {item.status === "Menunggu Verifikasi" && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1.5">
-                          <Clock size={14} className="stroke-[2.5]" /> Menunggu
-                          Verifikasi
-                        </span>
-                      )}
-                      {item.status === "Ditolak" && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200 inline-flex items-center gap-1.5">
-                          <AlertCircle size={14} className="stroke-[2.5]" />{" "}
-                          Ditolak
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Aksi */}
-                    <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
-                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        {/* Lihat Detail */}
-                        <button
-                          onClick={() => {
-                            setSelectedPortfolio(item);
-                            setIsDetailModalOpen(true);
-                          }}
-                          className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-slate-700 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg border border-slate-200 hover:border-sky-200 transition-colors cursor-pointer flex items-center gap-1"
-                          title="Lihat Detail"
-                        >
-                          <Eye size={14} />
-                          <span className="hidden sm:inline">Detail</span>
-                        </button>
-
-                        {/* Hapus (Hanya bisa kalau Menunggu Verifikasi) */}
-                        {item.status === "Menunggu Verifikasi" && (
-                          <button
-                            onClick={() => {
-                              setSelectedPortfolio(item);
-                              setIsDeleteModalOpen(true);
-                            }}
-                            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer flex items-center gap-1"
-                            title="Hapus Portofolio"
-                          >
-                            <Trash2 size={14} />
-                            <span className="hidden sm:inline">Hapus</span>
-                          </button>
-                        )}
-
-                        {/* Upload Ulang (Hanya jika Ditolak) */}
-                        {item.status === "Ditolak" && (
-                          <button
-                            onClick={() => openReuploadModal(item)}
-                            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                            title="Upload Ulang Portofolio"
-                          >
-                            <RefreshCw size={14} />
-                            <span className="hidden sm:inline">
-                              Upload Ulang
-                            </span>
-                          </button>
-                        )}
-                      </div>
-                    </td>
+            <div className="overflow-x-auto relative">
+              <table className="w-full text-left border-collapse min-w-162.5 sm:min-w-250">
+                <thead>
+                  <tr className="bg-[#0F172A] border-b border-[#0F172A]">
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center w-16 whitespace-nowrap">
+                      No
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Skema
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Nama Dokumen
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Status Asesor
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Alamat LSP
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Tanggal Verifikasi
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Status Verifikasi
+                    </th>
+                    <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-10 border-l border-white/10 whitespace-nowrap">
+                      Aksi
+                    </th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center text-slate-500 font-semibold text-xs">
+                        Memuat data portofolio...
+                      </td>
+                    </tr>
+                  ) : filteredPortfolios.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="px-6 py-12 text-center text-slate-400"
+                      >
+                        <FileText size={40} className="mx-auto mb-3 opacity-30" />
+                        <p className="font-bold text-slate-600">
+                          Tidak ada portofolio ditemukan
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Coba sesuaikan kata kunci pencarian atau filter status
+                          Anda.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPortfolios.map((item, idx) => (
+                      <tr
+                        key={item.id}
+                        className="group/row hover:bg-[#F9FAFC] transition-colors"
+                      >
+                        {/* No */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
+                          <div
+                            className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
+                              ? "bg-[#008BE3]/10 text-[#008BE3]"
+                              : idx % 3 === 1
+                                ? "bg-[#84CC16]/10 text-[#73B412]"
+                                : "bg-slate-100 text-slate-600"
+                              }`}
+                          >
+                            {idx + 1}
+                          </div>
+                        </td>
+
+                        {/* Skema */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <span className="font-bold text-[11px] sm:text-sm text-[#008BE3] block whitespace-nowrap">
+                            {item.skema}
+                          </span>
+                        </td>
+
+                        {/* Nama Dokumen */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="min-w-0">
+                            <p className="text-[11px] sm:text-sm font-bold text-slate-900 whitespace-nowrap">
+                              {item.namaDokumen}
+                            </p>
+                            {item.deskripsi && (
+                              <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-1 whitespace-nowrap">
+                                {item.deskripsi}
+                              </p>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Status Asesor */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <span
+                            className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${item.statusAsesor === "Asesor dari Luar"
+                              ? "bg-purple-50 text-purple-700 border-purple-200"
+                              : "bg-sky-50 text-sky-700 border-sky-200"
+                              }`}
+                          >
+                            {item.statusAsesor || "Asesor dari UIN Bandung"}
+                          </span>
+                        </td>
+
+                        {/* Alamat LSP */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <span className="text-[11px] sm:text-sm text-slate-500 font-medium truncate max-w-45 block">
+                            {item.alamatLsp || "-"}
+                          </span>
+                        </td>
+
+                        {/* Tanggal Verifikasi */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-slate-500 text-[11px] sm:text-sm font-medium">
+                            <Calendar size={14} className="text-slate-400" />
+                            <span>{item.tanggal}</span>
+                          </div>
+                        </td>
+
+                        {/* Status Verifikasi */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          {item.status === "Terverifikasi" && (
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5">
+                              <CheckCircle size={14} className="stroke-[2.5]" />{" "}
+                              Terverifikasi
+                            </span>
+                          )}
+                          {item.status === "Menunggu Verifikasi" && (
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1.5">
+                              <Clock size={14} className="stroke-[2.5]" /> Menunggu
+                              Verifikasi
+                            </span>
+                          )}
+                          {item.status === "Ditolak" && (
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200 inline-flex items-center gap-1.5">
+                              <AlertCircle size={14} className="stroke-[2.5]" />{" "}
+                              Ditolak
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Aksi */}
+                        <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
+                          <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                            {/* Lihat Detail */}
+                            <button
+                              onClick={() => {
+                                setSelectedPortfolio(item);
+                                setIsDetailModalOpen(true);
+                              }}
+                              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-slate-700 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg border border-slate-200 hover:border-sky-200 transition-colors cursor-pointer flex items-center gap-1"
+                              title="Lihat Detail"
+                            >
+                              <Eye size={14} />
+                              <span className="hidden sm:inline">Detail</span>
+                            </button>
+
+                            {/* Hapus (Hanya bisa kalau Menunggu Verifikasi) */}
+                            {item.status === "Menunggu Verifikasi" && (
+                              <button
+                                data-bypass-confirm="true"
+                                onClick={() => {
+                                  setSelectedPortfolio(item);
+                                  setIsDeleteModalOpen(true);
+                                }}
+                                className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer flex items-center gap-1"
+                                title="Hapus Portofolio"
+                              >
+                                <Trash2 size={14} />
+                                <span className="hidden sm:inline">Hapus</span>
+                              </button>
+                            )}
+
+                            {/* Upload Ulang (Hanya jika Ditolak) */}
+                            {item.status === "Ditolak" && (
+                              <button
+                                onClick={() => openReuploadModal(item)}
+                                className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                                title="Upload Ulang Portofolio"
+                              >
+                                <RefreshCw size={14} />
+                                <span className="hidden sm:inline">
+                                  Upload Ulang
+                                </span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
@@ -769,274 +768,274 @@ export default function VerifikasiPortofolio() {
             onSubmit={handleUploadSubmit}
             className="p-4 sm:p-6 space-y-4"
           >
-                {/* Status Asesor */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Status Asesor <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.statusAsesor}
-                    onChange={(e) => {
-                      const val = e.target.value as
-                        | "Asesor dari UIN Bandung"
-                        | "Asesor dari Luar";
-                      setFormData((prev) => ({
-                        ...prev,
-                        statusAsesor: val,
-                        alamatLsp:
-                          val === "Asesor dari UIN Bandung"
-                            ? "UIN Sunan Gunung Djati Bandung"
-                            : prev.statusAsesor === "Asesor dari Luar"
-                              ? prev.alamatLsp
-                              : "",
-                      }));
-                    }}
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
-                  >
-                    <option value="Asesor dari UIN Bandung">
-                      Asesor dari UIN Bandung
-                    </option>
-                    <option value="Asesor dari Luar">Asesor dari Luar</option>
-                  </select>
-                </div>
+            {/* Status Asesor */}
+            <div className="min-w-0">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Status Asesor <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.statusAsesor}
+                onChange={(e) => {
+                  const val = e.target.value as
+                    | "Asesor dari UIN Bandung"
+                    | "Asesor dari Luar";
+                  setFormData((prev) => ({
+                    ...prev,
+                    statusAsesor: val,
+                    alamatLsp:
+                      val === "Asesor dari UIN Bandung"
+                        ? "UIN Sunan Gunung Djati Bandung"
+                        : prev.statusAsesor === "Asesor dari Luar"
+                          ? prev.alamatLsp
+                          : "",
+                  }));
+                }}
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
+              >
+                <option value="Asesor dari UIN Bandung">
+                  Asesor dari UIN Bandung
+                </option>
+                <option value="Asesor dari Luar">Asesor dari Luar</option>
+              </select>
+            </div>
 
-                {/* Alamat LSP Asesor */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Alamat LSP Asesor{" "}
-                    {formData.statusAsesor === "Asesor dari Luar" && (
-                      <span className="text-red-500">*</span>
-                    )}
-                  </label>
-                  {formData.statusAsesor === "Asesor dari Luar" ? (
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: Jl. Raya Padjadjaran No. 12, Bogor (LSP Informatika)"
-                      value={formData.alamatLsp}
-                      onChange={(e) =>
-                        setFormData({ ...formData, alamatLsp: e.target.value })
-                      }
-                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      readOnly
-                      value="UIN Sunan Gunung Djati Bandung"
-                      className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-100 rounded-xl text-sm font-medium text-slate-600 outline-none cursor-not-allowed"
-                    />
-                  )}
-                  <p className="text-[11px] text-slate-400 font-medium mt-1">
-                    {formData.statusAsesor === "Asesor dari UIN Bandung"
-                      ? "Otomatis diisi UIN Bandung untuk asesor internal."
-                      : "Masukkan alamat lengkap LSP dari asal asesor luar."}
-                  </p>
-                </div>
-
-                {/* Skema */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Skema Sertifikasi <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.skema}
-                    onChange={(e) =>
-                      setFormData({ ...formData, skema: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
-                  >
-                    {AVAILABLE_SCHEMES.map((scheme, idx) => (
-                      <option key={idx} value={scheme}>
-                        {scheme}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Nama Dokumen */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Nama Dokumen / Label <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Sertifikat Pelatihan React & Node.js"
-                    value={formData.namaDokumen}
-                    onChange={(e) =>
-                      setFormData({ ...formData, namaDokumen: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
-                  />
-                  <p className="text-[11px] text-slate-400 font-medium mt-1">
-                    Berikan label judul yang jelas agar mudah diidentifikasi
-                    oleh Admin.
-                  </p>
-                </div>
-
-                {/* Deskripsi/Keterangan */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Deskripsi / Keterangan{" "}
-                    <span className="text-slate-400 font-normal">
-                      (opsional)
-                    </span>
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="Tambahkan keterangan rincian atau catatan pendukung untuk dokumen ini..."
-                    value={formData.deskripsi}
-                    onChange={(e) =>
-                      setFormData({ ...formData, deskripsi: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
-                  />
-                </div>
-
-                {/* Upload File Section */}
-                {formData.statusAsesor === "Asesor dari Luar" ? (
-                  <div className="space-y-3 pt-1 border-t border-slate-200">
-                    <p className="text-xs font-extrabold text-purple-900 uppercase tracking-wider">
-                      Dokumen Asesor Luar (Wajib 2 File)
-                    </p>
-
-                    {/* File 1: File Peminjaman Asesor */}
-                    <div className="min-w-0">
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        1. File Peminjaman Asesor{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <div className="border-2 border-dashed border-sky-300 rounded-xl p-3 text-center bg-sky-50/40 hover:bg-sky-50 transition-colors relative">
-                        <input
-                          type="file"
-                          accept=".pdf,.png,.jpg,.jpeg"
-                          onChange={handlePeminjamanFileChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <Upload
-                          size={24}
-                          className="mx-auto text-[#008BE3] mb-1"
-                        />
-                        {formData.filePeminjaman ? (
-                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
-                            <CheckCircle size={14} className="shrink-0" />{" "}
-                            {formData.filePeminjaman.name}
-                          </p>
-                        ) : formData.filePeminjamanPlaceholder ? (
-                          <p className="text-xs font-bold text-slate-700">
-                            {formData.filePeminjamanPlaceholder}
-                          </p>
-                        ) : (
-                          <p className="text-xs font-semibold text-slate-600">
-                            Klik / tarik File Surat Peminjaman Asesor
-                          </p>
-                        )}
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          Format PDF, PNG, JPG (Maks. 10MB)
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* File 2: File Jawaban LSP Luar */}
-                    <div className="min-w-0">
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        2. File Jawaban / Konfirmasi Peminjaman dari LSP Luar{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <div className="border-2 border-dashed border-purple-300 rounded-xl p-3 text-center bg-purple-50/40 hover:bg-purple-50 transition-colors relative">
-                        <input
-                          type="file"
-                          accept=".pdf,.png,.jpg,.jpeg"
-                          onChange={handleJawabanFileChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <Upload
-                          size={24}
-                          className="mx-auto text-purple-600 mb-1"
-                        />
-                        {formData.fileJawaban ? (
-                          <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
-                            <CheckCircle size={14} className="shrink-0" />{" "}
-                            {formData.fileJawaban.name}
-                          </p>
-                        ) : formData.fileJawabanPlaceholder ? (
-                          <p className="text-xs font-bold text-slate-700">
-                            {formData.fileJawabanPlaceholder}
-                          </p>
-                        ) : (
-                          <p className="text-xs font-semibold text-slate-600">
-                            Klik / tarik File Surat Konfirmasi / Balasan LSP
-                          </p>
-                        )}
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          Format PDF, PNG, JPG (Maks. 10MB)
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="min-w-0">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                      Upload File Portofolio (PDF / Gambar){" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors relative">
-                      <input
-                        type="file"
-                        accept=".pdf,.png,.jpg,.jpeg"
-                        onChange={handleSingleFileChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <Upload
-                        size={28}
-                        className="mx-auto text-[#008BE3] mb-1.5"
-                      />
-                      {formData.selectedFile ? (
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-1.5 break-all">
-                            <CheckCircle size={16} className="shrink-0" />{" "}
-                            {formData.selectedFile.name}
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1">
-                            {(
-                              formData.selectedFile.size /
-                              (1024 * 1024)
-                            ).toFixed(2)}{" "}
-                            MB • Klik untuk mengganti file
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-700">
-                            Klik atau tarik file ke sini
-                          </p>
-                          <p className="text-[11px] text-slate-400 mt-1">
-                            Format PDF, PNG, JPG (Maks. 10MB)
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            {/* Alamat LSP Asesor */}
+            <div className="min-w-0">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Alamat LSP Asesor{" "}
+                {formData.statusAsesor === "Asesor dari Luar" && (
+                  <span className="text-red-500">*</span>
                 )}
+              </label>
+              {formData.statusAsesor === "Asesor dari Luar" ? (
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Jl. Raya Padjadjaran No. 12, Bogor (LSP Informatika)"
+                  value={formData.alamatLsp}
+                  onChange={(e) =>
+                    setFormData({ ...formData, alamatLsp: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
+                />
+              ) : (
+                <input
+                  type="text"
+                  readOnly
+                  value="UIN Sunan Gunung Djati Bandung"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-100 rounded-xl text-sm font-medium text-slate-600 outline-none cursor-not-allowed"
+                />
+              )}
+              <p className="text-[11px] text-slate-400 font-medium mt-1">
+                {formData.statusAsesor === "Asesor dari UIN Bandung"
+                  ? "Otomatis diisi UIN Bandung untuk asesor internal."
+                  : "Masukkan alamat lengkap LSP dari asal asesor luar."}
+              </p>
+            </div>
 
-                {/* Footer Buttons */}
-                <div className="pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsUploadModalOpen(false)}
-                    className="w-full sm:w-auto px-4 py-2.5 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto px-5 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Upload size={14} /> Submit Portofolio
-                  </button>
+            {/* Skema */}
+            <div className="min-w-0">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Skema Sertifikasi <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.skema}
+                onChange={(e) =>
+                  setFormData({ ...formData, skema: e.target.value })
+                }
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none cursor-pointer"
+              >
+                {AVAILABLE_SCHEMES.map((scheme, idx) => (
+                  <option key={idx} value={scheme}>
+                    {scheme}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Nama Dokumen */}
+            <div className="min-w-0">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Nama Dokumen / Label <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Contoh: Sertifikat Pelatihan React & Node.js"
+                value={formData.namaDokumen}
+                onChange={(e) =>
+                  setFormData({ ...formData, namaDokumen: e.target.value })
+                }
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
+              />
+              <p className="text-[11px] text-slate-400 font-medium mt-1">
+                Berikan label judul yang jelas agar mudah diidentifikasi
+                oleh Admin.
+              </p>
+            </div>
+
+            {/* Deskripsi/Keterangan */}
+            <div className="min-w-0">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Deskripsi / Keterangan{" "}
+                <span className="text-slate-400 font-normal">
+                  (opsional)
+                </span>
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Tambahkan keterangan rincian atau catatan pendukung untuk dokumen ini..."
+                value={formData.deskripsi}
+                onChange={(e) =>
+                  setFormData({ ...formData, deskripsi: e.target.value })
+                }
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none placeholder:text-slate-400"
+              />
+            </div>
+
+            {/* Upload File Section */}
+            {formData.statusAsesor === "Asesor dari Luar" ? (
+              <div className="space-y-3 pt-1 border-t border-slate-200">
+                <p className="text-xs font-extrabold text-purple-900 uppercase tracking-wider">
+                  Dokumen Asesor Luar (Wajib 2 File)
+                </p>
+
+                {/* File 1: File Peminjaman Asesor */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    1. File Peminjaman Asesor{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className="border-2 border-dashed border-sky-300 rounded-xl p-3 text-center bg-sky-50/40 hover:bg-sky-50 transition-colors relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={handlePeminjamanFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload
+                      size={24}
+                      className="mx-auto text-[#008BE3] mb-1"
+                    />
+                    {formData.filePeminjaman ? (
+                      <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                        <CheckCircle size={14} className="shrink-0" />{" "}
+                        {formData.filePeminjaman.name}
+                      </p>
+                    ) : formData.filePeminjamanPlaceholder ? (
+                      <p className="text-xs font-bold text-slate-700">
+                        {formData.filePeminjamanPlaceholder}
+                      </p>
+                    ) : (
+                      <p className="text-xs font-semibold text-slate-600">
+                        Klik / tarik File Surat Peminjaman Asesor
+                      </p>
+                    )}
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Format PDF, PNG, JPG (Maks. 10MB)
+                    </p>
+                  </div>
                 </div>
-              </form>
+
+                {/* File 2: File Jawaban LSP Luar */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    2. File Jawaban / Konfirmasi Peminjaman dari LSP Luar{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className="border-2 border-dashed border-purple-300 rounded-xl p-3 text-center bg-purple-50/40 hover:bg-purple-50 transition-colors relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={handleJawabanFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload
+                      size={24}
+                      className="mx-auto text-purple-600 mb-1"
+                    />
+                    {formData.fileJawaban ? (
+                      <p className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1 break-all">
+                        <CheckCircle size={14} className="shrink-0" />{" "}
+                        {formData.fileJawaban.name}
+                      </p>
+                    ) : formData.fileJawabanPlaceholder ? (
+                      <p className="text-xs font-bold text-slate-700">
+                        {formData.fileJawabanPlaceholder}
+                      </p>
+                    ) : (
+                      <p className="text-xs font-semibold text-slate-600">
+                        Klik / tarik File Surat Konfirmasi / Balasan LSP
+                      </p>
+                    )}
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Format PDF, PNG, JPG (Maks. 10MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Upload File Portofolio (PDF / Gambar){" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors relative">
+                  <input
+                    type="file"
+                    accept=".pdf,.png,.jpg,.jpeg"
+                    onChange={handleSingleFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <Upload
+                    size={28}
+                    className="mx-auto text-[#008BE3] mb-1.5"
+                  />
+                  {formData.selectedFile ? (
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-1.5 break-all">
+                        <CheckCircle size={16} className="shrink-0" />{" "}
+                        {formData.selectedFile.name}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {(
+                          formData.selectedFile.size /
+                          (1024 * 1024)
+                        ).toFixed(2)}{" "}
+                        MB • Klik untuk mengganti file
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-slate-700">
+                        Klik atau tarik file ke sini
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        Format PDF, PNG, JPG (Maks. 10MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => setIsUploadModalOpen(false)}
+                className="w-full sm:w-auto px-4 py-2.5 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Upload size={14} /> Submit Portofolio
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
@@ -1089,11 +1088,10 @@ export default function VerifikasiPortofolio() {
                   </p>
                   <div className="mt-1 flex items-center gap-2 flex-wrap">
                     <span
-                      className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${
-                        selectedPortfolio.statusAsesor === "Asesor dari Luar"
-                          ? "bg-purple-50 text-purple-700 border-purple-200"
-                          : "bg-sky-50 text-sky-700 border-sky-200"
-                      }`}
+                      className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${selectedPortfolio.statusAsesor === "Asesor dari Luar"
+                        ? "bg-purple-50 text-purple-700 border-purple-200"
+                        : "bg-sky-50 text-sky-700 border-sky-200"
+                        }`}
                     >
                       {selectedPortfolio.statusAsesor ||
                         "Asesor dari UIN Bandung"}
@@ -1645,6 +1643,7 @@ export default function VerifikasiPortofolio() {
                   Batal
                 </button>
                 <button
+                  data-bypass-confirm="true"
                   onClick={handleDeleteConfirm}
                   className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors cursor-pointer text-center"
                 >

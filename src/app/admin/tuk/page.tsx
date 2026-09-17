@@ -783,6 +783,7 @@ export default function TukManagement() {
                   Batal
                 </button>
                 <button
+                  data-bypass-confirm="true"
                   onClick={confirmDelete}
                   className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
                 >
