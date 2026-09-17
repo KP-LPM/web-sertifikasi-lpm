@@ -3,7 +3,6 @@
 import React, { useState, useRef } from "react";
 import { Save, User as UserIcon, X, Trash2, Upload, ArrowLeft } from "lucide-react";
 import { useAppContext } from "@/context/context";
-import SignatureCanvas from "react-signature-canvas";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { forgotPassword, getUsersProfile } from "@/lib/api";
@@ -22,8 +21,6 @@ export default function Profile() {
   const router = useRouter();
 
   // State untuk modal tanda tangan
-  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
-  const signatureRef = useRef<SignatureCanvas>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State untuk upload foto profil ke Supabase
@@ -116,22 +113,10 @@ export default function Profile() {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          signatureRef.current?.fromDataURL(event.target.result as string);
+          setFormData({ ...formData, tandaTangan: event.target.result as string });
         }
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSaveSignature = () => {
-    if (signatureRef.current) {
-      if (signatureRef.current.isEmpty()) {
-        showNotification("Tanda tangan masih kosong!", "error");
-        return;
-      }
-      const dataUrl = signatureRef.current.toDataURL();
-      setFormData({ ...formData, tandaTangan: dataUrl });
-      setIsSignatureModalOpen(false);
     }
   };
 
@@ -158,13 +143,7 @@ export default function Profile() {
     }
   };
 
-  React.useEffect(() => {
-    if (isSignatureModalOpen && formData.tandaTangan && signatureRef.current) {
-      setTimeout(() => {
-        signatureRef.current?.fromDataURL(formData.tandaTangan as string);
-      }, 50);
-    }
-  }, [isSignatureModalOpen, formData.tandaTangan]);
+
 
   React.useEffect(() => {
     if (registeredProfile) {
@@ -684,14 +663,33 @@ export default function Profile() {
                   </div>
                 )}
                 <div>
-                  <button
-                    onClick={() => setIsSignatureModalOpen(true)}
-                    className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-sm font-bold shadow-xs transition-colors"
-                  >
-                    {formData.tandaTangan
-                      ? "Ubah Tanda Tangan"
-                      : "Buat Tanda Tangan"}
-                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-sm font-bold shadow-xs transition-colors flex gap-2 items-center"
+                    >
+                      <Upload size={14} />
+                      {formData.tandaTangan
+                        ? "Ubah Tanda Tangan"
+                        : "Upload Tanda Tangan"}
+                    </button>
+                    {formData.tandaTangan && (
+                      <button
+                        onClick={() => setFormData({ ...formData, tandaTangan: "" })}
+                        className="px-3 py-2.5 border border-[#FF6B6B] text-[#FF6B6B] hover:bg-red-50 rounded-xl text-sm font-bold transition-colors flex items-center justify-center"
+                        title="Hapus Tanda Tangan"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1">
                   Tanda tangan ini akan digunakan dalam perangkat asesmen.
@@ -735,75 +733,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Signature Modal */}
-      {isSignatureModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Tanda Tangan</h3>
-              <button
-                onClick={() => setIsSignatureModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
 
-            <div className="p-4">
-              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <SignatureCanvas
-                  ref={signatureRef}
-                  canvasProps={{
-                    className: "w-full h-48 sm:h-64 cursor-crosshair",
-                  }}
-                  backgroundColor="white"
-                />
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center bg-gray-50">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsSignatureModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 transition-colors flex items-center justify-center"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => signatureRef.current?.clear()}
-                  className="px-3 py-2 border border-[#FF6B6B] text-[#FF6B6B] bg-white rounded-lg text-xs font-bold hover:bg-red-50 transition-colors flex items-center justify-center"
-                  title="Hapus Kanvas"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2"
-                >
-                  <Upload size={14} />
-                  Upload
-                </button>
-                <button
-                  onClick={handleSaveSignature}
-                  className="px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-2"
-                >
-                  <Save size={14} />
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

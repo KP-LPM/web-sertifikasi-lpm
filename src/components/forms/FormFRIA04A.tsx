@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
@@ -574,148 +574,6 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
           meliputi tentang pemecahan masalah dan analisa
         </p>
 
-        {/* Penyusun & Validator */}
-        <div>
-          <h3 className="font-bold mb-2">PENYUSUN DAN VALIDATOR</h3>
-          <div className="border border-slate-300 overflow-x-auto">
-            <table className="w-full border-collapse text-center min-w-137.5">
-              <thead>
-                <tr className="bg-white border-b border-slate-300">
-                  <th className="border-r border-slate-300 p-2">STATUS</th>
-                  <th className="border-r border-slate-300 p-2 w-12">NO</th>
-                  <th className="border-r border-slate-300 p-2">NAMA</th>
-                  <th className="border-r border-slate-300 p-2">NOMOR MET</th>
-                  <th className="p-2">TANDA TANGAN DAN TANGGAL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {penyusun.map((p, idx) => (
-                  <tr key={"p2-" + idx} className="border-b border-slate-300">
-                    {idx === 0 && (
-                      <td
-                        className="border-r border-slate-300 p-2 font-bold"
-                        rowSpan={penyusun.length}
-                      >
-                        PENYUSUN
-                      </td>
-                    )}
-                    <td className="border-r border-slate-300 p-2">{idx + 1}</td>
-                    <td className="border-r border-slate-300 p-2">
-                      <input
-                        type="text"
-                        disabled={true}
-                        className="w-full outline-none bg-transparent"
-                        value={String(p.nama || "")}
-                        onChange={(e) =>
-                          handlePenyusunChangeInternal(
-                            idx,
-                            "nama",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                    <td className="border-r border-slate-300 p-2">
-                      <input
-                        type="text"
-                        disabled={true}
-                        className="w-full outline-none bg-transparent text-center"
-                        value={p.noMet}
-                        onChange={(e) =>
-                          handlePenyusunChangeInternal(
-                            idx,
-                            "noMet",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                    <td className="p-2 text-center">
-                      <input
-                        type="text"
-                        disabled={true}
-                        className="w-full outline-none bg-transparent text-center"
-                        value={String(p.ttdTanggal || "")}
-                        onChange={(e) =>
-                          handlePenyusunChangeInternal(
-                            idx,
-                            "ttdTanggal",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-                {validator.map((v, idx) => (
-                  <tr
-                    key={"v2-" + idx}
-                    className={
-                      idx === validator.length - 1
-                        ? ""
-                        : "border-b border-slate-300"
-                    }
-                  >
-                    {idx === 0 && (
-                      <td
-                        className="border-r border-slate-300 p-2 font-bold"
-                        rowSpan={validator.length}
-                      >
-                        VALIDATOR
-                      </td>
-                    )}
-                    <td className="border-r border-slate-300 p-2">{idx + 1}</td>
-                    <td className="border-r border-slate-300 p-2">
-                      <input
-                        type="text"
-                        disabled={true}
-                        className="w-full outline-none bg-transparent"
-                        value={v.nama}
-                        onChange={(e) =>
-                          handleValidatorChangeInternal(
-                            idx,
-                            "nama",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                    <td className="border-r border-slate-300 p-2">
-                      <input
-                        type="text"
-                        disabled={true}
-                        className="w-full outline-none bg-transparent text-center"
-                        value={v.noMet}
-                        onChange={(e) =>
-                          handleValidatorChangeInternal(
-                            idx,
-                            "noMet",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                    <td className="p-2 text-center">
-                      <input
-                        type="text"
-                        disabled={true}
-                        className="w-full outline-none bg-transparent text-center"
-                        value={v.ttdTanggal}
-                        onChange={(e) =>
-                          handleValidatorChangeInternal(
-                            idx,
-                            "ttdTanggal",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
 
       {/* Navigation */}
@@ -725,7 +583,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
             <button
               type="button"
               onClick={props.onPrev}
-              className="border border-slate-300 px-6 py-2.5 font-semibold text-sm hover:bg-slate-50 flex items-center gap-2"
+              className="border border-slate-300 bg-white text-slate-700 px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
             >
               <ArrowLeft size={16} /> Kembali
             </button>
@@ -737,7 +595,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
               type="button"
               onClick={props.onNext}
               disabled={props.isNextDisabled}
-              className="bg-slate-900 text-white px-6 py-2.5 font-semibold text-sm hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
+              className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Lanjut ke Step 3 <ChevronRight size={16} />
             </button>

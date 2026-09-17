@@ -1,7 +1,8 @@
+﻿﻿/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-empty-pattern */
 import React, { useState, useEffect } from "react";
-import { Eye, CheckCircle, AlertTriangle, FastForward } from "lucide-react";
+import { Eye, CheckCircle, AlertTriangle, FastForward, ChevronRight, ArrowLeft, AlertCircle } from "lucide-react";
 import { FormHeader } from "./FormHeader";
-import { SignatureModal } from "./SignatureModal";
 import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import {
   Apl02FormData,
@@ -442,7 +443,6 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                                 key={kIdx}
                                 className="text-slate-700 text-xs flex items-start gap-1.5"
                               >
-                                <span className="text-slate-400">•</span>
                                 <span>{k}</span>
                               </li>
                             ))}
@@ -613,22 +613,12 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
               <img
                 src={asesorSignature}
                 alt="Tanda Tangan Asesor"
-                className="h-20 object-contain cursor-pointer"
-                onClick={() =>
-                  !props.readOnly &&
-                  !props.isAsesi &&
-                  setIsAsesorSigModalOpen(true)
-                }
+                className="h-20 object-contain"
               />
             ) : (
-              <button
-                type="button"
-                disabled={props.readOnly || props.isAsesi}
-                onClick={() => setIsAsesorSigModalOpen(true)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
-              >
-                Tanda Tangan Asesor
-              </button>
+              <div className="text-xs text-slate-400 italic py-4">
+                Tanda tangan belum tersedia
+              </div>
             )}
           </div>
           <div className="w-full">
@@ -675,10 +665,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                   id="signature-container"
                   src={asesiSignature}
                   alt="Tanda Tangan Asesi"
-                  className="h-20 object-contain cursor-pointer"
-                  onClick={() =>
-                    !props.readOnly && setIsAsesiSigModalOpen(true)
-                  }
+                  className="h-20 object-contain"
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center opacity-80 h-20 cursor-default">
@@ -691,14 +678,9 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                 </div>
               )
             ) : (
-              <button
-                type="button"
-                disabled={props.readOnly}
-                onClick={() => setIsAsesiSigModalOpen(true)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
-              >
-                Tanda Tangan Asesi
-              </button>
+              <div className="text-xs text-slate-400 italic py-4">
+                Tanda tangan belum tersedia
+              </div>
             )}
           </div>
           <div className="w-full">
@@ -777,32 +759,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
         </div>
       )}
 
-      {/* Signature Modals */}
-      <SignatureModal
-        isOpen={isAsesiSigModalOpen}
-        onClose={() => setIsAsesiSigModalOpen(false)}
-        title="Tanda Tangan Asesi"
-        initialSignature={asesiSignature}
-        onSave={(sigData) => {
-          if (props.onAsesiSignatureChange)
-            props.onAsesiSignatureChange(sigData);
-          else setLocalAsesiSig(sigData);
-          setIsAsesiSigModalOpen(false);
-        }}
-      />
-
-      <SignatureModal
-        isOpen={isAsesorSigModalOpen}
-        onClose={() => setIsAsesorSigModalOpen(false)}
-        title="Tanda Tangan Asesor"
-        initialSignature={asesorSignature}
-        onSave={(sigData) => {
-          if (props.onAsesorSignatureChange)
-            props.onAsesorSignatureChange(sigData);
-          else setLocalAsesorSig(sigData);
-          setIsAsesorSigModalOpen(false);
-        }}
-      />
+      {/* Removed Signature Modals */}
     </div>
   );
 }

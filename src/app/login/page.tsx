@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-empty-pattern */
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { signIn } from "next-auth/react";
@@ -17,7 +19,6 @@ import {
   EyeOff,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import {
   forgotPassword,
   registerUsers,
@@ -25,25 +26,6 @@ import {
   verifyOtp,
 } from "@/lib/api";
 import { RegisterPayload } from "@/types/types";
-
-type SignatureCanvasRef = {
-  clear: () => void;
-  fromDataURL: (dataURL: string) => void;
-  toDataURL: () => string;
-  isEmpty: () => boolean;
-};
-
-type SignatureCanvasProps = {
-  canvasProps?: React.CanvasHTMLAttributes<HTMLCanvasElement>;
-  backgroundColor?: string;
-};
-
-const SignatureCanvas = dynamic(() => import("react-signature-canvas"), {
-  ssr: false,
-}) as React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<SignatureCanvasProps> &
-  React.RefAttributes<SignatureCanvasRef>
->;
 
 export default function Login() {
   const router = useRouter();
@@ -76,8 +58,6 @@ export default function Login() {
   };
 
   // State Signature
-  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
-  const signatureRef = useRef<SignatureCanvasRef | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tandaTangan, setTandaTangan] = useState("");
 
@@ -87,32 +67,12 @@ export default function Login() {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          signatureRef.current?.fromDataURL(event.target.result as string);
+          setTandaTangan(event.target.result as string);
         }
       };
       reader.readAsDataURL(file);
     }
   };
-
-  const handleSaveSignature = () => {
-    if (signatureRef.current) {
-      if (signatureRef.current.isEmpty()) {
-        showNotification("Tanda tangan masih kosong!", "error");
-        return;
-      }
-      const dataUrl = signatureRef.current.toDataURL();
-      setTandaTangan(dataUrl);
-      setIsSignatureModalOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isSignatureModalOpen && tandaTangan && signatureRef.current) {
-      setTimeout(() => {
-        signatureRef.current?.fromDataURL(tandaTangan);
-      }, 50);
-    }
-  }, [isSignatureModalOpen, tandaTangan]);
 
   // --- FUNGSI LOGIN KE NEXTAUTH ---
   const handleLogin = async (e: React.FormEvent) => {
@@ -754,13 +714,32 @@ export default function Login() {
                         />
                       </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setIsSignatureModalOpen(true)}
-                      className="w-full py-2.5 bg-[#008BE3] text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
-                    >
-                      {tandaTangan ? "Ubah Tanda Tangan" : "Buat Tanda Tangan"}
-                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-2.5 border border-[#008BE3] text-[#008BE3] hover:bg-sky-50 rounded-lg text-xs font-bold flex justify-center gap-2 items-center transition-all cursor-pointer"
+                      >
+                        <Upload size={14} />
+                        {tandaTangan ? "Ubah Tanda Tangan" : "Upload Tanda Tangan"}
+                      </button>
+                      {tandaTangan && (
+                        <button
+                          type="button"
+                          onClick={() => setTandaTangan("")}
+                          className="px-3 py-2.5 border border-rose-500 text-rose-500 hover:bg-rose-50 rounded-lg text-xs font-bold flex justify-center gap-2 items-center transition-all cursor-pointer"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -785,73 +764,7 @@ export default function Login() {
           </div>
         </motion.div>
 
-        {/* Modal Kanvas */}
-        {isSignatureModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-              <div className="text-black p-4 border-b flex justify-between">
-                <h3 className="font-bold text-sm">Buat Tanda Tangan</h3>
-                <button onClick={() => setIsSignatureModalOpen(false)}>
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="p-4">
-                <div className="border rounded-lg bg-white">
-                  <SignatureCanvas
-                    ref={signatureRef}
-                    canvasProps={{
-                      className: "w-full h-48 sm:h-64 cursor-crosshair",
-                    }}
-                    backgroundColor="white"
-                  />
-                </div>
-              </div>
-              <div className="p-4 border-t flex flex-wrap gap-2 justify-between bg-slate-50">
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsSignatureModalOpen(false)}
-                    className="text-black px-4 py-2 border bg-white rounded-lg text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => signatureRef.current?.clear()}
-                    className="px-3 py-2 border text-rose-500 bg-white rounded-lg text-xs"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 border text-emerald-600 bg-white rounded-lg text-xs font-bold flex gap-2"
-                  >
-                    <Upload size={14} />
-                    Upload
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveSignature}
-                    className="px-4 py-2 bg-[#008BE3] text-white rounded-lg text-xs font-bold flex gap-2"
-                  >
-                    <Save size={14} />
-                    Simpan
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     );
   }

@@ -1,7 +1,8 @@
+﻿/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-empty-pattern */
 import React, { useState } from "react";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { FormHeader } from "./FormHeader";
-import { SignatureModal } from "./SignatureModal";
 import { Assessment } from "@/types/types";
 
 export const DEFAULT_POTENSI_ASESI = [
@@ -163,8 +164,6 @@ export function FormFRAK07(props: FormFRAK07Props) {
   const [localAsesiSig, setLocalAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState("");
 
-  const [isAsesorSigModalOpen, setIsAsesorSigModalOpen] = useState(false);
-  const [isAsesiSigModalOpen, setIsAsesiSigModalOpen] = useState(false);
   const potensiAsesi =
     props.potensiAsesi !== undefined ? props.potensiAsesi : localPotensi;
 
@@ -298,7 +297,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
               </span>{" "}
               pada kotak{" "}
               <span className="inline-block border border-slate-600 px-1 text-[10px] mx-1 font-sans">
-                ☐
+                â˜
               </span>{" "}
               pada kolom potensi asesi.
             </li>
@@ -307,7 +306,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
               jawaban Ya selanjutnya pada kolom keterangan berilah tanda v di
               kotak{" "}
               <span className="inline-block border border-slate-600 px-1 text-[10px] mx-1 font-sans">
-                ☐
+                â˜
               </span>{" "}
               yang tersedia, pilihan boleh lebih dari satu.
             </li>
@@ -559,22 +558,12 @@ export function FormFRAK07(props: FormFRAK07Props) {
               <img
                 src={asesorSignature}
                 alt="Tanda Tangan Asesor"
-                className="h-20 object-contain cursor-pointer"
-                onClick={() =>
-                  !props.readOnly &&
-                  !props.isAsesi &&
-                  setIsAsesorSigModalOpen(true)
-                }
+                className="h-20 object-contain"
               />
             ) : (
-              <button
-                type="button"
-                disabled={props.readOnly || props.isAsesi}
-                onClick={() => setIsAsesorSigModalOpen(true)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
-              >
-                Tanda Tangan Asesor
-              </button>
+              <div className="text-xs text-slate-400 italic py-4">
+                Tanda tangan belum tersedia
+              </div>
             )}
           </div>
           <div className="w-full">
@@ -620,19 +609,12 @@ export function FormFRAK07(props: FormFRAK07Props) {
                 id="signature-container"
                 src={asesiSignature}
                 alt="Tanda Tangan Asesi"
-                className="h-20 object-contain cursor-pointer"
-                onClick={() => !props.readOnly && setIsAsesiSigModalOpen(true)}
+                className="h-20 object-contain"
               />
             ) : (
-              <button
-                id="signature-container"
-                type="button"
-                disabled={props.readOnly}
-                onClick={() => setIsAsesiSigModalOpen(true)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
-              >
-                Tanda Tangan Asesi
-              </button>
+              <div id="signature-container" className="text-xs text-slate-400 italic py-4">
+                Tanda tangan belum tersedia
+              </div>
             )}
           </div>
           <div className="w-full">
@@ -659,7 +641,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
             <button
               type="button"
               onClick={props.onPrev}
-              className="border border-slate-300 px-6 py-2.5 font-semibold text-sm hover:bg-slate-50 flex items-center gap-2"
+              className="border border-slate-300 bg-white text-slate-700 px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
             >
               <ArrowLeft size={16} /> Kembali
             </button>
@@ -671,7 +653,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
               type="button"
               onClick={props.onNext}
               disabled={props.isNextDisabled}
-              className="bg-slate-900 text-white px-6 py-2.5 font-semibold text-sm hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
+              className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Lanjut ke Step 2 <ChevronRight size={16} />
             </button>
@@ -679,30 +661,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
         </div>
       )}
 
-      {/* Signature Modals */}
-      <SignatureModal
-        isOpen={isAsesorSigModalOpen}
-        onClose={() => setIsAsesorSigModalOpen(false)}
-        title="Tanda Tangan Asesor"
-        initialSignature={asesorSignature}
-        onSave={(dataUrl) => {
-          if (props.onAsesorSignatureChange)
-            props.onAsesorSignatureChange(dataUrl);
-          else setLocalAsesorSig(dataUrl);
-        }}
-      />
-
-      <SignatureModal
-        isOpen={isAsesiSigModalOpen}
-        onClose={() => setIsAsesiSigModalOpen(false)}
-        title="Tanda Tangan Asesi"
-        initialSignature={asesiSignature}
-        onSave={(dataUrl) => {
-          if (props.onAsesiSignatureChange)
-            props.onAsesiSignatureChange(dataUrl);
-          else setLocalAsesiSig(dataUrl);
-        }}
-      />
+      {/* Removed Signature Modals */}
     </div>
   );
 }
