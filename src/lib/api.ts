@@ -535,12 +535,11 @@ export async function getPortfolios(asesorId?: number) {
   return json.data;
 }
 
-export async function createPortfolio(data: Record<string, unknown>) {
+export async function createPortfolio(data: FormData) {
   const res = await fetch(`${BASE_URL}/portfolio`, {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: data,
   });
 
   const json = await res.json();

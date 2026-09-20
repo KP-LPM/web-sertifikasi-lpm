@@ -6,6 +6,7 @@ import {
   Search,
   Edit,
   Archive,
+  ArchiveRestore,
   XCircle,
   Trash2,
   FolderTree,
@@ -47,35 +48,35 @@ export default function ManageSchemes() {
             urutan: idx + 1,
             elemen: u.elemen
               ? u.elemen.map((e, eIdx) => ({
-                  namaElemen: e.title || "",
-                  kriteriaUnjukKerja: Array.isArray(e.kuk) ? e.kuk : [e.kuk],
-                  urutan: eIdx + 1,
-                  isWajib: true,
-                }))
+                namaElemen: e.title || "",
+                kriteriaUnjukKerja: Array.isArray(e.kuk) ? e.kuk : [e.kuk],
+                urutan: eIdx + 1,
+                isWajib: true,
+              }))
               : [
-                  {
-                    namaElemen: "",
-                    kriteriaUnjukKerja: [""],
-                    urutan: 1,
-                    isWajib: true,
-                  },
-                ],
+                {
+                  namaElemen: "",
+                  kriteriaUnjukKerja: [""],
+                  urutan: 1,
+                  isWajib: true,
+                },
+              ],
           }),
         ) || [
-          {
-            kodeUnit: "",
-            judulUnit: "",
-            urutan: 1,
-            elemen: [
-              {
-                namaElemen: "",
-                kriteriaUnjukKerja: [""],
-                urutan: 1,
-                isWajib: true,
-              },
-            ],
-          },
-        ];
+            {
+              kodeUnit: "",
+              judulUnit: "",
+              urutan: 1,
+              elemen: [
+                {
+                  namaElemen: "",
+                  kriteriaUnjukKerja: [""],
+                  urutan: 1,
+                  isWajib: true,
+                },
+              ],
+            },
+          ];
 
         if (s.name === "Penyelia Halal" && mappedUnits.length > 0) {
           mappedUnits = mappedUnits.map((u) => {
@@ -114,49 +115,49 @@ export default function ManageSchemes() {
       });
   });
 
-interface BackendElemen {
-  id?: number;
-  namaElemen: string;
-  kriteriaUnjukKerja?: string[] | string;
-  urutan?: number;
-  is_wajib?: boolean;
-}
+  interface BackendElemen {
+    id?: number;
+    namaElemen: string;
+    kriteriaUnjukKerja?: string[] | string;
+    urutan?: number;
+    is_wajib?: boolean;
+  }
 
-interface BackendUnitKompetensi {
-  id?: number;
-  kodeUnit: string;
-  judulUnit: string;
-  urutan?: number;
-  elemenKompetensi?: BackendElemen[];
-}
+  interface BackendUnitKompetensi {
+    id?: number;
+    kodeUnit: string;
+    judulUnit: string;
+    urutan?: number;
+    elemenKompetensi?: BackendElemen[];
+  }
 
-interface BackendBuktiAdministratif {
-  id: number;
-  namaDokumen: string;
-  deskripsi?: string;
-  isWajib: boolean;
-  isAktif: boolean;
-}
+  interface BackendBuktiAdministratif {
+    id: number;
+    namaDokumen: string;
+    deskripsi?: string;
+    isWajib: boolean;
+    isAktif: boolean;
+  }
 
-interface BackendSkemaItem {
-  id: number;
-  kodeSkema?: string;
-  kode?: string;
-  namaSkema?: string;
-  nama?: string;
-  kategori?: string;
-  _count?: { pengajuan?: number };
-  totalPendaftar?: number;
-  statusAktif?: boolean;
-  status?: string;
-  nomor_sertifikat?: string;
-  nomorSertifikat?: string;
-  nomor_registrasi?: string;
-  nomorRegistrasi?: string;
-  unitKompetensi?: BackendUnitKompetensi[];
-  persyaratanDasar?: PersyaratanDasar[];
-  master_bukti_administratif?: BackendBuktiAdministratif[];
-}
+  interface BackendSkemaItem {
+    id: number;
+    kodeSkema?: string;
+    kode?: string;
+    namaSkema?: string;
+    nama?: string;
+    kategori?: string;
+    _count?: { pengajuan?: number };
+    totalPendaftar?: number;
+    statusAktif?: boolean;
+    status?: string;
+    nomor_sertifikat?: string;
+    nomorSertifikat?: string;
+    nomor_registrasi?: string;
+    nomorRegistrasi?: string;
+    unitKompetensi?: BackendUnitKompetensi[];
+    persyaratanDasar?: PersyaratanDasar[];
+    master_bukti_administratif?: BackendBuktiAdministratif[];
+  }
 
   const fetchSchemes = async () => {
     try {
@@ -267,7 +268,7 @@ interface BackendSkemaItem {
     kategori: "IT & Software",
     status: "Active",
   });
-  
+
   const [units, setUnits] = useState<UnitKompetensiItem[]>([
     {
       kodeUnit: "",
@@ -505,7 +506,8 @@ interface BackendSkemaItem {
   }
 
   if (isEditModalOpen && selectedScheme) {
-    const initialData: Partial<MasterSkemaFormState> = {
+    const initialData: Partial<MasterSkemaFormState> & { id?: number } = {
+      id: selectedScheme.id,
       kodeSkema: selectedScheme.kode || "",
       namaSkema: selectedScheme.nama || "",
       nomorSertifikat: selectedScheme.nomorSertifikat || "",
@@ -517,14 +519,14 @@ interface BackendSkemaItem {
         urutan: p.urutan || idx + 1,
         is_wajib: p.is_wajib ?? true,
       })) || [
-        {
-          namaDokumen: "Transkrip Nilai Semester 5",
-          deskripsi:
-            "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
-          urutan: 1,
-          is_wajib: true,
-        },
-      ],
+          {
+            namaDokumen: "Transkrip Nilai Semester 5",
+            deskripsi:
+              "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
+            urutan: 1,
+            is_wajib: true,
+          },
+        ],
       persyaratanAdministrasi: selectedScheme.persyaratanAdministrasi?.map((b, idx) => ({
         id: b.id || idx + 1,
         namaDokumen: b.namaDokumen || "",
@@ -532,14 +534,14 @@ interface BackendSkemaItem {
         isWajib: b.isWajib ?? true,
         isAktif: b.isAktif ?? true,
       })) || [
-        {
-          id: selectedScheme.id,
-          namaDokumen: "Kartu Tanda Penduduk (KTP)",
-          deskripsi: "Scan KTP asli atau identitas resmi yang masih berlaku.",
-          isWajib: true,
-          isAktif: true,
-        },
-      ],
+          {
+            id: selectedScheme.id,
+            namaDokumen: "Kartu Tanda Penduduk (KTP)",
+            deskripsi: "Scan KTP asli atau identitas resmi yang masih berlaku.",
+            isWajib: true,
+            isAktif: true,
+          },
+        ],
       unitKompetensi:
         selectedScheme.unitKompetensi?.map(
           (u: UnitKompetensiItem, idx: number) => ({
@@ -580,191 +582,193 @@ interface BackendSkemaItem {
 
   if (isPreviewModalOpen) {
     return (
-      <div className="min-h-screen bg-[#F8F9FC] p-3 sm:p-6 md:p-8 pb-24 text-sm text-gray-700">
-        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <button
-                onClick={() => setIsPreviewModalOpen(false)}
-                className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
-                title="Kembali"
-              >
-                <ArrowLeft size={20} className="stroke-[2.5]" />
-              </button>
-              <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-                  Detail Skema Sertifikasi
-                </h2>
-                <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
-                  Preview Informasi Utama, Persyaratan & Unit Kompetensi
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-gray-100">
-            <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
-                1
-              </span>
-              Informasi Utama
-            </h2>
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Kode Skema
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={formData.kode}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Nama Skema
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={formData.nama}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Nomor Sertifikat
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={formData.nomorSertifikat || "-"}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Nomor Registrasi
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={formData.nomorRegistrasi || "-"}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Status
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={formData.status}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-gray-100">
-            <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
-                2
-              </span>
-              Unit & Elemen Kompetensi
-            </h2>
-
-            <div className="space-y-6">
-              {units.map((unit, uIdx) => (
-                <div
-                  key={uIdx}
-                  className="border border-slate-200 rounded-xl overflow-hidden shadow-xs"
-                >
-                  <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1 flex flex-col gap-4 w-full">
-                      <div className="min-w-0">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                          Kode Unit
-                        </label>
-                        <input
-                          type="text"
-                          disabled
-                          value={unit.kodeUnit || ""}
-                          className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-10.5 text-slate-800"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                          Judul Unit
-                        </label>
-                        <input
-                          type="text"
-                          disabled
-                          value={unit.judulUnit}
-                          className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-10.5 text-slate-800"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 space-y-5 bg-white">
-                    {unit.elemen?.map((el, eIdx) => (
-                      <div
-                        key={eIdx}
-                        className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs relative"
-                      >
-                        <div className="mb-4">
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                            Elemen Kompetensi
-                          </label>
-                          <input
-                            type="text"
-                            disabled
-                            value={el.namaElemen}
-                            className="w-full text-sm border-b-2 border-slate-200 bg-transparent px-0 py-1.5 font-semibold text-slate-800 outline-none"
-                          />
-                        </div>
-
-                        <div className="min-w-0">
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                            Kriteria Unjuk Kerja
-                          </label>
-                          <div className="space-y-2">
-                            {el.kriteriaUnjukKerja.map((kukStr, kIdx) => (
-                              <div
-                                key={kIdx}
-                                className="flex gap-2 items-start"
-                              >
-                                <span className="text-xs font-bold text-slate-400 mt-2.5 w-4 shrink-0 text-right">
-                                  {kIdx + 1}.
-                                </span>
-                                <textarea
-                                  disabled
-                                  value={kukStr}
-                                  className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 resize-none min-h-11"
-                                  rows={1}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 pb-24 text-sm text-gray-700"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => setIsPreviewModalOpen(false)}
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
+              title="Kembali"
+            >
+              <ArrowLeft size={20} className="stroke-[2.5]" />
+            </button>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+                Detail Skema Sertifikasi
+              </h2>
+              <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-4">
+                Preview Informasi Utama, Persyaratan & Unit Kompetensi
+              </p>
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-gray-100">
+          <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
+              1
+            </span>
+            Informasi Utama
+          </h2>
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Kode Skema
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.kode}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Nama Skema
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.nama}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Nomor Sertifikat
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.nomorSertifikat || "-"}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Nomor Registrasi
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.nomorRegistrasi || "-"}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Status
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.status}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-gray-100">
+          <h2 className="text-base font-black text-slate-900 mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0">
+              2
+            </span>
+            Unit & Elemen Kompetensi
+          </h2>
+
+          <div className="space-y-6">
+            {units.map((unit, uIdx) => (
+              <div
+                key={uIdx}
+                className="border border-slate-200 rounded-xl overflow-hidden shadow-xs"
+              >
+                <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1 flex flex-col gap-4 w-full">
+                    <div className="min-w-0">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        Kode Unit
+                      </label>
+                      <input
+                        type="text"
+                        disabled
+                        value={unit.kodeUnit || ""}
+                        className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-10.5 text-slate-800"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        Judul Unit
+                      </label>
+                      <input
+                        type="text"
+                        disabled
+                        value={unit.judulUnit}
+                        className="w-full font-bold text-sm bg-white border border-slate-200 rounded-lg px-3 h-10.5 text-slate-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-5 bg-white">
+                  {unit.elemen?.map((el, eIdx) => (
+                    <div
+                      key={eIdx}
+                      className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs relative"
+                    >
+                      <div className="mb-4">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                          Elemen Kompetensi
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          value={el.namaElemen}
+                          className="w-full text-sm border-b-2 border-slate-200 bg-transparent px-0 py-1.5 font-semibold text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                          Kriteria Unjuk Kerja
+                        </label>
+                        <div className="space-y-2">
+                          {el.kriteriaUnjukKerja.map((kukStr, kIdx) => (
+                            <div
+                              key={kIdx}
+                              className="flex gap-2 items-start"
+                            >
+                              <span className="text-xs font-bold text-slate-400 mt-2.5 w-4 shrink-0 text-right">
+                                {kIdx + 1}.
+                              </span>
+                              <textarea
+                                disabled
+                                value={kukStr}
+                                className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 resize-none min-h-11"
+                                rows={1}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
     );
   }
 
@@ -857,6 +861,7 @@ interface BackendSkemaItem {
                   onEdit={() => openEditModal(scheme)}
                   onPreview={() => openPreviewModal(scheme)}
                   onArchive={() => openArchiveModal(scheme)}
+                  onUnarchive={() => openArchiveModal(scheme)}
                   readOnly={readOnly}
                 />
               ))}
@@ -893,13 +898,13 @@ interface BackendSkemaItem {
             >
               <div className="p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mx-auto mb-4">
-                  <Archive size={24} />
+                  {selectedScheme?.status === "Archived" ? <ArchiveRestore size={24} /> : <Archive size={24} />}
                 </div>
                 <h3 className="font-bold text-slate-900 mb-2">
-                  Arsipkan Skema
+                  {selectedScheme?.status === "Archived" ? "Aktifkan Skema" : "Arsipkan Skema"}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Apakah Anda yakin ingin mengarsipkan skema{" "}
+                  Apakah Anda yakin ingin {selectedScheme?.status === "Archived" ? "mengaktifkan kembali" : "mengarsipkan"} skema{" "}
                   <span className="font-bold text-slate-700">{selectedScheme?.nama}</span>?
                 </p>
               </div>
@@ -912,9 +917,10 @@ interface BackendSkemaItem {
                 </button>
                 <button
                   onClick={handleArchiveScheme}
-                  className="px-4 py-2 text-sm font-bold text-white bg-slate-700 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-xs"
+                  className={`px-4 py-2 text-sm font-bold text-white rounded-lg transition-colors cursor-pointer shadow-xs ${selectedScheme?.status === "Archived" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-700 hover:bg-slate-800"
+                    }`}
                 >
-                  Arsipkan
+                  {selectedScheme?.status === "Archived" ? "Aktifkan" : "Arsipkan"}
                 </button>
               </div>
             </motion.div>
@@ -978,10 +984,11 @@ function SchemeCard({
   index,
   onEdit,
   onArchive,
+  onUnarchive,
   onPreview,
   readOnly,
 }: SchemeCardProps) {
-  const Icon = FolderTree; 
+  const Icon = FolderTree;
 
   return (
     <motion.div
@@ -998,11 +1005,10 @@ function SchemeCard({
           <div className="flex items-center gap-2 mb-1.5">
             <h3 className="font-extrabold text-slate-900 text-base">{scheme.nama}</h3>
             <span
-              className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap shrink-0 ${
-                scheme.status === "Active"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-slate-50 text-slate-600 border-slate-200"
-              }`}
+              className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap shrink-0 ${scheme.status === "Active"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-slate-50 text-slate-600 border-slate-200"
+                }`}
             >
               {scheme.status === "Active" && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>}
               {scheme.status}
@@ -1016,7 +1022,7 @@ function SchemeCard({
             {/* Jumlah Unit Kompetensi (Kategori sudah dibuang) */}
             {scheme.unitKompetensi && (
               <span className="flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-slate-300 rounded-full"></span> 
+                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                 {scheme.unitKompetensi.length} Unit Kompetensi
               </span>
             )}
@@ -1057,6 +1063,15 @@ function SchemeCard({
                   title="Arsipkan"
                 >
                   <Archive size={18} />
+                </button>
+              )}
+              {scheme.status === "Archived" && onUnarchive && (
+                <button
+                  onClick={onUnarchive}
+                  className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-200 cursor-pointer"
+                  title="Aktifkan Skema"
+                >
+                  <ArchiveRestore size={18} />
                 </button>
               )}
             </>

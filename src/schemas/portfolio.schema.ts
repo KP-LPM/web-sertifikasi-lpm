@@ -3,22 +3,24 @@ import { z } from "zod";
 export const CreatePortfolioSchema = z.object({
   skema_id: z.coerce.number().int().optional().nullable(),
   nama_dokumen: z.string().trim().min(1, "Field 'nama_dokumen' wajib diisi."),
-  deskripsi: z.string().trim().optional().nullable(),
+  status_asesor: z.string().trim().optional().nullable(),
+  alamat_lsp: z.string().trim().optional().nullable(),
   tanggal: z.coerce.date().optional().nullable(),
-  file_name: z.string().trim().optional().nullable(),
-  file_size: z.string().trim().optional().nullable(),
-  file_type: z.string().trim().optional().nullable(),
+  link_portfolio: z.string().trim().optional().nullable(),
+  link_surat_peminjaman: z.string().trim().optional().nullable(),
+  link_surat_jawaban: z.string().trim().optional().nullable(),
   status: z.string().default("Menunggu Verifikasi"),
 });
 
 export const UpdatePortfolioSchema = z.object({
   skema_id: z.coerce.number().int().optional().nullable(),
   nama_dokumen: z.string().trim().min(1, "Field 'nama_dokumen' wajib diisi.").optional(),
-  deskripsi: z.string().trim().optional().nullable(),
+  status_asesor: z.string().trim().optional().nullable(),
+  alamat_lsp: z.string().trim().optional().nullable(),
   tanggal: z.coerce.date().optional().nullable(),
-  file_name: z.string().trim().optional().nullable(),
-  file_size: z.string().trim().optional().nullable(),
-  file_type: z.string().trim().optional().nullable(),
+  link_portfolio: z.string().trim().optional().nullable(),
+  link_surat_peminjaman: z.string().trim().optional().nullable(),
+  link_surat_jawaban: z.string().trim().optional().nullable(),
 });
 
 export const VerifikasiPortfolioSchema = z.object({

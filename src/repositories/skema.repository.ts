@@ -59,61 +59,73 @@ export class SkemaRepository {
     });
   }
 
-  async createSkema(data: CreateSkemaInput) {
+  async createSkema(
+    data: CreateSkemaInput & {
+      persyaratanAdministrasi?: { namaDokumen?: string; namaBukti?: string }[];
+    }
+  ) {
     const {
       nomorSertifikat,
       nomorRegistrasi,
       konfigurasiSoalId,
       persyaratanDasar,
       buktiAdministratif,
+      persyaratanAdministrasi,
       unitKompetensi,
       ...restData
     } = data;
+
+    const finalBuktiAdministratif = persyaratanAdministrasi || buktiAdministratif;
 
     return await db.masterSkema.create({
       data: {
         ...restData,
         nomor_sertifikat: nomorSertifikat,
         nomor_registrasi: nomorRegistrasi,
-        konfigurasi_soal_id: konfigurasiSoalId,
+        konfigurasi_soal_id: konfigurasiSoalId ? Number(konfigurasiSoalId) : null,
 
         persyaratanDasar: persyaratanDasar?.length
           ? {
-              create: persyaratanDasar.map((item, index) => ({
-                namaDokumen: item.namaDokumen || "-",
-                deskripsi: item.deskripsi || "-",
-                urutan: index + 1,
-              })),
-            }
+            create: persyaratanDasar.map((item, index) => ({
+              namaDokumen: item.namaDokumen || "-",
+              deskripsi: item.deskripsi || "-",
+              urutan: index + 1,
+            })),
+          }
           : undefined,
 
-        master_bukti_administratif: buktiAdministratif?.length
+        master_bukti_administratif: finalBuktiAdministratif?.length
           ? {
-              create: buktiAdministratif.map((item, index) => ({
-                namaDokumen: item.namaBukti || "-",
+            create: finalBuktiAdministratif.map(
+              (
+                item: { namaDokumen?: string; namaBukti?: string },
+                index: number
+              ) => ({
+                namaDokumen: item.namaDokumen || item.namaBukti || "-",
                 urutan: index + 1,
-              })),
-            }
+              })
+            ),
+          }
           : undefined,
 
         unitKompetensi: unitKompetensi?.length
           ? {
-              create: unitKompetensi.map((unit, unitIndex) => ({
-                kodeUnit: unit.kodeUnit || "-",
-                judulUnit: unit.judulUnit || "-",
-                urutan: unitIndex + 1,
+            create: unitKompetensi.map((unit, unitIndex) => ({
+              kodeUnit: unit.kodeUnit || "-",
+              judulUnit: unit.judulUnit || "-",
+              urutan: unitIndex + 1,
 
-                elemenKompetensi: unit.elemen?.length
-                  ? {
-                      create: unit.elemen.map((el, elIndex) => ({
-                        namaElemen: el.namaElemen || "-",
-                        kriteriaUnjukKerja: el.kriteriaUnjukKerja || "-",
-                        urutan: elIndex + 1,
-                      })),
-                    }
-                  : undefined,
-              })),
-            }
+              elemenKompetensi: unit.elemen?.length
+                ? {
+                  create: unit.elemen.map((el, elIndex) => ({
+                    namaElemen: el.namaElemen || "-",
+                    kriteriaUnjukKerja: el.kriteriaUnjukKerja || "-",
+                    urutan: elIndex + 1,
+                  })),
+                }
+                : undefined,
+            })),
+          }
           : undefined,
       },
       include: {
@@ -126,16 +138,24 @@ export class SkemaRepository {
     });
   }
 
-  async updateSkema(id: number, data: UpdateSkemaInput) {
+  async updateSkema(
+    id: number,
+    data: UpdateSkemaInput & {
+      persyaratanAdministrasi?: { namaDokumen?: string; namaBukti?: string }[];
+    }
+  ) {
     const {
       nomorSertifikat,
       nomorRegistrasi,
       konfigurasiSoalId,
       persyaratanDasar,
       buktiAdministratif,
+      persyaratanAdministrasi,
       unitKompetensi,
       ...restData
     } = data;
+
+    const finalBuktiAdministratif = persyaratanAdministrasi || buktiAdministratif;
 
     return await db.masterSkema.update({
       where: { id: Number(id) },
@@ -148,7 +168,7 @@ export class SkemaRepository {
           nomor_registrasi: nomorRegistrasi,
         }),
         ...(konfigurasiSoalId !== undefined && {
-          konfigurasi_soal_id: konfigurasiSoalId,
+          konfigurasi_soal_id: konfigurasiSoalId ? Number(konfigurasiSoalId) : null,
         }),
 
         ...(persyaratanDasar && {
@@ -162,13 +182,18 @@ export class SkemaRepository {
           },
         }),
 
-        ...(buktiAdministratif && {
+        ...(finalBuktiAdministratif && {
           master_bukti_administratif: {
             deleteMany: {},
-            create: buktiAdministratif.map((item, index) => ({
-              namaDokumen: item.namaBukti || "-",
-              urutan: index + 1,
-            })),
+            create: finalBuktiAdministratif.map(
+              (
+                item: { namaDokumen?: string; namaBukti?: string },
+                index: number
+              ) => ({
+                namaDokumen: item.namaDokumen || item.namaBukti || "-",
+                urutan: index + 1,
+              })
+            ),
           },
         }),
 
@@ -181,12 +206,12 @@ export class SkemaRepository {
               urutan: unitIndex + 1,
               elemenKompetensi: unit.elemen?.length
                 ? {
-                    create: unit.elemen.map((el, elIndex) => ({
-                      namaElemen: el.namaElemen,
-                      kriteriaUnjukKerja: el.kriteriaUnjukKerja || "-",
-                      urutan: elIndex + 1,
-                    })),
-                  }
+                  create: unit.elemen.map((el, elIndex) => ({
+                    namaElemen: el.namaElemen,
+                    kriteriaUnjukKerja: el.kriteriaUnjukKerja || "-",
+                    urutan: elIndex + 1,
+                  })),
+                }
                 : undefined,
             })),
           },
@@ -294,12 +319,12 @@ export class SkemaRepository {
 
         elemenKompetensi: elemen?.length
           ? {
-              create: elemen.map((el, elIndex) => ({
-                namaElemen: el.namaElemen,
-                kriteriaUnjukKerja: el.kriteriaUnjukKerja || "-",
-                urutan: elIndex + 1,
-              })),
-            }
+            create: elemen.map((el, elIndex) => ({
+              namaElemen: el.namaElemen,
+              kriteriaUnjukKerja: el.kriteriaUnjukKerja || "-",
+              urutan: elIndex + 1,
+            })),
+          }
           : undefined,
       },
     });

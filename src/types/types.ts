@@ -582,10 +582,10 @@ export interface ExamSession {
 
 export interface SchemeCardProps {
   scheme: SchemeItem;
-  index?: number;
-  onSelect?: (scheme: SchemeItem) => void;
+  index: number;
   onEdit?: () => void;
   onArchive?: () => void;
+  onUnarchive?: () => void;
   onPreview?: () => void;
   readOnly?: boolean;
 }
@@ -636,7 +636,7 @@ export interface PortfolioItem {
   id: number; // portfolio_asesor.id
   skema: string;
   namaDokumen: string;
-  statusAsesor?: "Asesor dari UIN Bandung" | "Asesor dari Luar";
+  statusAsesor?: "Internal" | "Eksternal";
   alamatLsp?: string;
   deskripsi?: string;
   tanggal: string;

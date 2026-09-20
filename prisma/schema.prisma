@@ -590,14 +590,11 @@ model portfolio_asesor {
   skema_id             Int?
   nama_dokumen         String
   status_asesor        String?      @db.VarChar
-  alamat_lsp           String?
-  deskripsi            String?
-  tanggal              DateTime?    @db.Date
-  file_name            String?
-  file_peminjaman_name String?
-  file_jawaban_name    String?
-  file_size            String?      @db.VarChar
-  file_type            String?      @db.VarChar
+  alamat_lsp            String?
+  tanggal               DateTime?    @db.Date
+  link_portfolio        String?
+  link_surat_peminjaman String?
+  link_surat_jawaban    String?
   status               String       @default("Menunggu Verifikasi") @db.VarChar
   catatan_admin        String?
   created_at           DateTime     @default(now()) @db.Timestamp(6)

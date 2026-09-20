@@ -35,11 +35,12 @@ export class PortfolioRepository {
         asesor_id: asesorId,
         skema_id: data.skema_id ? Number(data.skema_id) : null,
         nama_dokumen: data.nama_dokumen,
-        deskripsi: data.deskripsi ?? null,
+        status_asesor: data.status_asesor ?? null,
+        alamat_lsp: data.alamat_lsp ?? null,
         tanggal: data.tanggal ? new Date(data.tanggal) : null,
-        file_name: data.file_name ?? null,
-        file_size: data.file_size ?? null,
-        file_type: data.file_type ?? null,
+        link_portfolio: data.link_portfolio ?? null,
+        link_surat_peminjaman: data.link_surat_peminjaman ?? null,
+        link_surat_jawaban: data.link_surat_jawaban ?? null,
         status: data.status ?? "Menunggu Verifikasi",
       },
     });
@@ -55,13 +56,14 @@ export class PortfolioRepository {
         ...(data.nama_dokumen !== undefined && {
           nama_dokumen: data.nama_dokumen,
         }),
-        ...(data.deskripsi !== undefined && { deskripsi: data.deskripsi }),
+        ...(data.status_asesor !== undefined && { status_asesor: data.status_asesor }),
+        ...(data.alamat_lsp !== undefined && { alamat_lsp: data.alamat_lsp }),
         ...(data.tanggal !== undefined && {
           tanggal: data.tanggal ? new Date(data.tanggal) : null,
         }),
-        ...(data.file_name !== undefined && { file_name: data.file_name }),
-        ...(data.file_size !== undefined && { file_size: data.file_size }),
-        ...(data.file_type !== undefined && { file_type: data.file_type }),
+        ...(data.link_portfolio !== undefined && { link_portfolio: data.link_portfolio }),
+        ...(data.link_surat_peminjaman !== undefined && { link_surat_peminjaman: data.link_surat_peminjaman }),
+        ...(data.link_surat_jawaban !== undefined && { link_surat_jawaban: data.link_surat_jawaban }),
       },
     });
   }

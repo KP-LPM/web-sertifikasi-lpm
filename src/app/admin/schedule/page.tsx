@@ -909,7 +909,11 @@ export default function AssessmentSchedule() {
     const kapasitas = selectedTuk?.kapasitas || 0;
 
     return (
-      <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 pb-24 text-sm text-gray-700"
+      >
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsModalOpen(false)}
@@ -1369,13 +1373,17 @@ export default function AssessmentSchedule() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (isPlenoModalOpen) {
     return (
-      <div className="pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 pb-24 text-sm text-gray-700"
+      >
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsPlenoModalOpen(false)}
@@ -1770,7 +1778,7 @@ export default function AssessmentSchedule() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 

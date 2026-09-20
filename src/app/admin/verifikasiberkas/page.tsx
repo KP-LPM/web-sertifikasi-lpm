@@ -190,9 +190,11 @@ export default function UsersManagement() {
     portfolio_asesor?: {
       id: number;
       nama_dokumen: string;
-      file_name?: string;
-      file_peminjaman_name?: string;
-      file_jawaban_name?: string;
+      link_portfolio?: string;
+      link_surat_peminjaman?: string;
+      link_surat_jawaban?: string;
+      status_asesor?: string;
+      master_skema?: { namaSkema: string };
     }[];
   }
 
@@ -267,27 +269,46 @@ export default function UsersManagement() {
         const profil = Array.isArray(u.profil) ? u.profil[0] : u.profil;
         const namaLengkap = profil?.namaLengkap || u.username;
 
-        const dokumen = u.portfolio_asesor?.map((port) => {
-          let fileUrl = "";
-          let finalName = port.nama_dokumen;
-          if (port.file_name) {
-            fileUrl = `/uploads/${port.file_name}`;
-            finalName = port.file_name;
-          } else if (port.file_peminjaman_name) {
-            fileUrl = `/uploads/${port.file_peminjaman_name}`;
-            finalName = port.file_peminjaman_name;
-          } else if (port.file_jawaban_name) {
-            fileUrl = `/uploads/${port.file_jawaban_name}`;
-            finalName = port.file_jawaban_name;
+        const dokumen = u.portfolio_asesor?.flatMap((port) => {
+          const docs = [];
+          
+          const getUrl = (path: string) => path.startsWith('http') ? path : `/uploads/${path}`;
+          
+          if (port.link_portfolio) {
+            docs.push({
+              id: port.id * 10 + 1,
+              namaDokumen: port.nama_dokumen,
+              fileUrl: getUrl(port.link_portfolio),
+              fileName: port.link_portfolio,
+            });
           }
-
-          return {
-            id: port.id,
-            namaDokumen: port.nama_dokumen,
-            fileUrl: fileUrl,
-            fileName: finalName,
-          };
+          if (port.link_surat_peminjaman) {
+            docs.push({
+              id: port.id * 10 + 2,
+              namaDokumen: `Surat Peminjaman Asesor (${port.nama_dokumen})`,
+              fileUrl: getUrl(port.link_surat_peminjaman),
+              fileName: port.link_surat_peminjaman,
+            });
+          }
+          if (port.link_surat_jawaban) {
+            docs.push({
+              id: port.id * 10 + 3,
+              namaDokumen: `Surat Jawaban LSP (${port.nama_dokumen})`,
+              fileUrl: getUrl(port.link_surat_jawaban),
+              fileName: port.link_surat_jawaban,
+            });
+          }
+          return docs;
         }) || [];
+
+        const hasInternalPortfolio = u.portfolio_asesor?.some(
+          (p) => p.status_asesor === "Internal"
+        );
+        const isInternalProfil = profil?.namaInstitusi?.toLowerCase().includes("uin");
+        const asalAsesor = hasInternalPortfolio || isInternalProfil ? "Internal" : "Eksternal";
+
+        const listSkema = u.portfolio_asesor?.map(p => p.master_skema?.namaSkema).filter(Boolean);
+        const skemaText = listSkema && listSkema.length > 0 ? Array.from(new Set(listSkema)).join(", ") : "Belum Ada";
 
         return {
           id: u.id,
@@ -299,13 +320,9 @@ export default function UsersManagement() {
           verificationData: {
             rekomendasi: "Diterima",
             catatan: "",
-            asalAsesor: profil?.namaInstitusi
-              ?.toLowerCase()
-              .includes("uin")
-              ? "Internal"
-              : "Eksternal",
+            asalAsesor: asalAsesor,
             instansi: profil?.namaInstitusi || "LSP UIN SGD",
-            skema: "Semua Skema",
+            skema: skemaText,
             noReg: u.nomor_registrasi_met || "MET.000.12345.2024",
             dokumen: dokumen,
           },
@@ -625,7 +642,7 @@ export default function UsersManagement() {
           sumberAnggaran: user.verificationData?.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
           ttdAdmin: user.verificationData?.adminSignatureUrl || null,
           ttdAsesi: (dp?.tandaTangan as string) || null,
-          
+
           namaSkema: detail.skema?.namaSkema || "",
           kodeSkema: detail.skema?.kodeSkema || "",
           tuk: detail.tuk || "",
@@ -907,7 +924,7 @@ export default function UsersManagement() {
                   onClick={confirmVerify}
                   className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-colors shadow-xs"
                 >
-                  Verifikasi Akun (Siap Ujian)
+                  Verifikasi Akun
                 </button>
               )}
             </div>
@@ -997,9 +1014,14 @@ export default function UsersManagement() {
                   </th>
                 )}
                 {mainTab === "asesor" && (
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
-                    Asal Asesor
-                  </th>
+                  <>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                      Asal Asesor
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                      Skema Sertifikasi
+                    </th>
+                  </>
                 )}
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] min-w-32 top-0">
                   Aksi
@@ -1120,11 +1142,18 @@ export default function UsersManagement() {
                     )}
 
                     {mainTab === "asesor" && (
-                      <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
-                          {user.verificationData?.asalAsesor === "Eksternal" ? "Eksternal" : "Internal"}
-                        </span>
-                      </td>
+                      <>
+                        <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                            {user.verificationData?.asalAsesor === "Eksternal" ? "Eksternal" : "Internal"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                          <span className="text-xs md:text-sm font-semibold text-slate-700 max-w-[200px] truncate inline-block" title={user.verificationData?.skema as string}>
+                            {(user.verificationData?.skema as string) || "Belum Ada"}
+                          </span>
+                        </td>
+                      </>
                     )}
 
                     <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors whitespace-nowrap">

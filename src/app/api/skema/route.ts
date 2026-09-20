@@ -16,7 +16,10 @@ export async function GET(request: NextRequest) {
       key: "get-all-skema",
     });
 
-    const skemaList = await skemaService.getSkema();
+    const token = await getToken({ req: request });
+    const isAdmin = token?.role === "admin";
+
+    const skemaList = await skemaService.getSkema(isAdmin);
     return sendResponse(200, "Berhasil mengambil data skema", skemaList);
   } catch (error) {
     if (error instanceof RateLimitError) {
@@ -49,13 +52,17 @@ export async function POST(request: NextRequest) {
     revalidatePath("/api/skema");
 
     return sendResponse(201, "Skema berhasil dibuat!", newSkema);
-  } catch (error) {
+  } catch (error: any) {
     // PERBAIKAN 2: Tangkap RateLimitError
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
     if (error instanceof ClientError) {
       return sendResponse(error.statusCode, error.message);
+    }
+    // Handle Prisma unique constraint violation
+    if (error?.code === "P2002") {
+      return sendResponse(400, "Kode skema sudah ada (duplikat). Silakan gunakan kode skema lain.");
     }
     console.log(error);
     return sendResponse(500, "Internal server error");

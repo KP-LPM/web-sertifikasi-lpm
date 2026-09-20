@@ -16,6 +16,7 @@ import {
   HelpCircle,
   Loader2,
 } from "lucide-react";
+import { motion } from "motion/react";
 import {
   MasterSkemaFormState,
   MasterSkemaPayload,
@@ -59,83 +60,81 @@ export function TambahSkemaForm({
     nomorSertifikat: initialData?.nomorSertifikat || "",
     nomorRegistrasi: initialData?.nomorRegistrasi || "",
     statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
-    konfigurasiSoalId:
-      initialData?.konfigurasiSoalId ||
-      (konfigurasiPertanyaan.length > 0 ? konfigurasiPertanyaan[0].id : undefined),
+    konfigurasiSoalId: initialData?.konfigurasiSoalId || undefined,
     persyaratanDasar:
       initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
         ? initialData.persyaratanDasar.map((p, idx) => ({
-            ...p,
-            namaDokumen: p.namaDokumen || "",
-            deskripsi: p.deskripsi || "",
-            urutan: p.urutan || idx + 1,
-            is_wajib: p.is_wajib ?? true,
-          }))
+          ...p,
+          namaDokumen: p.namaDokumen || "",
+          deskripsi: p.deskripsi || "",
+          urutan: p.urutan || idx + 1,
+          is_wajib: p.is_wajib ?? true,
+        }))
         : [
-            {
-              namaDokumen: "Transkrip Nilai Semester 5",
-              deskripsi:
-                "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
-              urutan: 1,
-              is_wajib: true,
-            },
-          ],
+          {
+            namaDokumen: "Transkrip Nilai Semester 5",
+            deskripsi:
+              "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
+            urutan: 1,
+            is_wajib: true,
+          },
+        ],
     persyaratanAdministrasi:
       initialData?.persyaratanAdministrasi &&
-      initialData.persyaratanAdministrasi.length > 0
+        initialData.persyaratanAdministrasi.length > 0
         ? initialData.persyaratanAdministrasi.map((p, idx) => ({
-            ...p,
-            id: p.id || idx + 1,
-            namaDokumen: p.namaDokumen || "",
-            deskripsi: p.deskripsi || "",
-            isWajib: p.isWajib ?? true,
-            isAktif: p.isAktif ?? true,
-          }))
+          ...p,
+          id: p.id || idx + 1,
+          namaDokumen: p.namaDokumen || "",
+          deskripsi: p.deskripsi || "",
+          isWajib: p.isWajib ?? true,
+          isAktif: p.isAktif ?? true,
+        }))
         : [
-            {
-              id: 1,
-              namaDokumen: "Kartu Tanda Penduduk (KTP)",
-              deskripsi:
-                "Scan KTP asli atau identitas resmi yang masih berlaku.",
-              isWajib: true,
-              isAktif: true,
-            },
-          ],
+          {
+            id: 1,
+            namaDokumen: "Kartu Tanda Penduduk (KTP)",
+            deskripsi:
+              "Scan KTP asli atau identitas resmi yang masih berlaku.",
+            isWajib: true,
+            isAktif: true,
+          },
+        ],
     unitKompetensi:
       initialData?.unitKompetensi && initialData.unitKompetensi.length > 0
         ? initialData.unitKompetensi.map((u, idx) => ({
-            ...u,
-            kodeUnit: u.kodeUnit || "",
-            judulUnit: u.judulUnit || "",
-            urutan: u.urutan || idx + 1,
-            elemen: (u.elemen || []).map((e, eIdx) => ({
-              ...e,
-              namaElemen: e.namaElemen || "",
-              urutan: e.urutan || eIdx + 1,
-              isWajib: e.isWajib ?? true,
-              kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
-                ? e.kriteriaUnjukKerja.map((k) => k || "")
-                : [""],
-            })),
-          }))
+          ...u,
+          kodeUnit: u.kodeUnit || "",
+          judulUnit: u.judulUnit || "",
+          urutan: u.urutan || idx + 1,
+          elemen: (u.elemen || []).map((e, eIdx) => ({
+            ...e,
+            namaElemen: e.namaElemen || "",
+            urutan: e.urutan || eIdx + 1,
+            isWajib: e.isWajib ?? true,
+            kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
+              ? e.kriteriaUnjukKerja.map((k) => k || "")
+              : [""],
+          })),
+        }))
         : [
-            {
-              kodeUnit: "J.611000.001.01",
-              judulUnit: "Merancang Topologi Jaringan",
-              urutan: 1,
-              elemen: [
-                {
-                  namaElemen: "Menyiapkan perancangan topologi",
-                  kriteriaUnjukKerja: [
-                    "1.1 Kebutuhan pengguna diidentifikasi.",
-                    "1.2 Perangkat jaringan ditentukan.",
-                  ],
-                  urutan: 1,
-                  isWajib: true,
-                },
-              ],
-            },
-          ],
+          {
+            kodeUnit: "J.611000.001.01",
+            judulUnit: "Merancang Topologi Jaringan",
+            urutan: 1,
+            elemen: [
+              {
+                namaElemen: "Menyiapkan perancangan topologi",
+                kriteriaUnjukKerja: [
+                  "1.1 Kebutuhan pengguna diidentifikasi.",
+                  "1.2 Perangkat jaringan ditentukan.",
+                ],
+                urutan: 1,
+                isWajib: true,
+              },
+            ],
+          },
+        ],
   });
 
   const [activeFormTab, setActiveFormTab] = useState<
@@ -143,10 +142,7 @@ export function TambahSkemaForm({
   >("frak07");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedPayload, setSubmittedPayload] =
-    useState<MasterSkemaPayload | null>(null);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [copiedPayload, setCopiedPayload] = useState(false);
+
   const [availableConfigs, setAvailableConfigs] = useState(konfigurasiPertanyaan);
 
   useEffect(() => {
@@ -561,9 +557,6 @@ export function TambahSkemaForm({
         );
         if (res && res.id) savedData = { ...payload, id: res.id };
       }
-      setSubmittedPayload(savedData);
-      setIsSuccessModalOpen(true);
-
       if (onSaveSuccess) {
         onSaveSuccess(savedData);
       }
@@ -579,914 +572,40 @@ export function TambahSkemaForm({
     }
   };
 
-  const handleCopyPayload = () => {
-    if (submittedPayload) {
-      navigator.clipboard.writeText(JSON.stringify(submittedPayload, null, 2));
-      setCopiedPayload(true);
-      setTimeout(() => setCopiedPayload(false), 2000);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-3 sm:p-6 md:p-8 pb-24 text-sm text-gray-700">
-      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header Bar - Aligned with centered container */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={onCancel}
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
-              title="Kembali ke Kelola Skema"
-            >
-              <ArrowLeft size={20} className="stroke-[2.5]" />
-            </button>
-            <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-                {initialData?.kodeSkema
-                  ? "Edit Skema Sertifikasi"
-                  : "Formulir Skema Sertifikasi Baru"}
-              </h2>
-              <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
-                Input data hierarkis skema, persyaratan dasar, unit, elemen, dan
-                KUK
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors shadow-2xs cursor-pointer flex-1 sm:flex-none text-center"
-            >
-              Batal
-            </button>
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => handleSubmit()}
-              className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-60 rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-none text-center"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <span>Simpan Skema</span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Error Alert Box */}
-        {validationError && (
-          <div className="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-xs flex items-start gap-3 animate-shake">
-            <AlertCircle size={20} className="text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="text-sm font-bold text-rose-900">
-                Terdapat Kesalahan Input
-              </h4>
-              <p className="text-xs text-rose-700 mt-0.5">{validationError}</p>
-            </div>
-            <button
-              onClick={() => setValidationError(null)}
-              className="text-rose-400 hover:text-rose-600 text-xs font-bold"
-            >
-              Tutup
-            </button>
-          </div>
-        )}
-
-        {/* CARD 1: INFORMASI UTAMA SKEMA */}
-        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
-                1
-              </span>
-              Informasi Utama Skema
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 pb-24 text-sm text-gray-700"
+    >
+      {/* Header Bar - Aligned with centered container */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={onCancel}
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
+            title="Kembali ke Kelola Skema"
+          >
+            <ArrowLeft size={20} className="stroke-[2.5]" />
+          </button>
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+              {initialData?.kodeSkema
+                ? "Edit Skema Sertifikasi"
+                : "Formulir Skema Sertifikasi Baru"}
             </h2>
-          </div>
-
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Kode Skema */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Kode Skema <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="06/LSPUINBdg/XI/2023"
-                  value={formState.kodeSkema || ""}
-                  onChange={(e) =>
-                    handleMainInfoChange("kodeSkema", e.target.value)
-                  }
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
-                />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Kode unik identitas skema sertifikasi (Contoh:
-                  `06/LSPUINBdg/XI/2023`)
-                </p>
-              </div>
-
-              {/* Nama Skema */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nama Skema <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Masukkan nama skema"
-                  value={formState.namaSkema || ""}
-                  onChange={(e) =>
-                    handleMainInfoChange("namaSkema", e.target.value)
-                  }
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
-                />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Nama lengkap skema kompetensi (Contoh: &quot;Network
-                  Administrator&quot;)
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Nomor Sertifikat */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nomor Sertifikat
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: 00000 2431 0 0000000 2023"
-                  value={formState.nomorSertifikat || ""}
-                  onChange={(e) =>
-                    handleMainInfoChange("nomorSertifikat", e.target.value)
-                  }
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
-                />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Nomor sertifikat acuan lisensi BNSP
-                </p>
-              </div>
-
-              {/* Nomor Registrasi */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nomor Registrasi
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: MET.000.000000 2023"
-                  value={formState.nomorRegistrasi || ""}
-                  onChange={(e) =>
-                    handleMainInfoChange("nomorRegistrasi", e.target.value)
-                  }
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
-                />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Nomor registrasi skema pada BNSP
-                </p>
-              </div>
-            </div>
-
-            {/* Status Skema */}
-            <div className="pt-2">
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                Status Skema
-              </label>
-              <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 max-w-md">
-                <button
-                  type="button"
-                  onClick={() => handleStatusChange(false)}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    !formState.statusAktif
-                      ? "bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${!formState.statusAktif ? "bg-amber-500" : "bg-slate-300"}`}
-                  />
-                  Draft (Nonaktif)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleStatusChange(true)}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    formState.statusAktif
-                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${formState.statusAktif ? "bg-emerald-500" : "bg-slate-300"}`}
-                  />
-                  Aktif
-                </button>
-              </div>
-            </div>
+            <p className="text-xs text-gray-500 font-medium tracking-wider uppercase leading-[16px]">
+              Input data hierarkis skema, persyaratan dasar, unit, elemen, dan
+              KUK
+            </p>
           </div>
         </div>
 
-        {/* CARD 2: PERSYARATAN DASAR PEMOHON */}
-        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
-                2
-              </span>
-              Persyaratan Dasar Pemohon
-            </h2>
-          </div>
-          <p className="text-xs text-slate-500 mb-6 ml-10">
-            Mengelola daftar berkas dan bukti portofolio yang wajib diunggah
-            oleh asesi saat mengajukan skema ini.
-          </p>
-
-          <div className="space-y-4">
-            {formState.persyaratanDasar.map((item, index) => (
-              <div
-                key={index}
-                className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 sm:p-5 relative group transition-all hover:border-slate-300"
-              >
-                <div className="flex items-center justify-between mb-3 border-b border-slate-200/80 pb-2">
-                  <div className="flex items-center gap-2">
-                    <FileText size={16} className="text-[#008BE3]" />
-                    <span className="text-xs font-bold text-slate-800">
-                      Dokumen Persyaratan #{index + 1}
-                    </span>
-                  </div>
-                  {formState.persyaratanDasar.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePersyaratan(index)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold cursor-pointer"
-                      title="Hapus Dokumen"
-                    >
-                      <Trash2 size={15} />
-                      <span className="hidden sm:inline">Hapus</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  {/* Nama Dokumen */}
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Nama Dokumen Persyaratan
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Transkrip Nilai Semester 5"
-                      value={item.namaDokumen || ""}
-                      onChange={(e) =>
-                        handleUpdatePersyaratan(
-                          index,
-                          "namaDokumen",
-                          e.target.value,
-                        )
-                      }
-                      className="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
-                    />
-                  </div>
-
-                  {/* Deskripsi */}
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Deskripsi / Ketentuan Dokumen
-                    </label>
-                    <textarea
-                      placeholder="Contoh: Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah..."
-                      value={item.deskripsi || ""}
-                      onChange={(e) =>
-                        handleUpdatePersyaratan(
-                          index,
-                          "deskripsi",
-                          e.target.value,
-                        )
-                      }
-                      rows={2}
-                      className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-800 resize-none"
-                    />
-                  </div>
-
-                  {/* Toggle Checkbox is_wajib */}
-                  <div className="md:col-span-2 flex items-center justify-start md:justify-center pt-2 md:pt-4">
-                    <label className="flex items-center gap-2 cursor-pointer select-none bg-white p-2.5 rounded-lg border border-slate-200 w-full hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={item.is_wajib}
-                        onChange={(e) =>
-                          handleUpdatePersyaratan(
-                            index,
-                            "is_wajib",
-                            e.target.checked,
-                          )
-                        }
-                        className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
-                      />
-                      <span className="text-xs font-bold text-slate-700">
-                        Wajib Diunggah
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleAddPersyaratan}
-              className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-[#008BE3] font-bold text-xs hover:border-[#008BE3] hover:bg-sky-50/50 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
-            >
-              <Plus size={16} /> Tambah Dokumen Persyaratan
-            </button>
-          </div>
-        </div>
-
-        {/* CARD 3: PERSYARATAN ADMINISTRASI */}
-        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
-                3
-              </span>
-              Persyaratan Administrasi
-            </h2>
-          </div>
-          <p className="text-xs text-slate-500 mb-6 ml-10">
-            Mengelola daftar berkas dan bukti administratif yang wajib diunggah
-            oleh asesi saat pendaftaran awal.
-          </p>
-
-          <div className="space-y-4">
-            {formState.persyaratanAdministrasi.map((item, index) => (
-              <div
-                key={index}
-                className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 sm:p-5 relative group transition-all hover:border-slate-300"
-              >
-                <div className="flex items-center justify-between mb-3 border-b border-slate-200/80 pb-2">
-                  <div className="flex items-center gap-2">
-                    <FileText size={16} className="text-[#008BE3]" />
-                    <span className="text-xs font-bold text-slate-800">
-                      Dokumen Administrasi #{index + 1}
-                    </span>
-                  </div>
-                  {formState.persyaratanAdministrasi.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePersyaratanAdministrasi(index)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold cursor-pointer"
-                      title="Hapus Dokumen"
-                    >
-                      <Trash2 size={15} />
-                      <span className="hidden sm:inline">Hapus</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  {/* Nama Dokumen */}
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Nama Dokumen Administrasi
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Kartu Tanda Penduduk (KTP)"
-                      value={item.namaDokumen || ""}
-                      onChange={(e) =>
-                        handleUpdatePersyaratanAdministrasi(
-                          index,
-                          "namaDokumen",
-                          e.target.value,
-                        )
-                      }
-                      className="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
-                    />
-                  </div>
-
-                  {/* Deskripsi */}
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Deskripsi / Ketentuan Dokumen
-                    </label>
-                    <textarea
-                      placeholder="Contoh: Scan KTP asli yang masih berlaku..."
-                      value={item.deskripsi || ""}
-                      onChange={(e) =>
-                        handleUpdatePersyaratanAdministrasi(
-                          index,
-                          "deskripsi",
-                          e.target.value,
-                        )
-                      }
-                      rows={2}
-                      className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-800 resize-none"
-                    />
-                  </div>
-
-                  {/* Toggle Checkbox is_wajib */}
-                  <div className="md:col-span-2 flex items-center justify-start md:justify-center pt-2 md:pt-4">
-                    <label className="flex items-center gap-2 cursor-pointer select-none bg-white p-2.5 rounded-lg border border-slate-200 w-full hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={item.isWajib}
-                        onChange={(e) =>
-                          handleUpdatePersyaratanAdministrasi(
-                            index,
-                            "isWajib",
-                            e.target.checked,
-                          )
-                        }
-                        className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
-                      />
-                      <span className="text-xs font-bold text-slate-700">
-                        Wajib Diunggah
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleAddPersyaratanAdministrasi}
-              className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-[#008BE3] font-bold text-xs hover:border-[#008BE3] hover:bg-sky-50/50 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
-            >
-              <Plus size={16} /> Tambah Dokumen Administrasi
-            </button>
-          </div>
-        </div>
-
-        {/* CARD 4: UNIT & ELEMEN KOMPETENSI (NESTED DYNAMIC LIST UNTUK APL-02) */}
-        <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
-                4
-              </span>
-              Unit & Elemen Kompetensi (APL-02)
-            </h2>
-          </div>
-          <p className="text-xs text-slate-500 mb-6 ml-10">
-            Mengelola Unit Kompetensi bertingkat berserta Elemen dan daftar
-            Kriteria Unjuk Kerja (KUK) untuk asesmen mandiri.
-          </p>
-
-          <div className="space-y-8">
-            {formState.unitKompetensi.map((unit, uIdx) => (
-              <div
-                key={uIdx}
-                className="border-2 border-slate-200 rounded-2xl overflow-hidden shadow-xs bg-white"
-              >
-                {/* Header Unit */}
-                <div className="bg-slate-100/80 p-4 sm:p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-start justify-between gap-4">
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 w-full">
-                    {/* Kode Unit */}
-                    <div className="md:col-span-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                        Kode Unit <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Contoh: J.611000.001.01"
-                        value={unit.kodeUnit || ""}
-                        onChange={(e) =>
-                          handleUpdateUnit(uIdx, "kodeUnit", e.target.value)
-                        }
-                        className="w-full font-bold text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
-                      />
-                    </div>
-
-                    {/* Judul Unit */}
-                    <div className="md:col-span-8">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                        Judul Unit Kompetensi{" "}
-                        <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Contoh: Merancang Topologi Jaringan"
-                        value={unit.judulUnit || ""}
-                        onChange={(e) =>
-                          handleUpdateUnit(uIdx, "judulUnit", e.target.value)
-                        }
-                        className="w-full font-bold text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveUnit(uIdx)}
-                    className="p-2 text-rose-600 hover:bg-rose-100/80 rounded-lg transition-colors shrink-0 md:mt-5 self-end md:self-start flex items-center gap-1 text-xs font-bold"
-                    title="Hapus Unit Kompetensi"
-                  >
-                    <Trash2 size={16} />
-                    <span className="md:hidden">Hapus Unit</span>
-                  </button>
-                </div>
-
-                {/* Sub-list Elemen Kompetensi */}
-                <div className="p-4 sm:p-6 space-y-6 bg-slate-50/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Layers size={14} className="text-[#008BE3]" />
-                      Sub-list Elemen Kompetensi (Unit #{uIdx + 1})
-                    </span>
-                  </div>
-
-                  {unit.elemen.map((el, eIdx) => (
-                    <div
-                      key={eIdx}
-                      className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-2xs relative group"
-                    >
-                      {/* Delete Elemen button */}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveElemen(uIdx, eIdx)}
-                        className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all flex items-center gap-1 text-xs font-semibold"
-                        title="Hapus Elemen Kompetensi"
-                      >
-                        <Trash2 size={14} />
-                        <span className="hidden sm:inline">Hapus Elemen</span>
-                      </button>
-
-                      {/* Nama Elemen & is_wajib toggle */}
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 pr-12">
-                        <div className="sm:col-span-9">
-                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                            Nama Elemen Kompetensi #{eIdx + 1}
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Contoh: Menyiapkan perancangan topologi"
-                            value={el.namaElemen || ""}
-                            onChange={(e) =>
-                              handleUpdateElemen(
-                                uIdx,
-                                eIdx,
-                                "namaElemen",
-                                e.target.value,
-                              )
-                            }
-                            className="w-full text-xs font-bold border-b-2 border-slate-300 bg-transparent px-1 py-1.5 focus:border-[#008BE3] outline-none transition-colors text-slate-900"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-3 flex items-end">
-                          <label className="flex items-center gap-2 cursor-pointer select-none pb-1">
-                            <input
-                              type="checkbox"
-                              checked={el.isWajib}
-                              onChange={(e) =>
-                                handleUpdateElemen(
-                                  uIdx,
-                                  eIdx,
-                                  "isWajib",
-                                  e.target.checked,
-                                )
-                              }
-                              className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
-                            />
-                            <span className="text-xs font-bold text-slate-700">
-                              Elemen Wajib
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Daftar Kriteria Unjuk Kerja (KUK) */}
-                      <div className="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/80">
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
-                          Daftar Kriteria Unjuk Kerja (KUK)
-                        </label>
-
-                        <div className="space-y-2">
-                          {el.kriteriaUnjukKerja.map((kukStr, kIdx) => (
-                            <div key={kIdx} className="flex gap-2 items-center">
-                              <span className="text-xs font-bold text-slate-400 w-6 shrink-0 text-right">
-                                {kIdx + 1}.
-                              </span>
-                              <input
-                                type="text"
-                                placeholder={`Contoh: ${eIdx + 1}.${kIdx + 1} Kebutuhan pengguna diidentifikasi.`}
-                                value={kukStr || ""}
-                                onChange={(e) =>
-                                  handleUpdateKUK(
-                                    uIdx,
-                                    eIdx,
-                                    kIdx,
-                                    e.target.value,
-                                  )
-                                }
-                                className="flex-1 text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-800"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleRemoveKUK(uIdx, eIdx, kIdx)
-                                }
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 cursor-pointer"
-                                title="Hapus baris KUK"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          ))}
-
-                          <button
-                            type="button"
-                            onClick={() => handleAddKUK(uIdx, eIdx)}
-                            className="text-[11px] font-bold text-[#008BE3] hover:text-[#0076C2] uppercase tracking-wider hover:underline ml-8 mt-1 flex items-center gap-1 cursor-pointer"
-                          >
-                            <Plus size={13} /> Tambah Kriteria
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() => handleAddElemen(uIdx)}
-                    className="w-full py-2.5 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 font-bold text-xs hover:border-[#008BE3] hover:text-[#008BE3] hover:bg-sky-50/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus size={15} /> Tambah Elemen Kompetensi
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleAddUnit}
-              className="w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-[#008BE3] font-bold text-sm hover:border-[#008BE3] hover:bg-sky-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-            >
-              <Plus size={18} /> Tambah Unit Kompetensi Baru
-            </button>
-          </div>
-        </div>
-
-        {/* CARD 5: KONFIGURASI SOAL ASESMEN (BANK SOAL ASESOR) */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xs border border-slate-200/80 space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-8 rounded-lg bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-black shrink-0 text-sm">
-                5
-              </span>
-              <div>
-                <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  Konfigurasi Soal Asesmen (Dibuat oleh Asesor)
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Pilih paket/konfigurasi pertanyaan yang dibuat oleh Asesor
-                  untuk dihubungkan dengan skema ini.
-                </p>
-              </div>
-            </div>
-            {formState.konfigurasiSoalId && (
-              <span className="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full flex items-center gap-1.5">
-                <CheckCircle2 size={13} />
-                Konfigurasi Terhubung
-              </span>
-            )}
-          </div>
-
-          {/* Selector Dropdown */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Pilih Paket Konfigurasi Soal Asesor
-            </label>
-            <select
-              value={formState.konfigurasiSoalId || ""}
-              onChange={(e) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  konfigurasiSoalId: e.target.value
-                    ? Number(e.target.value)
-                    : undefined,
-                }))
-              }
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold bg-white text-slate-800 outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20 transition-all cursor-pointer"
-            >
-              <option value="">-- Pilih Konfigurasi Soal Asesor --</option>
-              {availableConfigs.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nama} ({item.skema || "Semua Skema"}) - Versi{" "}
-                  {item.versi || "1.0"} [
-                  {item.status === "published" ? "Published" : "Draft"}]
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Display selected configuration info & form list */}
-          {selectedConfig ? (
-            <div className="space-y-6 pt-2">
-              {/* Config Metadata Banner */}
-              <div className="p-4 sm:p-5 bg-slate-50/80 border border-slate-200/80 rounded-2xl space-y-2">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="font-bold text-sm text-slate-900">
-                    {selectedConfig.nama}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md tracking-wider uppercase ${
-                      selectedConfig.status === "published"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {selectedConfig.status
-                      ? selectedConfig.status.toUpperCase()
-                      : "DRAFT"}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Skema:{" "}
-                  <strong className="text-slate-800 font-bold">
-                    {selectedConfig.skema}
-                  </strong>{" "}
-                  | Versi:{" "}
-                  <strong className="text-slate-800 font-bold">
-                    {selectedConfig.versi}
-                  </strong>
-                </p>
-                <p className="text-xs text-slate-500">
-                  Penyusun:{" "}
-                  <strong className="text-slate-800 font-bold">
-                    {selectedConfig.penyusun?.[0]?.label ||
-                      "Aditya Rahman Syach, M.Kom (Asesor Utama)"}
-                  </strong>
-                </p>
-                <p className="text-xs text-slate-500">
-                  Validator:{" "}
-                  <strong className="text-slate-800 font-bold">
-                    {selectedConfig.validator?.[0]?.label ||
-                      "I Made Jaya Artana, S.T., M.T. (Asesor)"}
-                  </strong>
-                </p>
-              </div>
-
-              {/* Tabs / Selector for Form list */}
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
-                    DAFTAR FORM ASESMEN TERHUBUNG (
-                    {selectedConfig.nama.toUpperCase()})
-                  </label>
-                  <span className="text-xs font-semibold text-slate-400">
-                    4 Form Tersedia
-                  </span>
-                </div>
-
-                {/* Tab Buttons */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setActiveFormTab("frak07")}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      activeFormTab === "frak07"
-                        ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700">
-                        FR.AK.07
-                      </span>
-                      <FileText size={16} />
-                    </div>
-                    <span className="text-xs font-bold line-clamp-1">
-                      Penyesuaian Wajar
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFormTab("fria04a")}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      activeFormTab === "fria04a"
-                        ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
-                        FR.IA.04A
-                      </span>
-                      <Briefcase size={16} />
-                    </div>
-                    <span className="text-xs font-bold line-clamp-1">
-                      Penjelasan Singkat Proyek
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFormTab("fria04b")}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      activeFormTab === "fria04b"
-                        ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-700">
-                        FR.IA.04B
-                      </span>
-                      <ClipboardCheck size={16} />
-                    </div>
-                    <span className="text-xs font-bold line-clamp-1">
-                      Penilaian Singkat Proyek
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFormTab("fria07")}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      activeFormTab === "fria07"
-                        ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-700">
-                        FR.IA.07
-                      </span>
-                      <HelpCircle size={16} />
-                    </div>
-                    <span className="text-xs font-bold line-clamp-1">
-                      Pertanyaan Lisan
-                    </span>
-                  </button>
-                </div>
-
-                {/* Active Form Preview Box */}
-                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
-                  <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold">
-                      <Eye size={15} className="text-[#008BE3]" />
-                      <span>
-                        Pratinjau Tampilan Form:{" "}
-                        {activeFormTab === "frak07" &&
-                          "FR.AK.07 - Penyesuaian yang Wajar dan Beralasan"}
-                        {activeFormTab === "fria04a" &&
-                          "FR.IA.04A - Penjelasan Singkat Proyek"}
-                        {activeFormTab === "fria04b" &&
-                          "FR.IA.04B - Penilaian Singkat Proyek"}
-                        {activeFormTab === "fria07" &&
-                          "FR.IA.07 - Pertanyaan Lisan"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 sm:p-6 max-h-[600px] overflow-y-auto bg-[#F8F9FC]">
-                    {activeFormTab === "frak07" && (
-                      <FormFRAK07 readOnly={true} showHeader={false} />
-                    )}
-                    {activeFormTab === "fria04a" && (
-                      <FormFRIA04A readOnly={true} showHeader={false} />
-                    )}
-                    {activeFormTab === "fria04b" && (
-                      <FormFRIA04B readOnly={true} showHeader={false} />
-                    )}
-                    {activeFormTab === "fria07" && (
-                      <FormFRIA07 readOnly={true} showHeader={false} />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-6 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-2">
-              <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-500 mx-auto flex items-center justify-center">
-                <FileText size={20} />
-              </div>
-              <p className="text-xs font-bold text-slate-600">
-                Belum ada Konfigurasi Soal yang dipilih
-              </p>
-              <p className="text-[11px] text-slate-400 max-w-md mx-auto">
-                Silakan pilih salah satu paket konfigurasi soal yang telah
-                dipublikasikan oleh Asesor di atas untuk melihat preview form
-                asesmen.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Bottom Actions Bar */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2.5 text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors shadow-xs"
+            className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors shadow-2xs cursor-pointer flex-1 sm:flex-none text-center"
           >
             Batal
           </button>
@@ -1494,87 +613,885 @@ export function TambahSkemaForm({
             type="button"
             disabled={isSubmitting}
             onClick={() => handleSubmit()}
-            className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-60 rounded-xl transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-60 rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-none text-center"
           >
             {isSubmitting ? (
               <>
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
                 <span>Menyimpan...</span>
               </>
             ) : (
-              <>
-                <CheckSquare size={18} />
-                <span>Simpan Skema</span>
-              </>
+              <span>Simpan Skema</span>
             )}
           </button>
         </div>
       </div>
 
-      {/* SUCCESS & JSON PAYLOAD PREVIEW MODAL */}
-      {isSuccessModalOpen && submittedPayload && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-            {/* Modal Header */}
-            <div className="p-5 bg-slate-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                  <CheckCircle2 size={22} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-white">
-                    Skema Berhasil Disimpan
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Payload JSON hierarkis siap diinsert ke Supabase Relational
-                    Schema
-                  </p>
-                </div>
-              </div>
+      {/* Error Alert Box */}
+      {validationError && (
+        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-xs flex items-start gap-3 animate-shake">
+          <AlertCircle size={20} className="text-rose-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-rose-900">
+              Terdapat Kesalahan Input
+            </h4>
+            <p className="text-xs text-rose-700 mt-0.5">{validationError}</p>
+          </div>
+          <button
+            onClick={() => setValidationError(null)}
+            className="text-rose-400 hover:text-rose-600 text-xs font-bold"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* CARD 1: INFORMASI UTAMA SKEMA */}
+      <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+          <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
+              1
+            </span>
+            Informasi Utama Skema
+          </h2>
+        </div>
+
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Kode Skema */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Kode Skema <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="06/LSPUINBdg/XI/2023"
+                value={formState.kodeSkema || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("kodeSkema", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Kode unik identitas skema sertifikasi (Contoh:
+                `06/LSPUINBdg/XI/2023`)
+              </p>
             </div>
 
-            {/* Modal Content / JSON Code */}
-            <div className="p-5 overflow-y-auto space-y-4 flex-1 bg-slate-950 text-slate-200 font-mono text-xs">
-              <div className="flex items-center justify-between text-slate-400 pb-2 border-b border-slate-800">
-                <span>Payload JSON Output:</span>
-                <button
-                  onClick={handleCopyPayload}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-sans transition-colors cursor-pointer"
-                >
-                  {copiedPayload ? (
-                    <>
-                      <Check size={14} className="text-emerald-400" />
-                      <span className="text-emerald-400">Tersalin!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      <span>Salin JSON</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            {/* Nama Skema */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Nama Skema <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Masukkan nama skema"
+                value={formState.namaSkema || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("namaSkema", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Nama lengkap skema kompetensi (Contoh: &quot;Network
+                Administrator&quot;)
+              </p>
+            </div>
+          </div>
 
-              <pre className="p-4 bg-slate-900 rounded-xl overflow-x-auto text-emerald-400 leading-relaxed border border-slate-800">
-                {JSON.stringify(submittedPayload, null, 2)}
-              </pre>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Nomor Sertifikat */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Nomor Sertifikat
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: 00000 2431 0 0000000 2023"
+                value={formState.nomorSertifikat || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("nomorSertifikat", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Nomor sertifikat acuan lisensi BNSP
+              </p>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-4 bg-white border-t border-slate-200 flex items-center justify-end gap-3">
+            {/* Nomor Registrasi */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Nomor Registrasi
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: MET.000.000000 2023"
+                value={formState.nomorRegistrasi || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("nomorRegistrasi", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Nomor registrasi skema pada BNSP
+              </p>
+            </div>
+          </div>
+
+          {/* Status Skema */}
+          <div className="pt-2">
+            <label className="block text-xs font-bold text-slate-700 mb-2">
+              Status Skema
+            </label>
+            <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 max-w-md">
               <button
-                onClick={() => {
-                  setIsSuccessModalOpen(false);
-                  onCancel();
-                }}
-                className="px-5 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white font-bold text-sm rounded-xl transition-colors cursor-pointer"
+                type="button"
+                onClick={() => handleStatusChange(false)}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${!formState.statusAktif
+                  ? "bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
               >
-                Kembali ke Daftar Skema
+                <span
+                  className={`w-2 h-2 rounded-full ${!formState.statusAktif ? "bg-amber-500" : "bg-slate-300"}`}
+                />
+                Draft (Nonaktif)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStatusChange(true)}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${formState.statusAktif
+                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${formState.statusAktif ? "bg-emerald-500" : "bg-slate-300"}`}
+                />
+                Aktif
               </button>
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+
+      {/* CARD 2: PERSYARATAN DASAR PEMOHON */}
+      <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
+              2
+            </span>
+            Persyaratan Dasar Pemohon
+          </h2>
+        </div>
+        <p className="text-xs text-slate-500 mb-6 ml-10">
+          Mengelola daftar berkas dan bukti portofolio yang wajib diunggah
+          oleh asesi saat mengajukan skema ini.
+        </p>
+
+        <div className="space-y-4">
+          {formState.persyaratanDasar.map((item, index) => (
+            <div
+              key={index}
+              className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 sm:p-5 relative group transition-all hover:border-slate-300"
+            >
+              <div className="flex items-center justify-between mb-3 border-b border-slate-200/80 pb-2">
+                <div className="flex items-center gap-2">
+                  <FileText size={16} className="text-[#008BE3]" />
+                  <span className="text-xs font-bold text-slate-800">
+                    Dokumen Persyaratan #{index + 1}
+                  </span>
+                </div>
+                {formState.persyaratanDasar.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePersyaratan(index)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold cursor-pointer"
+                    title="Hapus Dokumen"
+                  >
+                    <Trash2 size={15} />
+                    <span className="hidden sm:inline">Hapus</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                {/* Nama Dokumen */}
+                <div className="md:col-span-5">
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Nama Dokumen Persyaratan
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Transkrip Nilai Semester 5"
+                    value={item.namaDokumen || ""}
+                    onChange={(e) =>
+                      handleUpdatePersyaratan(
+                        index,
+                        "namaDokumen",
+                        e.target.value,
+                      )
+                    }
+                    className="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
+                  />
+                </div>
+
+                {/* Deskripsi */}
+                <div className="md:col-span-5">
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Deskripsi / Ketentuan Dokumen
+                  </label>
+                  <textarea
+                    placeholder="Contoh: Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah..."
+                    value={item.deskripsi || ""}
+                    onChange={(e) =>
+                      handleUpdatePersyaratan(
+                        index,
+                        "deskripsi",
+                        e.target.value,
+                      )
+                    }
+                    rows={2}
+                    className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-800 resize-none"
+                  />
+                </div>
+
+                {/* Toggle Checkbox is_wajib */}
+                <div className="md:col-span-2 flex items-center justify-start md:justify-center pt-2 md:pt-4">
+                  <label className="flex items-center gap-2 cursor-pointer select-none bg-white p-2.5 rounded-lg border border-slate-200 w-full hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={item.is_wajib}
+                      onChange={(e) =>
+                        handleUpdatePersyaratan(
+                          index,
+                          "is_wajib",
+                          e.target.checked,
+                        )
+                      }
+                      className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-slate-700">
+                      Wajib Diunggah
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={handleAddPersyaratan}
+            className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-[#008BE3] font-bold text-xs hover:border-[#008BE3] hover:bg-sky-50/50 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
+          >
+            <Plus size={16} /> Tambah Dokumen Persyaratan
+          </button>
+        </div>
+      </div>
+
+      {/* CARD 3: PERSYARATAN ADMINISTRASI */}
+      <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
+              3
+            </span>
+            Persyaratan Administrasi
+          </h2>
+        </div>
+        <p className="text-xs text-slate-500 mb-6 ml-10">
+          Mengelola daftar berkas dan bukti administratif yang wajib diunggah
+          oleh asesi saat pendaftaran awal.
+        </p>
+
+        <div className="space-y-4">
+          {formState.persyaratanAdministrasi.map((item, index) => (
+            <div
+              key={index}
+              className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 sm:p-5 relative group transition-all hover:border-slate-300"
+            >
+              <div className="flex items-center justify-between mb-3 border-b border-slate-200/80 pb-2">
+                <div className="flex items-center gap-2">
+                  <FileText size={16} className="text-[#008BE3]" />
+                  <span className="text-xs font-bold text-slate-800">
+                    Dokumen Administrasi #{index + 1}
+                  </span>
+                </div>
+                {formState.persyaratanAdministrasi.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePersyaratanAdministrasi(index)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold cursor-pointer"
+                    title="Hapus Dokumen"
+                  >
+                    <Trash2 size={15} />
+                    <span className="hidden sm:inline">Hapus</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                {/* Nama Dokumen */}
+                <div className="md:col-span-5">
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Nama Dokumen Administrasi
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Kartu Tanda Penduduk (KTP)"
+                    value={item.namaDokumen || ""}
+                    onChange={(e) =>
+                      handleUpdatePersyaratanAdministrasi(
+                        index,
+                        "namaDokumen",
+                        e.target.value,
+                      )
+                    }
+                    className="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
+                  />
+                </div>
+
+                {/* Deskripsi */}
+                <div className="md:col-span-5">
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Deskripsi / Ketentuan Dokumen
+                  </label>
+                  <textarea
+                    placeholder="Contoh: Scan KTP asli yang masih berlaku..."
+                    value={item.deskripsi || ""}
+                    onChange={(e) =>
+                      handleUpdatePersyaratanAdministrasi(
+                        index,
+                        "deskripsi",
+                        e.target.value,
+                      )
+                    }
+                    rows={2}
+                    className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3.5 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-800 resize-none"
+                  />
+                </div>
+
+                {/* Toggle Checkbox is_wajib */}
+                <div className="md:col-span-2 flex items-center justify-start md:justify-center pt-2 md:pt-4">
+                  <label className="flex items-center gap-2 cursor-pointer select-none bg-white p-2.5 rounded-lg border border-slate-200 w-full hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={item.isWajib}
+                      onChange={(e) =>
+                        handleUpdatePersyaratanAdministrasi(
+                          index,
+                          "isWajib",
+                          e.target.checked,
+                        )
+                      }
+                      className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-slate-700">
+                      Wajib Diunggah
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={handleAddPersyaratanAdministrasi}
+            className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-[#008BE3] font-bold text-xs hover:border-[#008BE3] hover:bg-sky-50/50 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
+          >
+            <Plus size={16} /> Tambah Dokumen Administrasi
+          </button>
+        </div>
+      </div>
+
+      {/* CARD 4: UNIT & ELEMEN KOMPETENSI (NESTED DYNAMIC LIST UNTUK APL-02) */}
+      <div className="bg-white p-6 md:p-8 rounded-xl shadow-xs border border-slate-200/80">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-base font-black text-slate-900 flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center font-black text-sm shrink-0 border border-sky-100">
+              4
+            </span>
+            Unit & Elemen Kompetensi (APL-02)
+          </h2>
+        </div>
+        <p className="text-xs text-slate-500 mb-6 ml-10">
+          Mengelola Unit Kompetensi bertingkat berserta Elemen dan daftar
+          Kriteria Unjuk Kerja (KUK) untuk asesmen mandiri.
+        </p>
+
+        <div className="space-y-8">
+          {formState.unitKompetensi.map((unit, uIdx) => (
+            <div
+              key={uIdx}
+              className="border-2 border-slate-200 rounded-2xl overflow-hidden shadow-xs bg-white"
+            >
+              {/* Header Unit */}
+              <div className="bg-slate-100/80 p-4 sm:p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 w-full">
+                  {/* Kode Unit */}
+                  <div className="md:col-span-4">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      Kode Unit <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: J.611000.001.01"
+                      value={unit.kodeUnit || ""}
+                      onChange={(e) =>
+                        handleUpdateUnit(uIdx, "kodeUnit", e.target.value)
+                      }
+                      className="w-full font-bold text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
+                    />
+                  </div>
+
+                  {/* Judul Unit */}
+                  <div className="md:col-span-8">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      Judul Unit Kompetensi{" "}
+                      <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Merancang Topologi Jaringan"
+                      value={unit.judulUnit || ""}
+                      onChange={(e) =>
+                        handleUpdateUnit(uIdx, "judulUnit", e.target.value)
+                      }
+                      className="w-full font-bold text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveUnit(uIdx)}
+                  className="p-2 text-rose-600 hover:bg-rose-100/80 rounded-lg transition-colors shrink-0 md:mt-5 self-end md:self-start flex items-center gap-1 text-xs font-bold"
+                  title="Hapus Unit Kompetensi"
+                >
+                  <Trash2 size={16} />
+                  <span className="md:hidden">Hapus Unit</span>
+                </button>
+              </div>
+
+              {/* Sub-list Elemen Kompetensi */}
+              <div className="p-4 sm:p-6 space-y-6 bg-slate-50/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Layers size={14} className="text-[#008BE3]" />
+                    Sub-list Elemen Kompetensi (Unit #{uIdx + 1})
+                  </span>
+                </div>
+
+                {unit.elemen.map((el, eIdx) => (
+                  <div
+                    key={eIdx}
+                    className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-2xs relative group"
+                  >
+                    {/* Delete Elemen button */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveElemen(uIdx, eIdx)}
+                      className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all flex items-center gap-1 text-xs font-semibold"
+                      title="Hapus Elemen Kompetensi"
+                    >
+                      <Trash2 size={14} />
+                      <span className="hidden sm:inline">Hapus Elemen</span>
+                    </button>
+
+                    {/* Nama Elemen & is_wajib toggle */}
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 pr-12">
+                      <div className="sm:col-span-9">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Nama Elemen Kompetensi #{eIdx + 1}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Contoh: Menyiapkan perancangan topologi"
+                          value={el.namaElemen || ""}
+                          onChange={(e) =>
+                            handleUpdateElemen(
+                              uIdx,
+                              eIdx,
+                              "namaElemen",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full text-xs font-bold border-b-2 border-slate-300 bg-transparent px-1 py-1.5 focus:border-[#008BE3] outline-none transition-colors text-slate-900"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-3 flex items-end">
+                        <label className="flex items-center gap-2 cursor-pointer select-none pb-1">
+                          <input
+                            type="checkbox"
+                            checked={el.isWajib}
+                            onChange={(e) =>
+                              handleUpdateElemen(
+                                uIdx,
+                                eIdx,
+                                "isWajib",
+                                e.target.checked,
+                              )
+                            }
+                            className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] cursor-pointer"
+                          />
+                          <span className="text-xs font-bold text-slate-700">
+                            Elemen Wajib
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Daftar Kriteria Unjuk Kerja (KUK) */}
+                    <div className="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/80">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
+                        Daftar Kriteria Unjuk Kerja (KUK)
+                      </label>
+
+                      <div className="space-y-2">
+                        {el.kriteriaUnjukKerja.map((kukStr, kIdx) => (
+                          <div key={kIdx} className="flex gap-2 items-center">
+                            <span className="text-xs font-bold text-slate-400 w-6 shrink-0 text-right">
+                              {kIdx + 1}.
+                            </span>
+                            <input
+                              type="text"
+                              placeholder={`Contoh: ${eIdx + 1}.${kIdx + 1} Kebutuhan pengguna diidentifikasi.`}
+                              value={kukStr || ""}
+                              onChange={(e) =>
+                                handleUpdateKUK(
+                                  uIdx,
+                                  eIdx,
+                                  kIdx,
+                                  e.target.value,
+                                )
+                              }
+                              className="flex-1 text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 text-slate-800"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemoveKUK(uIdx, eIdx, kIdx)
+                              }
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 cursor-pointer"
+                              title="Hapus baris KUK"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={() => handleAddKUK(uIdx, eIdx)}
+                          className="text-[11px] font-bold text-[#008BE3] hover:text-[#0076C2] uppercase tracking-wider hover:underline ml-8 mt-1 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus size={13} /> Tambah Kriteria
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElemen(uIdx)}
+                  className="w-full py-2.5 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 font-bold text-xs hover:border-[#008BE3] hover:text-[#008BE3] hover:bg-sky-50/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus size={15} /> Tambah Elemen Kompetensi
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={handleAddUnit}
+            className="w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-[#008BE3] font-bold text-sm hover:border-[#008BE3] hover:bg-sky-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+          >
+            <Plus size={18} /> Tambah Unit Kompetensi Baru
+          </button>
+        </div>
+      </div>
+
+      {/* CARD 5: KONFIGURASI SOAL ASESMEN (BANK SOAL ASESOR) */}
+      <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xs border border-slate-200/80 space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-lg bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center font-black shrink-0 text-sm">
+              5
+            </span>
+            <div>
+              <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
+                Konfigurasi Soal Asesmen (Dibuat oleh Asesor)
+              </h2>
+              <p className="text-xs text-slate-500">
+                Pilih paket/konfigurasi pertanyaan yang dibuat oleh Asesor
+                untuk dihubungkan dengan skema ini.
+              </p>
+            </div>
+          </div>
+          {formState.konfigurasiSoalId && (
+            <span className="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full flex items-center gap-1.5">
+              <CheckCircle2 size={13} />
+              Konfigurasi Terhubung
+            </span>
+          )}
+        </div>
+
+        {/* Selector Dropdown */}
+        <div className="space-y-2">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Pilih Paket Konfigurasi Soal Asesor
+          </label>
+          <select
+            value={formState.konfigurasiSoalId || ""}
+            onChange={(e) =>
+              setFormState((prev) => ({
+                ...prev,
+                konfigurasiSoalId: e.target.value
+                  ? Number(e.target.value)
+                  : undefined,
+              }))
+            }
+            className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold bg-white text-slate-800 outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20 transition-all cursor-pointer"
+          >
+            <option value="">-- Pilih Konfigurasi Soal Asesor --</option>
+            {availableConfigs.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.nama} ({item.skema || "Semua Skema"}) - Versi{" "}
+                {item.versi || "1.0"} [
+                {item.status === "published" ? "Published" : "Draft"}]
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Display selected configuration info & form list */}
+        {selectedConfig ? (
+          <div className="space-y-6 pt-2">
+            {/* Config Metadata Banner */}
+            <div className="p-4 sm:p-5 bg-slate-50/80 border border-slate-200/80 rounded-2xl space-y-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="font-bold text-sm text-slate-900">
+                  {selectedConfig.nama}
+                </span>
+                <span
+                  className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md tracking-wider uppercase ${selectedConfig.status === "published"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-amber-100 text-amber-800"
+                    }`}
+                >
+                  {selectedConfig.status
+                    ? selectedConfig.status.toUpperCase()
+                    : "DRAFT"}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Skema:{" "}
+                <strong className="text-slate-800 font-bold">
+                  {selectedConfig.skema}
+                </strong>{" "}
+                | Versi:{" "}
+                <strong className="text-slate-800 font-bold">
+                  {selectedConfig.versi}
+                </strong>
+              </p>
+              <p className="text-xs text-slate-500">
+                Penyusun:{" "}
+                <strong className="text-slate-800 font-bold">
+                  {selectedConfig.penyusun?.[0]?.label ||
+                    "Aditya Rahman Syach, M.Kom (Asesor Utama)"}
+                </strong>
+              </p>
+              <p className="text-xs text-slate-500">
+                Validator:{" "}
+                <strong className="text-slate-800 font-bold">
+                  {selectedConfig.validator?.[0]?.label ||
+                    "I Made Jaya Artana, S.T., M.T. (Asesor)"}
+                </strong>
+              </p>
+            </div>
+
+            {/* Tabs / Selector for Form list */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                  DAFTAR FORM ASESMEN TERHUBUNG (
+                  {selectedConfig.nama.toUpperCase()})
+                </label>
+                <span className="text-xs font-semibold text-slate-400">
+                  4 Form Tersedia
+                </span>
+              </div>
+
+              {/* Tab Buttons */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab("frak07")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "frak07"
+                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+                      FR.AK.07
+                    </span>
+                    <FileText size={16} />
+                  </div>
+                  <span className="text-xs font-bold line-clamp-1">
+                    Penyesuaian Wajar
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab("fria04a")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "fria04a"
+                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                      FR.IA.04A
+                    </span>
+                    <Briefcase size={16} />
+                  </div>
+                  <span className="text-xs font-bold line-clamp-1">
+                    Penjelasan Singkat Proyek
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab("fria04b")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "fria04b"
+                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-700">
+                      FR.IA.04B
+                    </span>
+                    <ClipboardCheck size={16} />
+                  </div>
+                  <span className="text-xs font-bold line-clamp-1">
+                    Penilaian Singkat Proyek
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab("fria07")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "fria07"
+                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-700">
+                      FR.IA.07
+                    </span>
+                    <HelpCircle size={16} />
+                  </div>
+                  <span className="text-xs font-bold line-clamp-1">
+                    Pertanyaan Lisan
+                  </span>
+                </button>
+              </div>
+
+              {/* Active Form Preview Box */}
+              <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
+                <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold">
+                    <Eye size={15} className="text-[#008BE3]" />
+                    <span>
+                      Pratinjau Tampilan Form:{" "}
+                      {activeFormTab === "frak07" &&
+                        "FR.AK.07 - Penyesuaian yang Wajar dan Beralasan"}
+                      {activeFormTab === "fria04a" &&
+                        "FR.IA.04A - Penjelasan Singkat Proyek"}
+                      {activeFormTab === "fria04b" &&
+                        "FR.IA.04B - Penilaian Singkat Proyek"}
+                      {activeFormTab === "fria07" &&
+                        "FR.IA.07 - Pertanyaan Lisan"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6 max-h-[600px] overflow-y-auto bg-[#F8F9FC]">
+                  {activeFormTab === "frak07" && (
+                    <FormFRAK07 readOnly={true} showHeader={false} />
+                  )}
+                  {activeFormTab === "fria04a" && (
+                    <FormFRIA04A readOnly={true} showHeader={false} />
+                  )}
+                  {activeFormTab === "fria04b" && (
+                    <FormFRIA04B readOnly={true} showHeader={false} />
+                  )}
+                  {activeFormTab === "fria07" && (
+                    <FormFRIA07 readOnly={true} showHeader={false} />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-2">
+            <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-500 mx-auto flex items-center justify-center">
+              <FileText size={20} />
+            </div>
+            <p className="text-xs font-bold text-slate-600">
+              Belum ada Konfigurasi Soal yang dipilih
+            </p>
+            <p className="text-[11px] text-slate-400 max-w-md mx-auto">
+              Silakan pilih salah satu paket konfigurasi soal yang telah
+              dipublikasikan oleh Asesor di atas untuk melihat preview form
+              asesmen.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Actions Bar */}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-5 py-2.5 text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors shadow-xs"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          disabled={isSubmitting}
+          onClick={() => handleSubmit()}
+          className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] disabled:opacity-60 rounded-xl transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              <span>Menyimpan...</span>
+            </>
+          ) : (
+            <>
+              <CheckSquare size={18} />
+              <span>Simpan Skema</span>
+            </>
+          )}
+        </button>
+      </div>
+
+
+    </motion.div>
   );
 }

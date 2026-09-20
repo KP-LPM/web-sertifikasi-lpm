@@ -20,7 +20,11 @@ export class UserRepository {
             namaInstitusi: true,
           },
         },
-        portfolio_asesor: true,
+        portfolio_asesor: {
+          include: {
+            master_skema: true,
+          }
+        },
       },
     });
     return user;
