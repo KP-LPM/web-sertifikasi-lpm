@@ -856,6 +856,7 @@ export interface AppealRecord {
   melibatkanOrangLain?: boolean;
   ttdAsesi?: boolean;
   namaAsesor?: string;
+  kodeSkema?: string;
 }
 
 export interface Profile {

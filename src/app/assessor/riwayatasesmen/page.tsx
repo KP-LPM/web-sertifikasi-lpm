@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, History, CheckCircle, FileText, Inbox, X } from "lucide-react";
+import { Search, History, CheckCircle, FileText, Inbox, X, AlertTriangle, Clock } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { useRouter } from "next/navigation";
 import { getCandidatesList } from "@/lib/api";
@@ -325,13 +325,22 @@ export default function RiwayatAsesmen() {
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                             item.hasil === "Kompeten"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-red-50 text-red-700 border-red-200"
+                              : item.hasil === "Belum Kompeten"
+                                ? "bg-red-50 text-red-700 border-red-200"
+                                : "bg-slate-100 text-slate-600 border-slate-200"
                           }`}
                         >
-                          {item.hasil}
+                          {item.hasil === "Kompeten" ? (
+                            <CheckCircle size={12} />
+                          ) : item.hasil === "Belum Kompeten" ? (
+                            <AlertTriangle size={12} />
+                          ) : (
+                            <Clock size={12} />
+                          )}
+                          {item.hasil || "-"}
                         </span>
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">

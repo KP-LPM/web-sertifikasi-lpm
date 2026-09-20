@@ -2043,16 +2043,21 @@ export default function AssessmentSchedule() {
                           </td>
 
                           {/* 4. Alamat TUK */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 text-[14px] font-medium text-slate-700 whitespace-nowrap">
+                          <td className="px-6 py-4">
+                            <div className="flex items-start gap-1.5 text-[14px] font-medium text-slate-700">
                               <MapPin
                                 size={16}
-                                className="text-slate-400 shrink-0"
+                                className="text-slate-400 shrink-0 mt-0.5"
                               />
-                              <span className="whitespace-nowrap">
-                                {item.alamat ||
-                                  "UIN Sunan Gunung Djati Bandung"}
-                              </span>
+                              <div>
+                                <span className="block">
+                                  {item.alamat ||
+                                    "UIN Sunan Gunung Djati Bandung"}
+                                </span>
+                                {(item.alamat || "UIN Sunan Gunung Djati Bandung") && !item.alamat?.toLowerCase().includes("online") && (
+                                  <span className="text-[11px] text-gray-400 block mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</span>
+                                )}
+                              </div>
                             </div>
                           </td>
 
@@ -2081,10 +2086,11 @@ export default function AssessmentSchedule() {
                           </td>
 
                           {/* 7. Spesifikasi Ruang TUK */}
-                          <td className="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-slate-700">
-                            <div className="font-medium text-slate-900 truncate">
-                              {item.alamat}
-                            </div>
+                          <td className="px-6 py-4 text-[14px] font-medium text-slate-700">
+                            <div className="font-medium text-slate-900">{item.alamat}</div>
+                            {item.alamat && !item.alamat.toLowerCase().includes("online") && (
+                              <div className="text-[11px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                            )}
                           </td>
 
                           {/* 8. Asesor Ditugaskan */}
@@ -2296,13 +2302,18 @@ export default function AssessmentSchedule() {
                           {item.jenisTuk || "Sewaktu"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5">
+                      <td className="px-6 py-4 text-xs md:text-sm font-medium text-gray-700">
+                        <span className="inline-flex items-start gap-1.5">
                           <MapPin
                             size={14}
-                            className="text-gray-400 shrink-0"
+                            className="text-gray-400 shrink-0 mt-0.5"
                           />
-                          {item.alamat}
+                          <div>
+                            <div>{item.alamat}</div>
+                            {item.alamat && !item.alamat.toLowerCase().includes("online") && (
+                              <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                            )}
+                          </div>
                         </span>
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700 text-center">

@@ -165,11 +165,21 @@ export default function AsesiHistoryPage() {
     melibatkanOrangLain: null as boolean | null,
     alasan: "",
     ttdAsesi: false,
-    namaAsesor: "Asesor Budi",
+    namaAsesor: "",
   });
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Pre-fill form banding saat dibuka
+  React.useEffect(() => {
+    if (isBandingFormOpen && selectedAssessment) {
+      setBandingForm(prev => ({
+        ...prev,
+        namaAsesor: selectedAssessment.asesor && selectedAssessment.asesor !== "Belum Ditugaskan" ? selectedAssessment.asesor : "",
+      }));
+    }
+  }, [isBandingFormOpen, selectedAssessment]);
 
   React.useEffect(() => {
     if (isBandingFormOpen) {
@@ -230,35 +240,35 @@ export default function AsesiHistoryPage() {
     switch (status) {
       case "Selesai":
         return (
-          <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
             Selesai
           </span>
         );
       case "Terjadwal":
         return (
-          <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
             Terjadwal
           </span>
         );
       case "Belum Mulai":
         return (
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>Belum
             Mulai
           </span>
         );
       case "Menunggu Verifikasi":
         return (
-          <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
             Menunggu Verifikasi
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
             {status}
           </span>
@@ -415,7 +425,10 @@ export default function AsesiHistoryPage() {
                       Nama Asesi:
                     </td>
                     <td className="border border-slate-300 p-2" colSpan={2}>
-                      {user?.username || "Ahmad Fauzi"}
+                      {(registeredProfile as Record<string, string>)?.namaLengkap ||
+                        (registeredProfile as Record<string, string>)?.nama_lengkap ||
+                        user?.username ||
+                        "-"}
                     </td>
                   </tr>
                   <tr>
@@ -561,7 +574,11 @@ export default function AsesiHistoryPage() {
                         <div className="w-40 font-semibold">
                           No. Skema Sertifikasi
                         </div>
-                        <div className="min-w-0">: -</div>
+                        <div className="min-w-0">
+                          : {selectedAssessment.kodeSkema && selectedAssessment.kodeSkema !== "-"
+                            ? selectedAssessment.kodeSkema
+                            : "-"}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -898,7 +915,10 @@ export default function AsesiHistoryPage() {
 
                     {/* Column 4: Alamat */}
                     <td className="px-6 py-4 text-xs md:text-sm">
-                      {item.alamat || "-"}
+                      <div className="font-medium text-slate-700">{item.alamat || "-"}</div>
+                      {item.alamat && item.alamat !== "-" && !item.alamat.toLowerCase().includes("online") && (
+                        <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                      )}
                     </td>
 
                     {/* Column 5: Tanggal Asesmen */}
@@ -921,14 +941,14 @@ export default function AsesiHistoryPage() {
                     <td className="px-6 py-4 text-xs md:text-sm">
                       {item.linkVirtualMeeting &&
                         item.linkVirtualMeeting !== "-" ? (
-                        <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                        <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                           <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
                           Tersedia
                         </span>
                       ) : item.alamat === "Online" ||
                         item.tipeTuk.includes("Virtual") ||
                         item.tipeTuk.includes("Online") ? (
-                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                           <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
                           Belum Tersedia
                         </span>

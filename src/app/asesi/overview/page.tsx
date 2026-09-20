@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Eye,
   FileEdit,
+  AlertTriangle,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 
@@ -209,24 +210,28 @@ export default function AsesiOverviewPage() {
   );
 
   const getRekomendasiBadge = (rek: string) => {
-    if (rek === "Kompeten") {
-      return (
-        <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-green-200">
-          <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>K
-          (Kompeten)
-        </span>
-      );
-    }
-    if (rek === "Belum Kompeten") {
-      return (
-        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap border border-red-200">
-          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-          BK (Belum Kompeten)
-        </span>
-      );
-    }
-    return <span className="text-gray-400 text-xs font-semibold px-2">-</span>;
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+          rek === "Kompeten"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+            : rek === "Belum Kompeten"
+              ? "bg-red-50 text-red-700 border-red-200"
+              : "bg-slate-100 text-slate-600 border-slate-200"
+        }`}
+      >
+        {rek === "Kompeten" ? (
+          <CheckCircle size={12} />
+        ) : rek === "Belum Kompeten" ? (
+          <AlertTriangle size={12} />
+        ) : (
+          <Clock size={12} />
+        )}
+        {rek || "-"}
+      </span>
+    );
   };
+
 
   // Fungsi Badge yang sudah diupdate dengan 5 status
   const getStatusBadge = (status: string) => {
@@ -234,7 +239,7 @@ export default function AsesiOverviewPage() {
 
     if (s === "menunggu verifikasi") {
       return (
-        <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
           <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
           Menunggu Verifikasi
         </span>
@@ -242,7 +247,7 @@ export default function AsesiOverviewPage() {
     }
     if (s === "terverifikasi") {
       return (
-        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
           <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
           Terverifikasi
         </span>
@@ -250,7 +255,7 @@ export default function AsesiOverviewPage() {
     }
     if (s === "terjadwal") {
       return (
-        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
           <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
           Terjadwal
         </span>
@@ -258,7 +263,7 @@ export default function AsesiOverviewPage() {
     }
     if (s === "revisi") {
       return (
-        <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
           <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
           Revisi
         </span>
@@ -266,23 +271,31 @@ export default function AsesiOverviewPage() {
     }
     if (s === "perlu perbaikan") {
       return (
-        <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
           <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
           Perlu Perbaikan
         </span>
       );
     }
+    if (s === "menunggu pleno") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 border border-sky-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-sky-500 rounded-full"></span>
+          Menunggu Pleno
+        </span>
+      );
+    }
     if (s === "selesai") {
       return (
-        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+        <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>
           Selesai
         </span>
       );
     }
 
     return (
-      <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+      <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
         {status || "Tidak Diketahui"}
       </span>
@@ -555,7 +568,7 @@ export default function AsesiOverviewPage() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
                   Virtual Meeting
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-56 sticky top-0 z-20 bg-[#0F172A]">
                   Hasil
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
@@ -632,7 +645,10 @@ export default function AsesiOverviewPage() {
                         className="px-6 py-4 text-xs text-gray-500 font-medium"
                         title={item.alamat}
                       >
-                        {item.alamat}
+                        <div className="font-medium text-slate-700">{item.alamat || "-"}</div>
+                        {item.alamat && item.alamat !== "-" && (
+                          <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
                         <span className="inline-flex items-center gap-1.5">
@@ -649,14 +665,14 @@ export default function AsesiOverviewPage() {
                       <td className="px-6 py-4 text-xs md:text-sm">
                         {item.linkVirtualMeeting &&
                           item.linkVirtualMeeting !== "-" ? (
-                          <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                          <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                             <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
                             Tersedia
                           </span>
                         ) : item.alamat === "Online" ||
                           item.tipeTuk.includes("Virtual") ||
                           item.tipeTuk.includes("Online") ? (
-                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                             <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
                             Belum Tersedia
                           </span>
@@ -671,12 +687,12 @@ export default function AsesiOverviewPage() {
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                         {item.statusPembayaran === "Sudah" ? (
-                          <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                          <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                             Sudah Bayar
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                             <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
                             Belum Bayar
                           </span>

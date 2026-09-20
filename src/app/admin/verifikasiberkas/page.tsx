@@ -822,11 +822,11 @@ export default function UsersManagement() {
                   <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-col min-w-0 gap-1 items-start">
                       {userToVerify.verificationData?.asalAsesor === "Eksternal" ? (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
                           Eksternal
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                           Internal
                         </span>
                       )}
@@ -835,7 +835,7 @@ export default function UsersManagement() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border ${userToVerify.status === "Menunggu Verifikasi" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                      <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border ${userToVerify.status === "Menunggu Verifikasi" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
                         {userToVerify.status === "Menunggu Verifikasi" ? (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         ) : (
@@ -1109,15 +1109,15 @@ export default function UsersManagement() {
 
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${user.status === "Terverifikasi" || user.status === "Selesai"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${user.status === "Terverifikasi" || user.status === "Selesai"
+                          ? "bg-teal-50 text-teal-700 border-teal-200"
                           : user.status === "Perlu Perbaikan"
                             ? "bg-orange-50 text-orange-700 border-orange-200"
                             : "bg-amber-50 text-amber-700 border-amber-200"
                           }`}
                       >
                         {user.status === "Terverifikasi" || user.status === "Selesai" ? (
-                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                          <span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>
                         ) : user.status === "Perlu Perbaikan" ? (
                           <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                         ) : (
@@ -1130,12 +1130,12 @@ export default function UsersManagement() {
                     {mainTab === "asesi" && (
                       <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                         {user.verificationData?.statusPembayaran == "Sudah" ? (
-                          <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                             Sudah Bayar
                           </span>
                         ) : (
-                          <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap">
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap">
                             <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
                             Belum Bayar
                           </span>
@@ -1146,7 +1146,7 @@ export default function UsersManagement() {
                     {mainTab === "asesor" && (
                       <>
                         <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
                             {user.verificationData?.asalAsesor === "Eksternal" ? "Eksternal" : "Internal"}
                           </span>
                         </td>

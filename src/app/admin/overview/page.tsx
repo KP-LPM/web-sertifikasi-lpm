@@ -293,7 +293,7 @@ export default function AdminOverview() {
 
                     {/* Kolom Status */}
                     <td className="px-6 py-4 text-center align-middle">
-                      <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                         <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
                         {item.status}
                       </span>

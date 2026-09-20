@@ -27,6 +27,7 @@ import {
   Scale,
   Link2,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import {
@@ -310,12 +311,21 @@ export default function RiwayatAsesmenAdmin() {
 
               <div className="shrink-0 flex items-center gap-2">
                 <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.hasil === "Kompeten"
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.hasil === "Kompeten"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-red-50 text-red-700 border-red-200"
+                    : selectedAsesmen.hasil === "Belum Kompeten"
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : "bg-slate-100 text-slate-600 border-slate-200"
                     }`}
                 >
-                  {selectedAsesmen.hasil}
+                  {selectedAsesmen.hasil === "Kompeten" ? (
+                    <CheckCircle size={12} />
+                  ) : selectedAsesmen.hasil === "Belum Kompeten" ? (
+                    <AlertTriangle size={12} />
+                  ) : (
+                    <Clock size={12} />
+                  )}
+                  {selectedAsesmen.hasil || "-"}
                 </span>
                 <span
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.status === "Selesai"
@@ -779,12 +789,21 @@ export default function RiwayatAsesmenAdmin() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.hasil === "Kompeten"
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${item.hasil === "Kompeten"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-red-50 text-red-700 border-red-200"
+                              : item.hasil === "Belum Kompeten"
+                                ? "bg-red-50 text-red-700 border-red-200"
+                                : "bg-slate-100 text-slate-600 border-slate-200"
                               }`}
                           >
-                            {item.hasil}
+                            {item.hasil === "Kompeten" ? (
+                              <CheckCircle size={12} />
+                            ) : item.hasil === "Belum Kompeten" ? (
+                              <AlertTriangle size={12} />
+                            ) : (
+                              <Clock size={12} />
+                            )}
+                            {item.hasil || "-"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -1015,12 +1034,21 @@ export default function RiwayatAsesmenAdmin() {
                             </td>
                             <td className="px-6 py-4">
                               <span
-                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.hasil === "Kompeten"
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.hasil === "Kompeten"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-red-50 text-red-700 border-red-200"
+                                  : asesi.hasil === "Belum Kompeten"
+                                    ? "bg-red-50 text-red-700 border-red-200"
+                                    : "bg-slate-100 text-slate-600 border-slate-200"
                                   }`}
                               >
-                                {asesi.hasil}
+                                {asesi.hasil === "Kompeten" ? (
+                                  <CheckCircle size={12} />
+                                ) : asesi.hasil === "Belum Kompeten" ? (
+                                  <AlertTriangle size={12} />
+                                ) : (
+                                  <Clock size={12} />
+                                )}
+                                {asesi.hasil || "-"}
                               </span>
                             </td>
                             <td className="px-6 py-4">
@@ -1377,14 +1405,19 @@ export default function RiwayatAsesmenAdmin() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 text-slate-700 font-medium text-[14px]">
+                            <div className="flex items-start gap-1.5 text-[14px] font-medium text-slate-700">
                               <MapPin
                                 size={13}
-                                className="text-[#008BE3] shrink-0"
+                                className="text-[#008BE3] shrink-0 mt-0.5"
                               />
-                              <span className="truncate max-w-50">
-                                {item.alamat}
-                              </span>
+                              <div>
+                                <span className="truncate max-w-50 block">
+                                  {item.alamat}
+                                </span>
+                                {item.alamat && item.alamat !== "-" && !item.alamat.toLowerCase().includes("online") && (
+                                  <span className="text-[10px] text-gray-400 block mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</span>
+                                )}
+                              </div>
                             </div>
                           </td>
 
@@ -1395,7 +1428,7 @@ export default function RiwayatAsesmenAdmin() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border bg-emerald-50 text-emerald-700 border-emerald-200">
+                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border bg-teal-50 text-teal-700 border-teal-200">
                               <CheckCircle size={12} className="stroke-[2.5]" />
                               Selesai
                             </span>
