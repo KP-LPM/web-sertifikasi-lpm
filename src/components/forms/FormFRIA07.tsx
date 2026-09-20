@@ -564,11 +564,17 @@ export function FormFRIA07(props: FormFRIA07Props) {
                     className="flex-1 h-20 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50"
                   >
                     {asesiSignature ? (
-                      <img
-                        src={asesiSignature}
-                        alt="TTD Asesi"
-                        className="h-full object-contain"
-                      />
+                      asesiSignature.startsWith("data:image") || asesiSignature.startsWith("http") || asesiSignature.startsWith("/") ? (
+                        <img
+                          src={asesiSignature}
+                          alt="TTD Asesi"
+                          className="h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-slate-700 italic text-sm font-semibold">
+                          Ditandatangani oleh {asesiSignature}
+                        </div>
+                      )
                     ) : (
                       <span className="text-slate-400 text-xs italic">
                         Tanda tangan belum tersedia
@@ -628,11 +634,17 @@ export function FormFRIA07(props: FormFRIA07Props) {
                     className="flex-1 h-20 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50"
                   >
                     {asesorSignature ? (
-                      <img
-                        src={asesorSignature}
-                        alt="TTD Asesor"
-                        className="h-full object-contain"
-                      />
+                      asesorSignature.startsWith("data:image") || asesorSignature.startsWith("http") || asesorSignature.startsWith("/") ? (
+                        <img
+                          src={asesorSignature}
+                          alt="TTD Asesor"
+                          className="h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-slate-700 italic text-sm font-semibold">
+                          Ditandatangani oleh {asesorSignature}
+                        </div>
+                      )
                     ) : (
                       <span className="text-slate-400 text-xs italic">
                         Tanda tangan belum tersedia

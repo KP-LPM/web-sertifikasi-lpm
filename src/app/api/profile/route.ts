@@ -74,24 +74,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const dataProfil: UpdateProfileInput & { email?: string } = {
-      namaLengkap: body.nama_lengkap,
-      tempatLahir: body.tempat_lahir,
+      namaLengkap: body.nama_lengkap || undefined,
+      tempatLahir: body.tempat_lahir || undefined,
       tanggalLahir: body.tanggal_lahir
         ? new Date(body.tanggal_lahir)
         : undefined,
-      jenisKelamin: body.jenis_kelamin,
-      alamat: body.alamat_rumah,
-      kodeProvinsi: body.provinsi,
-      kodeKota: body.kota,
-      kewarganegaraan: body.kewarganegaraan,
-      kodePos: body.kodePos || body.kode_pos,
-      noHp: body.noTelp || body.no_telp,
-      nomorRegistrasiMet: body.no_registrasi,
-      pekerjaan: body.pekerjaan,
-      pendidikanTerakhir: body.pendidikan_terakhir,
-      tandaTangan: body.tanda_tangan,
-      avatar: body.avatar,
-      email: body.email,
+      jenisKelamin: body.jenis_kelamin || undefined,
+      alamat: body.alamat_rumah || undefined,
+      kodeProvinsi: body.provinsi || undefined,
+      kodeKota: body.kota || undefined,
+      kewarganegaraan: body.kewarganegaraan || undefined,
+      kodePos: body.kodePos || body.kode_pos || undefined,
+      noHp: body.noTelp || body.no_telp || undefined,
+      nomorRegistrasiMet: body.no_registrasi || undefined,
+      pekerjaan: body.pekerjaan || undefined,
+      pendidikanTerakhir: body.pendidikan_terakhir || undefined,
+      tandaTangan: body.tanda_tangan || undefined,
+      avatar: body.avatar || undefined,
+      email: body.email || undefined,
     };
 
     const result = await profileService.updateProfileUsers(userId, dataProfil);

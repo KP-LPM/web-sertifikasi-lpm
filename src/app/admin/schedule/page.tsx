@@ -543,7 +543,11 @@ export default function AssessmentSchedule() {
 
     try {
       const matchedSkema = availableSkemas.find(
-        (s) => s.namaSkema === formData.skema || s.kodeSkema === formData.skema,
+        (s) =>
+          s.namaSkema === formData.skema ||
+          s.nama_skema === formData.skema ||
+          s.nama === formData.skema ||
+          s.kodeSkema === formData.skema,
       );
       const matchedTuk = availableTuks.find((t) => t.nama === formData.tuk);
       const matchedAsesor = availableAsesors.find(
@@ -575,10 +579,12 @@ export default function AssessmentSchedule() {
 
       if (isEditMode && editId) {
         await updateJadwal(editId, payload);
-        await addPesertaJadwal(editId, selectedAsesiForJadwal);
+        if (selectedAsesiForJadwal.length > 0) {
+          await addPesertaJadwal(editId, selectedAsesiForJadwal);
+        }
       } else {
         const newJadwal: ScheduleItem = await createJadwal(payload);
-        if (newJadwal?.id) {
+        if (newJadwal?.id && selectedAsesiForJadwal.length > 0) {
           await addPesertaJadwal(newJadwal.id, selectedAsesiForJadwal);
         }
       }

@@ -89,7 +89,7 @@ export default function AsesiOverviewPage() {
           statusPembayaran?: string;
           tglPengajuan?: string | Date;
           createdAt?: string | Date;
-          skema?: { namaSkema?: string };
+          skema?: { namaSkema?: string; kodeSkema?: string; kode_skema?: string; };
           master_tuk?: { nama?: string; alamat?: string; tipe?: string };
           hasil_asesmen?: { hasil?: string; link_video?: string };
           apl02_penilaian?: {
@@ -142,6 +142,7 @@ export default function AsesiOverviewPage() {
               id: item.id,
               asesmen: item.jenisMetode || "Offline",
               skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
+              kodeSkema: item.skema?.kodeSkema || item.skema?.kode_skema || "-",
               tipeTuk,
               alamat,
               tanggalAsesmen: formattedDate,

@@ -658,14 +658,19 @@ export function EFormApl01({
                         )}
                       </span>
                       {formData?.isAdmin || formData?.ttdAdmin ? (
-                        <SignatureField
-                          value={getSignatureValue(formData.ttdAdmin)}
-                          onChange={(val) =>
-                            onChange({ ...formData, ttdAdmin: val })
-                          }
-                          readOnly={!formData?.isAdmin}
-                          fallbackName={formData.namaAdmin as string}
-                        />
+                        <>
+                          <SignatureField
+                            value={getSignatureValue(formData.ttdAdmin)}
+                            onChange={(val) =>
+                              onChange({ ...formData, ttdAdmin: val })
+                            }
+                            readOnly={!formData?.isAdmin}
+                            fallbackName={formData.namaAdmin as string}
+                          />
+                          <div className="mt-2 text-xs font-semibold text-slate-600">
+                            Tanggal: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                          </div>
+                        </>
                       ) : (
                         <div className="border border-slate-300 rounded bg-white p-2 h-16 text-center text-gray-400 flex items-center justify-center">
                           (Diisi oleh LSP)

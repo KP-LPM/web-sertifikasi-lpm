@@ -132,7 +132,7 @@ export class AuthService {
     const user = await userRepository.getUserByEmail(data.email);
 
     if (!user) {
-      return { message: "Kalau email terdaftar, kode OTP sudah dikirim." };
+      return { message: "Kode OTP terkirim." };
     }
 
     // OTP 6 digit, cryptographically secure (bukan Math.random)
@@ -151,7 +151,7 @@ export class AuthService {
       html: html,
     });
 
-    return { message: "Kalau email terdaftar, kode OTP sudah dikirim." };
+    return { message: "Kode OTP terkirim." };
   }
 
   async verifyOtp(data: VerifyOtpInput) {
