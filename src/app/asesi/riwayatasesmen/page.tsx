@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Calendar,
   User,
+  ExternalLink, // TAMBAHAN: Ikon ExternalLink untuk GDrive
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
@@ -38,7 +39,7 @@ export default function AsesiHistoryPage() {
   const { user, setExtraCrumbs, showNotification, registeredProfile } = useAppContext();
   const router = useRouter();
 
-  const [historyData, setHistoryData] = useState<AssessmentHistory[]>([]);
+  const [historyData, setHistoryData] = useState<(AssessmentHistory & { linkSertifikat?: string })[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Tarik data riwayat asesmen dari backend
@@ -57,7 +58,15 @@ export default function AsesiHistoryPage() {
           skema?: { namaSkema?: string; kodeSkema?: string; kode_skema?: string; };
           master_tuk?: { nama?: string; alamat?: string; tipe?: string };
           hasil_asesmen?: { id?: number; hasil?: string; link_video?: string; created_at?: string | Date };
-          sertifikat?: { nomor_sertifikat?: string; tanggal_kadaluarsa?: string | Date; status?: string };
+          sertifikat?: { 
+            nomor_sertifikat?: string; 
+            no_sertifikat?: string; // Disesuaikan dengan payload admin
+            tanggal_kadaluarsa?: string | Date; 
+            tanggal_terbit?: string | Date;
+            status?: string; 
+            file_url?: string;
+            gdrive_url?: string; // Disesuaikan dengan payload admin
+          };
           apl02_penilaian?: { rekomendasi_apl02?: string; nama_asesor?: string };
           jadwal_asesmen_peserta?: Array<{
             jadwal_asesmen?: {
@@ -77,64 +86,73 @@ export default function AsesiHistoryPage() {
             return ["menunggu pleno", "selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(s);
           })
           .map((item) => {
-          const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
-          const asesorName =
-            jadwal?.users?.profil?.namaLengkap ||
-            jadwal?.users?.username ||
-            item.apl02_penilaian?.nama_asesor ||
-            "Belum Ditugaskan";
-          const rawDate = jadwal?.tanggal || item.tglPengajuan || item.createdAt;
-          const formattedDate = formatDateID(rawDate);
-          const tipeTuk = (jadwal?.tipe_tuk ||
-            item.master_tuk?.tipe ||
-            item.tuk ||
-            "Mandiri") as TipeTuk;
-          const isOnline =
-            String(tipeTuk).toLowerCase().includes("online") ||
-            String(tipeTuk).toLowerCase().includes("virtual");
-          const metodePelaksanaan = isOnline ? "Online" : "Offline";
-          const alamat =
-            jadwal?.alamat ||
-            jadwal?.master_tuk?.alamat ||
-            item.master_tuk?.alamat ||
-            (isOnline ? "Online" : "-");
-          const linkMeeting =
-            jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
-          const noSertifikat =
-            item.sertifikat?.nomor_sertifikat ||
-            (item.status === "Selesai" && item.hasil_asesmen?.hasil === "Kompeten"
-              ? "Menunggu Terbit"
-              : "-");
-          const rawExpiry = item.sertifikat?.tanggal_kadaluarsa;
-          const tanggalBerlaku = rawExpiry
-            ? formatDateID(rawExpiry)
-            : item.sertifikat?.nomor_sertifikat
-              ? "-"
-              : item.status === "Selesai" && item.hasil_asesmen?.hasil === "Kompeten"
-                ? "Menunggu Terbit"
-                : "-";
-          const rawPenilaian = item.hasil_asesmen?.created_at || jadwal?.tanggal || item.createdAt;
-          const tanggalPenilaian = formatDateID(rawPenilaian);
+            const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+            const asesorName =
+              jadwal?.users?.profil?.namaLengkap ||
+              jadwal?.users?.username ||
+              item.apl02_penilaian?.nama_asesor ||
+              "Belum Ditugaskan";
+            const rawDate = jadwal?.tanggal || item.tglPengajuan || item.createdAt;
+            const formattedDate = formatDateID(rawDate);
+            const tipeTuk = (jadwal?.tipe_tuk ||
+              item.master_tuk?.tipe ||
+              item.tuk ||
+              "Mandiri") as TipeTuk;
+            const isOnline =
+              String(tipeTuk).toLowerCase().includes("online") ||
+              String(tipeTuk).toLowerCase().includes("virtual");
+            const metodePelaksanaan = isOnline ? "Online" : "Offline";
+            const alamat =
+              jadwal?.alamat ||
+              jadwal?.master_tuk?.alamat ||
+              item.master_tuk?.alamat ||
+              (isOnline ? "Online" : "-");
+            const linkMeeting =
+              jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
+            
+            // Evaluasi Status dan Hasil yang kebal case-sensitive
+            const isSelesai = String(item.status || "").toLowerCase() === "selesai";
+            const hasilAsesmen = item.hasil_asesmen?.hasil || item.apl02_penilaian?.rekomendasi_apl02 || "-";
+            const isKompeten = String(hasilAsesmen).toLowerCase() === "kompeten";
 
-          return {
-            id: item.id,
-            asesmen: item.jenisMetode || "Offline",
-            skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
-            kodeSkema: item.skema?.kodeSkema || item.skema?.kode_skema || "-",
-            tipeTuk,
-            alamat,
-            tanggalAsesmen: formattedDate,
-            linkVirtualMeeting: linkMeeting,
-            asesor: asesorName,
-            metodePelaksanaan,
-            jenisBukti: "Portofolio & Praktik",
-            noSertifikat,
-            tanggalBerlaku,
-            rekomendasi: item.hasil_asesmen?.hasil || item.apl02_penilaian?.rekomendasi_apl02 || "-",
-            statusAsesmen: item.status || "Menunggu Verifikasi",
-            tanggalPenilaian,
-          };
-        });
+            const noSertifikat =
+              item.sertifikat?.no_sertifikat ||
+              item.sertifikat?.nomor_sertifikat ||
+              (isSelesai && isKompeten ? "Menunggu Terbit" : "-");
+              
+            const rawExpiry = item.sertifikat?.tanggal_kadaluarsa || item.sertifikat?.tanggal_terbit;
+            const tanggalBerlaku = rawExpiry
+              ? formatDateID(rawExpiry)
+              : (item.sertifikat?.no_sertifikat || item.sertifikat?.nomor_sertifikat)
+                ? "-"
+                : (isSelesai && isKompeten ? "Menunggu Terbit" : "-");
+                
+            const rawPenilaian = item.hasil_asesmen?.created_at || jadwal?.tanggal || item.createdAt;
+            const tanggalPenilaian = formatDateID(rawPenilaian);
+
+            // Ambil link GDrive dari backend, atau file URL sebagai cadangan
+            const linkSertifikat = item.sertifikat?.gdrive_url || item.sertifikat?.file_url;
+
+            return {
+              id: item.id,
+              asesmen: item.jenisMetode || "Offline",
+              skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
+              kodeSkema: item.skema?.kodeSkema || item.skema?.kode_skema || "-",
+              tipeTuk,
+              alamat,
+              tanggalAsesmen: formattedDate,
+              linkVirtualMeeting: linkMeeting,
+              asesor: asesorName,
+              metodePelaksanaan,
+              jenisBukti: "Portofolio & Praktik",
+              noSertifikat,
+              tanggalBerlaku,
+              rekomendasi: hasilAsesmen,
+              statusAsesmen: item.status || "Menunggu Verifikasi",
+              tanggalPenilaian,
+              linkSertifikat: linkSertifikat,
+            } as AssessmentHistory & { linkSertifikat?: string };
+          });
 
         setHistoryData(mapped);
       }
@@ -155,7 +173,7 @@ export default function AsesiHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const [selectedAssessment, setSelectedAssessment] =
-    useState<AssessmentHistory | null>(null);
+    useState<(AssessmentHistory & { linkSertifikat?: string }) | null>(null);
 
   const [isBandingFormOpen, setIsBandingFormOpen] = useState(false);
 
@@ -171,7 +189,6 @@ export default function AsesiHistoryPage() {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  // Pre-fill form banding saat dibuka
   React.useEffect(() => {
     if (isBandingFormOpen && selectedAssessment) {
       setBandingForm(prev => ({
@@ -207,9 +224,8 @@ export default function AsesiHistoryPage() {
   }, [isBandingFormOpen, setExtraCrumbs]);
 
   const [certificatePreview, setCertificatePreview] =
-    useState<AssessmentHistory | null>(null);
+    useState<(AssessmentHistory & { linkSertifikat?: string }) | null>(null);
 
-  // Filter logic
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, dateFilter]);
@@ -222,7 +238,7 @@ export default function AsesiHistoryPage() {
       (item.noSertifikat || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "Semua" || item.statusAsesmen === statusFilter;
+      statusFilter === "Semua" || String(item.statusAsesmen).toLowerCase() === String(statusFilter).toLowerCase();
     const matchesDate =
       !dateFilter ||
       item.tanggalPenilaian === dateFilter.split("-").reverse().join("/");
@@ -237,52 +253,53 @@ export default function AsesiHistoryPage() {
   );
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Selesai":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-            Selesai
-          </span>
-        );
-      case "Terjadwal":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-            Terjadwal
-          </span>
-        );
-      case "Belum Mulai":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>Belum
-            Mulai
-          </span>
-        );
-      case "Menunggu Verifikasi":
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-            Menunggu Verifikasi
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-            {status}
-          </span>
-        );
+    const normalizedStatus = status.toLowerCase();
+    if (normalizedStatus === "selesai") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+          Selesai
+        </span>
+      );
     }
+    if (normalizedStatus === "terjadwal") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+          Terjadwal
+        </span>
+      );
+    }
+    if (normalizedStatus === "belum mulai") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>Belum Mulai
+        </span>
+      );
+    }
+    if (normalizedStatus === "menunggu verifikasi") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+          Menunggu Verifikasi
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+        {status}
+      </span>
+    );
   };
 
-  // Metrics specifically for the history view
   const totalSertifikat = historyData.filter(
     (item) =>
-      item.noSertifikat && item.noSertifikat !== "-" && item.noSertifikat !== "Menunggu Terbit",
+      item.noSertifikat && item.noSertifikat !== "-" && String(item.noSertifikat).toLowerCase() !== "menunggu terbit",
   ).length;
+  
   const totalAsesmenSelesai = historyData.filter(
-    (item) => item.statusAsesmen === "Selesai" || item.rekomendasi === "Kompeten",
+    (item) => String(item.statusAsesmen).toLowerCase() === "selesai" || String(item.rekomendasi).toLowerCase() === "kompeten",
   ).length;
 
   const [isSubmittingBanding, setIsSubmittingBanding] = useState(false);
@@ -621,7 +638,7 @@ export default function AsesiHistoryPage() {
                               />
                             ) : (
                               <span className="font-mono text-slate-400 italic text-xs text-center">
-                                Telah ditandatangani oleh {user?.username || "Ahmad Fauzi"}
+                                Telah ditandatangani oleh {user?.username || "Peserta"}
                               </span>
                             )}
                           </div>
@@ -855,7 +872,7 @@ export default function AsesiHistoryPage() {
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={10}
                     className="px-6 py-12 text-center text-xs md:text-sm text-gray-500 font-medium"
                   >
                     <div className="flex items-center justify-center gap-2">
@@ -962,16 +979,16 @@ export default function AsesiHistoryPage() {
                     {/* Column 8: Hasil (Rekomendasi) */}
                     <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.rekomendasi === "Kompeten"
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${String(item.rekomendasi).toLowerCase() === "kompeten"
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : item.rekomendasi === "Belum Kompeten"
+                          : String(item.rekomendasi).toLowerCase() === "belum kompeten"
                             ? "bg-red-50 text-red-700 border-red-200"
                             : "bg-slate-100 text-slate-600 border-slate-200"
                           }`}
                       >
-                        {item.rekomendasi === "Kompeten" ? (
+                        {String(item.rekomendasi).toLowerCase() === "kompeten" ? (
                           <CheckCircle size={12} />
-                        ) : item.rekomendasi === "Belum Kompeten" ? (
+                        ) : String(item.rekomendasi).toLowerCase() === "belum kompeten" ? (
                           <AlertTriangle size={12} />
                         ) : (
                           <Clock size={12} />
@@ -995,20 +1012,41 @@ export default function AsesiHistoryPage() {
                           <Eye size={14} />
                           Detail
                         </button>
-                        {item.statusAsesmen === "Selesai" &&
-                          item.rekomendasi === "Kompeten" &&
+                        
+                        {/* TOMBOL LIHAT/UNDUH SERTIFIKAT */}
+                        {String(item.statusAsesmen).toLowerCase() === "selesai" &&
+                          String(item.rekomendasi).toLowerCase() === "kompeten" &&
                           item.noSertifikat !== "-" &&
-                          item.noSertifikat !== "Menunggu Terbit" && (
-                            <button
-                              onClick={() => setCertificatePreview(item)}
+                          String(item.noSertifikat).toLowerCase() !== "menunggu terbit" && (
+                            <a
+                              href={item.linkSertifikat || "#"}
+                              target={item.linkSertifikat ? "_blank" : "_self"}
+                              rel={item.linkSertifikat ? "noopener noreferrer" : undefined}
+                              onClick={(e) => {
+                                if (!item.linkSertifikat) {
+                                  e.preventDefault();
+                                  setCertificatePreview(item);
+                                }
+                              }}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
                             >
-                              <Download size={14} />
-                              Unduh Sertifikat
-                            </button>
+                              {item.linkSertifikat ? (
+                                <>
+                                  <ExternalLink size={14} />
+                                  Lihat Sertifikat
+                                </>
+                              ) : (
+                                <>
+                                  <Download size={14} />
+                                  Unduh Sertifikat
+                                </>
+                              )}
+                            </a>
                           )}
-                        {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes((item.statusAsesmen || "").toLowerCase()) &&
-                          ((item.rekomendasi || "").toLowerCase() === "belum kompeten" || (item.statusAsesmen || "").toLowerCase() === "belum kompeten") && (
+                          
+                        {/* TOMBOL BANDING */}
+                        {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(String(item.statusAsesmen).toLowerCase()) &&
+                          (String(item.rekomendasi).toLowerCase() === "belum kompeten" || String(item.statusAsesmen).toLowerCase() === "belum kompeten") && (
                             <button
                               onClick={() => {
                                 setSelectedAssessment(item);
@@ -1027,7 +1065,7 @@ export default function AsesiHistoryPage() {
               ) : (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={10}
                     className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                   >
                     Tidak ada riwayat asesmen yang cocok.
@@ -1166,16 +1204,16 @@ export default function AsesiHistoryPage() {
                   </span>
                   <span className="col-span-2">
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${selectedAssessment.rekomendasi === "Kompeten"
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${String(selectedAssessment.rekomendasi).toLowerCase() === "kompeten"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : selectedAssessment.rekomendasi === "Belum Kompeten"
+                        : String(selectedAssessment.rekomendasi).toLowerCase() === "belum kompeten"
                           ? "bg-red-50 text-red-700 border-red-200"
                           : "bg-slate-100 text-slate-600 border-slate-200"
                         }`}
                     >
-                      {selectedAssessment.rekomendasi === "Kompeten" ? (
+                      {String(selectedAssessment.rekomendasi).toLowerCase() === "kompeten" ? (
                         <CheckCircle size={12} />
-                      ) : selectedAssessment.rekomendasi === "Belum Kompeten" ? (
+                      ) : String(selectedAssessment.rekomendasi).toLowerCase() === "belum kompeten" ? (
                         <AlertTriangle size={12} />
                       ) : (
                         <Clock size={12} />
@@ -1204,8 +1242,43 @@ export default function AsesiHistoryPage() {
                     </div>
                   </>
                 )}
+                
+                {/* TOMBOL UNDUH SERTIFIKAT DI MODAL DETAIL JUGA DISESUAIKAN */}
+                {String(selectedAssessment.statusAsesmen).toLowerCase() === "selesai" &&
+                 String(selectedAssessment.rekomendasi).toLowerCase() === "kompeten" &&
+                 selectedAssessment.noSertifikat !== "-" &&
+                 String(selectedAssessment.noSertifikat).toLowerCase() !== "menunggu terbit" && (
+                   <div className="pt-4 mt-4 border-t border-slate-100 flex justify-end">
+                     <a
+                       href={selectedAssessment.linkSertifikat || "#"}
+                       target={selectedAssessment.linkSertifikat ? "_blank" : "_self"}
+                       rel={selectedAssessment.linkSertifikat ? "noopener noreferrer" : undefined}
+                       onClick={(e) => {
+                         if (!selectedAssessment.linkSertifikat) {
+                           e.preventDefault();
+                           const targetAssessment = selectedAssessment; 
+                           setSelectedAssessment(null);
+                           setCertificatePreview(targetAssessment);
+                         }
+                       }}
+                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
+                     >
+                       {selectedAssessment.linkSertifikat ? (
+                         <>
+                           <ExternalLink size={16} />
+                           Lihat Sertifikat
+                         </>
+                       ) : (
+                         <>
+                           <Download size={16} />
+                           Unduh Sertifikat
+                         </>
+                       )}
+                     </a>
+                   </div>
+                 )}
               </div>
-              {selectedAssessment.rekomendasi === "Belum Kompeten" &&
+              {String(selectedAssessment.rekomendasi).toLowerCase() === "belum kompeten" &&
                 (() => {
                   let diffDays = 0;
                   if (
@@ -1252,7 +1325,7 @@ export default function AsesiHistoryPage() {
         )
       }
 
-      {/* Certificate Preview Modal */}
+      {/* Certificate Preview Modal (Tetap dipertahankan sebagai fallback kalau backend nge-hit endpoint file asli) */}
       {
         certificatePreview && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
@@ -1265,7 +1338,7 @@ export default function AsesiHistoryPage() {
                   onClick={() => setCertificatePreview(null)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
                 >
-                  X
+                  <X size={16} />
                 </button>
               </div>
               <div className="p-8 space-y-4 flex flex-col items-center justify-center bg-slate-50 relative">

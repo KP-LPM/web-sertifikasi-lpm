@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAppContext } from "@/context/context";
 
+// 1. Definisikan interface untuk struktur data profil/user
+interface UserProfileData {
+  tanda_tangan?: string;
+  tandaTangan?: string;
+  // Index signature untuk menghindari error jika ada properti lain di dalam objeknya
+  [key: string]: unknown;
+}
+
 export function SignatureField({
   value,
   onChange,
@@ -13,11 +21,13 @@ export function SignatureField({
   fallbackName?: string;
 }) {
   const { registeredProfile, user } = useAppContext();
+  const profileData = registeredProfile as UserProfileData | undefined | null;
+  const userData = user as UserProfileData | undefined | null;
 
   const profileSignature =
-    (registeredProfile as any)?.tanda_tangan ||
-    (registeredProfile as any)?.tandaTangan ||
-    (user as any)?.tanda_tangan ||
+    profileData?.tanda_tangan ||
+    profileData?.tandaTangan ||
+    userData?.tanda_tangan ||
     "";
 
   const [useProfile, setUseProfile] = useState(
