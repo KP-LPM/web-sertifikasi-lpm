@@ -50,8 +50,6 @@ import {
   getPlenoList,
 } from "@/lib/api";
 
-
-
 const getDocumentPreviewUrl = (name?: string, url?: string) => {
   if (url && url.trim().length > 0) return url;
   const safeName = name ? encodeURIComponent(name) : "Surat_Sidang_Pleno.pdf";
@@ -186,6 +184,7 @@ export default function AssessmentSchedule() {
     setSelectedAsesiForJadwal(item.asesiList || []);
     setIsModalOpen(true);
   };
+  
   const handleEditPleno = (item: PlenoDetailData) => {
     setIsPreviewMode(false);
     setIsEditMode(true);
@@ -237,6 +236,7 @@ export default function AssessmentSchedule() {
       setConfirmAsesmenId(null);
     }
   };
+  
   const [activeTab, setActiveTab] = useState<"asesmen" | "pleno">(
     isPlenoOnlyRole ? "pleno" : "asesmen",
   );
@@ -248,22 +248,6 @@ export default function AssessmentSchedule() {
   }, [isPlenoOnlyRole]);
 
   const [searchQuery, setSearchQuery] = useState("");
-
-  // const formattanggal = (tanggalStr: string) => {
-  //   if (!tanggalStr) return "-";
-  //   try {
-  //     const date = new Date(tanggalStr); // Gunakan D kapital
-  //     if (isNaN(date.getTime())) return tanggalStr;
-  //     return new Intl.DateTimeFormat("id-ID", {
-  //       weekday: "long",
-  //       day: "numeric",
-  //       month: "long",
-  //       year: "numeric",
-  //     }).format(date);
-  //   } catch {
-  //     return tanggalStr;
-  //   }
-  // };
 
   // Asesmen Interfaces & State
   interface BackendPesertaJadwal {
@@ -463,7 +447,6 @@ export default function AssessmentSchedule() {
         setApiCompletedAsesis(completedPengajuanRes.value);
       }
 
-      console.log("plenoRes:", plenoRes);
       if (
         plenoRes.status === "fulfilled" &&
         Array.isArray(plenoRes.value)
@@ -592,7 +575,6 @@ export default function AssessmentSchedule() {
       await fetchJadwalData();
     } catch (err) {
       console.error("Gagal menyimpan jadwal asesmen:", err);
-      // Fallback local update
       if (isEditMode) {
         setSchedules(
           schedules.map((s) =>
@@ -665,7 +647,6 @@ export default function AssessmentSchedule() {
       (filterStatus === "Semua" || item.status === filterStatus),
   );
 
-  // Used to map apiCompletedAsesis into AsesiPlenoItem format
   const mappedCompletedAssessments: AsesiPlenoItem[] = apiCompletedAsesis.map(
     (p) => ({
       id: p.id,
@@ -704,12 +685,12 @@ export default function AssessmentSchedule() {
     batchCode?: string;
     title?: string;
     tanggal: string;
-    waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
+    waktu: string;
     skema: string;
     alamat: string;
     detailAlamat?: string;
     deskripsi: string;
-    plenoAttendees: PlenoAttendee[]; // pakai interface yang sudah ada, bukan inline type
+    plenoAttendees: PlenoAttendee[]; 
     suratPlenoName?: string;
     suratPlenoUrl?: string;
     linkSuratBeritaPleno?: string;
@@ -767,7 +748,6 @@ export default function AssessmentSchedule() {
     AsesiPlenoItem[]
   >([]);
 
-  // Available Candidates for plenary session (all completed assessments awaiting decision)
   const availableAsesiForPleno = mappedCompletedAssessments;
 
   const handleAddPleno = async (e: React.FormEvent) => {
@@ -826,7 +806,6 @@ export default function AssessmentSchedule() {
         const result = await createPleno(payload);
         const newPlenoId = result.id;
 
-        // Add asesi
         if (selectedAsesiForPleno.length > 0) {
           await addPlenoAsesi(
             newPlenoId,
@@ -834,7 +813,6 @@ export default function AssessmentSchedule() {
           );
         }
 
-        // Add attendees
         for (const attendee of plenoForm.plenoAttendees) {
           if (attendee.nama.trim() !== "") {
             await addPlenoAttendee(newPlenoId, {
@@ -946,7 +924,6 @@ export default function AssessmentSchedule() {
               </span>
               Jadwal Asesmen
             </h2>
-            {/* 1. Nama Batch, 2. Skema Sertifikasi, 3. Metode Pelaksanaan */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -972,7 +949,7 @@ export default function AssessmentSchedule() {
                   disabled={isPreviewMode}
                   onChange={(e) => {
                     setFormData({ ...formData, skema: e.target.value });
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on skema change
+                    setSelectedAsesiForJadwal([]); 
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
@@ -993,7 +970,7 @@ export default function AssessmentSchedule() {
                   disabled={isPreviewMode}
                   onChange={(e) => {
                     setFormData({ ...formData, metode: e.target.value });
-                    setSelectedAsesiForJadwal([]); // Reset selected asesi on metode change
+                    setSelectedAsesiForJadwal([]); 
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-bold text-[#008BE3]"
                 >
@@ -1020,7 +997,6 @@ export default function AssessmentSchedule() {
                 </div>
               )}
 
-              {/* 4. Jenis TUK & 5. Alamat TUK */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   4. Jenis TUK
@@ -1033,7 +1009,7 @@ export default function AssessmentSchedule() {
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
-                  1  <option value="">Pilih Jenis TUK</option>
+                  <option value="">Pilih Jenis TUK</option>
                   <option value="Sewaktu">Sewaktu</option>
                   <option value="Mandiri">Mandiri</option>
                   <option value="Tempat Kerja">Tempat Kerja</option>
@@ -1055,7 +1031,6 @@ export default function AssessmentSchedule() {
                 />
               </div>
 
-              {/* 6. Tanggal Uji & 7. Jam Pelaksanaan */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   6. Tanggal Uji
@@ -1089,7 +1064,6 @@ export default function AssessmentSchedule() {
                 />
               </div>
 
-              {/* 8. Spesifikasi Ruang TUK & 9. Asesor Ditugaskan */}
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   8. Spesifikasi Ruang TUK
@@ -1152,7 +1126,6 @@ export default function AssessmentSchedule() {
               </div>
             </div>
 
-            {/* Field Tautan Link Google Drive Surat Penugasan Asesor */}
             <div className="min-w-0">
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Tautan / Link Google Drive Surat Penugasan Asesor{" "}
@@ -1248,7 +1221,7 @@ export default function AssessmentSchedule() {
                         );
                       }
                     }}
-                    className="text-xs font-bold text-[#008BE3] hover:text-[#0076C2] transition-colors"
+                    className="text-xs font-bold text-[#008BE3] hover:text-[#0076C2] transition-colors cursor-pointer"
                   >
                     Pilih Maksimal (
                     {kapasitas > 0
@@ -1264,7 +1237,7 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
                 {!formData.skema ? (
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Pilih skema sertifikasi terlebih dahulu.
@@ -1333,10 +1306,11 @@ export default function AssessmentSchedule() {
                               {asesi.nama}
                             </h4>
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 border ${asesiMethod === "Online"
-                                ? "bg-purple-50 text-purple-700 border-purple-200"
-                                : "bg-sky-50 text-[#008BE3] border-sky-200"
-                                }`}
+                              className={`text-[10px] font-bold px-2.5 py-1 rounded-md border inline-flex items-center gap-1 ${
+                                asesiMethod === "Online"
+                                  ? "bg-sky-50 text-[#008BE3] border-sky-200/80"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                              }`}
                             >
                               {asesiMethod}
                             </span>
@@ -1474,7 +1448,7 @@ export default function AssessmentSchedule() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
                 {availableAsesiForPleno.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi dengan status pengajuan menunggu pleno.
@@ -1612,7 +1586,6 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              {/* Selected attendees tags */}
               {plenoForm.plenoAttendees.filter((a) => a.nama.trim() !== "")
                 .length > 0 && (
                   <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2">
@@ -1668,8 +1641,7 @@ export default function AssessmentSchedule() {
                   </div>
                 )}
 
-              {/* Checkbox grid of user Candidates */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
                 {(() => {
                   const mergedUsers = availableUsers.map((u) => {
                     let mappedRole = u.role;
@@ -1767,7 +1739,7 @@ export default function AssessmentSchedule() {
           <div className="p-6 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
             <button
               onClick={() => setIsPlenoModalOpen(false)}
-              className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
+              className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
             >
               {isPreviewMode ? "Kembali" : "Batal"}
             </button>
@@ -1777,7 +1749,7 @@ export default function AssessmentSchedule() {
                 disabled={
                   selectedAsesiForPleno.length === 0 || !plenoForm.tanggal
                 }
-                className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 text-sm font-bold text-white bg-[#008BE3] hover:bg-[#0076C2] rounded-xl transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Jadwalkan Sidang Pleno
               </button>
@@ -1831,7 +1803,7 @@ export default function AssessmentSchedule() {
             <h3 className="text-base font-black text-slate-900">Cari Jadwal</h3>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
-            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-68 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-11 w-full sm:w-72 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search className="text-gray-400" size={16} />
               <input
                 type="text"
@@ -1847,7 +1819,7 @@ export default function AssessmentSchedule() {
             <div className="relative z-50">
               <button
                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                className="items-center justify-center gap-2 px-3 h-10.5 sm:px-4 bg-gray-50 border border-gray-200/50 text-gray-700 rounded-lg text-[14px] font-bold cursor-pointer hover:bg-gray-100 transition-colors flex shrink-0"
+                className="items-center justify-center gap-2 px-4 h-11 bg-gray-50 border border-gray-200/50 text-gray-700 rounded-lg text-[14px] font-bold cursor-pointer hover:bg-gray-100 transition-colors flex shrink-0"
               >
                 <Filter size={16} />{" "}
                 <span className="hidden sm:inline">Filter</span>{" "}
@@ -1874,7 +1846,7 @@ export default function AssessmentSchedule() {
                             setFilterStatus(status);
                             setIsFilterDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === status ? "bg-[#008BE3]/10 text-[#008BE3]" : "text-gray-700 hover:bg-gray-50"}`}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${filterStatus === status ? "bg-[#008BE3]/10 text-[#008BE3]" : "text-gray-700 hover:bg-gray-50"}`}
                         >
                           {status}
                         </button>
@@ -1908,7 +1880,7 @@ export default function AssessmentSchedule() {
                   setSelectedAsesiForJadwal([]);
                   setIsModalOpen(true);
                 }}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:gap-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors shrink-0 cursor-pointer"
+                className="flex items-center justify-center gap-2 px-4 h-11 bg-[#008BE3] text-white rounded-lg text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors shrink-0 cursor-pointer"
               >
                 <Plus size={16} className="stroke-[2.5]" />{" "}
                 <span className="hidden sm:inline">Buat Jadwal Baru</span>
@@ -1934,7 +1906,7 @@ export default function AssessmentSchedule() {
                   setSelectedAsesiForPleno([]);
                   setIsPlenoModalOpen(true);
                 }}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-4 sm:gap-2 bg-[#008BE3] text-white rounded-lg text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors shrink-0 cursor-pointer"
+                className="flex items-center justify-center gap-2 px-4 h-11 bg-[#008BE3] text-white rounded-lg text-sm font-bold shadow-xs hover:bg-[#0076C2] transition-colors shrink-0 cursor-pointer"
               >
                 <Plus size={16} className="stroke-[2.5]" />{" "}
                 <span className="hidden sm:inline">Buat Sidang Pleno</span>
@@ -1944,42 +1916,39 @@ export default function AssessmentSchedule() {
           </div>
         </div>
 
-        <div className="overflow-x-auto relative ">
+        <div className="overflow-x-auto relative">
           {activeTab === "asesmen" && (
-            <table className="w-full text-left border-collapse min-w-[1600px]">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-87.5 max-w-125 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[250px] max-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     Metode
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-75 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Uji
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-48 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
                     Jam Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
-                    Spesifikasi Ruang TUK
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">
                     Asesor Ditugaskan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
                     Surat Penugasan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-40 top-0">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-[200px] top-0">
                     Aksi
                   </th>
                 </tr>
@@ -1988,7 +1957,7 @@ export default function AssessmentSchedule() {
                 {isJadwalLoading ? (
                   <tr>
                     <td
-                      colSpan={12}
+                      colSpan={10}
                       className="px-6 py-16 text-center text-slate-400"
                     >
                       <div className="flex flex-col items-center justify-center gap-3">
@@ -2015,34 +1984,30 @@ export default function AssessmentSchedule() {
                           key={item.id}
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
-
-                          {/* 2. Skema Sertifikasi */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-[14px] font-semibold text-slate-700 whitespace-nowrap">
                               {item.skema || "-"}
                             </div>
                           </td>
 
-                          {/* 2.5 Metode */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
-                              className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-md border ${(item.metode || item.metode) === "Online"
-                                ? "bg-purple-50 text-purple-700 border-purple-200"
-                                : "bg-sky-50 text-[#008BE3] border-sky-200"
-                                }`}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border tracking-wide ${
+                                (item.metode || item.metode) === "Online"
+                                  ? "bg-sky-50 text-[#008BE3] border-sky-200/80 shadow-2xs"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200/80 shadow-2xs"
+                              }`}
                             >
                               {item.metode || item.metode || "Offline"}
                             </span>
                           </td>
 
-                          {/* 3. Jenis TUK */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80 whitespace-nowrap">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs whitespace-nowrap">
                               {item.tipeTuk || "Sewaktu"}
                             </span>
                           </td>
 
-                          {/* 4. Alamat TUK */}
                           <td className="px-6 py-4">
                             <div className="flex items-start gap-1.5 text-[14px] font-medium text-slate-700">
                               <MapPin
@@ -2061,7 +2026,6 @@ export default function AssessmentSchedule() {
                             </div>
                           </td>
 
-                          {/* 5. Tanggal Uji */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-600">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar
@@ -2072,7 +2036,6 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          {/* 6. Jam Pelaksanaan */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-700">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Clock
@@ -2085,15 +2048,6 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          {/* 7. Spesifikasi Ruang TUK */}
-                          <td className="px-6 py-4 text-[14px] font-medium text-slate-700">
-                            <div className="font-medium text-slate-900">{item.alamat}</div>
-                            {item.alamat && !item.alamat.toLowerCase().includes("online") && (
-                              <div className="text-[11px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
-                            )}
-                          </td>
-
-                          {/* 8. Asesor Ditugaskan */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <span className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
@@ -2102,7 +2056,6 @@ export default function AssessmentSchedule() {
                             </div>
                           </td>
 
-                          {/* 9. Surat Penugasan */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             {item.suratTugasUrl ? (
                               item.suratTugasUrl.startsWith("http") ? (
@@ -2141,7 +2094,6 @@ export default function AssessmentSchedule() {
                             )}
                           </td>
 
-                          {/* 10. Total Asesi */}
                           <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
                             <span className="whitespace-nowrap">
                               {item.totalKandidat ||
@@ -2151,12 +2103,11 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          {/* 11. Aksi (Detail, Edit, Hapus) */}
-                          <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                          <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[200px]">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handlePreviewAsesmen(item)}
-                                className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                                className="px-3 py-2 text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 hover:text-sky-800 border border-sky-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                                 title="Detail"
                               >
                                 <Eye size={14} />
@@ -2166,7 +2117,7 @@ export default function AssessmentSchedule() {
                                 <>
                                   <button
                                     onClick={() => handleEditAsesmen(item)}
-                                    className="px-3 py-1.5 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                    className="px-3 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                                     title="Edit"
                                   >
                                     <FileEdit size={14} />
@@ -2176,7 +2127,7 @@ export default function AssessmentSchedule() {
                                     onClick={() =>
                                       handleDeleteSchedule(item.id)
                                     }
-                                    className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                    className="px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-800 border border-red-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                                     title="Hapus"
                                   >
                                     <Trash2 size={14} />
@@ -2194,7 +2145,7 @@ export default function AssessmentSchedule() {
                     ).length === 0 && (
                         <tr>
                           <td
-                            colSpan={11}
+                            colSpan={10}
                             className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                           >
                             Tidak ada jadwal asesmen aktif.
@@ -2208,28 +2159,28 @@ export default function AssessmentSchedule() {
           )}
 
           {activeTab === "pleno" && (
-            <table className="w-full text-left border-collapse min-w-300">
+            <table className="w-full text-left border-collapse min-w-[1200px]">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-75 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">
                     Nama Sidang Pleno
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-50 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-35 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
                     Status Sidang
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-40 top-0">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-[180px] top-0">
                     Aksi
                   </th>
                 </tr>
@@ -2247,7 +2198,7 @@ export default function AssessmentSchedule() {
                             `Sidang Pleno ${item.skema || item.id}`}
                         </div>
                         {item.skema && (
-                          <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-62.5">
+                          <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-[250px]">
                             {item.skema}
                           </div>
                         )}
@@ -2292,12 +2243,13 @@ export default function AssessmentSchedule() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase ${item.jenisTuk === "Sewaktu"
-                            ? "bg-amber-50 text-amber-700 border-amber-200"
-                            : item.jenisTuk === "Mandiri"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-blue-50 text-blue-700 border-blue-200"
-                            }`}
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border tracking-wide shadow-2xs ${
+                            item.jenisTuk === "Sewaktu"
+                              ? "bg-amber-50 text-amber-700 border-amber-200/80"
+                              : item.jenisTuk === "Mandiri"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                : "bg-sky-50 text-[#008BE3] border-sky-200/80"
+                          }`}
                         >
                           {item.jenisTuk || "Sewaktu"}
                         </span>
@@ -2316,7 +2268,7 @@ export default function AssessmentSchedule() {
                           </div>
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700 text-center">
+                      <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700">
                         <span>
                           {item.asesiList?.length || 0}
                         </span>
@@ -2332,13 +2284,13 @@ export default function AssessmentSchedule() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                      <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[180px]">
                         <div className="flex items-center justify-center gap-2">
                           {!readOnly && (
                             <>
                               <button
                                 onClick={() => handleEditPleno(item as unknown as PlenoDetailData)}
-                                className="px-3 py-1.5 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                className="px-3 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                                 title="Edit"
                               >
                                 <Edit size={14} />
@@ -2346,13 +2298,12 @@ export default function AssessmentSchedule() {
                               </button>
                               <button
                                 onClick={() => handleDeletePleno(item.id)}
-                                className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                className="px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-800 border border-red-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
                                 title="Hapus"
                               >
                                 <Trash2 size={14} />
                                 <span>Hapus</span>
                               </button>
-
                             </>
                           )}
                         </div>
@@ -2362,7 +2313,7 @@ export default function AssessmentSchedule() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                     >
                       Tidak ada jadwal sidang pleno.
@@ -2403,13 +2354,13 @@ export default function AssessmentSchedule() {
               <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
                 <button
                   onClick={() => setConfirmAsesmenId(null)}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleSelesaiSchedule}
-                  className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs"
+                  className="px-4 py-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors shadow-xs cursor-pointer"
                 >
                   Ya, Selesai
                 </button>
@@ -2417,8 +2368,6 @@ export default function AssessmentSchedule() {
             </motion.div>
           </div>
         )}
-
-
 
         {/* Lightbox / Preview Modal Surat Sidang Pleno */}
         {previewDocModal !== null && (
@@ -2460,7 +2409,7 @@ export default function AssessmentSchedule() {
               </div>
 
               {/* Body */}
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-75">
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-[300px]">
                 {previewDocModal.url.startsWith("data:image") ||
                   previewDocModal.url.startsWith("http") ? (
                   <img
@@ -2479,7 +2428,7 @@ export default function AssessmentSchedule() {
 
               {/* Footer */}
               <div className="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
-                <span className="text-xs text-slate-500 font-medium truncate max-w-62.5">
+                <span className="text-xs text-slate-500 font-medium truncate max-w-[250px]">
                   {previewDocModal.name}
                 </span>
                 <div className="flex items-center gap-2">
@@ -2488,7 +2437,7 @@ export default function AssessmentSchedule() {
                     download={previewDocModal.name}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center gap-1.5"
+                    className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     Buka / Unduh File
                   </a>

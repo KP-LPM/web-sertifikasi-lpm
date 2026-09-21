@@ -70,7 +70,8 @@ export default function KelolaPengguna() {
         const formattedUsers: UserItem[] = (list as BackendUserItem[]).map((u) => {
           let statusStr = "Nonaktif";
           if (u.isActive) {
-            statusStr = u.isVerified ? "Terverifikasi" : "Menunggu Verifikasi";
+            // PERUBAHAN: Terverifikasi diganti jadi Aktif aja
+            statusStr = u.isVerified ? "Aktif" : "Menunggu Verifikasi";
             if (u.role !== "asesi") {
               statusStr = "Aktif";
             }
@@ -102,7 +103,6 @@ export default function KelolaPengguna() {
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Form State ditambahkan 'username'
   const [formData, setFormData] = useState({
     username: "",
     namaLengkap: "",
@@ -190,7 +190,8 @@ export default function KelolaPengguna() {
     let isActive = false;
     let isVerified = false;
 
-    if (formData.status === "Aktif" || formData.status === "Terverifikasi") {
+    // PERUBAHAN: Cukup cek "Aktif" (terverifikasi dihapus)
+    if (formData.status === "Aktif") {
       isActive = true;
       isVerified = true;
     } else if (formData.status === "Menunggu Verifikasi") {
@@ -268,6 +269,21 @@ export default function KelolaPengguna() {
     return "bg-slate-100 text-slate-700 border-slate-200"; // asesi
   };
 
+  const getStatusBadgeStyle = (status: string) => {
+    const s = status.toLowerCase();
+    // PERUBAHAN: Kondisi terverifikasi dihapus
+    if (s === "aktif") {
+      return { wrapper: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" };
+    }
+    if (s === "menunggu verifikasi") {
+      return { wrapper: "bg-purple-50 text-purple-700 border-purple-200", dot: "bg-purple-500" };
+    }
+    if (s === "nonaktif") {
+      return { wrapper: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-500" };
+    }
+    return { wrapper: "bg-slate-50 text-slate-700 border-slate-200", dot: "bg-slate-400" };
+  };
+
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
       {/* Header Title Section */}
@@ -325,7 +341,7 @@ export default function KelolaPengguna() {
               <option value="Semua">Semua Peran ({users.length})</option>
               {ROLE_OPTIONS.map((r, idx) => (
                 <option key={idx} value={r} className="capitalize">
-                  {r}
+                  {r.replace("_", " ")}
                 </option>
               ))}
             </select>
@@ -360,7 +376,7 @@ export default function KelolaPengguna() {
             <tbody className="divide-y divide-gray-100/60">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500 font-medium">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-medium">
                     Memuat data pengguna...
                   </td>
                 </tr>
@@ -384,7 +400,7 @@ export default function KelolaPengguna() {
                       </div>
                     </td>
 
-                    {/* Kolom Nama Pengguna (Gabungan Nama dan Username) */}
+                    {/* Kolom Nama Pengguna */}
                     <td className="px-6 py-4 align-middle whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="text-xs md:text-sm font-bold text-slate-900 whitespace-nowrap">
@@ -400,23 +416,16 @@ export default function KelolaPengguna() {
                     </td>
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border whitespace-nowrap ${getRoleBadgeStyle(u.role)}`}
+                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border whitespace-nowrap ${getRoleBadgeStyle(u.role)}`}
                       >
-                        {u.role}
+                        {u.role.replace("_", " ")}
                       </span>
                     </td>
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${u.status === "Aktif"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
-                          }`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border whitespace-nowrap ${getStatusBadgeStyle(u.status).wrapper}`}
                       >
-                        {u.status === "Aktif" ? (
-                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
-                        ) : (
-                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                        )}
+                        <span className={`w-1.5 h-1.5 rounded-full ${getStatusBadgeStyle(u.status).dot}`}></span>
                         {u.status}
                       </span>
                     </td>
@@ -456,7 +465,7 @@ export default function KelolaPengguna() {
               ) : (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                   >
                     Tidak ada pengguna yang cocok dengan pencarian atau filter.
@@ -553,7 +562,7 @@ export default function KelolaPengguna() {
                         className="w-full px-3.5 py-2.5 bg-white text-slate-900 border-2 border-[#008BE3] rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-[#008BE3]/20 cursor-pointer"
                       >
                         <option value="Aktif">Aktif</option>
-                        <option value="Terverifikasi">Terverifikasi</option>
+                        {/* PERUBAHAN: Option Terverifikasi dihapus */}
                         <option value="Menunggu Verifikasi">
                           Menunggu Verifikasi
                         </option>
@@ -711,7 +720,7 @@ export default function KelolaPengguna() {
                       >
                         {ROLE_OPTIONS.map((roleOption, idx) => (
                           <option key={idx} value={roleOption}>
-                            {roleOption}
+                            {roleOption.replace("_", " ")}
                           </option>
                         ))}
                       </select>
@@ -736,7 +745,7 @@ export default function KelolaPengguna() {
                           }`}
                       >
                         <option value="Aktif">Aktif</option>
-                        <option value="Terverifikasi">Terverifikasi</option>
+                        {/* PERUBAHAN: Option Terverifikasi dihapus */}
                         <option value="Menunggu Verifikasi">
                           Menunggu Verifikasi
                         </option>
