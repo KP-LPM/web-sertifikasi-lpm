@@ -164,6 +164,7 @@ model PengajuanSkema {
   sumberAnggaran         String?                  @map("sumber_anggaran") @db.VarChar
   jabatan                String?                  @db.VarChar
   namaInstitusi          String?                  @map("nama_institusi") @db.VarChar
+  versiKonfigurasi       String?                  @map("versi_konfigurasi") @db.VarChar(50)
   apl02_penilaian        apl02_penilaian?
   asesmenMandiri         AsesmenMandiri[]
   dokumen                DokumenPengajuan[]
@@ -682,17 +683,21 @@ model sertifikat {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model riwayat_asesmen_detail {
-  id              Int            @id @default(autoincrement())
-  pengajuan_id    Int
-  asesor_id       Int?
-  form_type       String         @db.VarChar
-  form_data       Json           @default("{}")
-  penilaian       Json?
-  catatan         String?
-  created_at      DateTime       @default(now()) @db.Timestamp(6)
-  updated_at      DateTime       @default(now()) @updatedAt @db.Timestamp(6)
-  user            User?          @relation(fields: [asesor_id], references: [id], onDelete: NoAction)
-  pengajuan_skema PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade)
+  id                 Int            @id @default(autoincrement())
+  pengajuan_id       Int
+  asesor_id          Int?
+  form_type          String         @db.VarChar
+  form_data          Json           @default("{}")
+  penilaian          Json?
+  catatan            String?
+  ttd_asesor         String?
+  ttd_asesi          String?
+  tanggal_ttd_asesor DateTime?      @db.Date
+  tanggal_ttd_asesi  DateTime?      @db.Date
+  created_at         DateTime       @default(now()) @db.Timestamp(6)
+  updated_at         DateTime       @default(now()) @updatedAt @db.Timestamp(6)
+  user               User?          @relation(fields: [asesor_id], references: [id], onDelete: NoAction)
+  pengajuan_skema    PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade)
 
   @@index([pengajuan_id], map: "idx_riwayat_asesmen_detail_pengajuan_id")
   @@index([asesor_id], map: "idx_riwayat_asesmen_detail_asesor_id")

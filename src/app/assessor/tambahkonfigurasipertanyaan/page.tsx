@@ -33,27 +33,9 @@ import {
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createKonfigurasiPertanyaan } from "@/lib/api";
+import { createKonfigurasiPertanyaan, getSkemaList } from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
-// Options for Dropdowns
-const skemaOptions = [
-  {
-    value: "pembukuan",
-    label: "005/SKM/LSP-KJN/II/2023 - Pembukuan & Akuntansi",
-  },
-  {
-    value: "teknisi_jaringan",
-    label: "008/SKM/LSP-KJN/IV/2023 - Teknisi Muda Jaringan",
-  },
-  {
-    value: "network_admin",
-    label: "012/SKM/LSP-KJN/VI/2023 - Network Administrator",
-  },
-  {
-    value: "pemrograman_web",
-    label: "015/SKM/LSP-KJN/VIII/2023 - Pemrograman Web Specialist",
-  },
-];
+// Dummy options removed. Skema options now loaded dynamically.
 
 const assessorOptions = [
   {
@@ -248,6 +230,21 @@ function TambahKonfigurasiPertanyaanContent() {
     updateKonfigurasiPertanyaan,
     konfigurasiPertanyaan,
   } = useAppContext();
+  const [skemaOptions, setSkemaOptions] = useState<{value: string, label: string}[]>([]);
+  useEffect(() => {
+    async function fetchSkema() {
+      try {
+        const res = await getSkemaList();
+        setSkemaOptions(res.map((s: any) => ({
+          value: s.id?.toString() || s.kodeSkema || s.namaSkema || s.name || s.id,
+          label: `${s.kodeSkema || s.kode || s.code || ''} - ${s.namaSkema || s.nama || s.name || ''}`.replace(/^- | -$/g, '').trim() || s.name,
+        })));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    fetchSkema();
+  }, []);
 
   // Active step state (1 to 5)s
   const [activeStep, setActiveStep] = useState<number>(1);

@@ -386,7 +386,7 @@ export default function PengajuanSkemaPage() {
               : null,
             setTanggalLahir, 'tanggalLahir'
           ],
-          [dataProfil.jenisKelamin, setJenisKelamin, 'jenisKelamin'],
+          [dataProfil.jenisKelamin === "Laki_laki" ? "Laki-laki" : dataProfil.jenisKelamin, setJenisKelamin, 'jenisKelamin'],
           [dataProfil.kewarganegaraan, setKewarganegaraan, 'kewarganegaraan'],
           [dataProfil.noHp, setNoTelp, 'noTelp'],
           [dataProfil.alamat, setAlamat, 'alamat'],
@@ -3126,7 +3126,7 @@ export default function PengajuanSkemaPage() {
                         );
                         return;
                       }
-                      
+
                       const ttdAsesi = (tempEFormData as Record<string, unknown>)?.ttdAsesi || (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan;
                       if (!ttdAsesi) {
                         showNotification("Harap lengkapi tanda tangan Anda", "error");
@@ -3135,22 +3135,22 @@ export default function PengajuanSkemaPage() {
                         );
                         return;
                       }
-                      
+
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
                       let totalElements = 0;
                       (selectedScheme?.unitKompetensi || []).forEach((u: UnitKompetensiItem) => {
                         totalElements += (u.elemen || []).length;
                       });
-                      
+
                       const kompetensi = (tempEFormData as Record<string, unknown>)?.kompetensi as Record<string, string> || {};
                       const filledCount = Object.values(kompetensi).filter(v => v === "K" || v === "BK").length;
-                      
+
                       if (totalElements > 0 && filledCount < totalElements) {
-                         showNotification("Harap lengkapi penilaian K/BK pada semua unit kompetensi", "error");
-                         return;
+                        showNotification("Harap lengkapi penilaian K/BK pada semua unit kompetensi", "error");
+                        return;
                       }
-                      
+
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     }
                     const key = String(activeModalDoc?.name ?? "");

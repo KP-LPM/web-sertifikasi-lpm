@@ -41,6 +41,10 @@ export class RiwayatAsesmenRepository {
         form_data: data.form_data as Prisma.InputJsonValue,
         penilaian: data.penilaian as Prisma.InputJsonValue,
         catatan: data.catatan,
+        ttd_asesor: data.ttd_asesor,
+        ttd_asesi: data.ttd_asesi,
+        tanggal_ttd_asesor: data.tanggal_ttd_asesor ? new Date(data.tanggal_ttd_asesor) : null,
+        tanggal_ttd_asesi: data.tanggal_ttd_asesi ? new Date(data.tanggal_ttd_asesi) : null,
       },
     });
   }
@@ -56,6 +60,14 @@ export class RiwayatAsesmenRepository {
           penilaian: data.penilaian as Prisma.InputJsonValue,
         }),
         ...(data.catatan !== undefined && { catatan: data.catatan }),
+        ...(data.ttd_asesor !== undefined && { ttd_asesor: data.ttd_asesor }),
+        ...(data.ttd_asesi !== undefined && { ttd_asesi: data.ttd_asesi }),
+        ...(data.tanggal_ttd_asesor !== undefined && {
+          tanggal_ttd_asesor: data.tanggal_ttd_asesor ? new Date(data.tanggal_ttd_asesor) : null,
+        }),
+        ...(data.tanggal_ttd_asesi !== undefined && {
+          tanggal_ttd_asesi: data.tanggal_ttd_asesi ? new Date(data.tanggal_ttd_asesi) : null,
+        }),
       },
     });
   }

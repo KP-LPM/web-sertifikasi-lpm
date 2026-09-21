@@ -142,6 +142,7 @@ export interface UserItem {
   tempPassword?: string;
   namaInstitusi?: string;
   jabatan?: string;
+  versiKonfigurasi?: string;
   verificationData?: UserVerificationData;
 }
 

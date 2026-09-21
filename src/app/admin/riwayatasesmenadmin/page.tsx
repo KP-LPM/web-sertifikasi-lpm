@@ -37,7 +37,8 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { getJadwalCompleted, getBatchCompleted, getCandidatesList } from "@/lib/api";
+import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
+import { getJadwalCompleted, getBatchCompleted, getCandidatesList, getPengajuanDetail } from "@/lib/api";
 import {
   CompletedBatchAsesi,
   CompletedBatchItem,
@@ -46,6 +47,7 @@ import {
   AssessmentItem,
   TipeTuk,
   JenisMetode,
+  Apl01FormData,
 } from "@/types/types";
 
 interface CandidateCandidateItem {
@@ -85,8 +87,9 @@ export default function RiwayatAsesmenAdmin() {
   const [tanggalFilter, setTanggalFilter] = useState("");
   const [selectedAsesmen, setSelectedAsesmen] = useState<AssessmentItem | null>(null);
   const [previewForm, setPreviewForm] = useState<
-    "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
+    "FR.APL.01" | "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
   >(null);
+  const [apl01FormData, setApl01FormData] = useState<Apl01FormData | null>(null);
 
   // Batch Detail Modal State
   const [selectedBatch, setSelectedBatch] = useState<CompletedBatchItem | null>(null);
@@ -274,15 +277,54 @@ export default function RiwayatAsesmenAdmin() {
   useEffect(() => {
     if (selectedAsesmen?.id) {
       setIsLoadingDetails(true);
-      fetch(`/api/pengajuanskema/${selectedAsesmen.id}/riwayat-asesmen`)
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.data) setRiwayatDetails(json.data);
+      Promise.all([
+        fetch(`/api/pengajuanskema/${selectedAsesmen.id}/riwayat-asesmen`).then((res) => res.json()),
+        getPengajuanDetail(selectedAsesmen.id)
+      ])
+        .then(([riwayatRes, pengajuanDetail]) => {
+          if (riwayatRes.data) {
+            setRiwayatDetails(riwayatRes.data);
+          }
+          if (pengajuanDetail) {
+            const dp = pengajuanDetail.dataPribadi as Record<string, unknown> | undefined;
+            setApl01FormData({
+              isAdmin: true,
+              hidePaymentFields: true,
+              rekomendasi: pengajuanDetail.rekomendasi || "Diterima",
+              catatan: pengajuanDetail.catatan || "",
+              statusPembayaran: pengajuanDetail.statusPembayaran || "Sudah",
+              sumberAnggaran: pengajuanDetail.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
+              namaAdmin: "Admin LSP",
+              ttdAsesi: (dp?.tandaTangan as string) || null,
+              namaSkema: pengajuanDetail.skema?.namaSkema || "",
+              kodeSkema: pengajuanDetail.skema?.kodeSkema || "",
+              tuk: pengajuanDetail.tuk || "",
+              tujuan: pengajuanDetail.tujuanAsesmen || "Sertifikasi",
+              ...dp,
+              schemeDetail: {
+                ...pengajuanDetail.skema,
+                buktiAdministratif: pengajuanDetail.skema?.master_bukti_administratif || pengajuanDetail.skema?.buktiAdministratif || [],
+                persyaratanDasar: pengajuanDetail.skema?.persyaratanDasar || [],
+                buktiKompetensi: pengajuanDetail.skema?.buktiKompetensi || [],
+              },
+              checklist: pengajuanDetail.checklist || {},
+              onPreview: (docName: string) => {
+                const docs = (pengajuanDetail.dokumen as Array<{ namaDokumen: string; fileUrl: string }>) || [];
+                const doc = docs.find((d) => d.namaDokumen === docName);
+                if (doc && doc.fileUrl) {
+                  window.open(doc.fileUrl, "_blank");
+                } else {
+                  alert(`File untuk dokumen "${docName}" belum diunggah oleh asesi.`);
+                }
+              }
+            });
+          }
         })
         .catch((err) => console.error("Error fetching riwayat details:", err))
         .finally(() => setIsLoadingDetails(false));
     } else {
       setRiwayatDetails([]);
+      setApl01FormData(null);
     }
   }, [selectedAsesmen]);
 
@@ -476,6 +518,14 @@ export default function RiwayatAsesmenAdmin() {
 
                   return (
                     <>
+                      {previewForm === "FR.APL.01" && apl01FormData && (
+                        <div className="bg-white p-4 rounded-xl shadow-xs border border-gray-100">
+                          <EFormApl01
+                            formData={apl01FormData}
+                            onChange={() => { }}
+                          />
+                        </div>
+                      )}
                       {previewForm === "FR.APL.02" && (
                         <FormFRAPL02
                           asesmenData={{
@@ -487,7 +537,9 @@ export default function RiwayatAsesmenAdmin() {
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
-                          answers={penilaian}
+                          skemaId={selectedAsesmen.skemaId}
+                          pengajuanId={selectedAsesmen.id}
+                          answers={formData.kompetensi || penilaian}
                           rekomendasi={formData.rekomendasi || "Dapat dilanjutkan"}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
@@ -495,6 +547,7 @@ export default function RiwayatAsesmenAdmin() {
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorReg={selectedAsesmen.asesorReg || "-"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                           readOnly={true}
                         />
                       )}
@@ -509,11 +562,18 @@ export default function RiwayatAsesmenAdmin() {
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
+                          potensiAsesi={formData.potensiAsesi}
+                          noAdjustment={formData.noAdjustment}
+                          adjustments={formData.adjustments}
+                          acuanPembanding={formData.acuanPembanding}
+                          metodeAsesmen={formData.metodeAsesmen}
+                          instrumenAsesmen={formData.instrumenAsesmen}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                           readOnly={true}
                         />
                       )}
@@ -528,6 +588,9 @@ export default function RiwayatAsesmenAdmin() {
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
+                          umpanBalik={formData.umpanBalik || formData.umpanBalikStep2 || ""}
+                          supervisorName={formData.supervisorName || ""}
+                          supervisorSignature={formData.supervisorSignature || ""}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           readOnly={true}
@@ -545,12 +608,14 @@ export default function RiwayatAsesmenAdmin() {
                           }}
                           skemaId={selectedAsesmen.skemaId}
                           answers={formData.answers || penilaian}
+                          rekomendasi={formData.rekomendasi}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorReg={selectedAsesmen.asesorReg || "-"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                           readOnly={true}
                         />
                       )}
@@ -567,12 +632,14 @@ export default function RiwayatAsesmenAdmin() {
                           }}
                           skemaId={selectedAsesmen.skemaId}
                           answers={formData.answers || penilaian}
+                          umpanBalik={formData.umpanBalik || formData.umpanBalikStep4 || ""}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorReg={selectedAsesmen.asesorReg || "-"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                           readOnly={true}
                         />
                       )}

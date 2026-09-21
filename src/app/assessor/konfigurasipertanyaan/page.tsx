@@ -50,6 +50,7 @@ export default function KonfigurasiPertanyaanList() {
             const exists = konfigurasiPertanyaan.some((k) => k.id === item.id);
             if (!exists) {
               addKonfigurasiPertanyaan({
+                id: item.id,
                 nama: item.nama_konfigurasi,
                 skema: item.skema?.namaSkema || "",
                 tipeForm: item.tipe_form || "",
@@ -150,6 +151,9 @@ export default function KonfigurasiPertanyaanList() {
                     Skema Sertifikasi
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                    Versi
+                  </th>
+                  <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                     Status
                   </th>
                   <th className="px-2.5 sm:px-6 py-2.5 sm:py-4 text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -196,6 +200,9 @@ export default function KonfigurasiPertanyaanList() {
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-[#008BE3] font-bold whitespace-nowrap">
                         {item.skema}
+                      </td>
+                      <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-500 font-semibold whitespace-nowrap">
+                        v{item.versi || "1.0"}
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm whitespace-nowrap">
                         {item.status === "Draft" ? (

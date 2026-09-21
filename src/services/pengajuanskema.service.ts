@@ -17,7 +17,7 @@ import {
 import { db } from "@/lib/db";
 
 export class PengajuanService {
-  constructor(private repo: PengajuanRepository = pengajuanRepository) {}
+  constructor(private repo: PengajuanRepository = pengajuanRepository) { }
 
   // 1. Buat Pengajuan Skema Baru
   async create(data: CreatePengajuanDTO, user?: { id: number; role: string }) {
@@ -42,6 +42,19 @@ export class PengajuanService {
 
     if (!data.skemaId) {
       throw new InvariantError("Skema sertifikasi tidak valid atau tidak ditemukan");
+    }
+
+    if (!data.versiKonfigurasi) {
+      const aktifKonfig = await db.konfigurasi_pertanyaan.findFirst({
+        where: {
+          skema_id: data.skemaId,
+          OR: [{ status: "Terbit" }, { status: "published" }, { is_default: true }]
+        },
+        orderBy: { created_at: "desc" }
+      });
+      if (aktifKonfig) {
+        data.versiKonfigurasi = aktifKonfig.versi;
+      }
     }
 
     const timestamp = Date.now();

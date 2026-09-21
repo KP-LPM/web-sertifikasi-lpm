@@ -164,6 +164,7 @@ export default function UsersManagement() {
     sumberAnggaran?: string;
     namaInstitusi?: string;
     jabatan?: string;
+    versiKonfigurasi?: string;
     user?: { username?: string; email?: string };
     dataPribadi?: BackendDataPribadi[] | BackendDataPribadi;
     skema?: { namaSkema?: string; kodeSkema?: string };
@@ -237,6 +238,7 @@ export default function UsersManagement() {
           status,
           namaInstitusi: p.namaInstitusi || dp?.namaInstitusi || "",
           jabatan: p.jabatan || dp?.jabatan || "",
+          versiKonfigurasi: p.versiKonfigurasi || "-",
           verificationData: {
             rekomendasi: p.verifikasi_pengajuan?.rekomendasi || "Diterima",
             catatan: p.verifikasi_pengajuan?.catatan || "",
@@ -1020,6 +1022,9 @@ export default function UsersManagement() {
                   Peran
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                  Versi Skema
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Status Verifikasi
                 </th>
                 {(mainTab === "asesi" || mainTab === "selesai") && (
@@ -1046,7 +1051,7 @@ export default function UsersManagement() {
               {isDataLoading ? (
                 <tr>
                   <td
-                    colSpan={(mainTab === "asesi" || mainTab === "selesai") ? 7 : 6}
+                    colSpan={(mainTab === "asesi" || mainTab === "selesai") ? 8 : 8}
                     className="px-6 py-16 text-center text-slate-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
@@ -1060,7 +1065,7 @@ export default function UsersManagement() {
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={(mainTab === "asesi" || mainTab === "selesai") ? 7 : 6}
+                    colSpan={(mainTab === "asesi" || mainTab === "selesai") ? 8 : 8}
                     className="px-6 py-12 text-center text-slate-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-2.5">
@@ -1123,6 +1128,10 @@ export default function UsersManagement() {
                       <span className={`inline-block px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border whitespace-nowrap ${getRoleBadgeStyle(user.role)}`}>
                         {user.role}
                       </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-xs md:text-sm text-center font-bold text-slate-700 whitespace-nowrap">
+                      v{user.versiKonfigurasi || "1.0"}
                     </td>
 
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">

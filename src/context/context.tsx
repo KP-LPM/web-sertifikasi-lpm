@@ -38,7 +38,7 @@ interface AppContextType {
   setSelectedPertanyaanId: (id: number | null) => void;
   konfigurasiPertanyaan: KonfigurasiPertanyaanItem[];
   addKonfigurasiPertanyaan: (
-    item: Omit<KonfigurasiPertanyaanItem, "id">,
+    item: Omit<KonfigurasiPertanyaanItem, "id"> & { id?: number },
   ) => void;
   updateKonfigurasiPertanyaan: (
     id: number,
@@ -282,30 +282,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error(e);
       }
     }
-    return [
-      {
-        id: "1",
-        nama: "Set Konfigurasi Pertanyaan Asesmen Komprehensif",
-        skema: "Teknisi Muda Jaringan Komputer",
-        tipeForm: "Multi-Step Wizard",
-        versi: "1.0",
-        penyusun: [
-          {
-            value: "aditya_rahman",
-            label: "Aditya Rahman Syach, M.Kom (Asesor Utama)",
-          },
-        ],
-        validator: [
-          {
-            value: "made_jaya",
-            label: "I Made Jaya Artana, S.T., M.T. (Asesor)",
-          },
-        ],
-        isDefault: false,
-        status: "published",
-        subPertanyaans: [],
-      },
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -323,51 +300,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [pertanyaanAsesmen, setPertanyaanAsesmen] = useState<
     PertanyaanAsesmenItem[]
-  >([
-    {
-      id: 1,
-      nama: "wadw",
-      skema: "Pembukuan",
-      tipeForm: "FR.IA-01",
-      tipePertanyaan: "Esai",
-      penyusun: [
-        { value: "aditya_rahman", label: "Aditya Rahman Syach - Asesor" },
-      ],
-      questions: [
-        { id: "q1", text: "easd", options: [] },
-        { id: "q2", text: "wadsd", options: [] },
-      ],
-    },
-    {
-      id: 2,
-      nama: "adwdasd",
-      skema: "Pembukuan",
-      tipeForm: "FR.IA-05A_MERGE",
-      tipePertanyaan: "Pilihan Ganda",
-      penyusun: [{ value: "aditya_rahman", label: "Aditya Rahman Syach" }],
-      questions: [
-        {
-          id: "q1",
-          text: "awdsadasdsdasd",
-          options: [
-            { id: "o1", text: "asdasdasd", isCorrect: true },
-            { id: "o2", text: "wadsasd" },
-            { id: "o3", text: "asdasd" },
-            { id: "o4", text: "awdasdas" },
-          ],
-        },
-        {
-          id: "q2",
-          text: "dasdadas",
-          options: [
-            { id: "o5", text: "sdadasd" },
-            { id: "o6", text: "sdasdsada", isCorrect: true },
-            { id: "o7", text: "asdadasd" },
-          ],
-        },
-      ],
-    },
-  ]);
+  >([]);
 
   const addPertanyaanAsesmen = (item: Omit<PertanyaanAsesmenItem, "id">) => {
     setPertanyaanAsesmen((prev) => [...prev, { ...item, id: Date.now() }]);
@@ -387,12 +320,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addKonfigurasiPertanyaan = (
-    item: Omit<KonfigurasiPertanyaanItem, "id">,
+    item: Omit<KonfigurasiPertanyaanItem, "id"> & { id?: number },
   ) => {
-    setKonfigurasiPertanyaan((prev) => [
-      ...prev,
-      { ...item, id: Date.now() } as KonfigurasiPertanyaanItem,
-    ]);
+    setKonfigurasiPertanyaan((prev) => {
+      if (item.id && prev.some(p => p.id === item.id)) return prev;
+      return [
+        ...prev,
+        { ...item, id: item.id || Date.now() } as KonfigurasiPertanyaanItem,
+      ];
+    });
   };
 
   const updateKonfigurasiPertanyaan = (

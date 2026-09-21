@@ -14,7 +14,6 @@ import {
   Video,
   Building2,
 } from "lucide-react";
-import { useAppContext } from "@/context/context";
 import {
   FormFRAK07,
   FormFRIA04A,
@@ -22,6 +21,8 @@ import {
   FormFRIA07,
   FormFRAPL02,
 } from "@/components/forms";
+import { getRiwayatAsesmen } from "@/lib/api";
+import { useAppContext } from "@/context/context";
 
 type AsesmenData = {
   nama: string;
@@ -41,6 +42,18 @@ export default function DetailRiwayatAsesmen() {
   const [previewForm, setPreviewForm] = useState<
     "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07" | null
   >(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [riwayatDetails, setRiwayatDetails] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (selectedAsesmen?.id) {
+      getRiwayatAsesmen(selectedAsesmen.id)
+        .then((res) => {
+          if (res?.data) setRiwayatDetails(res.data);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [selectedAsesmen?.id]);
 
   if (!selectedAsesmen) {
     return (
@@ -96,11 +109,10 @@ export default function DetailRiwayatAsesmen() {
 
             <div className="shrink-0">
               <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-2xs ${
-                  selectedAsesmen.hasil === "Kompeten"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-red-50 text-red-700 border-red-200"
-                }`}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.hasil === "Kompeten"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-red-50 text-red-700 border-red-200"
+                  }`}
               >
                 {selectedAsesmen.hasil}
               </span>
@@ -405,82 +417,127 @@ export default function DetailRiwayatAsesmen() {
 
             <div className="p-4 sm:p-8 overflow-y-auto bg-slate-50/50 flex-1">
               <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
-                {previewForm === "FR.APL.02" && (
-                  <FormFRAPL02
-                    readOnly={true}
-                    asesmenData={
-                      {
-                        nama: selectedAsesmen.nama,
-                        skema: selectedAsesmen.skema,
-                        noSkema: "006/SKM/LSP-KJN/II/2023",
-                        tuk: selectedAsesmen.tipeTuk,
-                        tanggal: selectedAsesmen.tglAsesmen,
-                        asesor: "Dr. Aris Thorne",
-                      } as AsesmenData
-                    }
-                  />
-                )}
-                {previewForm === "FR.AK.07" && (
-                  <FormFRAK07
-                    readOnly={true}
-                    asesmenData={
-                      {
-                        nama: selectedAsesmen.nama,
-                        skema: selectedAsesmen.skema,
-                        noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tipeTuk,
-                        tanggal: selectedAsesmen.tglAsesmen,
-                        asesor: "Dr. Aris Thorne",
-                      } as AsesmenData
-                    }
-                  />
-                )}
-                {previewForm === "FR.IA.04A" && (
-                  <FormFRIA04A
-                    readOnly={true}
-                    asesmenData={
-                      {
-                        nama: selectedAsesmen.nama,
-                        skema: selectedAsesmen.skema,
-                        noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tipeTuk,
-                        tanggal: selectedAsesmen.tglAsesmen,
-                        asesor: "Dr. Aris Thorne",
-                      } as AsesmenData
-                    }
-                  />
-                )}
-                {previewForm === "FR.IA.04B" && (
-                  <FormFRIA04B
-                    readOnly={true}
-                    asesmenData={
-                      {
-                        nama: selectedAsesmen.nama,
-                        skema: selectedAsesmen.skema,
-                        noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tipeTuk,
-                        tanggal: selectedAsesmen.tglAsesmen,
-                        asesor: "Dr. Aris Thorne",
-                      } as AsesmenData
-                    }
-                    rekomendasi={selectedAsesmen.hasil}
-                  />
-                )}
-                {previewForm === "FR.IA.07" && (
-                  <FormFRIA07
-                    readOnly={true}
-                    asesmenData={
-                      {
-                        nama: selectedAsesmen.nama,
-                        skema: selectedAsesmen.skema,
-                        noSkema: "SKM-2024-001",
-                        tuk: selectedAsesmen.tipeTuk,
-                        tanggal: selectedAsesmen.tglAsesmen,
-                        asesor: "Dr. Aris Thorne",
-                      } as AsesmenData
-                    }
-                  />
-                )}
+                {(() => {
+                  const activeDetail = riwayatDetails.find((d) => d.form_type === previewForm);
+                  const formData = activeDetail?.form_data || {};
+                  const penilaian = activeDetail?.penilaian || {};
+
+                  return (
+                    <>
+                      {previewForm === "FR.APL.02" && (
+                        <FormFRAPL02
+                          readOnly={true}
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: "006/SKM/LSP-KJN/II/2023",
+                            tuk: selectedAsesmen.tipeTuk || "",
+                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: "Dr. Aris Thorne",
+                          } as AsesmenData}
+                          answers={penilaian}
+                          rekomendasi={formData.rekomendasi || "Dapat dilanjutkan"}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                        />
+                      )}
+                      {previewForm === "FR.AK.07" && (
+                        <FormFRAK07
+                          readOnly={true}
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: "SKM-2024-001",
+                            tuk: selectedAsesmen.tipeTuk || "",
+                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: "Dr. Aris Thorne",
+                          } as AsesmenData}
+                          potensiAsesi={formData.potensiAsesi}
+                          noAdjustment={formData.noAdjustment}
+                          adjustments={formData.adjustments}
+                          acuanPembanding={formData.acuanPembanding}
+                          metodeAsesmen={formData.metodeAsesmen}
+                          instrumenAsesmen={formData.instrumenAsesmen}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                        />
+                      )}
+                      {previewForm === "FR.IA.04A" && (
+                        <FormFRIA04A
+                          readOnly={true}
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: "SKM-2024-001",
+                            tuk: selectedAsesmen.tipeTuk || "",
+                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: "Dr. Aris Thorne",
+                          } as AsesmenData}
+                          umpanBalik={formData.umpanBalik || formData.umpanBalikStep2 || ""}
+                          supervisorName={formData.supervisorName || ""}
+                          supervisorSignature={formData.supervisorSignature || ""}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                        />
+                      )}
+                      {previewForm === "FR.IA.04B" && (
+                        <FormFRIA04B
+                          readOnly={true}
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: "SKM-2024-001",
+                            tuk: selectedAsesmen.tipeTuk || "",
+                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: "Dr. Aris Thorne",
+                          } as AsesmenData}
+                          answers={formData.answers || penilaian}
+                          rekomendasi={formData.rekomendasi}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                        />
+                      )}
+                      {previewForm === "FR.IA.07" && (
+                        <FormFRIA07
+                          readOnly={true}
+                          asesmenData={{
+                            nama: selectedAsesmen.nama,
+                            skema: selectedAsesmen.skema,
+                            noSkema: "SKM-2024-001",
+                            tuk: selectedAsesmen.tipeTuk || "",
+                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tanggal: selectedAsesmen.tglAsesmen,
+                            asesor: "Dr. Aris Thorne",
+                          } as AsesmenData}
+                          answers={formData.answers || penilaian}
+                          umpanBalik={formData.umpanBalik || formData.umpanBalikStep4 || ""}
+                          asesiName={selectedAsesmen.nama}
+                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
+                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>

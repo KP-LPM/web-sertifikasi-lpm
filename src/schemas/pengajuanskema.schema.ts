@@ -57,6 +57,7 @@ export const createPengajuanSchema = z
     name: z.string().optional(),
     tuk: z.string().default("TUK Mandiri"),
     jenisMetode: z.string().default("Offline"),
+    versiKonfigurasi: z.string().optional(),
 
     // Format terstruktur
     dataPribadi: dataPribadiSchema.optional(),
@@ -134,6 +135,7 @@ export const createPengajuanSchema = z
       kodeSkema: data.kodeSkema || data.code,
       tuk: data.tuk || "TUK Mandiri",
       jenisMetode: data.metode || data.jenisMetode || "Offline",
+      versiKonfigurasi: data.versiKonfigurasi,
       dataPribadi,
       dokumen,
       asesmenMandiri,

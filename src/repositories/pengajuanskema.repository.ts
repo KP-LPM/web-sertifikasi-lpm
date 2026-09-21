@@ -22,6 +22,7 @@ export class PengajuanRepository {
           status: "Menunggu Verifikasi",
           namaInstitusi: data.dataPribadi.namaInstitusi,
           jabatan: data.dataPribadi.jabatan,
+          versiKonfigurasi: data.versiKonfigurasi,
           dataPribadi: {
             create: {
               nik: data.dataPribadi.nik,

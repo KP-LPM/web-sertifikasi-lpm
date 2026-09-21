@@ -227,88 +227,7 @@ function AssessmentFormContent() {
   };
 
   // State Step 3 (IA.04B)
-  const step3Questions = [
-    {
-      id: "s3_q1",
-      skenario:
-        "Selama proyek perencanaan jaringan, Anda menemui masalah yang tidak terduga di mana router saat ini tidak kompatibel dengan sistem VoIP yang baru.",
-      pertanyaan:
-        "Bagaimana Anda akan mendokumentasikan masalah ini dan mengusulkan solusi dalam laporan survei Anda?",
-      elemen: "E1/KUK 1.3; E2/KUK 2.1",
-    },
-    {
-      id: "s3_q2",
-      skenario:
-        "Setelah mengumpulkan data dari survei, Anda perlu merangkum hasilnya dan menyajikannya kepada manajemen.",
-      pertanyaan:
-        "Bagaimana Anda akan membuat tabel untuk merangkum hasil survei? Deskripsikan struktur tabel dan informasi utama yang harus dimasukkan.",
-      elemen: "-",
-    },
-    {
-      id: "s3_q3",
-      skenario:
-        "Saat melakukan inventarisasi perangkat jaringan yang ada, Anda menemukan bahwa beberapa perangkat sudah usang dan sering mengalami kegagalan.",
-      pertanyaan:
-        "Bagaimana Anda akan mendokumentasikan masalah ini dan mengusulkan solusi dalam daftar perangkat jaringan yang ada beserta kinerjanya?",
-      elemen: "E1/KUK 1.1; E2/KUK 2.2",
-    },
-    {
-      id: "s3_q4",
-      skenario:
-        "Setelah mengidentifikasi teknologi baru, Anda perlu menyusun daftar perangkat jaringan yang ada beserta kinerjanya dan menentukan teknologi yang berpotensi meningkatkan kinerja jaringan.",
-      pertanyaan:
-        "Bagaimana Anda akan menyusun daftar perangkat jaringan yang ada beserta kinerjanya dan menentukan teknologi baru yang akan digunakan? Deskripsikan langkah-langkah dan struktur tabel yang akan Anda buat.",
-      elemen: "-",
-    },
-    {
-      id: "s3_q5",
-      skenario:
-        "Saat menghitung kapasitas jaringan berdasarkan kebutuhan bisnis, Anda menyadari bahwa jumlah perangkat dan volume data yang diantisipasi untuk tahun depan jauh melebihi kapasitas jaringan yang telah direncanakan.",
-      pertanyaan:
-        "Bagaimana Anda akan mendokumentasikan masalah ini dan mengusulkan solusi untuk memastikan kapasitas jaringan mencukupi kebutuhan bisnis yang berkembang?",
-      elemen: "E1/KUK 1.2; E2/KUK 2.2",
-    },
-    {
-      id: "s3_q6",
-      skenario:
-        "Setelah melakukan analisis, Anda perlu merangkum hasil perhitungan kapasitas jaringan dan topologi yang dipilih dalam sebuah dokumen untuk dipresentasikan kepada manajemen.",
-      pertanyaan:
-        "Bagaimana Anda akan menyusun dokumen yang merangkum perhitungan kapasitas jaringan dan topologi yang dipilih? Deskripsikan langkah-langkah dan struktur tabel yang akan Anda buat.",
-      elemen: "-",
-    },
-    {
-      id: "s3_q7",
-      skenario:
-        "Anda diharuskan bekerja dengan tim IT untuk memberikan alamat jaringan ke semua perangkat yang baru ditambahkan ke jaringan.",
-      pertanyaan:
-        "Bagaimana Anda akan berkolaborasi dengan tim IT untuk memastikan semua node atau perangkat jaringan diberi alamat jaringan yang tepat? Jelaskan langkah-langkah yang akan Anda ambil.",
-      elemen: "E2/KUK 2.3; E3/KUK 3.2",
-    },
-    {
-      id: "s3_q8",
-      skenario:
-        "Setelah memberikan alamat jaringan kepada semua perangkat, Anda perlu membuat dokumentasi pengalamatan jaringan yang jelas dan terperinci.",
-      pertanyaan:
-        "Bagaimana Anda akan membuat dokumentasi pengalamatan jaringan? Deskripsikan langkah-langkah dan struktur tabel yang akan Anda buat.",
-      elemen: "-",
-    },
-    {
-      id: "s3_q9",
-      skenario:
-        "Saat menyusun daftar perangkat jaringan dari berbagai vendor yang dapat memenuhi kebutuhan, Anda menemukan bahwa beberapa perangkat yang sesuai tidak tersedia atau sulit didapat di pasaran.",
-      pertanyaan:
-        "Bagaimana Anda akan mendokumentasikan masalah ini dan mengusulkan solusi untuk memastikan ketersediaan perangkat jaringan yang diperlukan?",
-      elemen: "E2/KUK 2.1; E2/KUK 2.2",
-    },
-    {
-      id: "s3_q10",
-      skenario:
-        "Setelah membuat daftar perangkat jaringan, Anda perlu menuliskan rentang kapasitas yang mencakup perangkat jaringan yang ada di pasaran untuk referensi tim.",
-      pertanyaan:
-        "Bagaimana Anda akan menuliskan rentang kapasitas perangkat jaringan yang ada di pasaran? Deskripsikan langkah-langkah dan struktur tabel yang akan Anda buat.",
-      elemen: "-",
-    },
-  ];
+  const step3Questions: { id: string; skenario: string; pertanyaan: string; elemen: string }[] = [];
   const [step3Answers, setStep3Answers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>
   >({});
@@ -325,88 +244,7 @@ function AssessmentFormContent() {
   };
 
   // State Step 4 (IA.07)
-  const step4Questions = [
-    {
-      id: "s4_q1",
-      pertanyaan:
-        "Mengapa penting untuk merancang dokumen survei teknis mencakup semua informasi yang diperlukan?",
-      elemen: "J.611000.001.01 E1/KUK 1.3; E2/KUK 2.1",
-      kunci:
-        "Merancang dokumen survei teknis dengan detail penting untuk mendukung perencanaan dan pengembangan jaringan yang efektif serta meminimalisir risiko dan kesalahan",
-    },
-    {
-      id: "s4_q2",
-      pertanyaan:
-        "Bagaimana cara memastikan tabel hasil survei teknis mudah dipahami dan digunakan?",
-      elemen: "-",
-      kunci:
-        "Memastikan tabel hasil survei teknis mudah dipahami dan digunakan dapat dilakukan dengan menggunakan format yang konsisten, menambahkan penjelasan atau catatan kaki jika perlu, dan melakukan review dengan tim.",
-    },
-    {
-      id: "s4_q3",
-      pertanyaan:
-        "Mengapa penting untuk menyusun daftar teknologi yang saat ini digunakan dalam jaringan?",
-      elemen: "J.611000.002.01 E1/KUK 1.1; E2/KUK 2.2",
-      kunci:
-        "Menyusun daftar teknologi yang saat ini digunakan penting untuk memahami infrastruktur jaringan, membantu dalam perencanaan peningkatan, dan memudahkan pemecahan masalah.",
-    },
-    {
-      id: "s4_q4",
-      pertanyaan:
-        "Bagaimana cara menentukan teknologi mana yang dapat meningkatkan kinerja jaringan?",
-      elemen: "-",
-      kunci:
-        "Menentukan teknologi yang dapat meningkatkan kinerja jaringan dilakukan dengan menilai kebutuhan jaringan saat ini, melakukan benchmark terhadap performa saat ini, dan membandingkan spesifikasi teknologi baru.",
-    },
-    {
-      id: "s4_q5",
-      pertanyaan:
-        "Bagaimana cara menentukan jarak optimal untuk penempatan perangkat jaringan?",
-      elemen: "J.611000.003.02 E2/KUK 2.2",
-      kunci:
-        "Menentukan jarak optimal dilakukan dengan survei lokasi untuk mengukur kekuatan sinyal di berbagai titik dan menyesuaikan penempatan perangkat agar sinyal tetap kuat dan stabil di seluruh area yang dicakup.",
-    },
-    {
-      id: "s4_q6",
-      pertanyaan:
-        "Mengapa penting mempertimbangkan jumlah pengguna dalam penempatan perangkat jaringan?",
-      elemen: "-",
-      kunci:
-        "Pertimbangan jumlah pengguna penting karena akan mempengaruhi distribusi bandwidth dan memastikan bahwa setiap pengguna memiliki akses yang memadai tanpa terjadinya kemacetan jaringan.",
-    },
-    {
-      id: "s4_q7",
-      pertanyaan:
-        "Bagaimana cara menentukan alamat IP yang tepat untuk setiap perangkat?",
-      elemen: "J.611000.004.01 E2/KUK 2.3; E3/KUK 3.2",
-      kunci:
-        "Menentukan alamat IP yang tepat untuk setiap perangkat dilakukan dengan mempertimbangkan skema subnetting, jumlah perangkat, dan kebutuhan spesifik jaringan.",
-    },
-    {
-      id: "s4_q8",
-      pertanyaan:
-        "Apa saja komponen yang harus ada dalam dokumentasi pengalamatan jaringan dan bagaimana cara membuat dokumentasi pengalamatan jaringan yang efektif?",
-      elemen: "-",
-      kunci:
-        "Komponen yang harus ada dalam dokumentasi pengalamatan jaringan meliputi: daftar perangkat dengan alamat IP, rentang subnet, skema DHCP, dan catatan perubahan alamat IP. Membuat dokumentasi pengalamatan jaringan yang efektif dilakukan dengan menggunakan format standar, menyimpan informasi dalam format terorganisir (misalnya, spreadsheet), dan memperbarui secara berkala.",
-    },
-    {
-      id: "s4_q9",
-      pertanyaan:
-        "Perangkat jaringan apa saja yang diperlukan untuk memenuhi kebutuhan pengguna dan vendor mana saja yang menyediakan perangkat jaringan tersebut?",
-      elemen: "J.611000.005.02 E2/KUK 2.1; 2.2",
-      kunci:
-        "Perangkat jaringan yang diperlukan meliputi router, switch, access point, server, kabel jaringan, dan firewall. Beberapa vendor yang menyediakan perangkat jaringan berkualitas tinggi termasuk Cisco, Juniper, TP-Link, D-Link, dan Huawei.",
-    },
-    {
-      id: "s4_q10",
-      pertanyaan:
-        "Bagaimana cara menentukan rentang kapasitas perangkat jaringan yang sesuai dengan kebutuhan pengguna dan berikan contoh perangkat jaringan beserta rentang kapasitasnya dari beberapa vendor?",
-      elemen: "-",
-      kunci:
-        "Menentukan rentang kapasitas perangkat jaringan melibatkan analisis kebutuhan pengguna, perkiraan jumlah pengguna, volume data yang akan ditransfer, dan jenis aplikasi yang akan digunakan. Contoh perangkat jaringan dan rentang kapasitasnya: Router Cisco 2901: Mendukung hingga 25 pengguna, throughput 25 Mbps. Switch TP-Link TL-SG1024: 24 port gigabit, kecepatan transfer hingga 1 Gbps per port. Access Point Ubiquiti UniFi UAP-AC-PRO: Mendukung hingga 200 pengguna, kecepatan Wi-Fi hingga 1300 Mbps di 5 GHz.",
-    },
-  ];
+  const step4Questions: { id: string; pertanyaan: string; elemen: string; kunci: string }[] = [];
   const [step4Answers, setStep4Answers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>
   >({});
@@ -497,6 +335,10 @@ function AssessmentFormContent() {
         await upsertRiwayatAsesmen(targetId, {
           form_type: "FR.APL.02",
           penilaian: { rekomendasi: rekomendasiApl02 },
+          ttd_asesor: asesorSignatureApl02,
+          ttd_asesi: asesiSignatureApl02,
+          tanggal_ttd_asesor: asesorDate,
+          tanggal_ttd_asesi: asesiDateApl02,
         }).catch(e => console.error("Gagal upsert APL-02:", e));
 
         // 2. Create AK-07
@@ -510,6 +352,10 @@ function AssessmentFormContent() {
             metodeAsesmen,
             instrumenAsesmen
           },
+          ttd_asesor: asesorSignature,
+          ttd_asesi: asesiSignature,
+          tanggal_ttd_asesor: asesorDate,
+          tanggal_ttd_asesi: asesiDate,
         }).catch(e => console.error("Gagal create AK-07:", e));
 
         // 3. Create IA-04A (Step 3)
@@ -517,9 +363,15 @@ function AssessmentFormContent() {
           form_type: "FR.IA.04A",
           form_data: {
             umpanBalik: umpanBalikStep2,
+            supervisorName: supervisorNameStep2,
+            supervisorSignature: supervisorSignatureStep2,
             penyusun,
             validator
           },
+          ttd_asesor: asesorSignatureStep2,
+          ttd_asesi: asesiSignatureStep2,
+          tanggal_ttd_asesor: asesorDate,
+          tanggal_ttd_asesi: asesiDate,
         }).catch(e => console.error("Gagal create IA-04A:", e));
 
         // 4. Create IA-04B (Step 4)
@@ -532,6 +384,10 @@ function AssessmentFormContent() {
             penyusun: penyusunStep3,
             validator: validatorStep3
           },
+          ttd_asesor: asesorSignatureStep3,
+          ttd_asesi: asesiSignatureStep3,
+          tanggal_ttd_asesor: asesorDateStep3,
+          tanggal_ttd_asesi: asesiDateStep3,
         }).catch(e => console.error("Gagal create IA-04B:", e));
 
         // 5. Create IA-07 (Step 5)
@@ -544,6 +400,10 @@ function AssessmentFormContent() {
             penyusun: penyusunStep4,
             validator: validatorStep4
           },
+          ttd_asesor: asesorSignatureStep4,
+          ttd_asesi: asesiSignatureStep4,
+          tanggal_ttd_asesor: asesorDateStep4,
+          tanggal_ttd_asesi: asesiDateStep4,
         }).catch(e => console.error("Gagal create IA-07:", e));
       }
 
