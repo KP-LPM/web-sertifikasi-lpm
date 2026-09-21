@@ -17,6 +17,7 @@ import { getAdminDashboard, getPengajuanList } from "@/lib/api";
 interface OverviewDashboardData {
   verifikasiPending?: number;
   jadwalMendatang?: number;
+  plenoMendatang?: number;
   pengajuan?: {
     diverifikasi?: number;
   };
@@ -40,7 +41,7 @@ export default function AdminOverview() {
   const router = useRouter();
   const { user } = useAppContext();
 
-  const adminName = user?.username || "Administrator LSP";
+  const adminName = user?.namaLengkap || user?.username || "Administrator LSP";
 
   const [dashboardData, setDashboardData] = React.useState<OverviewDashboardData | null>(null);
   const [pendingVerificationList, setPendingVerificationList] = React.useState<OverviewPendingItem[]>([]);
@@ -55,7 +56,7 @@ export default function AdminOverview() {
     try {
       const [dashData, pengData] = await Promise.all([
         getAdminDashboard(),
-        getPengajuanList({ status: "Diajukan" }),
+        getPengajuanList({ status: "Menunggu Verifikasi" }),
       ]);
 
       if (dashData) {
@@ -163,18 +164,18 @@ export default function AdminOverview() {
           <div className="bg-[#F4FBF7] p-4 rounded-lg border border-[#A7F3D0] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
             <div className="space-y-0.5">
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">
-                Total Disetujui
+                Jadwal Berlangsung
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  {dashboardData?.pengajuan?.diverifikasi || 0}
+                  {dashboardData?.jadwalMendatang || 0}
                 </span>
                 <span className="text-base font-bold text-emerald-700 ml-0.75">
-                  Berkas
+                  Jadwal
                 </span>
               </div>
               <p className="text-[11px] font-bold text-emerald-600">
-                Telah Diverifikasi Sah
+                Asesmen Sedang Berjalan
               </p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-[#84CC16] text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -190,7 +191,7 @@ export default function AdminOverview() {
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-slate-900 tracking-tight">
-                  {dashboardData?.jadwalMendatang || 0}
+                  {dashboardData?.plenoMendatang || 0}
                 </span>
                 <span className="text-base font-bold text-slate-700 ml-0.75">
                   Jadwal

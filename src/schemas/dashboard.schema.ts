@@ -14,6 +14,7 @@ export const DashboardAdminResponseSchema = z.object({
   verifikasiPending: z.number(),
   jadwalMendatang: z.number(),
   bandingMasuk: z.number(),
+  plenoMendatang: z.number(),
 });
 
 export const DashboardAsesiResponseSchema = z.object({

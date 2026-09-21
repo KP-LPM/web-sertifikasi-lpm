@@ -1031,14 +1031,6 @@ function SchemeCard({
       </div>
 
       <div className="mt-5 md:mt-0 flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100">
-        <div className="text-left md:text-right">
-          <p className="text-xl font-black text-slate-800 leading-none">
-            {scheme.totalPendaftar}
-          </p>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">
-            Total Asesi
-          </p>
-        </div>
         <div className="flex items-center gap-2 border-l border-slate-100 pl-6">
           <button
             onClick={onPreview}

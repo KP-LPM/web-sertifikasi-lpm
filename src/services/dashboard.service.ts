@@ -17,11 +17,13 @@ export class DashboardService {
       verifikasiPending,
       jadwalMendatang,
       bandingMasuk,
+      plenoMendatang,
     ] = await Promise.all([
       this.repo.getPengajuanGroupedByStatus(),
       this.repo.countVerifikasiPending(),
       this.repo.countJadwalMendatangAdmin(),
       this.repo.countBandingMasukAdmin(),
+      this.repo.countPlenoMendatangAdmin(),
     ]);
 
     const pengajuan = {
@@ -49,6 +51,7 @@ export class DashboardService {
       verifikasiPending,
       jadwalMendatang,
       bandingMasuk,
+      plenoMendatang,
     };
   }
 

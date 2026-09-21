@@ -30,6 +30,12 @@ export class DashboardRepository {
     });
   }
 
+  async countPlenoMendatangAdmin() {
+    return await db.pleno_batch.count({
+      where: { status: { not: "Selesai" } },
+    });
+  }
+
   // --- ASESI ---
   async getPengajuanAktifByAsesiId(asesiId: number) {
     return await db.pengajuanSkema.findFirst({

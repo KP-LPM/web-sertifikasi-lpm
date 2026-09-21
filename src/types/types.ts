@@ -778,6 +778,7 @@ export interface AssessmentItem {
   nik: string;
   nama: string;
   skema: string;
+  skemaId?: number;
   namaSkema?: string;
   noSkema?: string;
   tglAsesmen: string;

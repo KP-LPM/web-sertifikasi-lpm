@@ -38,8 +38,10 @@ export default function KonfigurasiPertanyaanList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     async function loadBackendData() {
       try {
         const res = await getKonfigurasiPertanyaanList();
@@ -49,12 +51,12 @@ export default function KonfigurasiPertanyaanList() {
             if (!exists) {
               addKonfigurasiPertanyaan({
                 nama: item.nama_konfigurasi,
-                skema: item.skema?.namaSkema || "Skema Sertifikasi",
-                tipeForm: item.tipe_form || "Multi-Step Wizard",
-                versi: item.versi || "1.0",
-                penyusun: [{ value: "asesor_lsp", label: "Asesor LSP" }],
-                validator: [{ value: "validator_lsp", label: "Validator LSP" }],
-                status: item.status || "Terbit",
+                skema: item.skema?.namaSkema || "",
+                tipeForm: item.tipe_form || "",
+                versi: item.versi || "",
+                penyusun: [{ value: "", label: "" }],
+                validator: [{ value: "", label: "" }],
+                status: item.status || "",
                 isDefault: false,
                 subPertanyaans: [],
               });
@@ -162,7 +164,16 @@ export default function KonfigurasiPertanyaanList() {
                 </tr>
               </thead>
               <tbody className="font-medium text-xs sm:text-sm divide-y divide-gray-100">
-                {konfigurasiData.length > 0 ? (
+                {!isMounted ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-20 text-center text-gray-500">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-8 h-8 rounded-full border-4 border-gray-200 border-t-[#008BE3] animate-spin mb-4" />
+                        <p>Memuat data...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : konfigurasiData.length > 0 ? (
                   konfigurasiData.map((item, idx) => (
                     <tr
                       key={item.id}

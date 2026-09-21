@@ -22,6 +22,7 @@ interface CandidateCandidateItem {
   metode?: string;
   alamat?: string;
   namaTuk?: string;
+  skemaId?: number;
 }
 
 export default function RiwayatAsesmen() {
@@ -56,10 +57,10 @@ export default function RiwayatAsesmen() {
               waktu: c.waktuMulai || "09:00 - 12:00 WIB",
               tglAsesmen: c.tanggalJadwal
                 ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
                 : "-",
               hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
               status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
@@ -276,13 +277,12 @@ export default function RiwayatAsesmen() {
                     >
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
                         <div
-                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                            idx % 3 === 0
-                              ? "bg-[#008BE3]/10 text-[#008BE3]"
-                              : idx % 3 === 1
-                                ? "bg-[#84CC16]/10 text-[#73B412]"
-                                : "bg-slate-100 text-slate-600"
-                          }`}
+                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
+                            ? "bg-[#008BE3]/10 text-[#008BE3]"
+                            : idx % 3 === 1
+                              ? "bg-[#84CC16]/10 text-[#73B412]"
+                              : "bg-slate-100 text-slate-600"
+                            }`}
                         >
                           {idx + 1}
                         </div>
@@ -292,13 +292,12 @@ export default function RiwayatAsesmen() {
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
-                            item.tipeTuk === "Sewaktu"
-                              ? "bg-blue-50 text-blue-700 border-blue-200"
-                              : item.tipeTuk === "Tempat Kerja"
-                                ? "bg-purple-50 text-purple-700 border-purple-200"
-                                : "bg-orange-50 text-orange-700 border-orange-200"
-                          }`}
+                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk === "Sewaktu"
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : item.tipeTuk === "Tempat Kerja"
+                              ? "bg-purple-50 text-purple-700 border-purple-200"
+                              : "bg-orange-50 text-orange-700 border-orange-200"
+                            }`}
                         >
                           {item.tipeTuk}
                         </span>
@@ -308,11 +307,10 @@ export default function RiwayatAsesmen() {
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
-                            item.metode === "Offline"
-                              ? "bg-emerald-50  border-emerald-200 text-emerald-600"
-                              : "bg-purple-50  border-purple-200  text-purple-600 "
-                          }`}
+                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${item.metode === "Offline"
+                            ? "bg-emerald-50  border-emerald-200 text-emerald-600"
+                            : "bg-purple-50  border-purple-200  text-purple-600 "
+                            }`}
                         >
                           {item.metode}
                         </span>
@@ -325,11 +323,10 @@ export default function RiwayatAsesmen() {
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
-                            item.hasil === "Kompeten"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-red-50 text-red-700 border-red-200"
-                          }`}
+                          className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${item.hasil === "Kompeten"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                            }`}
                         >
                           {item.hasil}
                         </span>

@@ -63,6 +63,7 @@ interface CandidateCandidateItem {
   metode?: string;
   alamat?: string;
   namaTuk?: string;
+  skemaId?: number;
 }
 
 export default function RiwayatAsesmenAdmin() {
@@ -162,6 +163,7 @@ export default function RiwayatAsesmenAdmin() {
           skema: c.namaSkema || "Skema Sertifikasi",
           tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
           metode: (c.metode || "Online") as JenisMetode,
+          skemaId: c.skemaId,
           waktu: c.waktuMulai || "",
           tglAsesmen: c.tanggalJadwal
             ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
@@ -531,7 +533,8 @@ export default function RiwayatAsesmenAdmin() {
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
-                          answers={penilaian}
+                          skemaId={selectedAsesmen.skemaId}
+                          answers={formData.answers || penilaian}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
@@ -552,7 +555,8 @@ export default function RiwayatAsesmenAdmin() {
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
-                          answers={penilaian}
+                          skemaId={selectedAsesmen.skemaId}
+                          answers={formData.answers || penilaian}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}

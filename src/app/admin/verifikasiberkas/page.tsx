@@ -31,7 +31,7 @@ export default function UsersManagement() {
   const { user: userContext, registeredProfile, setExtraCrumbs } = useAppContext();
   const readOnly = userContext?.role === "direktur" || userContext?.role === "manajer";
 
-  const [mainTab, setMainTab] = useState<"asesi" | "asesor">("asesi");
+  const [mainTab, setMainTab] = useState<"asesi" | "asesor" | "selesai">("asesi");
 
   const [users, setUsers] = useState<UserItem[]>([
     {
@@ -269,9 +269,9 @@ export default function UsersManagement() {
 
         const dokumen = u.portfolio_asesor?.flatMap((port) => {
           const docs = [];
-          
+
           const getUrl = (path: string) => path.startsWith('http') ? path : `/uploads/${path}`;
-          
+
           if (port.link_portfolio) {
             docs.push({
               id: port.id * 10 + 1,
@@ -454,10 +454,11 @@ export default function UsersManagement() {
     setUserToEditPayment(null);
   };
 
-  const asesiUsers = users.filter((user) => user.role === "asesi");
+  const asesiUsers = users.filter((user) => user.role === "asesi" && !((user.status === "Selesai" || user.status === "Terverifikasi") && user.verificationData?.statusPembayaran === "Sudah"));
   const asesorUsers = users.filter((user) => user.role === "asesor");
+  const selesaiUsers = users.filter((user) => user.role === "asesi" && (user.status === "Selesai" || user.status === "Terverifikasi") && user.verificationData?.statusPembayaran === "Sudah");
 
-  const currentList = mainTab === "asesi" ? asesiUsers : asesorUsers;
+  const currentList = mainTab === "asesi" ? asesiUsers : mainTab === "asesor" ? asesorUsers : selesaiUsers;
 
   const filteredUsers = currentList.filter(
     (user) =>
@@ -950,7 +951,9 @@ export default function UsersManagement() {
             <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4 md:whitespace-nowrap">
               {mainTab === "asesi"
                 ? "Daftar dokumen & berkas pendaftaran APL.01 & APL.02 Asesi."
-                : "Daftar berkas & data kualifikasi Asesor."}
+                : mainTab === "asesor"
+                  ? "Daftar berkas & data kualifikasi Asesor."
+                  : "Daftar asesi yang telah selesai diverifikasi dan melakukan pembayaran."}
             </p>
           </div>
         </div>
@@ -958,7 +961,7 @@ export default function UsersManagement() {
 
       <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div className="bg-slate-100 p-1 rounded-lg flex items-center w-full lg:w-64 shrink-0">
+          <div className="bg-slate-100 p-1 rounded-lg flex items-center w-full lg:w-auto shrink-0">
             <button
               onClick={() => setMainTab("asesi")}
               className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "asesi"
@@ -976,6 +979,15 @@ export default function UsersManagement() {
                 }`}
             >
               Asesor
+            </button>
+            <button
+              onClick={() => setMainTab("selesai")}
+              className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "selesai"
+                ? "bg-white text-[#008BE3] shadow-xs"
+                : "text-slate-500 hover:text-slate-800"
+                }`}
+            >
+              Selesai
             </button>
           </div>
 
@@ -1010,7 +1022,7 @@ export default function UsersManagement() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Status Verifikasi
                 </th>
-                {mainTab === "asesi" && (
+                {(mainTab === "asesi" || mainTab === "selesai") && (
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                     Status Pembayaran
                   </th>
@@ -1034,7 +1046,7 @@ export default function UsersManagement() {
               {isDataLoading ? (
                 <tr>
                   <td
-                    colSpan={mainTab === "asesi" ? 7 : 6}
+                    colSpan={(mainTab === "asesi" || mainTab === "selesai") ? 7 : 6}
                     className="px-6 py-16 text-center text-slate-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
@@ -1048,7 +1060,7 @@ export default function UsersManagement() {
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={mainTab === "asesi" ? 7 : 6}
+                    colSpan={(mainTab === "asesi" || mainTab === "selesai") ? 7 : 6}
                     className="px-6 py-12 text-center text-slate-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-2.5">
@@ -1058,11 +1070,17 @@ export default function UsersManagement() {
                           <p className="text-sm font-bold text-slate-700">Tidak ada data Asesi ditemukan</p>
                           <p className="text-xs text-slate-400">Belum ada asesi terdaftar atau tidak ada data pencarian yang cocok.</p>
                         </>
-                      ) : (
+                      ) : mainTab === "asesor" ? (
                         <>
                           <Award size={38} className="text-slate-300 stroke-[1.5]" />
                           <p className="text-sm font-bold text-slate-700">Tidak ada data Asesor ditemukan</p>
                           <p className="text-xs text-slate-400">Belum ada asesor terdaftar atau tidak ada data pencarian yang cocok.</p>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={38} className="text-slate-300 stroke-[1.5]" />
+                          <p className="text-sm font-bold text-slate-700">Tidak ada data Asesi yang Selesai</p>
+                          <p className="text-xs text-slate-400">Belum ada asesi yang telah selesai diverifikasi dan melakukan pembayaran.</p>
                         </>
                       )}
                     </div>
@@ -1127,7 +1145,7 @@ export default function UsersManagement() {
                       </span>
                     </td>
 
-                    {mainTab === "asesi" && (
+                    {(mainTab === "asesi" || mainTab === "selesai") && (
                       <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                         {user.verificationData?.statusPembayaran == "Sudah" ? (
                           <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
@@ -1182,7 +1200,7 @@ export default function UsersManagement() {
                               <Trash2 size={16} />
                             </button>
 
-                            {mainTab === "asesi" && (
+                            {(mainTab === "asesi" || mainTab === "selesai") && (
                               <button
                                 onClick={() => openPaymentModal(user)}
                                 className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-transparent hover:border-indigo-200 cursor-pointer"
