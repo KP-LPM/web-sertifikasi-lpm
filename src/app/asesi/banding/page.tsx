@@ -40,6 +40,10 @@ export default function AsesiAppeals() {
             hasil_asesmen?: {
               jadwal_asesmen?: {
                 metode?: string;
+                users?: {
+                  username?: string;
+                  profil?: { namaLengkap?: string };
+                };
               };
               pengajuan_skema?: {
                 dataPribadi?: {
@@ -47,9 +51,13 @@ export default function AsesiAppeals() {
                 };
                 skema?: {
                   namaSkema?: string;
+                  kodeSkema?: string;
                 };
                 user?: {
                   username?: string;
+                };
+                apl02_penilaian?: {
+                  nama_asesor?: string;
                 };
               };
             };
@@ -64,6 +72,7 @@ export default function AsesiAppeals() {
             namaAsesi: item.hasil_asesmen?.pengajuan_skema?.dataPribadi?.namaLengkap || '-',
             asesmen: item.hasil_asesmen?.jadwal_asesmen?.metode || 'Uji Kompetensi',
             skemaSertifikasi: item.hasil_asesmen?.pengajuan_skema?.skema?.namaSkema || '-',
+            kodeSkema: item.hasil_asesmen?.pengajuan_skema?.skema?.kodeSkema || '-',
             status: item.status_banding || item.status || 'Dalam Penyelidikan',
             alasan: item.alasan || item.penjelasan || '-',
             penjelasan: item.penjelasan || '-',
@@ -72,7 +81,11 @@ export default function AsesiAppeals() {
             didiskusikan: item.didiskusikan ?? true,
             melibatkanOrangLain: item.melibatkanOrangLain ?? false,
             ttdAsesi: true,
-            namaAsesor: item.hasil_asesmen?.pengajuan_skema?.user?.username || 'Asesor',
+            namaAsesor:
+              item.hasil_asesmen?.jadwal_asesmen?.users?.profil?.namaLengkap ||
+              item.hasil_asesmen?.jadwal_asesmen?.users?.username ||
+              item.hasil_asesmen?.pengajuan_skema?.apl02_penilaian?.nama_asesor ||
+              '-',
           }));
           setAppeals(mapped);
         } else {
@@ -93,11 +106,11 @@ export default function AsesiAppeals() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Disetujui':
-        return <span className="bg-green-50 text-green-700 border border-green-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">Disetujui</span>;
+        return <span className="bg-green-50 text-green-700 border border-green-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">Disetujui</span>;
       case 'Ditolak':
-        return <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">Ditolak</span>;
+        return <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">Ditolak</span>;
       case 'Dalam Penyelidikan':
-        return <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">Dalam Penyelidikan</span>;
+        return <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">Dalam Penyelidikan</span>;
       default:
         return <span className="bg-gray-50 text-gray-700 border border-gray-200 text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap">{status}</span>;
     }
@@ -170,7 +183,7 @@ export default function AsesiAppeals() {
                   </tr>
                   <tr>
                     <td className="border border-slate-300 p-2 font-semibold bg-white">Nama Asesor:</td>
-                    <td className="border border-slate-300 p-2" colSpan={2}>{selectedAppeal.namaAsesor || 'Asesor Budi'}</td>
+                    <td className="border border-slate-300 p-2" colSpan={2}>{selectedAppeal.namaAsesor || '-'}</td>
                   </tr>
                   <tr>
                     <td className="border border-slate-300 p-2 font-semibold bg-white">Tanggal Asesmen:</td>
@@ -217,7 +230,7 @@ export default function AsesiAppeals() {
                       </div>
                       <div className="flex">
                         <div className="w-40 font-semibold">No. Skema Sertifikasi</div>
-                        <div className="min-w-0">: -</div>
+                        <div className="min-w-0">: {selectedAppeal.kodeSkema && selectedAppeal.kodeSkema !== '-' ? selectedAppeal.kodeSkema : '-'}</div>
                       </div>
                     </td>
                   </tr>

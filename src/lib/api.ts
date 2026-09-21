@@ -425,7 +425,7 @@ export async function getBandingList() {
 }
 
 export async function getAsesiBandingList() {
-  const res = await fetch(`${BASE_URL}/banding/my`, {
+  const res = await fetch(`${BASE_URL}/banding`, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });

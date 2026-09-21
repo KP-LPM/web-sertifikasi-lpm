@@ -1190,7 +1190,14 @@ export default function PengajuanSkemaPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-xs text-gray-500 font-medium">
-                              {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) && !item.tipeTuk?.includes("Online") && !item.tipeTuk?.includes("Virtual") ? (item.alamatInstitusi || "-") : "-"}
+                              {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) && !item.tipeTuk?.includes("Online") && !item.tipeTuk?.includes("Virtual") ? (
+                                <>
+                                  <div className="font-medium text-slate-700">{item.alamatInstitusi || "-"}</div>
+                                  {item.alamatInstitusi && item.alamatInstitusi !== "-" && (
+                                    <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                                  )}
+                                </>
+                              ) : "-"}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium whitespace-nowrap">
                               <span className="inline-flex items-center gap-1.5">
@@ -1221,12 +1228,12 @@ export default function PengajuanSkemaPage() {
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                               {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) && (item.tipeTuk?.includes("Online") || item.tipeTuk?.includes("Virtual")) ? (
                                 item.virtualMeeting ? (
-                                  <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                                  <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                                     <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
                                     Tersedia
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap ">
+                                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                                     <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
                                     Belum Tersedia
                                   </span>
@@ -1237,12 +1244,12 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                               {item.statusPembayaran === "Sudah" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-                                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                   Sudah Bayar
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
                                   Belum Bayar
                                 </span>
@@ -1250,37 +1257,37 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
                               {item.status?.toLowerCase() === "menunggu verifikasi" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
                                   Menunggu Verifikasi
                                 </span>
                               ) : item.status?.toLowerCase() === "terverifikasi" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                                   Terverifikasi
                                 </span>
                               ) : item.status?.toLowerCase() === "terjadwal" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
                                   Terjadwal
                                 </span>
                               ) : item.status?.toLowerCase() === "revisi" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                   Revisi
                                 </span>
                               ) : item.status?.toLowerCase() === "perlu perbaikan" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                                   Perlu Perbaikan
                                 </span>
                               ) : item.status?.toLowerCase() === "selesai" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
-                                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>
                                   Selesai
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
                                   {item.status || "Tidak Diketahui"}
                                 </span>
@@ -3132,8 +3139,8 @@ export default function PengajuanSkemaPage() {
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
                       let totalElements = 0;
-                      (selectedScheme?.unitKompetensi || []).forEach((u: any) => {
-                        totalElements += (u.elemen || u.elemenKompetensi || []).length;
+                      (selectedScheme?.unitKompetensi || []).forEach((u: UnitKompetensiItem) => {
+                        totalElements += (u.elemen || []).length;
                       });
                       
                       const kompetensi = (tempEFormData as Record<string, unknown>)?.kompetensi as Record<string, string> || {};
@@ -3411,7 +3418,7 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 6: EXIT WARNING MODAL */}
       {showExitWarning && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-200 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <h3 className="font-black text-slate-800 text-lg">Peringatan</h3>
@@ -3452,7 +3459,7 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 7: CANCEL WARNING MODAL (NEW) */}
       {cancelItemId && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-200 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <h3 className="font-black text-slate-800 text-lg">Peringatan</h3>

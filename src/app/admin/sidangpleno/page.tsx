@@ -21,6 +21,7 @@ import {
   MapPin,
   Eye,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "@/context/context";
@@ -801,12 +802,17 @@ export default function SidangPleno() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-slate-700">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-start gap-1.5">
                             <MapPin
                               size={16}
-                              className="text-slate-400 shrink-0"
+                              className="text-slate-400 shrink-0 mt-0.5"
                             />
-                            <span>{item.alamat}</span>
+                            <div>
+                              <div>{item.alamat}</div>
+                              {item.alamat && !item.alamat.toLowerCase().includes("online") && (
+                                <div className="text-[11px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
@@ -1341,11 +1347,16 @@ export default function SidangPleno() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.rekomendasiAsesor === "K"
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.rekomendasiAsesor === "K"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : "bg-red-50 text-red-700 border-red-200"
                             }`}
                         >
+                          {asesi.rekomendasiAsesor === "K" ? (
+                            <CheckCircle size={12} />
+                          ) : (
+                            <AlertTriangle size={12} />
+                          )}
                           {asesi.rekomendasiAsesor === "K"
                             ? "Kompeten"
                             : "Belum Kompeten"}
@@ -1385,11 +1396,16 @@ export default function SidangPleno() {
                           </div>
                         ) : (
                           <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.statusPleno === "K"
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${asesi.statusPleno === "K"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                               : "bg-red-50 text-red-700 border-red-200"
                               }`}
                           >
+                            {asesi.statusPleno === "K" ? (
+                              <CheckCircle size={12} />
+                            ) : (
+                              <AlertTriangle size={12} />
+                            )}
                             {asesi.statusPleno === "K"
                               ? "Kompeten"
                               : "Belum Kompeten"}
