@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Download,
   X,
+  Eye,
   User,
 } from "lucide-react";
 
@@ -1294,27 +1295,26 @@ export default function PengajuanSkemaPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
-                              <div className="flex items-center justify-center gap-1.5">
+                              <div className="flex items-center justify-center gap-2">
                                 {item.status.toUpperCase() === "TERJADWAL" && item.tipeTuk === "Mandiri (Online)" && (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       showNotification("Fitur Ujian Online belum tersedia", "error");
                                     }}
-                                    className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                                    className="inline-flex items-center gap-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
                                   >
                                     Mulai Ujian
                                   </button>
                                 )}
+
                                 <button
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     setSelectedDetailSubmission(item);
                                     setIsLoadingDetail(true);
                                     try {
-                                      const detail = await getPengajuanDetail(
-                                        item.id,
-                                      );
+                                      const detail = await getPengajuanDetail(item.id);
                                       if (detail) {
                                         setSelectedDetailSubmission({
                                           ...item,
@@ -1322,31 +1322,32 @@ export default function PengajuanSkemaPage() {
                                         });
                                       }
                                     } catch (err) {
-                                      console.error(
-                                        "Gagal memuat detail pengajuan:",
-                                        err,
-                                      );
+                                      console.error("Gagal memuat detail pengajuan:", err);
                                     } finally {
                                       setIsLoadingDetail(false);
                                     }
                                   }}
-                                  className="bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-[#008BE3] border border-[#008BE3]/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
                                 >
+                                  <Eye size={14} />
                                   Detail
                                 </button>
+
                                 {item.status?.toLowerCase().includes("menunggu") && (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setCancelItemId(item.id);
                                     }}
-                                    className="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                                    className="inline-flex items-center gap-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
                                     title="Batalkan Pengajuan"
                                     data-bypass-confirm="true"
                                   >
+                                    <X size={14} />
                                     Batal
                                   </button>
                                 )}
+
                                 {item.status?.toLowerCase().includes("revisi") && (
                                   <button
                                     onClick={(e) => {
@@ -1363,8 +1364,9 @@ export default function PengajuanSkemaPage() {
                                         isPreview: false
                                       });
                                     }}
-                                    className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                                    className="inline-flex items-center gap-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
                                   >
+                                    <FileText size={14} />
                                     Edit Dokumen
                                   </button>
                                 )}
@@ -3138,19 +3140,8 @@ export default function PengajuanSkemaPage() {
 
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
-                      let totalElements = 0;
-                      (selectedScheme?.unitKompetensi || []).forEach((u: UnitKompetensiItem) => {
-                        totalElements += (u.elemen || []).length;
-                      });
-
-                      const kompetensi = (tempEFormData as Record<string, unknown>)?.kompetensi as Record<string, string> || {};
-                      const filledCount = Object.values(kompetensi).filter(v => v === "K" || v === "BK").length;
-
-                      if (totalElements > 0 && filledCount < totalElements) {
-                        showNotification("Harap lengkapi penilaian K/BK pada semua unit kompetensi", "error");
-                        return;
-                      }
-
+                      // VALIDASI K/BK DIHAPUS / DIMATIKAN
+                      // Asesi sekarang bisa langsung klik Simpan Data walau K/BK belum diceklis
                       (tempEFormData as Record<string, unknown>).asesiDate = today;
                     }
                     const key = String(activeModalDoc?.name ?? "");
