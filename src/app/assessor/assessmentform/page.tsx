@@ -228,6 +228,7 @@ function AssessmentFormContent() {
 
   // State Step 3 (IA.04B)
   const step3Questions: { id: string; skenario: string; pertanyaan: string; elemen: string }[] = [];
+  const [step3QuestionsCount, setStep3QuestionsCount] = useState(4);
   const [step3Answers, setStep3Answers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>
   >({});
@@ -245,6 +246,7 @@ function AssessmentFormContent() {
 
   // State Step 4 (IA.07)
   const step4Questions: { id: string; pertanyaan: string; elemen: string; kunci: string }[] = [];
+  const [step4QuestionsCount, setStep4QuestionsCount] = useState(5);
   const [step4Answers, setStep4Answers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>
   >({});
@@ -501,7 +503,7 @@ function AssessmentFormContent() {
               Nomor Skema
             </td>
             <td className="border border-slate-300 p-2">
-              {String(asesmenData.skema || "")}
+              {String(asesmenData.noSkema || "")}
             </td>
           </tr>
           <tr>
@@ -684,6 +686,7 @@ function AssessmentFormContent() {
   const renderStep4 = () => (
     <FormFRIA04B
       asesmenData={asesmenData}
+      skemaId={Number(selectedAsesmen?.skemaId) || undefined}
       step3Questions={step3Questions}
       step3Answers={step3Answers}
       onStep3Change={handleStep3Change}
@@ -716,12 +719,14 @@ function AssessmentFormContent() {
       onPrev={() => setCurrentStep(3)}
       onNext={() => { setCompletedSteps(p => new Set(p).add(4)); setCurrentStep(5); }}
       isNextDisabled={!isStep3Valid}
+      onQuestionsLoaded={setStep3QuestionsCount}
     />
   );
 
   const renderStep5 = () => (
     <FormFRIA07
       asesmenData={asesmenData}
+      skemaId={Number(selectedAsesmen?.skemaId) || undefined}
       step4Questions={step4Questions}
       step4Answers={step4Answers}
       onStep4Change={handleStep4Change}
@@ -754,6 +759,7 @@ function AssessmentFormContent() {
       onPrev={() => setCurrentStep(4)}
       onNext={() => { setCompletedSteps(p => new Set(p).add(5)); setCurrentStep(6); }}
       isNextDisabled={!isStep4Valid}
+      onQuestionsLoaded={setStep4QuestionsCount}
     />
   );
   const renderStep6 = () => (
@@ -798,7 +804,7 @@ function AssessmentFormContent() {
                   </td>
                   <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
                     <Check size={14} /> {Object.keys(step3Answers).length} /{" "}
-                    {step3Questions.length} Terjawab
+                    {step3QuestionsCount} Terjawab
                   </td>
                 </tr>
                 <tr>
@@ -807,7 +813,7 @@ function AssessmentFormContent() {
                   </td>
                   <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
                     <Check size={14} /> {Object.keys(step4Answers).length} /{" "}
-                    {step4Questions.length} Terjawab
+                    {step4QuestionsCount} Terjawab
                   </td>
                 </tr>
               </tbody>
