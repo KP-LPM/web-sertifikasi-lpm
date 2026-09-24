@@ -52,7 +52,7 @@ export function generateSertifikatHtml(data: SertifikatPayload): string {
     <title>Sertifikat Kompetensi - ${data.namaPemegang}</title>
     <style>
       @page {
-        size: A4 portrait;
+        size: 215mm 330mm;
         margin: 0;
       }
       *,
@@ -72,8 +72,8 @@ export function generateSertifikatHtml(data: SertifikatPayload): string {
         margin: 0;
       }
       .cert-page {
-        width: 210mm;
-        height: 297mm;
+        width: 215mm;
+        height: 330mm;
         padding: 16mm 22mm 14mm 22mm;
         margin: 0 auto;
         background: white;

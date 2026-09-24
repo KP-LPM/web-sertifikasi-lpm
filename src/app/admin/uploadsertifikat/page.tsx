@@ -53,8 +53,7 @@ export default function UploadSertifikat() {
 
       const payloadBody = {
         pengajuanId: editingAsesi.asesi.id,
-        nomorSertifikat: inputForm.n || `50${Math.floor(100 + Math.random() * 900)}/LSP-SGD/VIII/2026`,
-        nomorRegistrasi: `HMS ${Math.floor(100 + Math.random() * 900)} 00000 2026`,
+        nomorSertifikat: inputForm.n || undefined,
         tanggalTerbit: inputForm.issueDate
       };
 
@@ -203,9 +202,7 @@ export default function UploadSertifikat() {
   // Open modal to input/edit GDrive link for a specific asesi
   const handleOpenInputModal = (plenoId: number, asesi: AsesiPlenoRecord) => {
     setEditingAsesi({ plenoId, asesi });
-    const defaultCertNo =
-      asesi.noSertifikat ||
-      `50${Math.floor(100 + Math.random() * 900)}/LSP-SGD/VIII/2026`;
+    const defaultCertNo = asesi.noSertifikat || "";
     const defaultDate =
       asesi.issueDate || new Date().toISOString().split("T")[0];
 

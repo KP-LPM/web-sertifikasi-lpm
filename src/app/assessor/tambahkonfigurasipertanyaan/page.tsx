@@ -51,12 +51,10 @@ const availableKUKOptions = [
   "J.611000.002.01 E2/KUK 2.3",
 ];
 
-// Initial Rich Default Data
 const initialWizardState: WizardFormState = {
   metadata: {
-    namaKonfigurasi:
-      "Set Konfigurasi Pertanyaan Asesmen Komprehensif (FR.IA.04A & FR.IA.04B)",
-    skemaSertifikasi: "network_admin",
+    namaKonfigurasi: "",
+    skemaSertifikasi: "",
     versi: "1.0",
     penyusun: [],
     validator: [],
@@ -64,140 +62,29 @@ const initialWizardState: WizardFormState = {
   },
   step1: {
     type: "CHECKLIST_MULTIPLE_CHOICE",
-    questions: [
-      {
-        id: "q1-step1",
-        pertanyaanText:
-          "Daftar Penyesuaian Wajar yang diperlukan Asesi saat pelaksanaan asesmen:",
-        options: [
-          {
-            id: "opt-1-1",
-            text: "Perpanjangan waktu pengerjaan (15-30 menit)",
-            isValid: true,
-          },
-          {
-            id: "opt-1-2",
-            text: "Perangkat bantu visual / magnifier / layar kontras tinggi",
-            isValid: true,
-          },
-          {
-            id: "opt-1-3",
-            text: "Ruangan pengerjaan tenang / khusus tanpa distraksi",
-            isValid: true,
-          },
-          {
-            id: "opt-1-4",
-            text: "Pemberian instruksi tertulis khusus atau pendamping penerjemah",
-            isValid: false,
-          },
-        ],
-      },
-    ],
+    questions: [],
   },
   step2: {
     type: "INSTRUCTION_SCENARIO",
     blokA: {
-      skenarioStudiKasus:
-        "PT Nusantara Media adalah perusahaan penyedia jasa media digital & infrastruktur IT enterprise. Anda diminta bertindak sebagai Network Specialist untuk merancang ulang arsitektur jaringan perusahaan agar mendukung ketersediaan tinggi (High Availability) dan isolasi keamanan data.",
-      informasiYangDiberikan: [
-        "Topologi fisik awal dan peta lokasi antargedung pusat & kantor cabang",
-        "Skema alokasi IP Address V4/V6 dan struktur VLAN eksisting",
-        "Daftar kebutuhan pengguna (200 host gedung A, 100 host gedung B, 20 server)",
-        "Spesifikasi perangkat router core & switch distribution terinstal",
-      ],
-      lingkupBahasanStudiKasus: [
-        "Topic 1: Perancangan Hirarki Topologi Jaringan Enterprise",
-        "Topic 2: Skema Pengalamatan IP Subnetting & VLSM",
-        "Topic 3: Konfigurasi Routing Dinamik OSPF & VLAN Trunking IEEE 802.1Q",
-        "Topic 4: Menerapkan Kebijakan Keamanan Firewall & Access Control List (ACL)",
-        "Topic 5: Pengujian Kinerja Network & Dokumentasi Laporan Asesmen",
-      ],
-      perlengkapanDanBahan:
-        "Laptop terinstal Simulator Cisco Packet Tracer / GNS3, Kertas A4 HVS, Alat Tulis, dan Perangkat Slide Presentasi PPT.",
+      skenarioStudiKasus: "",
+      informasiYangDiberikan: [""],
+      lingkupBahasanStudiKasus: [""],
+      perlengkapanDanBahan: "",
     },
     blokB: {
-      fokusPresentasi: [
-        "a. Demonstrasi Perancangan & Alasan Pemilihan Topologi Network",
-        "b. Penjelasan Rincian Pengalamatan Subnetting & Pembagian VLAN",
-        "c. Simulasi Routing OSPF & Penanganan Failover Redundansi",
-        "d. Analisis Hasil Pengujian Latensi & Keamanan Akses Server",
-      ],
-      ketentuanAlokasiWaktu:
-        "Total Waktu Asesmen: 60 Menit (30 Menit Sesi Demonstrasi Presentasi + 30 Menit Sesi Tanya Jawab & Klarifikasi Asesor).",
-      kriteriaEvaluasiAsesor: [
-        "Ketepatan rancangan topologi dan ketersediaan tinggi (High Availability)",
-        "Penguasaan jawaban atas pertanyaan klarifikasi teknis",
-        "Rasionalitas pemilihan perangkat dan kalkulasi alokasi IP Subnetting",
-        "Sikap profesional dan kelengkapan dokumen laporan hasil studi kasus",
-      ],
+      fokusPresentasi: [""],
+      ketentuanAlokasiWaktu: "",
+      kriteriaEvaluasiAsesor: [""],
     },
   },
   step3: {
     type: "NESTED_ESSAY_PROYEK",
-    lingkups: [
-      {
-        id: "lingkup-1",
-        namaLingkup:
-          "Lingkup 1: Perancangan Topologi & Pengalamatan IP Jaringan",
-        subPertanyaans: [
-          {
-            id: "sub-1-1",
-            skenarioPertanyaan:
-              "Berdasarkan studi kasus PT Nusantara Media, jelaskan rancangan topologi core-distribution-access yang Anda pilih serta perhitungan subnetting IP VLSM secara mendetail!",
-            kodeKUK: [
-              "J.611000.001.01 E1/KUK 1.1",
-              "J.611000.001.01 E1/KUK 1.3",
-            ],
-            ekspektasiTanggapan:
-              "Asesi mampu menjelaskan pembagian 3 tier topologi, perhitungan VLSM, dan pengalokasian IP gateway dengan akurat.",
-          },
-          {
-            id: "sub-1-2",
-            skenarioPertanyaan:
-              "Bagaimana Anda memisahkan lalu lintas data antar-departemen untuk menjaga keamanan dan isolasi subnet?",
-            kodeKUK: ["J.611000.002.01 E2/KUK 2.1"],
-            ekspektasiTanggapan:
-              "Asesi menjelaskan pemetaan VLAN terpisah (VLAN 10 HRD, VLAN 20 Finance, VLAN 30 Server) dan konfigurasinya pada switch trunking.",
-          },
-        ],
-      },
-      {
-        id: "lingkup-2",
-        namaLingkup:
-          "Lingkup 2: Konfigurasi Routing Dinamik & Keamanan Firewall",
-        subPertanyaans: [
-          {
-            id: "sub-2-1",
-            skenarioPertanyaan:
-              "Demonstrasikan dan jelaskan prosedur konfigurasi OSPF area 0 beserta penerapan Access Control List (ACL) untuk membatasi akses ke Server Keuangan!",
-            kodeKUK: ["J.611000.002.01 E2/KUK 2.3"],
-            ekspektasiTanggapan:
-              "Asesi menunjukkan command router OSPF, wildcard mask, dan Extended ACL yang memblokir subnet non-authorized secara presisi.",
-          },
-        ],
-      },
-    ],
+    lingkups: [],
   },
   step4: {
     type: "ESSAY_WITH_KEY_ANSWER",
-    questions: [
-      {
-        id: "q1-step4",
-        kodeKUKRef: "J.611000.001.01 E1/KUK 1.3",
-        pertanyaanLisan:
-          "Jelaskan fungsi dari protokol ARP (Address Resolution Protocol) dan bagaimana dampaknya jika terjadi ARP Spoofing dalam jaringan lokal!",
-        kunciJawaban:
-          "ARP berfungsi memetakan IP Address menjadi MAC Address fisik pada jaringan Ethernet. Jika terjadi ARP Spoofing, penyerang mengirimkan pesan ARP palsu sehingga lalu lintas data teralihkan ke perangkat penyerang (Man-In-The-Middle Attack).",
-      },
-      {
-        id: "q2-step4",
-        kodeKUKRef: "J.611000.002.01 E2/KUK 2.1",
-        pertanyaanLisan:
-          "Sebutkan perbedaan mendasar antara Switch Layer 2 dan Switch Layer 3!",
-        kunciJawaban:
-          "Switch Layer 2 hanya melakukan switching berdasarkan MAC address pada Data Link Layer, sedangkan Switch Layer 3 memiliki fungsi routing berdasarkan IP address pada Network Layer dan mendukung Inter-VLAN routing.",
-      },
-    ],
+    questions: [],
   },
 };
 
@@ -237,10 +124,11 @@ function TambahKonfigurasiPertanyaanContent() {
             ? (usersRes as { data: unknown[] }).data
             : [];
 
-        const assessors = usersList.filter((u: any) => u.role?.toLowerCase() === "asesor");
-        setAssessorOptions(assessors.map((a: any) => ({
-          value: a.id?.toString() || a.username,
-          label: `${a.namaLengkap || a.username} (Asesor)`
+        type UserItem = { role?: string; id?: string | number; username?: string; namaLengkap?: string; };
+        const assessors = (usersList as UserItem[]).filter(u => u.role?.toLowerCase() === "asesor");
+        setAssessorOptions(assessors.map(a => ({
+          value: a.id?.toString() || a.username || "",
+          label: `${a.namaLengkap || a.username || "Unknown"} (Asesor)`
         })));
       } catch (e) {
         console.error(e);
@@ -931,7 +819,7 @@ function TambahKonfigurasiPertanyaanContent() {
       penyusun: formData.metadata.penyusun,
       validator: formData.metadata.validator,
       isDefault: formData.metadata.isDefault,
-      status: publishStatus,
+      status: (publishStatus === "published" ? "Aktif" : "Tidak Aktif") as "Aktif" | "Tidak Aktif",
       formData: formData,
       subPertanyaans: [
         {

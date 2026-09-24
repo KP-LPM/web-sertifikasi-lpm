@@ -65,7 +65,7 @@ export interface KonfigurasiPertanyaanItem {
   penyusun: PenyusunOption[];
   validator: PenyusunOption[];
   isDefault: boolean;
-  status: "Draft" | "published" | "Aktif" | "Arsip" | string;
+  status: "Aktif" | "Tidak Aktif";
   subPertanyaans: unknown[]; // sesuaikan tipenya sesuai struktur Sub Pertanyaan final
 }
 
@@ -300,6 +300,9 @@ export interface UnitKompetensiItem {
 export interface MasterSkemaFormState {
   kodeSkema: string;
   namaSkema: string;
+  namaSkemaEn?: string;
+  bidangSkemaId?: string;
+  bidangSkemaEn?: string;
   nomorSertifikat?: string;
   nomorRegistrasi?: string;
   statusAktif: boolean;
@@ -329,6 +332,9 @@ export interface MasterSkemaPayload {
   id?: number; // master_skema.id
   kodeSkema: string;
   namaSkema: string;
+  namaSkemaEn?: string;
+  bidangSkemaId?: string;
+  bidangSkemaEn?: string;
   nomorSertifikat?: string;
   nomorRegistrasi?: string;
   statusAktif: boolean;

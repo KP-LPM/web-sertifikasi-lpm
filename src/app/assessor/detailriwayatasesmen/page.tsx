@@ -372,9 +372,12 @@ export default function DetailRiwayatAsesmen() {
                     Catatan Observasi
                   </p>
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-slate-700 min-h-15">
-                    Kandidat mampu menyelesaikan tugas praktik dengan baik,
-                    meskipun ada sedikit kendala di bagian awal. Keseluruhan
-                    proses berjalan lancar.
+                    {(() => {
+                      const ia04bDetail = riwayatDetails.find((d) => d.form_type === "FR.IA.04B");
+                      const ia07Detail = riwayatDetails.find((d) => d.form_type === "FR.IA.07");
+                      const catatan = ia07Detail?.form_data?.umpanBalikStep4 || ia04bDetail?.form_data?.rekomendasi;
+                      return catatan || "Tidak ada catatan observasi khusus.";
+                    })()}
                   </div>
                 </div>
               </div>
@@ -419,8 +422,10 @@ export default function DetailRiwayatAsesmen() {
               <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
                 {(() => {
                   const activeDetail = riwayatDetails.find((d) => d.form_type === previewForm);
-                  const formData = activeDetail?.form_data || {};
-                  const penilaian = activeDetail?.penilaian || {};
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const formData: any = activeDetail?.form_data || {};
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const penilaian: any = activeDetail?.penilaian || {};
 
                   return (
                     <>
@@ -430,18 +435,22 @@ export default function DetailRiwayatAsesmen() {
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
-                            noSkema: "006/SKM/LSP-KJN/II/2023",
+                            noSkema: selectedAsesmen.noSkema || "-",
                             tuk: selectedAsesmen.tipeTuk || "",
                             metodeAsesmen: selectedAsesmen.metode || "Offline",
                             tanggal: selectedAsesmen.tglAsesmen,
-                            asesor: "Dr. Aris Thorne",
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
                           } as AsesmenData}
-                          answers={penilaian}
+                          skemaId={selectedAsesmen.skemaId}
+                          pengajuanId={selectedAsesmen.id}
+                          answers={formData.kompetensi || penilaian}
                           rekomendasi={formData.rekomendasi || "Dapat dilanjutkan"}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorReg={selectedAsesmen.asesorReg || "-"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                         />
@@ -452,11 +461,12 @@ export default function DetailRiwayatAsesmen() {
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
-                            noSkema: "SKM-2024-001",
+                            noSkema: selectedAsesmen.noSkema || "-",
                             tuk: selectedAsesmen.tipeTuk || "",
                             metodeAsesmen: selectedAsesmen.metode || "Offline",
                             tanggal: selectedAsesmen.tglAsesmen,
-                            asesor: "Dr. Aris Thorne",
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
                           } as AsesmenData}
                           potensiAsesi={formData.potensiAsesi}
                           noAdjustment={formData.noAdjustment}
@@ -478,11 +488,12 @@ export default function DetailRiwayatAsesmen() {
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
-                            noSkema: "SKM-2024-001",
+                            noSkema: selectedAsesmen.noSkema || "-",
                             tuk: selectedAsesmen.tipeTuk || "",
                             metodeAsesmen: selectedAsesmen.metode || "Offline",
                             tanggal: selectedAsesmen.tglAsesmen,
-                            asesor: "Dr. Aris Thorne",
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
                           } as AsesmenData}
                           umpanBalik={formData.umpanBalik || formData.umpanBalikStep2 || ""}
                           supervisorName={formData.supervisorName || ""}
@@ -497,11 +508,12 @@ export default function DetailRiwayatAsesmen() {
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
-                            noSkema: "SKM-2024-001",
+                            noSkema: selectedAsesmen.noSkema || "-",
                             tuk: selectedAsesmen.tipeTuk || "",
                             metodeAsesmen: selectedAsesmen.metode || "Offline",
                             tanggal: selectedAsesmen.tglAsesmen,
-                            asesor: "Dr. Aris Thorne",
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
                           } as AsesmenData}
                           answers={formData.answers || penilaian}
                           rekomendasi={formData.rekomendasi}
@@ -509,6 +521,7 @@ export default function DetailRiwayatAsesmen() {
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorReg={selectedAsesmen.asesorReg || "-"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                         />
@@ -519,11 +532,12 @@ export default function DetailRiwayatAsesmen() {
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
-                            noSkema: "SKM-2024-001",
+                            noSkema: selectedAsesmen.noSkema || "-",
                             tuk: selectedAsesmen.tipeTuk || "",
                             metodeAsesmen: selectedAsesmen.metode || "Offline",
                             tanggal: selectedAsesmen.tglAsesmen,
-                            asesor: "Dr. Aris Thorne",
+                            asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
+                            asesorReg: selectedAsesmen.asesorReg || "-",
                           } as AsesmenData}
                           answers={formData.answers || penilaian}
                           umpanBalik={formData.umpanBalik || formData.umpanBalikStep4 || ""}
@@ -531,6 +545,7 @@ export default function DetailRiwayatAsesmen() {
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          asesorReg={selectedAsesmen.asesorReg || "-"}
                           asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
                         />

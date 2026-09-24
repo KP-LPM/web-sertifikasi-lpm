@@ -419,48 +419,47 @@ export default function TukManagement() {
 
           {/* Filters... */}
           <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 w-full lg:w-auto ml-auto">
-              <div className="flex items-center gap-2">
-                <div className="relative w-full sm:w-48">
-                  <Filter
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    size={16}
-                  />
-                  <select
-                    value={tipeFilter}
-                    onChange={(e) => settipeFilter(e.target.value)}
-                    className="w-full appearance-none pl-10 pr-9 py-2 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
-                  >
-                    <option>Semua tipe</option>
-                    <option>Sewaktu</option>
-                    <option>Mandiri</option>
-                  </select>
-                </div>
-                <div className="relative w-full sm:w-48">
-                  <Filter
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    size={16}
-                  />
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full appearance-none pl-10 pr-9 py-2 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
-                  >
-                    <option>Semua Status</option>
-                    <option>Aktif</option>
-                    <option>Tidak Aktif</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3 h-10 w-full sm:w-72 border border-slate-200 focus-within:border-[#008BE3]/40 transition-colors order-first md:order-last">
-                <Search className="text-slate-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Cari ID atau nama TUK..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-slate-800 placeholder-gray-400 font-medium"
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl px-3 h-10 w-full md:max-w-md lg:w-96 border border-slate-200 focus-within:border-[#008BE3]/40 transition-colors">
+              <Search className="text-slate-400 shrink-0" size={18} />
+              <input
+                type="text"
+                placeholder="Cari ID atau nama TUK..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-slate-800 placeholder-gray-400 font-medium"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <div className="relative w-full sm:w-48">
+                <Filter
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  size={16}
                 />
+                <select
+                  value={tipeFilter}
+                  onChange={(e) => settipeFilter(e.target.value)}
+                  className="w-full appearance-none pl-10 pr-9 py-2 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
+                >
+                  <option>Semua tipe</option>
+                  <option>Sewaktu</option>
+                  <option>Mandiri</option>
+                </select>
+              </div>
+              <div className="relative w-full sm:w-48">
+                <Filter
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  size={16}
+                />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full appearance-none pl-10 pr-9 py-2 bg-gray-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all cursor-pointer"
+                >
+                  <option>Semua Status</option>
+                  <option>Aktif</option>
+                  <option>Tidak Aktif</option>
+                </select>
               </div>
             </div>
           </div>

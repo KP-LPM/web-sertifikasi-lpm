@@ -34,8 +34,10 @@ export default function KonfigurasiPertanyaanList() {
     deleteKonfigurasiPertanyaan,
     setSelectedKonfigurasiId,
     addKonfigurasiPertanyaan,
+    updateKonfigurasiPertanyaan,
   } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<"Aktif" | "Tidak Aktif">("Aktif");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -57,7 +59,7 @@ export default function KonfigurasiPertanyaanList() {
                 versi: item.versi || "",
                 penyusun: [{ value: "", label: "" }],
                 validator: [{ value: "", label: "" }],
-                status: item.status || "",
+                status: (item.status === "Tidak Aktif" || item.status === "Draft") ? "Tidak Aktif" : "Aktif",
                 isDefault: false,
                 subPertanyaans: [],
               });
@@ -71,7 +73,11 @@ export default function KonfigurasiPertanyaanList() {
     loadBackendData();
   }, []);
 
-  const konfigurasiData = konfigurasiPertanyaan;
+  const konfigurasiData = konfigurasiPertanyaan.filter((item) => {
+    const matchesSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          item.skema.toLowerCase().includes(searchTerm.toLowerCase());
+    return item.status === activeTab && matchesSearch;
+  });
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
@@ -97,6 +103,29 @@ export default function KonfigurasiPertanyaanList() {
         </button>
       </div>
 
+      <div className="bg-white p-1 rounded-xl shadow-xs border border-gray-100 flex items-center w-full max-w-[280px]">
+        <button
+          onClick={() => setActiveTab("Aktif")}
+          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
+            activeTab === "Aktif"
+              ? "bg-[#008BE3] text-white shadow-xs"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          Aktif
+        </button>
+        <button
+          onClick={() => setActiveTab("Tidak Aktif")}
+          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
+            activeTab === "Tidak Aktif"
+              ? "bg-[#008BE3] text-white shadow-xs"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          Tidak Aktif
+        </button>
+      </div>
+
       <div className="space-y-4">
         <div className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
           <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
@@ -119,12 +148,6 @@ export default function KonfigurasiPertanyaanList() {
                 />
               </div>
 
-              {/* Status Select Filter */}
-              <select className="bg-gray-50 border border-gray-200/50 text-xs md:text-sm rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold">
-                <option value="">Semua Status</option>
-                <option value="Terbit">Terbit</option>
-                <option value="Draft">Draft</option>
-              </select>
 
               {/* Date Input/Filter */}
               <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full sm:w-52 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
@@ -205,13 +228,13 @@ export default function KonfigurasiPertanyaanList() {
                         v{item.versi || "1.0"}
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm whitespace-nowrap">
-                        {item.status === "Draft" ? (
-                          <span className="bg-amber-100 text-amber-800 border border-amber-300/60 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
-                            Draft
+                        {item.status === "Tidak Aktif" ? (
+                          <span className="bg-slate-100 text-slate-600 border border-slate-300/60 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                            Tidak Aktif
                           </span>
                         ) : (
                           <span className="bg-emerald-100 text-emerald-800 border border-emerald-300/60 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
-                            Terbit
+                            Aktif
                           </span>
                         )}
                       </td>
@@ -265,6 +288,16 @@ export default function KonfigurasiPertanyaanList() {
                             className="bg-white border border-gray-200 hover:bg-red-50 text-red-600 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer"
                           >
                             <Trash2 size={12} /> Hapus
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newStatus = item.status === "Aktif" ? "Tidak Aktif" : "Aktif";
+                              updateKonfigurasiPertanyaan(item.id, { ...item, status: newStatus });
+                            }}
+                            className={`bg-white border border-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer ${item.status === "Aktif" ? "hover:bg-amber-50 text-amber-600" : "hover:bg-emerald-50 text-emerald-600"
+                              }`}
+                          >
+                            <span className="font-bold">{item.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}</span>
                           </button>
                         </div>
                       </td>

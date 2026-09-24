@@ -311,7 +311,7 @@ function AssessmentFormContent() {
           if (draft.finalDecision) setFinalDecision(draft.finalDecision);
           if (draft.catatanAsesor) setCatatanAsesor(draft.catatanAsesor);
         }
-      } catch (e) {}
+      } catch (e) { console.warn("Failed to load draft", e); }
       isDraftLoaded.current = true;
     }
   }, [selectedAsesmen?.id]);

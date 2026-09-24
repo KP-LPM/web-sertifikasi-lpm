@@ -38,6 +38,9 @@ export const UnitKompetensiSchema = z.object({
 export const BaseSkemaItemSchema = z.object({
   kodeSkema: z.string().trim().min(1, "Kode skema wajib diisi"),
   namaSkema: z.string().trim().min(1, "Nama skema wajib diisi"),
+  namaSkemaEn: z.string().trim().optional(),
+  bidangSkemaId: z.string().trim().optional(),
+  bidangSkemaEn: z.string().trim().optional(),
   kategori: z.string().trim().min(1, "Kategori wajib diisi").optional(),
 
   // Di schema.prisma, statusAktif adalah Boolean.

@@ -109,7 +109,7 @@ export default function KelolaSurat() {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
         }
-      } catch { }
+      } catch (e) { console.warn("Failed to load draft", e); }
     }
     return {
       nomorSurat: "",
@@ -145,7 +145,7 @@ export default function KelolaSurat() {
             setIsCreateModalOpen(true);
           }
         }
-      } catch { }
+      } catch (e) { console.warn("Failed to load draft", e); }
     }
   }, []);
 
@@ -284,16 +284,11 @@ export default function KelolaSurat() {
 
         {!readOnly && (
           <button
-<<<<<<< HEAD
             onClick={() => {
               setFormData(loadSuratDraft());
               setIsCreateModalOpen(true);
             }}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
-=======
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer"
->>>>>>> d57b20390e9a82121c3a1b5a5b8562e03eb57983
           >
             <Plus size={16} className="stroke-3" />
             <span>Buat / Register Surat Baru</span>
@@ -670,7 +665,6 @@ export default function KelolaSurat() {
                 </h3>
               </div>
               <button
-<<<<<<< HEAD
                 onClick={() => {
                   if (typeof window !== "undefined") {
                     localStorage.removeItem("suratFormDraft");
@@ -678,10 +672,6 @@ export default function KelolaSurat() {
                   setIsCreateModalOpen(false);
                 }}
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
-=======
-                onClick={() => setIsCreateModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
->>>>>>> d57b20390e9a82121c3a1b5a5b8562e03eb57983
               >
                 <X size={18} />
               </button>
@@ -860,7 +850,6 @@ export default function KelolaSurat() {
               <div className="pt-5 flex items-center justify-end gap-3 border-t border-gray-100">
                 <button
                   type="button"
-<<<<<<< HEAD
                   onClick={() => {
                     if (typeof window !== "undefined") {
                       localStorage.removeItem("suratFormDraft");
@@ -868,10 +857,6 @@ export default function KelolaSurat() {
                     setIsCreateModalOpen(false);
                   }}
                   className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors"
-=======
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors cursor-pointer"
->>>>>>> d57b20390e9a82121c3a1b5a5b8562e03eb57983
                 >
                   Batal
                 </button>

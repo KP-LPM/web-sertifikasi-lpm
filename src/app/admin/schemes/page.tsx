@@ -223,6 +223,7 @@ export default function ManageSchemes() {
         }
       }
     } catch (err) {
+      console.warn("Failed to parse draft:", err);
     }
   }, []);
 

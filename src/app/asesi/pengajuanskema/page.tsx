@@ -402,7 +402,7 @@ export default function PengajuanSkemaPage() {
             if (draft.step) setStep(draft.step);
           }
         }
-      } catch (e) { }
+      } catch (e) { console.warn("Failed to load draft", e); }
       isDraftLoaded.current = true;
     } else {
       isDraftLoaded.current = false;

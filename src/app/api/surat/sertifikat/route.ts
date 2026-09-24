@@ -62,10 +62,10 @@ export async function POST(req: NextRequest) {
         nomorSertifikat: sertifikat?.no_sertifikat || body.nomorSertifikat || "-",
         nomorRegistrasi: sertifikat?.no_registrasi || body.nomorRegistrasi || "-",
         namaPemegang: pengajuan.user?.profil?.namaLengkap || "-",
-        bidangId: pengajuan.skema?.kategori || body.bidangId || "-",
-        bidangEn: body.bidangEn || "Public Relation",
+        bidangId: pengajuan.skema?.bidangSkemaId || pengajuan.skema?.kategori || body.bidangId || "-",
+        bidangEn: pengajuan.skema?.bidangSkemaEn || body.bidangEn || "Public Relation",
         kualifikasiId: pengajuan.skema?.namaSkema || body.kualifikasiId || "-",
-        kualifikasiEn: body.kualifikasiEn || "Cluster Implementing Communication with Stakeholders",
+        kualifikasiEn: pengajuan.skema?.namaSkemaEn || body.kualifikasiEn || "Cluster Implementing Communication with Stakeholders",
         kotaTerbit: "Bandung",
         tanggalTerbitId: `${day} ${bulanId[monthIndex]} ${year}`,
         tanggalTerbitEn: `${bulanEn[monthIndex]} ${day}, ${year}`,
@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
     await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
 
     const pdfBuffer = await page.pdf({
-      format: "A4",
+      width: "215mm",
+      height: "330mm",
       printBackground: true,
       preferCSSPageSize: true,
       margin: { top: "0", right: "0", bottom: "0", left: "0" },

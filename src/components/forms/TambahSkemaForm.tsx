@@ -72,6 +72,9 @@ export function TambahSkemaForm({
     return {
       kodeSkema: initialData?.kodeSkema || "",
       namaSkema: initialData?.namaSkema || "",
+      namaSkemaEn: initialData?.namaSkemaEn || "",
+      bidangSkemaId: initialData?.bidangSkemaId || "",
+      bidangSkemaEn: initialData?.bidangSkemaEn || "",
       nomorSertifikat: initialData?.nomorSertifikat || "",
       nomorRegistrasi: initialData?.nomorRegistrasi || "",
       statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
@@ -216,7 +219,7 @@ export function TambahSkemaForm({
 
   // --- Handlers: Card 1 (Informasi Utama) ---
   const handleMainInfoChange = (
-    field: "kodeSkema" | "namaSkema" | "nomorSertifikat" | "nomorRegistrasi",
+    field: "kodeSkema" | "namaSkema" | "namaSkemaEn" | "bidangSkemaId" | "bidangSkemaEn" | "nomorSertifikat" | "nomorRegistrasi",
     value: string,
   ) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -540,6 +543,9 @@ export function TambahSkemaForm({
       ...(initialData?.id ? { id: initialData.id } : {}),
       kodeSkema: formState.kodeSkema.trim(),
       namaSkema: formState.namaSkema.trim(),
+      namaSkemaEn: formState.namaSkemaEn?.trim() || undefined,
+      bidangSkemaId: formState.bidangSkemaId?.trim() || undefined,
+      bidangSkemaEn: formState.bidangSkemaEn?.trim() || undefined,
       nomorSertifikat: formState.nomorSertifikat?.trim() || undefined,
       nomorRegistrasi: formState.nomorRegistrasi?.trim() || undefined,
       statusAktif: formState.statusAktif,
@@ -735,6 +741,58 @@ export function TambahSkemaForm({
                 Nama lengkap skema kompetensi (Contoh: &quot;Network
                 Administrator&quot;)
               </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Nama Skema En */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Nama Skema (Bahasa Inggris)
+              </label>
+              <input
+                type="text"
+                placeholder="Masukkan nama skema dalam bahasa inggris"
+                value={formState.namaSkemaEn || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("namaSkemaEn", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
+            </div>
+
+            {/* Bidang Skema Id */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Bidang Skema (Bahasa Indonesia)
+              </label>
+              <input
+                type="text"
+                placeholder="Masukkan bidang skema"
+                value={formState.bidangSkemaId || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("bidangSkemaId", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Bidang Skema En */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Bidang Skema (Bahasa Inggris)
+              </label>
+              <input
+                type="text"
+                placeholder="Masukkan bidang skema dalam bahasa inggris"
+                value={formState.bidangSkemaEn || ""}
+                onChange={(e) =>
+                  handleMainInfoChange("bidangSkemaEn", e.target.value)
+                }
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-slate-50/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400"
+              />
             </div>
           </div>
 
@@ -1304,7 +1362,7 @@ export function TambahSkemaForm({
               <option key={item.id} value={item.id}>
                 {item.nama} ({item.skema || "Semua Skema"}) - Versi{" "}
                 {item.versi || "1.0"} [
-                {item.status === "published" ? "Published" : "Draft"}]
+                {item.status === "Aktif" ? "Aktif" : "Tidak Aktif"}]
               </option>
             ))}
           </select>
@@ -1320,14 +1378,14 @@ export function TambahSkemaForm({
                   {selectedConfig.nama}
                 </span>
                 <span
-                  className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md tracking-wider uppercase ${selectedConfig.status === "published"
+                  className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md tracking-wider uppercase ${selectedConfig.status === "Aktif"
                     ? "bg-emerald-100 text-emerald-800"
                     : "bg-amber-100 text-amber-800"
                     }`}
                 >
                   {selectedConfig.status
                     ? selectedConfig.status.toUpperCase()
-                    : "DRAFT"}
+                    : "TIDAK AKTIF"}
                 </span>
               </div>
               <p className="text-xs text-slate-500">

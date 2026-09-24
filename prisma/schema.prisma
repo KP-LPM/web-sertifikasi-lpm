@@ -67,6 +67,9 @@ model MasterSkema {
   id                                                                              Int                        @id @default(autoincrement())
   kodeSkema                                                                       String                     @unique @map("kode_skema")
   namaSkema                                                                       String                     @map("nama_skema")
+  namaSkemaEn                                                                     String?                    @map("nama_skema_en")
+  bidangSkemaId                                                                   String?                    @map("bidang_skema_id")
+  bidangSkemaEn                                                                   String?                    @map("bidang_skema_en")
   statusAktif                                                                     Boolean                    @map("status_aktif")
   nomor_sertifikat                                                                String?                    @db.VarChar
   nomor_registrasi                                                                String?                    @db.VarChar
