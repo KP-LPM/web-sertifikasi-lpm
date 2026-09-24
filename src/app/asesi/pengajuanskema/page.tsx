@@ -3076,7 +3076,7 @@ export default function PengajuanSkemaPage() {
                     alamat: alamatWilayah,
                     nik,
                     pendidikanTerakhir,
-                    institusiPerusahaan,
+                    namaInstitusi: institusiPerusahaan,
                     jabatan,
                     skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
                     nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
