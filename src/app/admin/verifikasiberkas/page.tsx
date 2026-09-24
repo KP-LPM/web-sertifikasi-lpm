@@ -167,7 +167,7 @@ export default function UsersManagement() {
     namaInstitusi?: string;
     jabatan?: string;
     versiKonfigurasi?: string;
-    user?: { username?: string; email?: string };
+    user?: { username?: string; email?: string; signature?: string };
     dataPribadi?: BackendDataPribadi[] | BackendDataPribadi;
     skema?: { namaSkema?: string; kodeSkema?: string };
     verifikasi_pengajuan?: BackendVerifikasiPengajuan;
@@ -226,10 +226,14 @@ export default function UsersManagement() {
         const namaLengkap =
           dp?.namaLengkap || p.user?.username || `Asesi #${p.id}`;
         const email = p.user?.email || "-";
-        const status =
-          p.status === "Terverifikasi" || p.status === "Disetujui" || p.status === "Selesai"
-            ? "Selesai"
-            : p.status || "Menunggu Verifikasi";
+
+        let rawStatus = p.status || "Menunggu Verifikasi";
+        if (rawStatus === "Ditolak/Revisi" || rawStatus === "Ditolak") {
+          rawStatus = "Revisi";
+        } else if (rawStatus === "Terverifikasi" || rawStatus === "Disetujui" || rawStatus === "Selesai") {
+          // Status asesi tampil "Terverifikasi" setelah disetujui admin
+          rawStatus = "Terverifikasi";
+        }
 
         return {
           id: p.id,
@@ -237,7 +241,7 @@ export default function UsersManagement() {
           namaLengkap,
           email,
           role: "asesi",
-          status,
+          status: rawStatus,
           namaInstitusi: p.namaInstitusi || dp?.namaInstitusi || "",
           jabatan: p.jabatan || dp?.jabatan || "",
           versiKonfigurasi: p.versiKonfigurasi || "-",
@@ -331,7 +335,6 @@ export default function UsersManagement() {
         };
       });
 
-      // === HAPUS SYARAT .length > 0 AGAR BISA MERESET STATE JIKA KOSONG ===
       setUsers([...mappedAsesi, ...mappedAsesor]);
 
     } catch (err) {
@@ -375,7 +378,6 @@ export default function UsersManagement() {
     sumberAnggaran: "Sumber Anggaran Biaya Mandiri",
   });
 
-  // === EVENT LISTENER UNTUK RESET DARI BREADCRUMB ===
   useEffect(() => {
     const handleCloseModals = () => {
       setIsVerifyModalOpen(false);
@@ -385,17 +387,15 @@ export default function UsersManagement() {
     return () => window.removeEventListener("BREADCRUMB_RESET_MODAL", handleCloseModals);
   }, []);
 
-  // === EFEK UNTUK UPDATE BREADCRUMB SESUAI STATE ===
   useEffect(() => {
     if (setExtraCrumbs) {
       if (isVerifyModalOpen && userToVerify) {
         setExtraCrumbs([{ label: "Tinjauan Verifikasi Berkas" }]);
       } else {
-        setExtraCrumbs([]); // Reset kalau modal ditutup
+        setExtraCrumbs([]);
       }
     }
 
-    // Cleanup saat komponen unmount atau pindah halaman
     return () => {
       if (setExtraCrumbs) setExtraCrumbs([]);
     };
@@ -504,6 +504,7 @@ export default function UsersManagement() {
         const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
 
         try {
+          // Hapus checklist: apl01FormData.checklist di sini
           await verifyPengajuanApl01(userToVerify.id!, {
             rekomendasi: "Ditolak",
             catatan: apl01FormData.catatan || "",
@@ -582,6 +583,7 @@ export default function UsersManagement() {
           userToVerify.verificationData?.lspSignatureUrl || null;
 
         try {
+          // Hapus checklist: apl01FormData.checklist di sini
           await verifyPengajuanApl01(userToVerify.id!, {
             rekomendasi: (apl01FormData.rekomendasi || "Diterima") as "Diterima" | "Ditolak",
             catatan: apl01FormData.catatan || "",
@@ -731,6 +733,37 @@ export default function UsersManagement() {
         const detail = await getPengajuanDetail(user.id!);
         const dp = detail.dataPribadi as Record<string, unknown> | undefined;
 
+        let parsedChecklist = {};
+
+        // Pengecekan Checklist Secara Menyeluruh (Robust)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let rawChecklist = detail.checklist || (detail.dataPribadi as any)?.checklist;
+
+        // Jika tidak ada di root, cari di dalam riwayat_asesmen_peserta
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const riwayatList = (detail as any).riwayat_asesmen_peserta || (detail as any).riwayatAsesmen;
+        if (!rawChecklist && Array.isArray(riwayatList)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const apl01 = riwayatList.find((r: any) => r.form_type === "FR.APL.01" || r.formType === "FR.APL.01");
+          if (apl01 && apl01.form_data) {
+            let fd = apl01.form_data;
+            if (typeof fd === "string") {
+              try { fd = JSON.parse(fd); } catch (e) { console.error(e); }
+            }
+            rawChecklist = fd?.checklist;
+          }
+        }
+
+        if (typeof rawChecklist === "string") {
+          try {
+            parsedChecklist = JSON.parse(rawChecklist);
+          } catch (e) {
+            console.error("Gagal parse checklist string:", e);
+          }
+        } else if (typeof rawChecklist === "object" && rawChecklist !== null) {
+          parsedChecklist = rawChecklist;
+        }
+
         const newApl01: Apl01FormData = {
           isAdmin: true,
           hidePaymentFields: true,
@@ -741,7 +774,9 @@ export default function UsersManagement() {
           sumberAnggaran: user.verificationData?.sumberAnggaran || "Sumber Anggaran Biaya Mandiri",
           ttdAdmin: user.verificationData?.adminSignatureUrl || (registeredProfile as Record<string, unknown>)?.tandaTangan as string || null,
           namaAdmin: (registeredProfile as Record<string, unknown>)?.namaLengkap as string || userContext?.username || "Admin LSP",
-          ttdAsesi: (dp?.tandaTangan as string) || null,
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ttdAsesi: (dp?.tandaTangan as string) || ((detail as any)?.tandaTangan as string) || ((detail as any)?.user?.signature as string) || null,
 
           namaSkema: detail.skema?.namaSkema || "",
           kodeSkema: detail.skema?.kodeSkema || "",
@@ -772,12 +807,11 @@ export default function UsersManagement() {
             persyaratanDasar: detail.skema?.persyaratanDasar || [],
             buktiKompetensi: detail.skema?.buktiKompetensi || [],
           },
-          checklist: detail.checklist || {},
+          checklist: parsedChecklist,
           onPreview: (docName: string) => {
             const docs = detail.dokumen as Array<{ namaDokumen: string; fileUrl: string }> || [];
             const doc = docs.find((d) => d.namaDokumen === docName);
             if (doc && doc.fileUrl) {
-              // Tambahkan timestamp di akhir URL agar browser dipaksa unduh file versi terbaru
               const cacheBuster = new Date().getTime();
               const freshUrl = `${doc.fileUrl}?t=${cacheBuster}`;
               window.open(freshUrl, "_blank");
@@ -1221,7 +1255,7 @@ export default function UsersManagement() {
                         <>
                           <GraduationCap size={38} className="text-slate-300 stroke-[1.5]" />
                           <p className="text-sm font-bold text-slate-700">
-                            {mainTab === "selesai" ? "Tidak ada data Asesi yang Selesai" : "Tidak ada data Asesi ditemukan"}
+                            {mainTab === "selesai" ? "Tidak ada data Asesi yang Terverifikasi" : "Tidak ada data Asesi ditemukan"}
                           </p>
                           <p className="text-xs text-slate-400">
                             {mainTab === "selesai" ? "Belum ada asesi yang telah selesai diverifikasi dan melakukan pembayaran." : "Belum ada asesi terdaftar atau tidak ada data pencarian yang cocok."}
@@ -1231,7 +1265,7 @@ export default function UsersManagement() {
                         <>
                           <Award size={38} className="text-slate-300 stroke-[1.5]" />
                           <p className="text-sm font-bold text-slate-700">
-                            {mainTab === "selesai" ? "Tidak ada data Asesor yang Selesai" : "Tidak ada data Asesor ditemukan"}
+                            {mainTab === "selesai" ? "Tidak ada data Asesor yang Terverifikasi" : "Tidak ada data Asesor ditemukan"}
                           </p>
                           <p className="text-xs text-slate-400">
                             {mainTab === "selesai" ? "Belum ada asesor yang telah selesai diverifikasi." : "Belum ada asesor terdaftar atau tidak ada data pencarian yang cocok."}
@@ -1294,14 +1328,14 @@ export default function UsersManagement() {
                       <span
                         className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold inline-flex items-center gap-1.5 border whitespace-nowrap ${user.status === "Terverifikasi" || user.status === "Selesai"
                           ? "bg-teal-50 text-teal-700 border-teal-200"
-                          : user.status === "Perlu Perbaikan"
+                          : user.status === "Perlu Perbaikan" || user.status === "Revisi"
                             ? "bg-orange-50 text-orange-700 border-orange-200"
                             : "bg-amber-50 text-amber-700 border-amber-200"
                           }`}
                       >
                         {user.status === "Terverifikasi" || user.status === "Selesai" ? (
                           <span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>
-                        ) : user.status === "Perlu Perbaikan" ? (
+                        ) : user.status === "Perlu Perbaikan" || user.status === "Revisi" ? (
                           <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                         ) : (
                           <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
