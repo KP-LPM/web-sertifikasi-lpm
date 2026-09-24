@@ -373,6 +373,7 @@ export default function AssessmentSchedule() {
 
     return {
       id: item.id,
+      namaBatch: item.nama_batch || "",
       nomorSurat: item.nomor_surat || "-",
       skema: item.master_skema?.namaSkema || "Skema Sertifikasi",
       metode: item.metode === "Daring" || item.metode === "Online" ? "Online" : "Offline",
@@ -979,7 +980,7 @@ export default function AssessmentSchedule() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
-                  1. Judul Pleno
+                  1. Judul Asesmen
                 </label>
                 <input
                   type="text"
