@@ -512,7 +512,12 @@ export default function PengajuanSkemaPage() {
           [dataProfil.kodeProvinsi, setProvinsi, 'provinsi'],
           [dataProfil.kodeKota, setKota, 'kota'],
           [dataProfil.kodePos, setKodePos, 'kodePos'],
-          [dataProfil.pendidikanTerakhir, setPendidikanTerakhir, 'pendidikanTerakhir'],
+          [
+            dataProfil.pendidikanTerakhir === "SMA" ? "SMA/Sederajat" : 
+            dataProfil.pendidikanTerakhir === "S1" ? "S1/D4" : 
+            dataProfil.pendidikanTerakhir, 
+            setPendidikanTerakhir, 'pendidikanTerakhir'
+          ],
           [dataProfil.pekerjaan, setPekerjaan, 'pekerjaan'],
           [dataProfil.namaInstitusi, setInstitusiPerusahaan, 'institusiPerusahaan'],
           [dataProfil.jabatan, setJabatan, 'jabatan'],

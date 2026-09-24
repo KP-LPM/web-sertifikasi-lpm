@@ -189,7 +189,9 @@ export default function Profile() {
         noTelp: data.noHp || data.no_telp || data.noTelp || "",
         pekerjaan: data.pekerjaan || "",
         pendidikanTerakhir:
-          data.pendidikanTerakhir || data.pendidikan_terakhir || "",
+          (data.pendidikanTerakhir || data.pendidikan_terakhir) === "SMA" ? "SMA/Sederajat" :
+          (data.pendidikanTerakhir || data.pendidikan_terakhir) === "S1" ? "S1/D4" :
+          (data.pendidikanTerakhir || data.pendidikan_terakhir || ""),
         tandaTangan: data.tandaTangan || data.tanda_tangan || "",
       }));
     }
@@ -250,6 +252,8 @@ export default function Profile() {
             (data.noHp as string) || (data.no_telp as string) || prev.noTelp,
           pekerjaan: (data.pekerjaan as string) || prev.pekerjaan,
           pendidikanTerakhir:
+            (data.pendidikanTerakhir || data.pendidikan_terakhir) === "SMA" ? "SMA/Sederajat" :
+            (data.pendidikanTerakhir || data.pendidikan_terakhir) === "S1" ? "S1/D4" :
             (data.pendidikanTerakhir as string) ||
             (data.pendidikan_terakhir as string) ||
             prev.pendidikanTerakhir,
@@ -689,11 +693,12 @@ export default function Profile() {
                     <option value="" disabled>
                       Pilih Pendidikan
                     </option>
-                    <option value="SMA">SMA/SMK</option>
-                    <option value="D3">D3</option>
-                    <option value="S1">S1/D4</option>
-                    <option value="S2">S2</option>
-                  </select>
+                      {DATA_PENDIDIKAN.map((pend) => (
+                        <option key={pend.id} value={pend.label}>
+                          {pend.label}
+                        </option>
+                      ))}
+                    </select>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
