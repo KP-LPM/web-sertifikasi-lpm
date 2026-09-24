@@ -177,15 +177,21 @@ export function EFormApl01({
                 </td>
                 <td className="border border-slate-300 p-2" colSpan={3}>
                   {formData.readOnly || formData.isAdmin ? (
-                    <span className="font-medium text-slate-800">{formData.jenisKelamin === "Laki_laki" ? "Laki-laki" : formData.jenisKelamin === "Perempuan" ? "Perempuan" : "-"}</span>
+                    <span className="font-medium text-slate-800">{formData.jenisKelamin === "Laki_laki" || formData.jenisKelamin === "Laki-laki" ? "Laki-laki" : formData.jenisKelamin === "Perempuan" ? "Perempuan" : "-"}</span>
                   ) : (
                     <select
-                      value={(formData.jenisKelamin as string) || ""}
+                      value={
+                        (formData.jenisKelamin as string) === "Laki_laki" || (formData.jenisKelamin as string) === "Laki-laki"
+                          ? "Laki-laki"
+                          : (formData.jenisKelamin as string) === "Perempuan"
+                          ? "Perempuan"
+                          : ""
+                      }
                       onChange={(e) => onChange({ ...formData, jenisKelamin: e.target.value })}
                       className="border border-slate-300 rounded p-1.5 w-full text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] bg-slate-50 transition-colors"
                     >
                       <option value="">Pilih Jenis Kelamin</option>
-                      <option value="Laki_laki">Laki-laki</option>
+                      <option value="Laki-laki">Laki-laki</option>
                       <option value="Perempuan">Perempuan</option>
                     </select>
                   )}

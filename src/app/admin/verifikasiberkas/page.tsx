@@ -1203,6 +1203,11 @@ export default function UsersManagement() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Peran
                 </th>
+                {(mainTab === "asesi" || (mainTab === "selesai" && (selesaiTabFilter === "asesi" || selesaiTabFilter === "semua"))) && (
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
+                    Skema Diajukan
+                  </th>
+                )}
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Versi Skema
                 </th>
@@ -1319,6 +1324,18 @@ export default function UsersManagement() {
                         {user.role}
                       </span>
                     </td>
+
+                    {(mainTab === "asesi" || (mainTab === "selesai" && (selesaiTabFilter === "asesi" || selesaiTabFilter === "semua"))) && (
+                      <td className="px-6 py-4 align-middle text-left whitespace-nowrap">
+                        {user.role === "asesor" ? (
+                          <span className="text-gray-400">-</span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-700 max-w-[200px] truncate inline-block" title={user.verificationData?.namaSkema as string}>
+                            {(user.verificationData?.namaSkema as string) || "-"}
+                          </span>
+                        )}
+                      </td>
+                    )}
 
                     <td className="px-6 py-4 text-xs md:text-sm text-center font-bold text-slate-700 whitespace-nowrap">
                       v{user.versiKonfigurasi || "1.0"}

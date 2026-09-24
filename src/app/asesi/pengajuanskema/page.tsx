@@ -76,7 +76,7 @@ interface Breadcrumb {
 }
 
 // Tambahkan properti baru di SubmissionProfile untuk menampung alamat dari master_tuk
-type SubmissionProfile = Profile & { 
+type SubmissionProfile = Profile & {
   statusPembayaran?: string;
   name: string;
   kode: string;
@@ -272,12 +272,12 @@ export default function PengajuanSkemaPage() {
           const tipeTuk = (jadwal?.tipe_tuk || item.master_tuk?.tipe || item.tuk || "Mandiri (Online)") as string;
           const isOnline = tipeTuk.toLowerCase().includes("online") || tipeTuk.toLowerCase().includes("virtual");
 
-          const tukName = isOnline 
-            ? "Online" 
+          const tukName = isOnline
+            ? "Online"
             : (jadwal?.master_tuk?.nama || item.master_tuk?.nama || "UIN Sunan Gunung Djati Bandung");
-          
-          const alamatLengkap = isOnline 
-            ? "" 
+
+          const alamatLengkap = isOnline
+            ? ""
             : (jadwal?.master_tuk?.alamat || item.master_tuk?.alamat || jadwal?.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru");
 
           return {
@@ -910,7 +910,7 @@ export default function PengajuanSkemaPage() {
         tandaTangan: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
         dokumen: uploadedDokumen,
         // PERBAIKAN: SERTAKAN CHECKLIST KE DALAM PAYLOAD PENGAJUAN
-        checklist: checklistData, 
+        checklist: checklistData,
       };
 
       const response = await createPengajuan(payloadData);
@@ -3095,7 +3095,6 @@ export default function PengajuanSkemaPage() {
               {activeModalDoc?.name?.includes("APL.01") ? (
                 <EFormApl01
                   formData={{
-                    ...(tempEFormData || {}),
                     namaLengkap,
                     tempatLahir,
                     tanggalLahir,
@@ -3110,6 +3109,7 @@ export default function PengajuanSkemaPage() {
                     schemeDetail: currentSchemeDetail,
                     signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
                     readOnly: activeModalDoc?.isPreview,
+                    ...(tempEFormData || {}),
                   }}
                   onChange={(val) => setTempEFormData(val)}
                 />
