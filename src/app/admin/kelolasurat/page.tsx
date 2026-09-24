@@ -30,7 +30,7 @@ interface BackendSuratItem {
   penerima?: string;
   skema?: { nama_skema?: string };
   jumlah_asesi?: number;
-  status: "Draft" | "Published" | "Archived";
+  status: "Draft" | "Published" | "Archived" | string;
   no_sk?: string;
   pimpinan_sidang?: string;
   notulis?: string;
@@ -98,7 +98,6 @@ export default function KelolaSurat() {
   );
   const [selectedSubJenis, setSelectedSubJenis] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
@@ -150,8 +149,6 @@ export default function KelolaSurat() {
     }
   }, []);
 
-
-
   // Filtered Documents
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) => {
@@ -161,10 +158,6 @@ export default function KelolaSurat() {
       }
       // Sub-type Filter
       if (selectedSubJenis !== "all" && doc.jenisSurat !== selectedSubJenis) {
-        return false;
-      }
-      // Status Filter
-      if (statusFilter !== "all" && doc.status !== statusFilter) {
         return false;
       }
       // Search Query
@@ -191,7 +184,7 @@ export default function KelolaSurat() {
       }
       return true;
     });
-  }, [documents, activeCategory, selectedSubJenis, statusFilter, searchQuery]);
+  }, [documents, activeCategory, selectedSubJenis, searchQuery]);
 
   // Statistics
   const stats = useMemo(() => {
@@ -291,11 +284,16 @@ export default function KelolaSurat() {
 
         {!readOnly && (
           <button
+<<<<<<< HEAD
             onClick={() => {
               setFormData(loadSuratDraft());
               setIsCreateModalOpen(true);
             }}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
+=======
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer"
+>>>>>>> d57b20390e9a82121c3a1b5a5b8562e03eb57983
           >
             <Plus size={16} className="stroke-3" />
             <span>Buat / Register Surat Baru</span>
@@ -431,7 +429,7 @@ export default function KelolaSurat() {
         </div>
       </div>
 
-      {/* Navigation Tabs Container - Styled inline with the cards above */}
+      {/* Navigation Tabs Container */}
       <div className="bg-white p-1.5 rounded-xl shadow-xs border border-gray-100 flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => {
@@ -545,37 +543,29 @@ export default function KelolaSurat() {
                 </option>
               )}
             </select>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10.5 outline-none text-gray-700 cursor-pointer font-bold w-full sm:w-auto"
-            >
-              <option value="all">Semua Status</option>
-              <option value="Terbit">Terbit</option>
-              <option value="Disetujui">Disetujui</option>
-              <option value="Draft">Draft</option>
-            </select>
           </div>
         </div>
 
         <div className="overflow-x-auto relative">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-225">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-35">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-15 sticky top-0 z-20 bg-[#0F172A]">
+                  No
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Tanggal
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-50">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Nomor Surat / Sertifikat
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-50">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Perihal
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky top-0 z-20 bg-[#0F172A] min-w-50">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Ditujukan Kepada
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] min-w-37.5 top-0">
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] min-w-32 top-0">
                   Link GDrive
                 </th>
               </tr>
@@ -583,32 +573,44 @@ export default function KelolaSurat() {
             <tbody className="divide-y divide-gray-100/60">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-medium">
                     Memuat data surat...
                   </td>
                 </tr>
               ) : filteredDocuments.length > 0 ? (
-                filteredDocuments.map((doc) => (
+                filteredDocuments.map((doc, index) => (
                   <tr
                     key={`${doc.kategori}-${doc.id}`}
                     className="group/row hover:bg-[#F9FAFC] transition-colors"
                   >
-                    <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600 whitespace-nowrap">
+                    <td className="px-6 py-4 align-middle text-xs md:text-sm text-center font-semibold text-slate-700">
+                      <div
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${index % 3 === 0
+                          ? "bg-[#008BE3]/10 text-[#008BE3]"
+                          : index % 3 === 1
+                            ? "bg-[#84CC16]/10 text-[#73B412]"
+                            : "bg-slate-100 text-slate-600"
+                          }`}
+                      >
+                        {index + 1}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 align-middle text-xs md:text-sm font-semibold text-gray-600 whitespace-nowrap">
                       <span className="inline-flex items-center gap-1.5">
                         <Calendar size={14} className="text-[#008BE3]" />
                         {doc.tanggalDibuat || doc.tanggalTerbit}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-xs md:text-sm font-bold text-slate-900 font-mono tracking-tight whitespace-nowrap">
+                    <td className="px-6 py-4 align-middle text-xs md:text-sm font-bold text-slate-900 font-mono tracking-tight whitespace-nowrap">
                       {doc.nomorSurat}
                     </td>
-                    <td className="px-6 py-4 text-xs md:text-sm font-bold text-slate-800 whitespace-nowrap">
+                    <td className="px-6 py-4 align-middle text-xs md:text-sm font-bold text-slate-800 whitespace-nowrap">
                       {doc.namaJenisSurat}
                     </td>
-                    <td className="px-6 py-4 text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
+                    <td className="px-6 py-4 align-middle text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
                       {doc.penerima}
                     </td>
-                    <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                    <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
                         {doc.urlGdrive ? (
                           <>
@@ -616,19 +618,19 @@ export default function KelolaSurat() {
                               href={doc.urlGdrive}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border bg-white border-slate-200 text-slate-600 hover:bg-sky-50 hover:text-[#008BE3] hover:border-[#008BE3]/30 shrink-0"
                             >
                               <ExternalLink size={14} />
-                              <span>Buka GDrive</span>
+                              <span>Buka</span>
                             </a>
                             <button
                               onClick={() =>
                                 handleCopyLink(doc.urlGdrive, doc.nomorSurat)
                               }
                               title="Salin Tautan GDrive"
-                              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                              className="p-1.5 text-slate-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors border border-transparent hover:border-sky-200 cursor-pointer"
                             >
-                              <Copy size={14} />
+                              <Copy size={16} />
                             </button>
                           </>
                         ) : (
@@ -643,7 +645,7 @@ export default function KelolaSurat() {
               ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                   >
                     Tidak ditemukan surat atau sertifikat yang cocok dengan
@@ -658,7 +660,7 @@ export default function KelolaSurat() {
 
       {/* CREATE NEW DOCUMENT MODAL */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-150 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden my-8 flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2">
@@ -668,6 +670,7 @@ export default function KelolaSurat() {
                 </h3>
               </div>
               <button
+<<<<<<< HEAD
                 onClick={() => {
                   if (typeof window !== "undefined") {
                     localStorage.removeItem("suratFormDraft");
@@ -675,6 +678,10 @@ export default function KelolaSurat() {
                   setIsCreateModalOpen(false);
                 }}
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+=======
+                onClick={() => setIsCreateModalOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
+>>>>>>> d57b20390e9a82121c3a1b5a5b8562e03eb57983
               >
                 <X size={18} />
               </button>
@@ -705,7 +712,7 @@ export default function KelolaSurat() {
                         jenisSurat: defaultSub,
                       });
                     }}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40 cursor-pointer"
                   >
                     <option value="surat_masuk">Surat Masuk</option>
                     <option value="surat_keluar">Surat Keluar</option>
@@ -726,7 +733,7 @@ export default function KelolaSurat() {
                         jenisSurat: e.target.value as SubJenisSurat,
                       })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40 cursor-pointer"
                   >
                     {formData.kategori === "surat_masuk" && (
                       <>
@@ -793,7 +800,7 @@ export default function KelolaSurat() {
                         tanggalTerbit: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200/50 rounded-lg text-xs md:text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3]/40 cursor-pointer"
                   />
                 </div>
               </div>
@@ -853,6 +860,7 @@ export default function KelolaSurat() {
               <div className="pt-5 flex items-center justify-end gap-3 border-t border-gray-100">
                 <button
                   type="button"
+<<<<<<< HEAD
                   onClick={() => {
                     if (typeof window !== "undefined") {
                       localStorage.removeItem("suratFormDraft");
@@ -860,12 +868,16 @@ export default function KelolaSurat() {
                     setIsCreateModalOpen(false);
                   }}
                   className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors"
+=======
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors cursor-pointer"
+>>>>>>> d57b20390e9a82121c3a1b5a5b8562e03eb57983
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all"
+                  className="px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
                 >
                   Simpan Dokumen
                 </button>
