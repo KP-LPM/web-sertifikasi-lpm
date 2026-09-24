@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SignatureCanvas from "react-signature-canvas";
 import { useRouter } from "next/navigation";
 import { forgotPassword, getUsersProfile } from "@/lib/api";
+import { DATA_PROVINSI, DATA_KOTA, DATA_PEKERJAAN, DATA_PENDIDIKAN } from "@/data/rujukan";
 
 type SessionUser = {
   id?: string | number;
@@ -59,6 +60,8 @@ export default function Profile() {
     tanggalLahir: (registeredProfile?.tanggalLahir as string) || "",
     jenisKelamin: (registeredProfile?.jenisKelamin as string) || "",
     alamat: (registeredProfile?.alamatRumah as string) || "",
+    provinsi: (registeredProfile?.provinsi as string) || "",
+    kota: (registeredProfile?.kota as string) || "",
     kodePos: (registeredProfile?.kodePos as string) || "",
     nik: (registeredProfile?.nik as string) || "",
     noRegistrasi: (registeredProfile?.noRegistrasi as string) || "",
@@ -173,9 +176,13 @@ export default function Profile() {
         email: data.email || user?.email || prev.email,
         namaLengkap: namaAsli,
         tempatLahir: data.tempatLahir || data.tempat_lahir || "",
-        tanggalLahir: data.tanggalLahir || data.tanggal_lahir || "",
+        tanggalLahir: data.tanggalLahir || data.tanggal_lahir 
+          ? new Date(String(data.tanggalLahir || data.tanggal_lahir)).toISOString().split("T")[0] 
+          : "",
         jenisKelamin: data.jenisKelamin || data.jenis_kelamin || "",
         alamat: data.alamat || data.alamat_rumah || prev.alamat,
+        provinsi: data.kodeProvinsi || data.provinsi || prev.provinsi,
+        kota: data.kodeKota || data.kota || prev.kota,
         kodePos: data.kodePos || data.kode_pos || "",
         nik: data.nik || "",
         noRegistrasi: data.nomorRegistrasiMet || data.no_registrasi || data.noRegistrasi || "",
@@ -232,6 +239,8 @@ export default function Profile() {
             (data.alamat as string) ||
             (data.alamat_rumah as string) ||
             prev.alamat,
+          provinsi: (data.kodeProvinsi as string) || (data.provinsi as string) || prev.provinsi,
+          kota: (data.kodeKota as string) || (data.kota as string) || prev.kota,
           kodePos:
             (data.kodePos as string) ||
             (data.kode_pos as string) ||
@@ -317,6 +326,8 @@ export default function Profile() {
         tanggal_lahir: formData.tanggalLahir,
         jenis_kelamin: formData.jenisKelamin,
         alamat_rumah: formData.alamat,
+        provinsi: formData.provinsi,
+        kota: formData.kota,
         kode_pos: formData.kodePos,
         nik: formData.nik,
         no_registrasi: formData.noRegistrasi,
@@ -559,6 +570,41 @@ export default function Profile() {
                     rows={4}
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all resize-none"
                   ></textarea>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Provinsi
+                  </label>
+                  <select
+                    name="provinsi"
+                    value={formData.provinsi}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, provinsi: e.target.value, kota: "" }));
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
+                  >
+                    <option value="">Pilih Provinsi</option>
+                    {DATA_PROVINSI.map((p) => (
+                      <option key={p.id} value={p.id}>{p.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <span className="text-red-500">*</span> Kota/Kabupaten
+                  </label>
+                  <select
+                    name="kota"
+                    value={formData.kota}
+                    onChange={handleChange}
+                    disabled={!formData.provinsi}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all disabled:opacity-50"
+                  >
+                    <option value="">Pilih Kota/Kabupaten</option>
+                    {DATA_KOTA.filter(k => k.provId === formData.provinsi).map((k) => (
+                      <option key={k.id} value={k.id}>{k.label}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">

@@ -2706,8 +2706,7 @@ export const DATA_PENDIDIKAN = [
   { id: "3", label: "SMA/Sederajat" },
   { id: "4", label: "D2" },
   { id: "5", label: "D3" },
-  { id: "6", label: "D4" },
-  { id: "7", label: "S1" },
+  { id: "6", label: "S1/D4" },
   { id: "8", label: "S2" },
   { id: "9", label: "S3" },
   { id: "10", label: "D1" }
