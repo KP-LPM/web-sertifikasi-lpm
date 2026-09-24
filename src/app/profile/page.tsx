@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SignatureCanvas from "react-signature-canvas";
 import { useRouter } from "next/navigation";
 import { forgotPassword, getUsersProfile } from "@/lib/api";
-import { DATA_PROVINSI, DATA_KOTA } from "@/data/rujukan";
+import { DATA_PROVINSI, DATA_KOTA, DATA_PENDIDIKAN } from "@/data/rujukan";
 
 type SessionUser = {
   id?: string | number;
