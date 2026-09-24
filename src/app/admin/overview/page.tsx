@@ -9,7 +9,8 @@ import {
   FileCheck,
   ChevronRight,
   Eye,
-  FileText
+  FileText,
+  CalendarDays
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { getAdminDashboard, getPengajuanList } from "@/lib/api";
@@ -26,14 +27,21 @@ interface OverviewDashboardData {
 interface OverviewPendingItem {
   id: number;
   status: string;
+  createdAt?: string;
+  created_at?: string;
   user?: {
     username?: string;
     profil?: {
       nama_lengkap?: string;
+      namaLengkap?: string;
     };
   };
+  // Menambahkan dataPribadi karena form APL biasanya menyimpan nama di sini
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dataPribadi?: any; 
   skema?: {
     nama_skema?: string;
+    namaSkema?: string;
   };
 }
 
@@ -77,7 +85,6 @@ export default function AdminOverview() {
   };
 
   return (
-    // Memakai pembungkus yang sama persis dengan Asesi (tanpa padding berlebih)
     <div className="space-y-6 pb-24 text-sm text-gray-700">
 
       {/* Page Title Section */}
@@ -97,7 +104,7 @@ export default function AdminOverview() {
         </div>
       </div>
 
-      {/* Greeting Banner persis seperti Asesi */}
+      {/* Greeting Banner */}
       <div className="bg-[#E6F4FF] rounded-lg border border-sky-200 p-4 md:p-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 overflow-hidden relative shadow-2xs">
         <div className="space-y-2 z-10 max-w-xl">
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none capitalize">
@@ -109,7 +116,7 @@ export default function AdminOverview() {
           </p>
         </div>
 
-        {/* SVG Graphic agar tidak kosong */}
+        {/* SVG Graphic */}
         <div className="hidden md:flex shrink-0 self-center z-10">
           <svg viewBox="0 0 240 140" className="w-48 h-auto" fill="none">
             <path d="M20 120 L220 120" stroke="#008BE3" strokeWidth="4" strokeLinecap="round" opacity="0.3" />
@@ -131,14 +138,13 @@ export default function AdminOverview() {
         </div>
       </div>
 
-      {/* Overview Cards Section meniru Asesi */}
+      {/* Overview Cards Section */}
       <div className="space-y-2">
         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">
           Overview
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Sky */}
-          <div className="bg-[#E6F4FF] p-4 rounded-lg border border-[#BCE0FD] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+          <div onClick={() => router.push("/admin/verifikasiberkas")} className="bg-[#E6F4FF] p-4 rounded-lg border border-[#BCE0FD] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
             <div className="space-y-0.5">
               <span className="text-[10px] font-black text-sky-800 uppercase tracking-wider block">
                 Perlu Diverifikasi
@@ -160,8 +166,7 @@ export default function AdminOverview() {
             </div>
           </div>
 
-          {/* Card 2: Emerald */}
-          <div className="bg-[#F4FBF7] p-4 rounded-lg border border-[#A7F3D0] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+          <div onClick={() => router.push("/admin/jadwal")} className="bg-[#F4FBF7] p-4 rounded-lg border border-[#A7F3D0] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
             <div className="space-y-0.5">
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">
                 Jadwal Berlangsung
@@ -183,8 +188,7 @@ export default function AdminOverview() {
             </div>
           </div>
 
-          {/* Card 3: Slate */}
-          <div className="bg-[#F1F5F9] p-4 rounded-lg border border-[#CBD5E1] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+          <div onClick={() => router.push("/admin/sidangpleno")} className="bg-[#F1F5F9] p-4 rounded-lg border border-[#CBD5E1] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
             <div className="space-y-0.5">
               <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider block">
                 Sidang Pleno
@@ -240,6 +244,9 @@ export default function AdminOverview() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-64 sticky top-0 z-20 bg-[#0F172A]">
                   Nama Asesi
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-40 sticky top-0 z-20 bg-[#0F172A]">
+                  Tanggal Pengajuan
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                   Skema Sertifikasi
                 </th>
@@ -254,69 +261,101 @@ export default function AdminOverview() {
             <tbody className="divide-y divide-gray-100/60">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium text-sm">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-medium text-sm">
                     Memuat data aktivitas...
                   </td>
                 </tr>
               ) : pendingVerificationList.length > 0 ? (
-                pendingVerificationList.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="group/row hover:bg-[#F9FAFC] transition-colors"
-                  >
-                    {/* Kolom No */}
-                    <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
-                      <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${index % 3 === 0
-                          ? "bg-[#008BE3]/10 text-[#008BE3]"
-                          : index % 3 === 1
-                            ? "bg-[#84CC16]/10 text-[#73B412]"
-                            : "bg-slate-100 text-slate-600"
-                          }`}
-                      >
-                        {index + 1}
-                      </div>
-                    </td>
+                pendingVerificationList.map((item, index) => {
+                  
+                  // Mengambil Nama Asli (Data Pribadi > Profil > Username)
+                  const dp = Array.isArray(item.dataPribadi) ? item.dataPribadi[0] : item.dataPribadi;
+                  const namaLengkap = dp?.namaLengkap || dp?.nama_lengkap || item.user?.profil?.nama_lengkap || item.user?.profil?.namaLengkap || item.user?.username || "Asesi";
+                  
+                  // Format Tanggal
+                  const rawDate = item.createdAt || item.created_at;
+                  const formattedDate = rawDate 
+                    ? new Date(rawDate).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                      })
+                    : "-";
 
-                    {/* Kolom Nama */}
-                    <td className="px-6 py-4 align-middle">
-                      <p className="font-bold text-slate-900 text-xs md:text-sm truncate">
-                        {item.user?.profil?.nama_lengkap || item.user?.username || "Asesi"}
-                      </p>
-                    </td>
-
-                    {/* Kolom Skema */}
-                    <td className="px-6 py-4 align-middle">
-                      <p className="text-xs md:text-sm font-bold text-[#008BE3] truncate">
-                        {item.skema?.nama_skema || "-"}
-                      </p>
-                    </td>
-
-                    {/* Kolom Status */}
-                    <td className="px-6 py-4 text-center align-middle">
-                      <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-                        {item.status}
-                      </span>
-                    </td>
-
-                    {/* Kolom Aksi */}
-                    <td className="px-6 py-4 text-center align-middle sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => router.push("/admin/verifikasiberkas")}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-sky-50 text-[#008BE3] border border-slate-200 hover:border-[#008BE3]/30 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0"
+                  return (
+                    <tr
+                      key={item.id}
+                      className="group/row hover:bg-[#F9FAFC] transition-colors"
+                    >
+                      {/* Kolom No */}
+                      <td className="px-6 py-4 text-xs md:text-sm text-center font-semibold text-slate-700">
+                        <div
+                          className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${index % 3 === 0
+                            ? "bg-[#008BE3]/10 text-[#008BE3]"
+                            : index % 3 === 1
+                              ? "bg-[#84CC16]/10 text-[#73B412]"
+                              : "bg-slate-100 text-slate-600"
+                            }`}
                         >
-                          <Eye size={14} />
-                          <span>Tinjau</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {index + 1}
+                        </div>
+                      </td>
+
+                      {/* Kolom Nama */}
+                      <td className="px-6 py-4 align-middle">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 text-xs md:text-sm truncate">
+                            {namaLengkap}
+                          </span>
+                          {item.user?.username && (
+                            <span className="text-[11px] font-semibold text-slate-500 mt-0.5">
+                              @{item.user.username}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Kolom Tanggal */}
+                      <td className="px-6 py-4 align-middle">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                          <CalendarDays size={14} className="text-slate-400" />
+                          <span>{formattedDate}</span>
+                        </div>
+                      </td>
+
+                      {/* Kolom Skema */}
+                      <td className="px-6 py-4 align-middle">
+                        <p className="text-xs md:text-sm font-bold text-[#008BE3] truncate">
+                          {item.skema?.nama_skema || item.skema?.namaSkema || "-"}
+                        </p>
+                      </td>
+
+                      {/* Kolom Status */}
+                      <td className="px-6 py-4 text-center align-middle">
+                        <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                          {item.status}
+                        </span>
+                      </td>
+
+                      {/* Kolom Aksi */}
+                      <td className="px-6 py-4 text-center align-middle sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => router.push("/admin/verifikasiberkas")}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-sky-50 text-[#008BE3] border border-slate-200 hover:border-[#008BE3]/30 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer"
+                          >
+                            <Eye size={14} />
+                            <span>Tinjau</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium text-sm">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-medium text-sm">
                     Tidak ada berkas yang perlu diverifikasi.
                   </td>
                 </tr>

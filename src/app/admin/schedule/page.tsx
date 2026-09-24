@@ -96,7 +96,7 @@ export default function AssessmentSchedule() {
       metode: item.metode || "Offline",
       tipeTuk: item.tipeTuk || "Sewaktu",
       tuk: item.tuk || "TUK Sewaktu Kantor LSP",
-      alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
+      alamat: item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
       linkVideo: item.linkVideo || "",
@@ -182,7 +182,7 @@ export default function AssessmentSchedule() {
       metode: item.metode || "Offline",
       tipeTuk: item.tipeTuk || "Sewaktu",
       tuk: item.tuk || "TUK Sewaktu Kantor LSP",
-      alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
+      alamat: item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
       linkVideo: item.linkVideo || "",
@@ -280,7 +280,7 @@ export default function AssessmentSchedule() {
     surat_tugas_url?: string;
     status?: string;
     master_skema?: { namaSkema?: string };
-    master_tuk?: { nama?: string };
+    master_tuk?: { nama?: string; alamat?: string };
     users?: {
       username?: string;
       profil?: { namaLengkap?: string };
@@ -299,6 +299,7 @@ export default function AssessmentSchedule() {
   interface AvailableTukOption {
     id: number;
     nama: string;
+    alamat?: string;
     kapasitas?: number | null;
   }
 
@@ -387,7 +388,8 @@ export default function AssessmentSchedule() {
       linkVideo: item.link_video || "",
       tipeTuk: item.tipe_tuk || "Sewaktu",
       tuk: item.master_tuk?.nama || item.alamat || "TUK Kantor LSP",
-      alamat: item.alamat || "UIN Sunan Gunung Djati Bandung",
+      // Ambil alamat dari master_tuk jika ada, jika tidak pakai alamat custom, jika kosong pakai Gedung PTIPD
+      alamat: item.master_tuk?.alamat || item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       totalKandidat: item.jadwal_asesmen_peserta?.length || 0,
       namaAsesor: asesorName,
       inisialAsesor: initials,
@@ -484,7 +486,7 @@ export default function AssessmentSchedule() {
             waktu: p.waktu ? (p.waktu.includes("T") && !isNaN(Date.parse(p.waktu)) ? new Date(p.waktu).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : p.waktu) : "",
             skema: Array.isArray(p.skema) ? p.skema.join(", ") : p.skema || "Multi Skema",
             jenisTuk: p.jenisTuk || "Sewaktu",
-            alamat: p.alamat || "Ruang Rapat",
+            alamat: p.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
             jumlahAsesi: p.pleno_asesi?.length || 0,
             status: p.status || "Terjadwal",
             deskripsi: p.deskripsi || "",
@@ -547,7 +549,7 @@ export default function AssessmentSchedule() {
       skema: "",
       metode: "Offline",
       tipeTuk: "Sewaktu",
-      alamat: "UIN Sunan Gunung Djati Bandung",
+      alamat: "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       tanggal: "",
       waktuMulai: "08:00",
       tuk: "",
@@ -737,7 +739,7 @@ export default function AssessmentSchedule() {
       tanggal: "",
       waktu: "",
       skema: "",
-      alamat: "Ruang Rapat Utama (Offline)",
+      alamat: "Gedung PTIPD (Offline)",
       detailAlamat: "",
       deskripsi: "",
       plenoAttendees: [],
@@ -1071,7 +1073,7 @@ export default function AssessmentSchedule() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: UIN Sunan Gunung Djati Bandung"
+                  placeholder="Contoh: Gedung PTIPD UIN Sunan Gunung Djati Bandung"
                   value={formData.alamat}
                   onChange={(e) =>
                     setFormData({ ...formData, alamat: e.target.value })
@@ -1480,7 +1482,7 @@ export default function AssessmentSchedule() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: Gedung Al-Jamiah / Lab Komputer / Online"
+                  placeholder="Contoh: Gedung PTIPD / Ruang Rapat / Online"
                   value={plenoForm.alamat}
                   onChange={(e) =>
                     setPlenoForm({ ...plenoForm, alamat: e.target.value })
@@ -1963,13 +1965,13 @@ export default function AssessmentSchedule() {
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[250px] max-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     Metode
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
@@ -2023,48 +2025,48 @@ export default function AssessmentSchedule() {
                           key={item.id}
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-[14px] font-semibold text-slate-700 whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap">
+                            <div className="text-[14px] font-bold text-[#008BE3] whitespace-nowrap">
                               {item.skema || "-"}
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                             <span
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border tracking-wide ${(item.metode || item.metode) === "Online"
-                                ? "bg-sky-50 text-[#008BE3] border-sky-200/80 shadow-2xs"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200/80 shadow-2xs"
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${(item.metode || item.metode) === "Online"
+                                ? "bg-sky-50 text-[#008BE3] border-sky-200 shadow-2xs"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-2xs"
                                 }`}
                             >
                               {item.metode || item.metode || "Offline"}
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs whitespace-nowrap">
                               {item.tipeTuk || "Sewaktu"}
                             </span>
                           </td>
 
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 align-middle">
                             <div className="flex items-start gap-1.5 text-[14px] font-medium text-slate-700">
                               <MapPin
                                 size={16}
                                 className="text-slate-400 shrink-0 mt-0.5"
                               />
                               <div>
-                                <span className="block">
+                                <span className="block font-bold text-slate-800">
                                   {item.alamat ||
-                                    "UIN Sunan Gunung Djati Bandung"}
+                                    "Gedung PTIPD UIN Sunan Gunung Djati Bandung"}
                                 </span>
                                 {(!item.alamat || !item.alamat.toLowerCase().includes("online")) && (
-                                  <span className="text-[11px] text-gray-400 block mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</span>
+                                  <span className="text-[11px] text-gray-500 font-medium block mt-0.5">Jl. A.H. Nasution No. 105, Cipadung, Cibiru</span>
                                 )}
                               </div>
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-600">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-[14px] font-semibold text-slate-600">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar
                                 size={14}
@@ -2074,7 +2076,7 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-700">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-[14px] font-semibold text-slate-700">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Clock
                                 size={14}
@@ -2086,7 +2088,7 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap">
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <span className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
                                 {item.namaAsesor || "-"}
@@ -2094,7 +2096,7 @@ export default function AssessmentSchedule() {
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap">
                             {item.suratTugasUrl ? (
                               item.suratTugasUrl.startsWith("http") ? (
                                 <a
@@ -2132,7 +2134,7 @@ export default function AssessmentSchedule() {
                             )}
                           </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-[14px] font-bold text-slate-700">
                             <span className="whitespace-nowrap">
                               {item.totalKandidat ||
                                 item.asesiList?.length ||
@@ -2141,35 +2143,32 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[200px]">
+                          <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[200px]">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handlePreviewAsesmen(item)}
-                                className="px-3 py-2 text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 hover:text-sky-800 border border-sky-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                                className="p-2 text-sky-500 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-all border border-transparent hover:border-sky-200 cursor-pointer"
                                 title="Detail"
                               >
-                                <Eye size={14} />
-                                <span>Detail</span>
+                                <Eye size={16} />
                               </button>
                               {!readOnly && (
                                 <>
                                   <button
                                     onClick={() => handleEditAsesmen(item)}
-                                    className="px-3 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                                    className="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-all border border-transparent hover:border-amber-200 cursor-pointer"
                                     title="Edit"
                                   >
-                                    <FileEdit size={14} />
-                                    <span>Edit</span>
+                                    <FileEdit size={16} />
                                   </button>
                                   <button
                                     onClick={() =>
                                       handleDeleteSchedule(item.id)
                                     }
-                                    className="px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-800 border border-red-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-200 cursor-pointer"
                                     title="Hapus"
                                   >
-                                    <Trash2 size={14} />
-                                    <span>Hapus</span>
+                                    <Trash2 size={16} />
                                   </button>
                                 </>
                               )}
@@ -2206,16 +2205,16 @@ export default function AssessmentSchedule() {
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
                     Status Sidang
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-[180px] top-0">
@@ -2230,13 +2229,13 @@ export default function AssessmentSchedule() {
                       key={item.id}
                       className="group/row hover:bg-[#F9FAFC] transition-colors"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 align-middle whitespace-nowrap">
                         <div className="text-[14px] font-bold text-slate-900 leading-snug">
                           {item.title ||
                             `Sidang Pleno ${item.skema || item.id}`}
                         </div>
                         {item.skema && (
-                          <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-[250px]">
+                          <div className="text-[12px] font-bold text-[#008BE3] mt-0.5 truncate max-w-[250px]">
                             {item.skema}
                           </div>
                         )}
@@ -2270,7 +2269,7 @@ export default function AssessmentSchedule() {
                           </button>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600 whitespace-nowrap">
+                      <td className="px-6 py-4 align-middle text-xs md:text-sm font-semibold text-gray-600 whitespace-nowrap">
                         <span className="inline-flex items-center gap-1.5">
                           <Calendar
                             size={13}
@@ -2279,67 +2278,67 @@ export default function AssessmentSchedule() {
                           {item.tanggal || "-"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border tracking-wide shadow-2xs ${item.jenisTuk === "Sewaktu"
-                            ? "bg-amber-50 text-amber-700 border-amber-200/80"
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-2xs ${item.jenisTuk === "Sewaktu"
+                            ? "bg-amber-50 text-amber-700 border-amber-200"
                             : item.jenisTuk === "Mandiri"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
-                              : "bg-sky-50 text-[#008BE3] border-sky-200/80"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-sky-50 text-[#008BE3] border-sky-200"
                             }`}
                         >
                           {item.jenisTuk || "Sewaktu"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs md:text-sm font-medium text-gray-700">
+                      <td className="px-6 py-4 align-middle text-xs md:text-sm font-medium text-gray-700">
                         <span className="inline-flex items-start gap-1.5">
                           <MapPin
                             size={14}
                             className="text-gray-400 shrink-0 mt-0.5"
                           />
                           <div>
-                            <div>{item.alamat}</div>
-                            {item.alamat && !item.alamat.toLowerCase().includes("online") && (
-                              <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                            <span className="block font-bold text-slate-800">
+                              {item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung"}
+                            </span>
+                            {(!item.alamat || !item.alamat.toLowerCase().includes("online")) && (
+                              <span className="text-[11px] text-gray-500 font-medium block mt-0.5">Jl. A.H. Nasution No. 105, Cipadung, Cibiru</span>
                             )}
                           </div>
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs md:text-sm font-bold text-gray-700">
+                      <td className="px-6 py-4 align-middle text-xs md:text-sm font-bold text-gray-700">
                         <span>
                           {item.asesiList?.length || 0}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs font-bold">
+                      <td className="px-6 py-4 align-middle text-center text-xs font-bold">
                         {item.status === "Selesai" ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle size={12} /> Selesai
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                             <Clock size={12} /> Terjadwal
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[180px]">
+                      <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[180px]">
                         <div className="flex items-center justify-center gap-2">
                           {!readOnly && (
                             <>
                               <button
                                 onClick={() => handleEditPleno(item as unknown as PlenoDetailData)}
-                                className="px-3 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                                className="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-all border border-transparent hover:border-amber-200 cursor-pointer"
                                 title="Edit"
                               >
-                                <Edit size={14} />
-                                <span>Edit</span>
+                                <Edit size={16} />
                               </button>
                               <button
                                 onClick={() => handleDeletePleno(item.id)}
-                                className="px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 hover:text-red-800 border border-red-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-200 cursor-pointer"
                                 title="Hapus"
                               >
-                                <Trash2 size={14} />
-                                <span>Hapus</span>
+                                <Trash2 size={16} />
                               </button>
                             </>
                           )}
