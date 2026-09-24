@@ -24,6 +24,7 @@ import {
   ChevronDown,
   Sparkles,
   Eye,
+  Trash2,
   FileText,
   CheckCircle,
   Loader2,
@@ -213,6 +214,18 @@ export default function UploadSertifikat() {
       notes: asesi.notes || "",
     });
     setIsModalOpen(true);
+  };
+
+  const handleDeleteSertifikat = async (asesi: AsesiPlenoRecord) => {
+    try {
+      const res = await fetch(`/api/sertifikat/${asesi.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Gagal menghapus sertifikat");
+      showNotification("Data sertifikat berhasil dihapus.", "success");
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showNotification("Terjadi kesalahan saat menghapus data sertifikat.", "error");
+    }
   };
 
   // Save GDrive link and info for asesi
@@ -913,19 +926,28 @@ export default function UploadSertifikat() {
                               <Eye size={14} /> Detail
                             </button>
                           ) : candidate.status === "Terbit" ? (
-                            <button
-                              onClick={() =>
-                                selectedPlenoGroup &&
-                                handleOpenInputModal(
-                                  selectedPlenoGroup.plenoId,
-                                  candidate,
-                                )
-                              }
-                              className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                              title="Edit Link Sertifikat GDrive"
-                            >
-                              <Edit2 size={13} /> Edit
-                            </button>
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() =>
+                                  selectedPlenoGroup &&
+                                  handleOpenInputModal(
+                                    selectedPlenoGroup.plenoId,
+                                    candidate,
+                                  )
+                                }
+                                className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Edit Link Sertifikat GDrive"
+                              >
+                                <Edit2 size={13} /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSertifikat(candidate)}
+                                className="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Hapus Data Sertifikat"
+                              >
+                                <Trash2 size={13} /> Hapus
+                              </button>
+                            </div>
                           ) : (
                             <button
                               onClick={() =>

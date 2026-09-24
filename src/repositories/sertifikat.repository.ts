@@ -59,6 +59,12 @@ export class SertifikatRepository {
     });
   }
 
+  async delete(pengajuanId: number) {
+    return await db.sertifikat.delete({
+      where: { pengajuan_id: pengajuanId },
+    });
+  }
+
   // Diperbarui: Menerima argumen nomor hasil generate
   async updateTerbit(
     pengajuanId: number,

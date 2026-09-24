@@ -159,7 +159,7 @@ export function generateSertifikatHtml(data: SertifikatPayload): string {
         margin-bottom: 34px;
       }
       .holder-name {
-        font-size: 17pt;
+        font-size: 18pt;
         font-weight: bold;
         margin: 0 0 15px 0;
       }
@@ -169,16 +169,29 @@ export function generateSertifikatHtml(data: SertifikatPayload): string {
       }
 
       .competence-box {
-        margin-top: 28px;
-        margin-bottom: 28px;
+        margin-top: 34px;
+        margin-bottom: 30px;
       }
-      .competence-val-id {
+      .competence-bidang-id {
         font-size: 12pt;
         font-weight: bold;
         margin-top: 25px;
       }
-      .competence-val-en {
+      .competence-bidang-en {
         font-size: 12pt;
+        font-weight: bold;
+        font-style: italic;
+        color: #333;
+        margin: 0;
+      }
+        
+      .competence-kualifikasi-id {
+        font-size: 14pt;
+        font-weight: bold;
+        margin-top: 25px;
+      }
+      .competence-kualifikasi-en {
+        font-size: 14pt;
         font-weight: bold;
         font-style: italic;
         color: #333;
@@ -356,15 +369,15 @@ export function generateSertifikatHtml(data: SertifikatPayload): string {
         <div class="competence-box">
           <p class="statement-id">Telah kompeten pada bidang:</p>
           <p class="statement-en">is competent in the area of:</p>
-          <div class="competence-val-id">${data.bidangId}</div>
-          <div class="competence-val-en">${data.bidangEn}</div>
+          <div class="competence-bidang-id">${data.bidangId}</div>
+          <div class="competence-bidang-en">${data.bidangEn}</div>
         </div>
 
         <div class="competence-box">
           <p class="statement-id">Dengan Kualifikasi / Kompetensi:</p>
           <p class="statement-en">With Qualification / Competency:</p>
-          <div class="competence-val-id">${data.kualifikasiId}</div>
-          <div class="competence-val-en">${data.kualifikasiEn}</div>
+          <div class="competence-kualifikasi-id">${data.kualifikasiId}</div>
+          <div class="competence-kualifikasi-en">${data.kualifikasiEn}</div>
         </div>
 
         <div class="validity-text">

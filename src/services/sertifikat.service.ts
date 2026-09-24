@@ -35,6 +35,11 @@ export class SertifikatService {
     }
     return result;
   }
+
+  async delete(pengajuanId: number) {
+    return await this.repo.delete(pengajuanId);
+  }
+
   async terbitkan(pengajuanId: number, reqTanggalTerbit?: Date) {
     // 1. Ambil data pengajuan beserta MasterSkema-nya (Join Relasi)
     const pengajuan = await this.repo.getPengajuanWithSkema(pengajuanId);
