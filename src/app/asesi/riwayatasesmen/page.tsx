@@ -1030,17 +1030,10 @@ export default function AsesiHistoryPage() {
                               }}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
                             >
-                              {item.linkSertifikat ? (
-                                <>
-                                  <ExternalLink size={14} />
-                                  Lihat Sertifikat
-                                </>
-                              ) : (
-                                <>
-                                  <Download size={14} />
-                                  Unduh Sertifikat
-                                </>
-                              )}
+                              <>
+                                <ExternalLink size={14} />
+                                Link Sertifikat
+                              </>
                             </a>
                           )}
                           
@@ -1263,17 +1256,10 @@ export default function AsesiHistoryPage() {
                        }}
                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
                      >
-                       {selectedAssessment.linkSertifikat ? (
-                         <>
-                           <ExternalLink size={16} />
-                           Lihat Sertifikat
-                         </>
-                       ) : (
-                         <>
-                           <Download size={16} />
-                           Unduh Sertifikat
-                         </>
-                       )}
+                       <>
+                         <ExternalLink size={16} />
+                         Link Sertifikat
+                       </>
                      </a>
                    </div>
                  )}
