@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import {
-  PenyusunOption,
   ConfigurationMetadata,
   Step1Question,
   Step2BlokA,
@@ -157,7 +156,7 @@ function TambahKonfigurasiPertanyaanContent() {
           if (detail) {
             setFormData((prev) => {
               // Format penyusun
-              const formatPenyusun = (list: any[]) => {
+              const formatPenyusun = (list: { user_id?: string | number; nama?: string }[]) => {
                 if (!list) return [];
                 return list.map((item) => ({
                   value: String(item.user_id || item.nama || ""),
@@ -177,10 +176,10 @@ function TambahKonfigurasiPertanyaanContent() {
               };
 
               const step1Questions = detail.konfigurasi_step1_pertanyaan?.length > 0
-                ? detail.konfigurasi_step1_pertanyaan.map((q: any) => ({
+                ? detail.konfigurasi_step1_pertanyaan.map((q: { id?: string | number; pertanyaan_text?: string; konfigurasi_step1_opsi?: { id?: string | number; opsi_text?: string; is_valid?: boolean | number }[] }) => ({
                   id: `q-${q.id || Math.random()}`,
                   pertanyaanText: q.pertanyaan_text || "",
-                  options: q.konfigurasi_step1_opsi?.map((o: any) => ({
+                  options: q.konfigurasi_step1_opsi?.map((o: { id?: string | number; opsi_text?: string; is_valid?: boolean | number }) => ({
                     id: `opt-${o.id || Math.random()}`,
                     text: o.opsi_text || "",
                     isValid: Boolean(o.is_valid),
@@ -203,10 +202,10 @@ function TambahKonfigurasiPertanyaanContent() {
               } : prev.step2.blokB;
 
               const step3Lingkups = detail.konfigurasi_step3_lingkup?.length > 0
-                ? detail.konfigurasi_step3_lingkup.map((l: any) => ({
+                ? detail.konfigurasi_step3_lingkup.map((l: { id?: string | number; nama_lingkup?: string; konfigurasi_step3_sub_pertanyaan?: { id?: string | number; skenario_pertanyaan?: string; kode_kuk?: string[]; ekspektasi_tanggapan?: string }[] }) => ({
                   id: `lingkup-${l.id || Math.random()}`,
                   namaLingkup: l.nama_lingkup || "",
-                  subPertanyaans: l.konfigurasi_step3_sub_pertanyaan?.map((sub: any) => ({
+                  subPertanyaans: l.konfigurasi_step3_sub_pertanyaan?.map((sub: { id?: string | number; skenario_pertanyaan?: string; kode_kuk?: string[]; ekspektasi_tanggapan?: string }) => ({
                     id: `sub-${sub.id || Math.random()}`,
                     skenarioPertanyaan: sub.skenario_pertanyaan || "",
                     kodeKUK: Array.isArray(sub.kode_kuk) ? sub.kode_kuk : [],
@@ -216,7 +215,7 @@ function TambahKonfigurasiPertanyaanContent() {
                 : prev.step3.lingkups;
 
               const step4Questions = detail.konfigurasi_step4_pertanyaan?.length > 0
-                ? detail.konfigurasi_step4_pertanyaan.map((q: any) => ({
+                ? detail.konfigurasi_step4_pertanyaan.map((q: { id?: string | number; kode_kuk_ref?: string; pertanyaan_lisan?: string; kunci_jawaban?: string }) => ({
                   id: `q4-${q.id || Math.random()}`,
                   kodeKUKRef: q.kode_kuk_ref || "",
                   pertanyaanLisan: q.pertanyaan_lisan || "",

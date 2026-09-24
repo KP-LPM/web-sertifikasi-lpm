@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
-import { getToken } from "next-auth/jwt";
 import { z } from "zod";
 import { konfigurasiService } from "@/services/konfigurasipertanyaan.service";
 import { CreateKonfigurasiSchema } from "@/schemas/konfigurasipertanyaan.schema";

@@ -498,8 +498,11 @@ export default function PengajuanSkemaPage() {
 
         profileSetters.forEach(([val, setter, key]) => {
           if (val !== undefined && val !== null && val !== "") {
-            setter(String(val));
-            loaded[key] = true;
+            let actualVal = String(val);
+            setter(actualVal);
+            if (key !== 'pendidikanTerakhir') {
+              loaded[key as keyof typeof loaded] = true;
+            }
           }
         });
         setLockedFields(loaded);

@@ -454,17 +454,28 @@ export default function UsersManagement() {
     setUserToEditPayment(null);
   };
 
-  const asesiUsers = users.filter((user) => user.role === "asesi" && user.status !== "Selesai" && user.status !== "Terverifikasi");
+  const asesiUsers = users.filter((user) => {
+    if (user.role !== "asesi") return false;
+    const isVerifiedOrSelesai = user.status === "Selesai" || user.status === "Terverifikasi";
+    const isPaid = user.verificationData?.statusPembayaran === "Sudah";
+    // Pindah ke tab selesai hanya jika statusnya Selesai/Terverifikasi DAN sudah bayar
+    return !(isVerifiedOrSelesai && isPaid);
+  });
+
   const asesorUsers = users.filter((user) => user.role === "asesor" && user.status !== "Terverifikasi");
+
   const selesaiUsers = users.filter((user) => {
-    if (selesaiTabFilter === "asesi") {
-      return user.role === "asesi" && (user.status === "Selesai" || user.status === "Terverifikasi");
+    if (user.role === "asesi") {
+      const isVerifiedOrSelesai = user.status === "Selesai" || user.status === "Terverifikasi";
+      const isPaid = user.verificationData?.statusPembayaran === "Sudah";
+      const match = isVerifiedOrSelesai && isPaid;
+      return (selesaiTabFilter === "asesi" || selesaiTabFilter === "semua") ? match : false;
     }
-    if (selesaiTabFilter === "asesor") {
-      return user.role === "asesor" && user.status === "Terverifikasi";
+    if (user.role === "asesor") {
+      const match = user.status === "Terverifikasi";
+      return (selesaiTabFilter === "asesor" || selesaiTabFilter === "semua") ? match : false;
     }
-    return (user.role === "asesi" && (user.status === "Selesai" || user.status === "Terverifikasi")) ||
-           (user.role === "asesor" && user.status === "Terverifikasi");
+    return false;
   });
 
   const currentList = mainTab === "asesi" ? asesiUsers : mainTab === "asesor" ? asesorUsers : selesaiUsers;
@@ -487,7 +498,9 @@ export default function UsersManagement() {
   const confirmRevisi = async () => {
     if (userToVerify) {
       if (userToVerify.role === "asesi") {
-        const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+        const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const currentAdminUrl = typeof rawAdminUrl === "object" && rawAdminUrl !== null ? (rawAdminUrl as any).url || (rawAdminUrl as any).fileUrl || null : rawAdminUrl;
         const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
 
         try {
@@ -562,7 +575,9 @@ export default function UsersManagement() {
           console.error("Gagal memverifikasi user asesor:", err);
         }
       } else {
-        const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+        const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const currentAdminUrl = typeof rawAdminUrl === "object" && rawAdminUrl !== null ? (rawAdminUrl as any).url || (rawAdminUrl as any).fileUrl || null : rawAdminUrl;
         const currentLspUrl =
           userToVerify.verificationData?.lspSignatureUrl || null;
 
@@ -588,7 +603,9 @@ export default function UsersManagement() {
         }
       }
 
-      const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+      const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const currentAdminUrl = typeof rawAdminUrl === "object" && rawAdminUrl !== null ? (rawAdminUrl as any).url || (rawAdminUrl as any).fileUrl || null : rawAdminUrl;
       const currentLspUrl =
         userToVerify.verificationData?.lspSignatureUrl || null;
 
@@ -637,7 +654,9 @@ export default function UsersManagement() {
   const handleAssignAsesor = async () => {
     if (!userToVerify || !selectedAsesorId) return;
 
-    const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+    const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentAdminUrl = typeof rawAdminUrl === "object" && rawAdminUrl !== null ? (rawAdminUrl as any).url || (rawAdminUrl as any).fileUrl || null : rawAdminUrl;
     const currentLspUrl =
       userToVerify.verificationData?.lspSignatureUrl || null;
 
@@ -731,7 +750,25 @@ export default function UsersManagement() {
           ...dp,
           schemeDetail: {
             ...detail.skema,
-            buktiAdministratif: detail.skema?.master_bukti_administratif || detail.skema?.buktiAdministratif || [],
+            buktiAdministratif:
+              (detail.skema?.master_bukti_administratif && detail.skema.master_bukti_administratif.length > 0)
+                ? detail.skema.master_bukti_administratif
+                : (detail.skema?.buktiAdministratif && detail.skema.buktiAdministratif.length > 0)
+                  ? detail.skema.buktiAdministratif
+                  : [
+                    {
+                      id: 1,
+                      namaDokumen: "Salinan KTP dan KTM",
+                      isWajib: true,
+                      isAktif: true,
+                    },
+                    {
+                      id: 2,
+                      namaDokumen: "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
+                      isWajib: true,
+                      isAktif: true,
+                    },
+                  ],
             persyaratanDasar: detail.skema?.persyaratanDasar || [],
             buktiKompetensi: detail.skema?.buktiKompetensi || [],
           },
@@ -766,7 +803,9 @@ export default function UsersManagement() {
     const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
 
     if (activeVerifyTab === "apl01") {
-      currentAdminUrl = apl01FormData.ttdAdmin || null;
+      const rawUrl = apl01FormData.ttdAdmin || null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      currentAdminUrl = typeof rawUrl === "object" && rawUrl !== null ? (rawUrl as any).url || (rawUrl as any).fileUrl || null : rawUrl;
     }
 
     const newVerificationData = {
@@ -1100,7 +1139,7 @@ export default function UsersManagement() {
                 <option value="asesor">Asesor Selesai</option>
               </select>
             )}
-            
+
             <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full md:w-72 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
               <Search className="text-gray-400" size={16} />
               <input

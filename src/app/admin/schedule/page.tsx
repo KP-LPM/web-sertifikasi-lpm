@@ -146,7 +146,17 @@ export default function AssessmentSchedule() {
           currentAsesiList
             ?.map((asesiId) => {
               const asesiData = AssessmentItems?.find((a) => a.id === asesiId);
-              return asesiData?.nama || asesiId;
+              if (asesiData?.nama) return asesiData.nama;
+
+              const asesiDetail = apiAvailableAsesis.find((a) => a.id === asesiId) || apiCompletedAsesis.find((a) => a.id === asesiId);
+              if (asesiDetail) {
+                return (asesiDetail.user?.profil?.namaLengkap && asesiDetail.user.profil.namaLengkap.trim() !== "")
+                  ? asesiDetail.user.profil.namaLengkap
+                  : (asesiDetail.dataPribadi?.namaLengkap && asesiDetail.dataPribadi.namaLengkap.trim() !== "")
+                    ? asesiDetail.dataPribadi.namaLengkap
+                    : asesiDetail.user?.username || asesiDetail.nama || asesiId;
+              }
+              return asesiId;
             })
             .join(", ") || "-",
         spesifikasiRuangTuk: selectedSchedule.tuk || "-",
@@ -322,6 +332,9 @@ export default function AssessmentSchedule() {
       nik?: string;
     };
     statusPembayaran?: string;
+    verifikasi_pengajuan?: {
+      status_pembayaran?: string;
+    };
   }
 
   const [isJadwalLoading, setIsJadwalLoading] = useState<boolean>(true);
@@ -438,7 +451,7 @@ export default function AssessmentSchedule() {
         Array.isArray(pengajuanRes.value)
       ) {
         const asesis = pengajuanRes.value as BackendPengajuanItem[];
-        setApiAvailableAsesis(asesis.filter(a => a.statusPembayaran === "Sudah"));
+        setApiAvailableAsesis(asesis.filter(a => a.statusPembayaran === "Sudah" || a.verifikasi_pengajuan?.status_pembayaran === "Sudah"));
       }
 
       if (

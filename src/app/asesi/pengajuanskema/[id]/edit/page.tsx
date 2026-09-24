@@ -9,21 +9,6 @@ import { supabase } from "@/lib/supabase";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
 import { Apl01FormData } from "@/types/types";
 
-type PengajuanDetailType = {
-  id?: number;
-  status?: string;
-  skema?: { namaSkema?: string; kodeSkema?: string; [key: string]: unknown };
-  tuk?: string;
-  tujuanAsesmen?: string;
-  dataPribadi?: Record<string, unknown>;
-  createdAt?: string;
-  verifikasi_pengajuan?: {
-    catatan?: string | null;
-    rekomendasi?: string | null;
-  } | null;
-  [key: string]: unknown;
-};
-
 interface ActiveModalDoc {
   name?: string;
   url?: string;

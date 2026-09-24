@@ -35,6 +35,7 @@ export async function PUT(req: NextRequest, context: Context) {
     const validationResult = verifikasiApl01Schema.safeParse(body);
 
     if (!validationResult.success) {
+      console.error("[VALIDATION ERROR]:", JSON.stringify(validationResult.error.format(), null, 2));
       return NextResponse.json(
         {
           success: false,
