@@ -1,6 +1,6 @@
 import { SignatureField } from "@/components/forms/asesi/SignatureField";
 import React from "react";
-import { Eye } from "lucide-react";
+import { Eye, Upload } from "lucide-react";
 import {
   FormDataType,
   PersyaratanAdministrasi,
@@ -41,16 +41,33 @@ export function EFormApl01({
     return value ? { type: "auto" } : undefined;
   };
 
-  const Input = ({ field, fallback }: { field: string; fallback?: string }) => {
-    const value = formData[field] as string | undefined;
-    return <span>{value || fallback || "-"}</span>;
+  const Input = ({ field, fallback, type = "text" }: { field: string; fallback?: string; type?: string }) => {
+    let value = formData[field] as string | undefined;
+
+    if (value && value.includes("T")) {
+      value = value.split("T")[0];
+    }
+    
+    if (formData.readOnly || formData.isAdmin) {
+      return <span className="font-medium text-slate-800">{value || fallback || "-"}</span>;
+    }
+
+    return (
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange({ ...formData, [field]: e.target.value })}
+        placeholder={fallback}
+        className="border border-slate-300 rounded p-1.5 w-full text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] bg-slate-50 transition-colors"
+      />
+    );
   };
 
-  // Menggunakan React.useState agar tidak error
+  // ... (kode handleScroll biarkan tetap sama) ...
+
   const [highlightTujuan, setHighlightTujuan] = React.useState(false);
   const [highlightTtd, setHighlightTtd] = React.useState(false);
 
-  // Menggunakan React.useEffect
   React.useEffect(() => {
     const handleScrollTujuan = () => {
       setHighlightTujuan(true);
@@ -120,44 +137,63 @@ export function EFormApl01({
 
         <h4 className="font-bold mb-2 text-xs">A. Data Pribadi</h4>
         <div className="overflow-x-auto mb-4 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs">
-            <tbody>
+          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs">
+<tbody>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold w-1/3 bg-white">
-                  Nama Lengkap :
+                  Nama Lengkap {!formData.readOnly && !formData.isAdmin && <span className="text-red-500">*</span>} :
                 </td>
                 <td className="border border-slate-300 p-2" colSpan={3}>
                   <Input field="namaLengkap" fallback="AHMAD FAUZI" />
                 </td>
               </tr>
               <tr>
-                <td className="border border-slate-300 p-2 font-semibold bg-white">
-                  No. KTP/NIK/Paspor :
+                <td className="border border-slate-300 p-2 font-semibold bg-white align-middle">
+                  No. KTP/NIK/Paspor {!formData.readOnly && !formData.isAdmin && <span className="text-red-500">*</span>} :
                 </td>
                 <td className="border border-slate-300 p-2" colSpan={3}>
-                  {formData?.nik || "3273253011090045"}
+                  <Input field="nik" fallback="3273253011090045" />
                 </td>
               </tr>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold bg-white">
-                  Tempat / Tgl. Lahir :
+                  Tempat / Tgl. Lahir {!formData.readOnly && !formData.isAdmin && <span className="text-red-500">*</span>} :
                 </td>
                 <td className="border border-slate-300 p-2" colSpan={3}>
-                  {formData?.tempatLahir || "Bandung"} /{" "}
-                  {formData?.tanggalLahir || "13-07-1996"}
+                  {formData.readOnly || formData.isAdmin ? (
+                    <span className="font-medium text-slate-800">{formData?.tempatLahir || "-"} / {formData?.tanggalLahir ? (formData.tanggalLahir as string).split("T")[0] : "-"}</span>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
+                      <Input field="tempatLahir" fallback="Tempat Lahir" />
+                      <span className="text-slate-400 hidden sm:inline">/</span>
+                      <Input field="tanggalLahir" type="date" fallback="Tanggal Lahir" />
+                    </div>
+                  )}
                 </td>
               </tr>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold bg-white">
-                  Jenis Kelamin :
+                  Jenis Kelamin {!formData.readOnly && !formData.isAdmin && <span className="text-red-500">*</span>} :
                 </td>
                 <td className="border border-slate-300 p-2" colSpan={3}>
-                  <Input field="jenisKelamin" fallback="Laki-laki" />
+                  {formData.readOnly || formData.isAdmin ? (
+                    <span className="font-medium text-slate-800">{formData.jenisKelamin === "Laki_laki" ? "Laki-laki" : formData.jenisKelamin === "Perempuan" ? "Perempuan" : "-"}</span>
+                  ) : (
+                    <select
+                      value={(formData.jenisKelamin as string) || ""}
+                      onChange={(e) => onChange({ ...formData, jenisKelamin: e.target.value })}
+                      className="border border-slate-300 rounded p-1.5 w-full text-xs outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] bg-slate-50 transition-colors"
+                    >
+                      <option value="">Pilih Jenis Kelamin</option>
+                      <option value="Laki_laki">Laki-laki</option>
+                      <option value="Perempuan">Perempuan</option>
+                    </select>
+                  )}
                 </td>
               </tr>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold bg-white">
-                  Alamat Rumah :
+                  Alamat Rumah {!formData.readOnly && !formData.isAdmin && <span className="text-red-500">*</span>} :
                 </td>
                 <td className="border border-slate-300 p-2" colSpan={3}>
                   <Input field="alamat" fallback="Jl Cipadung" />
@@ -171,14 +207,14 @@ export function EFormApl01({
           B. Data Pekerjaan Sekarang
         </h4>
         <div className="overflow-x-auto mb-6 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs">
             <tbody>
               <tr>
                 <td className="border border-slate-300 p-2 font-semibold w-1/3 bg-white">
                   Nama Institusi / Perusahaan :
                 </td>
                 <td className="border border-slate-300 p-2">
-                  {formData?.institusiPerusahaan || "PNS"}
+                  <Input field="namaInstitusi" fallback="PNS / Nama Institusi" />
                 </td>
               </tr>
               <tr>
@@ -186,7 +222,7 @@ export function EFormApl01({
                   Jabatan :
                 </td>
                 <td className="border border-slate-300 p-2">
-                  <Input field="jabatan" fallback="PNS" />
+                  <Input field="jabatan" fallback="Staff" />
                 </td>
               </tr>
             </tbody>
@@ -202,7 +238,7 @@ export function EFormApl01({
         </p>
 
         <div className="overflow-x-auto mb-6 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-150 text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-[600px] text-xs">
             <tbody>
               <tr>
                 <td
@@ -227,7 +263,6 @@ export function EFormApl01({
                 </td>
               </tr>
 
-              {/* Bagian Tujuan Asesmen yang sudah disempurnakan */}
               <tr
                 id="tujuan-asesmen-row"
                 className={
@@ -339,7 +374,7 @@ export function EFormApl01({
         <p className="text-xs text-slate-600 mb-2">Diisi oleh LSP/Asesor.</p>
 
         <div className="overflow-x-auto mb-6 ">
-          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs">
+          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs">
             <thead>
               <tr className="bg-[#ebf0fa] border-b border-slate-300 text-slate-800">
                 <th className="border border-slate-300 px-4 py-3 font-bold uppercase tracking-wider sticky top-0 z-20 bg-[#ebf0fa]">
@@ -358,24 +393,39 @@ export function EFormApl01({
                 (req: PersyaratanDasar, idx: number) => (
                   <tr key={`dasar-${idx}`}>
                     <td className="border border-slate-300 p-2 whitespace-nowrap">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="whitespace-nowrap">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <span className="whitespace-nowrap font-medium text-slate-700">
                           {typeof req === "string" ? req : req.namaDokumen}
                         </span>
                         {formData.onPreview && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              formData.onPreview?.(
-                                typeof req === "string"
-                                  ? req
-                                  : req.namaDokumen || "",
-                              )
-                            }
-                            className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                          >
-                            <Eye size={14} />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                formData.onPreview?.(
+                                  typeof req === "string" ? req : req.namaDokumen || "",
+                                )
+                              }
+                              className="bg-sky-50 hover:bg-sky-100 text-[#008BE3] border border-sky-200 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shrink-0"
+                              title="Lihat Dokumen"
+                            >
+                              <Eye size={12} /> Preview
+                            </button>
+                            {formData.onUpload && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  formData.onUpload?.(
+                                    typeof req === "string" ? req : req.namaDokumen || "",
+                                  )
+                                }
+                                className="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shrink-0"
+                                title="Upload/Re-upload Dokumen"
+                              >
+                                <Upload size={12} /> Upload
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>
@@ -384,16 +434,12 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                          typeof req === "string"
-                            ? req
-                            : req.namaDokumen || ""
+                          typeof req === "string" ? req : req.namaDokumen || ""
                           ] === "memenuhi"
                         }
                         onChange={() =>
                           handleCheck(
-                            typeof req === "string"
-                              ? req
-                              : req.namaDokumen || "",
+                            typeof req === "string" ? req : req.namaDokumen || "",
                             "memenuhi",
                           )
                         }
@@ -406,16 +452,12 @@ export function EFormApl01({
                         type="checkbox"
                         checked={
                           formData?.checklist?.[
-                          typeof req === "string"
-                            ? req
-                            : req.namaDokumen || ""
+                          typeof req === "string" ? req : req.namaDokumen || ""
                           ] === "tidak memenuhi"
                         }
                         onChange={() =>
                           handleCheck(
-                            typeof req === "string"
-                              ? req
-                              : req.namaDokumen || "",
+                            typeof req === "string" ? req : req.namaDokumen || "",
                             "tidak memenuhi",
                           )
                         }
@@ -433,16 +475,29 @@ export function EFormApl01({
                   return (
                     <tr key={`admin-${idx}`}>
                       <td className="border border-slate-300 p-2 whitespace-nowrap">
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="whitespace-nowrap">{label}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <span className="whitespace-nowrap font-medium text-slate-700">{label}</span>
                           {formData.onPreview && (
-                            <button
-                              type="button"
-                              onClick={() => formData.onPreview?.(label)}
-                              className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                            >
-                              <Eye size={14} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => formData.onPreview?.(label)}
+                                className="bg-sky-50 hover:bg-sky-100 text-[#008BE3] border border-sky-200 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shrink-0"
+                                title="Lihat Dokumen"
+                              >
+                                <Eye size={12} /> Preview
+                              </button>
+                              {formData.onUpload && (
+                                <button
+                                  type="button"
+                                  onClick={() => formData.onUpload?.(label)}
+                                  className="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shrink-0"
+                                  title="Upload/Re-upload Dokumen"
+                                >
+                                  <Upload size={12} /> Upload
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </td>
@@ -477,16 +532,29 @@ export function EFormApl01({
                   return (
                     <tr key={`kompetensi-${idx}`}>
                       <td className="border border-slate-300 p-2 whitespace-nowrap">
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="whitespace-nowrap">{label}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <span className="whitespace-nowrap font-medium text-slate-700">{label}</span>
                           {formData.onPreview && (
-                            <button
-                              type="button"
-                              onClick={() => formData.onPreview?.(label)}
-                              className="text-[#008BE3] hover:text-[#0076C2] shrink-0"
-                            >
-                              <Eye size={14} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => formData.onPreview?.(label)}
+                                className="bg-sky-50 hover:bg-sky-100 text-[#008BE3] border border-sky-200 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shrink-0"
+                                title="Lihat Dokumen"
+                              >
+                                <Eye size={12} /> Preview
+                              </button>
+                              {formData.onUpload && (
+                                <button
+                                  type="button"
+                                  onClick={() => formData.onUpload?.(label)}
+                                  className="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shrink-0"
+                                  title="Upload/Re-upload Dokumen"
+                                >
+                                  <Upload size={12} /> Upload
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </td>
@@ -540,7 +608,7 @@ export function EFormApl01({
         </div>
 
         <div className="overflow-x-auto ">
-          <table className="w-full border-collapse border border-slate-300 min-w-125 text-xs table-fixed">
+          <table className="w-full border-collapse border border-slate-300 min-w-[500px] text-xs table-fixed">
             <tbody>
               <tr>
                 <td className="border border-slate-300 p-4 w-1/2 align-top bg-white">
@@ -556,7 +624,7 @@ export function EFormApl01({
                         formData?.isAdmin &&
                         onChange({ ...formData, rekomendasi: "Diterima" })
                       }
-                      disabled={!formData?.isAdmin}
+                      disabled={!formData?.isAdmin || formData?.readOnly}
                     />{" "}
                     Diterima
                   </div>
@@ -568,7 +636,7 @@ export function EFormApl01({
                         formData?.isAdmin &&
                         onChange({ ...formData, rekomendasi: "Tidak Diterima" })
                       }
-                      disabled={!formData?.isAdmin}
+                      disabled={!formData?.isAdmin || formData?.readOnly}
                     />{" "}
                     Tidak Diterima
                   </div>
@@ -581,8 +649,8 @@ export function EFormApl01({
                         formData?.isAdmin &&
                         onChange({ ...formData, catatan: e.target.value })
                       }
-                      disabled={!formData?.isAdmin}
-                      className="w-full h-16 border border-slate-300 bg-white p-1"
+                      disabled={!formData?.isAdmin || formData?.readOnly}
+                      className="w-full h-16 border border-slate-300 bg-white p-1 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] rounded"
                     ></textarea>
                   </div>
                 </td>
@@ -593,7 +661,7 @@ export function EFormApl01({
                       Nama:
                     </span>
                     <span>
-                      <Input field="namaLengkap" fallback="AHMAD FAUZI" />
+                      {(formData.namaLengkap as string) || "AHMAD FAUZI"}
                     </span>
                   </div>
                   <div
@@ -639,6 +707,7 @@ export function EFormApl01({
                           onChange={(e) =>
                             onChange({ ...formData, namaAdmin: e.target.value })
                           }
+                          disabled={formData?.readOnly}
                           placeholder="Nama Admin"
                         />
                       ) : (
@@ -664,7 +733,7 @@ export function EFormApl01({
                             onChange={(val) =>
                               onChange({ ...formData, ttdAdmin: val })
                             }
-                            readOnly={!formData?.isAdmin}
+                            readOnly={!formData?.isAdmin || formData?.readOnly}
                             fallbackName={formData.namaAdmin as string}
                           />
                           <div className="mt-2 text-xs font-semibold text-slate-600">

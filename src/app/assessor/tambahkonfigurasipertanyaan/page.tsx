@@ -33,7 +33,7 @@ import {
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createKonfigurasiPertanyaan, getSkemaList, getAllUsers } from "@/lib/api";
+import { createKonfigurasiPertanyaan, getSkemaList, getAllUsers, getKonfigurasiPertanyaanDetail } from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Dummy options removed. Skema options now loaded dynamically.
 
@@ -151,53 +151,102 @@ function TambahKonfigurasiPertanyaanContent() {
   // Load existing data if editing or viewing detail
   useEffect(() => {
     if ((isEdit || isReadOnly) && konfigurasiId) {
-      const existing = konfigurasiPertanyaan.find(
-        (k) => k.id === Number(konfigurasiId),
-      );
-      if (existing) {
-        const existingWithData = existing as unknown as {
-          formData?: WizardFormState;
-        };
+      async function loadExistingData() {
+        try {
+          const detail = await getKonfigurasiPertanyaanDetail(Number(konfigurasiId));
+          if (detail) {
+            setFormData((prev) => {
+              // Format penyusun
+              const formatPenyusun = (list: any[]) => {
+                if (!list) return [];
+                return list.map((item) => ({
+                  value: String(item.user_id || item.nama || ""),
+                  label: String(item.nama || ""),
+                }));
+              };
 
-        queueMicrotask(() => {
-          if (existingWithData.formData) {
-            setFormData(existingWithData.formData);
-          } else {
-            // Helper khusus untuk mengonversi ke tipe strict { value: string; label: string }[]
-            const formatPersonList = (
-              list?: PenyusunOption[] | string[],
-            ): Array<{ value: string; label: string }> => {
-              if (!list) return [];
-              return list.map((item) => {
-                if (typeof item === "string") {
-                  return { value: item, label: item };
-                }
-                return {
-                  value: String(item.value || ""),
-                  label: String(item.label || ""),
-                };
-              });
-            };
-
-            setFormData((prev) => ({
-              ...prev,
-              metadata: {
-                namaKonfigurasi: existing.nama || prev.metadata.namaKonfigurasi,
-                skemaSertifikasi:
-                  existing.skema || prev.metadata.skemaSertifikasi,
-                versi: existing.versi || "1.0",
-                penyusun: existing.penyusun
-                  ? formatPersonList(existing.penyusun)
+              const newMetadata = {
+                namaKonfigurasi: detail.nama || prev.metadata.namaKonfigurasi,
+                skemaSertifikasi: String(detail.skema_id || detail.skema || prev.metadata.skemaSertifikasi),
+                versi: detail.versi || "1.0",
+                penyusun: detail.konfigurasi_pertanyaan_penyusun
+                  ? formatPenyusun(detail.konfigurasi_pertanyaan_penyusun)
                   : prev.metadata.penyusun,
-                validator: existing.validator
-                  ? formatPersonList(existing.validator)
-                  : prev.metadata.validator,
-                isDefault: existing.isDefault ?? false,
-              },
-            }));
+                validator: prev.metadata.validator,
+                isDefault: detail.is_default ?? false,
+              };
+
+              const step1Questions = detail.konfigurasi_step1_pertanyaan?.length > 0
+                ? detail.konfigurasi_step1_pertanyaan.map((q: any) => ({
+                  id: `q-${q.id || Math.random()}`,
+                  pertanyaanText: q.pertanyaan_text || "",
+                  options: q.konfigurasi_step1_opsi?.map((o: any) => ({
+                    id: `opt-${o.id || Math.random()}`,
+                    text: o.opsi_text || "",
+                    isValid: Boolean(o.is_valid),
+                  })) || [],
+                }))
+                : prev.step1.questions;
+
+              const step2Data = detail.konfigurasi_step2_skenario;
+              const step2BlokA = step2Data ? {
+                skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
+                informasiYangDiberikan: Array.isArray(step2Data.informasi_yang_diberikan) && step2Data.informasi_yang_diberikan.length > 0 ? step2Data.informasi_yang_diberikan : [""],
+                lingkupBahasanStudiKasus: Array.isArray(step2Data.lingkup_bahasan_studi_kasus) && step2Data.lingkup_bahasan_studi_kasus.length > 0 ? step2Data.lingkup_bahasan_studi_kasus : [""],
+                perlengkapanDanBahan: step2Data.perlengkapan_dan_bahan || "",
+              } : prev.step2.blokA;
+
+              const step2BlokB = step2Data ? {
+                fokusPresentasi: Array.isArray(step2Data.fokus_presentasi) && step2Data.fokus_presentasi.length > 0 ? step2Data.fokus_presentasi : [""],
+                ketentuanAlokasiWaktu: step2Data.ketentuan_alokasi_waktu || "",
+                kriteriaEvaluasiAsesor: Array.isArray(step2Data.kriteria_evaluasi_asesor) && step2Data.kriteria_evaluasi_asesor.length > 0 ? step2Data.kriteria_evaluasi_asesor : [""],
+              } : prev.step2.blokB;
+
+              const step3Lingkups = detail.konfigurasi_step3_lingkup?.length > 0
+                ? detail.konfigurasi_step3_lingkup.map((l: any) => ({
+                  id: `lingkup-${l.id || Math.random()}`,
+                  namaLingkup: l.nama_lingkup || "",
+                  subPertanyaans: l.konfigurasi_step3_sub_pertanyaan?.map((sub: any) => ({
+                    id: `sub-${sub.id || Math.random()}`,
+                    skenarioPertanyaan: sub.skenario_pertanyaan || "",
+                    kodeKUK: Array.isArray(sub.kode_kuk) ? sub.kode_kuk : [],
+                    ekspektasiTanggapan: sub.ekspektasi_tanggapan || "",
+                  })) || [],
+                }))
+                : prev.step3.lingkups;
+
+              const step4Questions = detail.konfigurasi_step4_pertanyaan?.length > 0
+                ? detail.konfigurasi_step4_pertanyaan.map((q: any) => ({
+                  id: `q4-${q.id || Math.random()}`,
+                  kodeKUKRef: q.kode_kuk_ref || "",
+                  pertanyaanLisan: q.pertanyaan_lisan || "",
+                  kunciJawaban: q.kunci_jawaban || "",
+                }))
+                : prev.step4.questions;
+
+              return {
+                ...prev,
+                metadata: newMetadata,
+                step1: { ...prev.step1, questions: step1Questions },
+                step2: { ...prev.step2, blokA: step2BlokA, blokB: step2BlokB },
+                step3: { ...prev.step3, lingkups: step3Lingkups },
+                step4: { ...prev.step4, questions: step4Questions },
+              };
+            });
           }
-        });
+        } catch (error) {
+          console.error("Gagal memuat detail konfigurasi:", error);
+          // Fallback reading from context if backend fetch fails
+          const existing = konfigurasiPertanyaan.find((k) => k.id === Number(konfigurasiId));
+          if (existing) {
+            const existingWithData = existing as unknown as { formData?: WizardFormState };
+            if (existingWithData.formData) {
+              setFormData(existingWithData.formData);
+            }
+          }
+        }
       }
+      loadExistingData();
     }
   }, [isEdit, isReadOnly, konfigurasiId, konfigurasiPertanyaan]);
 

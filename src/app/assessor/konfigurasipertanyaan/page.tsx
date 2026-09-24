@@ -20,7 +20,7 @@ import {
 
 interface BackendKonfigurasiPertanyaan {
   id: number;
-  nama_konfigurasi: string;
+  nama: string;
   skema?: { namaSkema?: string };
   tipe_form?: string;
   versi?: string;
@@ -53,7 +53,7 @@ export default function KonfigurasiPertanyaanList() {
             if (!exists) {
               addKonfigurasiPertanyaan({
                 id: item.id,
-                nama: item.nama_konfigurasi,
+                nama: item.nama || "",
                 skema: item.skema?.namaSkema || "",
                 tipeForm: item.tipe_form || "",
                 versi: item.versi || "",
@@ -74,8 +74,8 @@ export default function KonfigurasiPertanyaanList() {
   }, []);
 
   const konfigurasiData = konfigurasiPertanyaan.filter((item) => {
-    const matchesSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          item.skema.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.skema || "").toLowerCase().includes(searchTerm.toLowerCase());
     return item.status === activeTab && matchesSearch;
   });
 
@@ -106,21 +106,19 @@ export default function KonfigurasiPertanyaanList() {
       <div className="bg-white p-1 rounded-xl shadow-xs border border-gray-100 flex items-center w-full max-w-[280px]">
         <button
           onClick={() => setActiveTab("Aktif")}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
-            activeTab === "Aktif"
+          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === "Aktif"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-500 hover:text-slate-800"
-          }`}
+            }`}
         >
           Aktif
         </button>
         <button
           onClick={() => setActiveTab("Tidak Aktif")}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
-            activeTab === "Tidak Aktif"
+          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === "Tidak Aktif"
               ? "bg-[#008BE3] text-white shadow-xs"
               : "text-slate-500 hover:text-slate-800"
-          }`}
+            }`}
         >
           Tidak Aktif
         </button>

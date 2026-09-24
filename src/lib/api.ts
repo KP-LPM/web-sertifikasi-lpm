@@ -1232,6 +1232,21 @@ export async function verifyPengajuanApl01(
   return json.data !== undefined ? json.data : json;
 }
 
+export async function updatePaymentStatus(
+  id: number,
+  data: { statusPembayaran: string; sumberAnggaran: string }
+) {
+  const res = await fetch(`${BASE_URL}/pengajuanskema/${id}/pembayaran`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Gagal menyimpan pembayaran");
+  return json.data !== undefined ? json.data : json;
+}
+
 export async function verifyUser(id: number, isVerified: boolean) {
   const res = await fetch(`${BASE_URL}/users/${id}/verifikasi`, {
     method: "PATCH",

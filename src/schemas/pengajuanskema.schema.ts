@@ -147,6 +147,7 @@ export const updatePengajuanSchema = z.object({
   tuk: z.string().optional(),
   jenisMetode: z.string().optional(),
   dataPribadi: dataPribadiSchema.partial().optional(),
+  dokumen: z.array(itemDokumenSchema).optional(),
   status: z.string().optional(),
 });
 

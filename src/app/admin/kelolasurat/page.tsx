@@ -288,7 +288,7 @@ export default function KelolaSurat() {
               setFormData(loadSuratDraft());
               setIsCreateModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer"
           >
             <Plus size={16} className="stroke-3" />
             <span>Buat / Register Surat Baru</span>
@@ -671,7 +671,7 @@ export default function KelolaSurat() {
                   }
                   setIsCreateModalOpen(false);
                 }}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -856,7 +856,7 @@ export default function KelolaSurat() {
                     }
                     setIsCreateModalOpen(false);
                   }}
-                  className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors"
+                  className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors cursor-pointer"
                 >
                   Batal
                 </button>

@@ -295,6 +295,22 @@ export class PengajuanRepository {
           },
         });
       }
+      // Update dokumen jika ada
+      if (data.dokumen && data.dokumen.length > 0) {
+        // Hapus dokumen lama
+        await tx.dokumenPengajuan.deleteMany({
+          where: { pengajuanId: id },
+        });
+
+        // Masukkan dokumen baru
+        await tx.dokumenPengajuan.createMany({
+          data: data.dokumen.map((d) => ({
+            pengajuanId: id,
+            namaDokumen: d.namaDokumen,
+            fileUrl: d.fileUrl,
+          })),
+        });
+      }
 
       return await tx.pengajuanSkema.findUnique({
         where: { id },

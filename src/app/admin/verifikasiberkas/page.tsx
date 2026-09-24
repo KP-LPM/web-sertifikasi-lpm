@@ -23,7 +23,8 @@ import {
   getPengajuanList,
   getAllUsers,
   verifyPengajuanApl01,
-  verifyUser,
+  updatePaymentStatus,
+  verifyUserAdmin,
   getPengajuanDetail,
 } from "@/lib/api";
 
@@ -32,6 +33,7 @@ export default function UsersManagement() {
   const readOnly = userContext?.role === "direktur" || userContext?.role === "manajer";
 
   const [mainTab, setMainTab] = useState<"asesi" | "asesor" | "selesai">("asesi");
+  const [selesaiTabFilter, setSelesaiTabFilter] = useState<"semua" | "asesi" | "asesor">("semua");
 
   const [users, setUsers] = useState<UserItem[]>([
     {
@@ -183,7 +185,7 @@ export default function UsersManagement() {
     username: string;
     email?: string;
     role: string;
-    is_verified?: boolean;
+    isVerified?: boolean;
     nomor_registrasi_met?: string;
     profil?: BackendProfilPengguna[] | BackendProfilPengguna;
     portfolio_asesor?: {
@@ -225,9 +227,9 @@ export default function UsersManagement() {
           dp?.namaLengkap || p.user?.username || `Asesi #${p.id}`;
         const email = p.user?.email || "-";
         const status =
-          p.status === "Menunggu Verifikasi" || !p.status
-            ? "Menunggu Verifikasi"
-            : "Selesai";
+          p.status === "Terverifikasi" || p.status === "Disetujui" || p.status === "Selesai"
+            ? "Selesai"
+            : p.status || "Menunggu Verifikasi";
 
         return {
           id: p.id,
@@ -316,7 +318,7 @@ export default function UsersManagement() {
           namaLengkap,
           email: u.email || "-",
           role: "asesor",
-          status: u.is_verified ? "Terverifikasi" : "Menunggu Verifikasi",
+          status: u.isVerified ? "Terverifikasi" : "Menunggu Verifikasi",
           verificationData: {
             rekomendasi: "Diterima",
             catatan: "",
@@ -416,11 +418,7 @@ export default function UsersManagement() {
     if (!userToEditPayment) return;
 
     try {
-      await verifyPengajuanApl01(userToEditPayment.id!, {
-        rekomendasi:
-          (userToEditPayment.verificationData?.rekomendasi as
-            | "Diterima"
-            | "Ditolak") || "Diterima",
+      await updatePaymentStatus(userToEditPayment.id!, {
         statusPembayaran: paymentFormData.statusPembayaran,
         sumberAnggaran: paymentFormData.sumberAnggaran,
       });
@@ -456,9 +454,18 @@ export default function UsersManagement() {
     setUserToEditPayment(null);
   };
 
-  const asesiUsers = users.filter((user) => user.role === "asesi" && !((user.status === "Selesai" || user.status === "Terverifikasi") && user.verificationData?.statusPembayaran === "Sudah"));
-  const asesorUsers = users.filter((user) => user.role === "asesor");
-  const selesaiUsers = users.filter((user) => user.role === "asesi" && (user.status === "Selesai" || user.status === "Terverifikasi") && user.verificationData?.statusPembayaran === "Sudah");
+  const asesiUsers = users.filter((user) => user.role === "asesi" && user.status !== "Selesai" && user.status !== "Terverifikasi");
+  const asesorUsers = users.filter((user) => user.role === "asesor" && user.status !== "Terverifikasi");
+  const selesaiUsers = users.filter((user) => {
+    if (selesaiTabFilter === "asesi") {
+      return user.role === "asesi" && (user.status === "Selesai" || user.status === "Terverifikasi");
+    }
+    if (selesaiTabFilter === "asesor") {
+      return user.role === "asesor" && user.status === "Terverifikasi";
+    }
+    return (user.role === "asesi" && (user.status === "Selesai" || user.status === "Terverifikasi")) ||
+           (user.role === "asesor" && user.status === "Terverifikasi");
+  });
 
   const currentList = mainTab === "asesi" ? asesiUsers : mainTab === "asesor" ? asesorUsers : selesaiUsers;
 
@@ -477,11 +484,80 @@ export default function UsersManagement() {
     setSelectedUser(null);
   };
 
+  const confirmRevisi = async () => {
+    if (userToVerify) {
+      if (userToVerify.role === "asesi") {
+        const currentAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
+        const currentLspUrl = userToVerify.verificationData?.lspSignatureUrl || null;
+
+        try {
+          await verifyPengajuanApl01(userToVerify.id!, {
+            rekomendasi: "Ditolak",
+            catatan: apl01FormData.catatan || "",
+            statusPembayaran: (apl01FormData.statusPembayaran ||
+              userToVerify.verificationData?.statusPembayaran ||
+              "Belum") as "Sudah" | "Belum",
+            sumberAnggaran:
+              apl01FormData.sumberAnggaran ||
+              userToVerify.verificationData?.sumberAnggaran ||
+              "Sumber Anggaran Biaya Mandiri",
+            adminSignatureUrl: currentAdminUrl || undefined,
+            lspSignatureUrl: currentLspUrl || undefined,
+            assignedAsesorId: selectedAsesorId
+              ? Number(selectedAsesorId)
+              : undefined,
+          });
+        } catch (err) {
+          console.error("Gagal mengirim revisi pengajuan asesi:", err);
+        }
+
+        const newVerificationData = {
+          ...userToVerify.verificationData,
+          rekomendasi: "Ditolak",
+          catatan: apl01FormData.catatan || "",
+          statusPembayaran:
+            apl01FormData.statusPembayaran ||
+            userToVerify.verificationData?.statusPembayaran ||
+            "Belum",
+          sumberAnggaran:
+            apl01FormData.sumberAnggaran ||
+            userToVerify.verificationData?.sumberAnggaran ||
+            "Sumber Anggaran Biaya Mandiri",
+          adminSignatureUrl: currentAdminUrl,
+          lspSignatureUrl: currentLspUrl,
+          rekomendasiApl02: userToVerify.verificationData?.rekomendasiApl02,
+          ttdAsesor: userToVerify.verificationData?.ttdAsesor,
+          asesorName: userToVerify.verificationData?.asesorName,
+          asesorReg: userToVerify.verificationData?.asesorReg,
+          penyusun: userToVerify.verificationData?.penyusun,
+          validator: userToVerify.verificationData?.validator,
+          assignedAsesorId: selectedAsesorId
+            ? Number(selectedAsesorId)
+            : userToVerify.verificationData?.assignedAsesorId,
+        };
+
+        setUsers(
+          users.map((u) =>
+            u.id === userToVerify.id
+              ? ({
+                ...u,
+                status: "Revisi",
+                verificationData: newVerificationData,
+              } as UserItem)
+              : u,
+          ),
+        );
+      }
+    }
+    setIsVerifyModalOpen(false);
+    setUserToVerify(null);
+  };
+
   const confirmVerify = async () => {
     if (userToVerify) {
       if (userToVerify.role === "asesor") {
         try {
-          await verifyUser(userToVerify.id!, true);
+          await verifyUserAdmin(userToVerify.id!, "Setuju");
         } catch (err) {
           console.error("Gagal memverifikasi user asesor:", err);
         }
@@ -639,6 +715,7 @@ export default function UsersManagement() {
         const newApl01: Apl01FormData = {
           isAdmin: true,
           hidePaymentFields: true,
+          readOnly: user.status === "Terverifikasi" || user.status === "Selesai",
           rekomendasi: user.verificationData?.rekomendasi || "Diterima",
           catatan: user.verificationData?.catatan || "",
           statusPembayaran: user.verificationData?.statusPembayaran || "Sudah",
@@ -663,7 +740,10 @@ export default function UsersManagement() {
             const docs = detail.dokumen as Array<{ namaDokumen: string; fileUrl: string }> || [];
             const doc = docs.find((d) => d.namaDokumen === docName);
             if (doc && doc.fileUrl) {
-              window.open(doc.fileUrl, "_blank");
+              // Tambahkan timestamp di akhir URL agar browser dipaksa unduh file versi terbaru
+              const cacheBuster = new Date().getTime();
+              const freshUrl = `${doc.fileUrl}?t=${cacheBuster}`;
+              window.open(freshUrl, "_blank");
             } else {
               alert(`File untuk dokumen "${docName}" belum diunggah oleh asesi.`);
             }
@@ -905,31 +985,45 @@ export default function UsersManagement() {
                 }}
                 className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs mr-auto cursor-pointer"
               >
-                Batal
+                {(userToVerify.status === "Terverifikasi" || userToVerify.status === "Selesai") ? "Tutup" : "Batal"}
               </button>
 
-              <button
-                onClick={handleSaveVerifyDraft}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer"
-              >
-                Simpan Draft
-              </button>
+              {userToVerify.status !== "Terverifikasi" && userToVerify.status !== "Selesai" && (
+                <>
+                  {userToVerify.role !== "asesor" && (
+                    <button
+                      onClick={handleSaveVerifyDraft}
+                      className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer"
+                    >
+                      Simpan Draft
+                    </button>
+                  )}
 
-              {userToVerify.role === "asesi" ? (
-                <button
-                  onClick={confirmVerify}
-                  disabled={!apl01FormData.ttdAdmin}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!apl01FormData.ttdAdmin ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
-                >
-                  Verifikasi Form APL-01
-                </button>
-              ) : (
-                <button
-                  onClick={confirmVerify}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-colors shadow-xs"
-                >
-                  Verifikasi Akun
-                </button>
+                  {userToVerify.role === "asesi" ? (
+                    <>
+                      <button
+                        onClick={confirmRevisi}
+                        className="px-6 py-2 bg-orange-500 text-white hover:bg-orange-600 rounded-lg text-sm font-bold transition-colors shadow-xs"
+                      >
+                        Revisi
+                      </button>
+                      <button
+                        onClick={confirmVerify}
+                        disabled={!apl01FormData.ttdAdmin}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-xs ${!apl01FormData.ttdAdmin ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
+                      >
+                        Verifikasi Form APL-01
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={confirmVerify}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-colors shadow-xs"
+                    >
+                      Verifikasi Akun
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -962,45 +1056,61 @@ export default function UsersManagement() {
 
       <section className="bg-white rounded-lg shadow-xs border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div className="bg-slate-100 p-1 rounded-lg flex items-center w-full lg:w-auto shrink-0">
-            <button
-              onClick={() => setMainTab("asesi")}
-              className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "asesi"
-                ? "bg-white text-[#008BE3] shadow-xs"
-                : "text-slate-500 hover:text-slate-800"
-                }`}
-            >
-              Asesi
-            </button>
-            <button
-              onClick={() => setMainTab("asesor")}
-              className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "asesor"
-                ? "bg-white text-[#008BE3] shadow-xs"
-                : "text-slate-500 hover:text-slate-800"
-                }`}
-            >
-              Asesor
-            </button>
-            <button
-              onClick={() => setMainTab("selesai")}
-              className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "selesai"
-                ? "bg-white text-[#008BE3] shadow-xs"
-                : "text-slate-500 hover:text-slate-800"
-                }`}
-            >
-              Selesai
-            </button>
+          <div className="flex flex-col lg:flex-row items-center gap-4 w-full lg:w-auto">
+            <div className="bg-slate-100 p-1 rounded-lg flex items-center w-full lg:w-auto shrink-0">
+              <button
+                onClick={() => setMainTab("asesi")}
+                className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "asesi"
+                  ? "bg-white text-[#008BE3] shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
+              >
+                Asesi
+              </button>
+              <button
+                onClick={() => setMainTab("asesor")}
+                className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "asesor"
+                  ? "bg-white text-[#008BE3] shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
+              >
+                Asesor
+              </button>
+              <button
+                onClick={() => setMainTab("selesai")}
+                className={`flex-1 py-2 px-3 text-xs md:text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 cursor-pointer ${mainTab === "selesai"
+                  ? "bg-white text-[#008BE3] shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
+              >
+                Selesai
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full lg:w-72 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors ml-auto">
-            <Search className="text-gray-400" size={16} />
-            <input
-              type="text"
-              placeholder="Cari nama, email atau peran..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
-            />
+          <div className="flex flex-col md:flex-row items-center gap-3 w-full lg:w-auto lg:ml-auto">
+            {mainTab === "selesai" && (
+              <select
+                value={selesaiTabFilter}
+                onChange={(e) => setSelesaiTabFilter(e.target.value as "semua" | "asesi" | "asesor")}
+                className="bg-gray-50/80 border border-gray-200/50 text-gray-700 text-[14px] font-semibold rounded-lg focus:ring-[#008BE3]/40 focus:border-[#008BE3]/40 block w-full md:w-auto p-2.5 outline-none cursor-pointer"
+              >
+                <option value="semua">Semua Selesai</option>
+                <option value="asesi">Asesi Selesai</option>
+                <option value="asesor">Asesor Selesai</option>
+              </select>
+            )}
+            
+            <div className="flex items-center gap-2 bg-gray-50/80 rounded-lg px-3 h-10.5 w-full md:w-72 border border-gray-200/50 focus-within:border-[#008BE3]/40 transition-colors">
+              <Search className="text-gray-400" size={16} />
+              <input
+                type="text"
+                placeholder="Cari nama, email atau peran..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-transparent border-none focus:ring-0 text-[14px] w-full outline-none text-gray-700 placeholder-gray-400 font-semibold"
+              />
+            </div>
           </div>
         </div>
 
@@ -1026,12 +1136,12 @@ export default function UsersManagement() {
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                   Status Verifikasi
                 </th>
-                {(mainTab === "asesi" || mainTab === "selesai") && (
+                {(mainTab === "asesi" || (mainTab === "selesai" && (selesaiTabFilter === "asesi" || selesaiTabFilter === "semua"))) && (
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                     Status Pembayaran
                   </th>
                 )}
-                {mainTab === "asesor" && (
+                {(mainTab === "asesor" || (mainTab === "selesai" && (selesaiTabFilter === "asesor" || selesaiTabFilter === "semua"))) && (
                   <>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Asal Asesor
@@ -1068,23 +1178,31 @@ export default function UsersManagement() {
                     className="px-6 py-12 text-center text-slate-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-2.5">
-                      {mainTab === "asesi" ? (
+                      {mainTab === "asesi" || (mainTab === "selesai" && selesaiTabFilter === "asesi") ? (
                         <>
                           <GraduationCap size={38} className="text-slate-300 stroke-[1.5]" />
-                          <p className="text-sm font-bold text-slate-700">Tidak ada data Asesi ditemukan</p>
-                          <p className="text-xs text-slate-400">Belum ada asesi terdaftar atau tidak ada data pencarian yang cocok.</p>
+                          <p className="text-sm font-bold text-slate-700">
+                            {mainTab === "selesai" ? "Tidak ada data Asesi yang Selesai" : "Tidak ada data Asesi ditemukan"}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {mainTab === "selesai" ? "Belum ada asesi yang telah selesai diverifikasi dan melakukan pembayaran." : "Belum ada asesi terdaftar atau tidak ada data pencarian yang cocok."}
+                          </p>
                         </>
-                      ) : mainTab === "asesor" ? (
+                      ) : mainTab === "asesor" || (mainTab === "selesai" && selesaiTabFilter === "asesor") ? (
                         <>
                           <Award size={38} className="text-slate-300 stroke-[1.5]" />
-                          <p className="text-sm font-bold text-slate-700">Tidak ada data Asesor ditemukan</p>
-                          <p className="text-xs text-slate-400">Belum ada asesor terdaftar atau tidak ada data pencarian yang cocok.</p>
+                          <p className="text-sm font-bold text-slate-700">
+                            {mainTab === "selesai" ? "Tidak ada data Asesor yang Selesai" : "Tidak ada data Asesor ditemukan"}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {mainTab === "selesai" ? "Belum ada asesor yang telah selesai diverifikasi." : "Belum ada asesor terdaftar atau tidak ada data pencarian yang cocok."}
+                          </p>
                         </>
                       ) : (
                         <>
                           <CheckCircle size={38} className="text-slate-300 stroke-[1.5]" />
-                          <p className="text-sm font-bold text-slate-700">Tidak ada data Asesi yang Selesai</p>
-                          <p className="text-xs text-slate-400">Belum ada asesi yang telah selesai diverifikasi dan melakukan pembayaran.</p>
+                          <p className="text-sm font-bold text-slate-700">Tidak ada data Selesai</p>
+                          <p className="text-xs text-slate-400">Belum ada asesi atau asesor yang telah selesai diverifikasi.</p>
                         </>
                       )}
                     </div>
@@ -1153,9 +1271,11 @@ export default function UsersManagement() {
                       </span>
                     </td>
 
-                    {(mainTab === "asesi" || mainTab === "selesai") && (
+                    {(mainTab === "asesi" || (mainTab === "selesai" && (selesaiTabFilter === "asesi" || selesaiTabFilter === "semua"))) && (
                       <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
-                        {user.verificationData?.statusPembayaran == "Sudah" ? (
+                        {user.role === "asesor" ? (
+                          <span className="text-gray-400">-</span>
+                        ) : user.verificationData?.statusPembayaran == "Sudah" ? (
                           <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 whitespace-nowrap">
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                             Sudah Bayar
@@ -1169,17 +1289,25 @@ export default function UsersManagement() {
                       </td>
                     )}
 
-                    {mainTab === "asesor" && (
+                    {(mainTab === "asesor" || (mainTab === "selesai" && (selesaiTabFilter === "asesor" || selesaiTabFilter === "semua"))) && (
                       <>
                         <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
-                            {user.verificationData?.asalAsesor === "Eksternal" ? "Eksternal" : "Internal"}
-                          </span>
+                          {user.role === "asesi" ? (
+                            <span className="text-gray-400">-</span>
+                          ) : (
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user.verificationData?.asalAsesor === "Eksternal" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                              {user.verificationData?.asalAsesor === "Eksternal" ? "Eksternal" : "Internal"}
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
-                          <span className="text-xs md:text-sm font-semibold text-slate-700 max-w-[200px] truncate inline-block" title={user.verificationData?.skema as string}>
-                            {(user.verificationData?.skema as string) || "Belum Ada"}
-                          </span>
+                          {user.role === "asesi" ? (
+                            <span className="text-gray-400">-</span>
+                          ) : (
+                            <span className="text-xs md:text-sm font-semibold text-slate-700 max-w-[200px] truncate inline-block" title={user.verificationData?.skema as string}>
+                              {(user.verificationData?.skema as string) || "Belum Ada"}
+                            </span>
+                          )}
                         </td>
                       </>
                     )}
@@ -1208,7 +1336,7 @@ export default function UsersManagement() {
                               <Trash2 size={16} />
                             </button>
 
-                            {(mainTab === "asesi" || mainTab === "selesai") && (
+                            {(mainTab === "asesi" || (mainTab === "selesai" && (selesaiTabFilter === "asesi" || selesaiTabFilter === "semua"))) && user.role === "asesi" && (
                               <button
                                 onClick={() => openPaymentModal(user)}
                                 className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-transparent hover:border-indigo-200 cursor-pointer"
@@ -1218,12 +1346,12 @@ export default function UsersManagement() {
                               </button>
                             )}
 
-                            {user.status === "Menunggu Verifikasi" ? (
+                            {mainTab === "asesi" ? (
                               <button
                                 onClick={() => openVerifyModal(user)}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#008BE3] text-white hover:bg-[#0076C2] rounded-lg text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
                               >
-                                <FileCheck size={14} /> Verifikasi
+                                <FileCheck size={14} /> Verifikasi Berkas
                               </button>
                             ) : (
                               <button
