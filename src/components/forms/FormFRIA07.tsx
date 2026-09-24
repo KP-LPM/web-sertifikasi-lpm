@@ -117,6 +117,7 @@ export interface FormFRIA07Props {
   onPrev?: () => void;
   isNextDisabled?: boolean;
   nextLabel?: string;
+  onQuestionsLoaded?: (count: number) => void;
 }
 
 export function FormFRIA07(props: FormFRIA07Props) {
@@ -167,10 +168,16 @@ export function FormFRIA07(props: FormFRIA07Props) {
   }, [props.konfigurasiId, props.skemaId]);
 
   const questions =
-    props.step4Questions ||
-    props.questions ||
+    (props.step4Questions && props.step4Questions.length > 0 ? props.step4Questions : null) ||
+    (props.questions && props.questions.length > 0 ? props.questions : null) ||
     apiQuestions ||
     DEFAULT_STEP4_QUESTIONS;
+
+  useEffect(() => {
+    if (props.onQuestionsLoaded) {
+      props.onQuestionsLoaded(questions.length);
+    }
+  }, [questions.length, props.onQuestionsLoaded]);
 
   const [localAnswers, setLocalAnswers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>

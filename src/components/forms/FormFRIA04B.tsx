@@ -7,9 +7,18 @@ import {
   getKonfigurasiPertanyaanDetail,
 } from "@/lib/api";
 
-export const DEFAULT_STEP3_QUESTIONS = [
+export interface FormFRIA04BQuestion {
+  id: string;
+  skenario: string;
+  pertanyaan: string;
+  elemen: string;
+  lingkupTitle?: string;
+}
+
+export const DEFAULT_STEP3_QUESTIONS: FormFRIA04BQuestion[] = [
   {
     id: "s3_q1",
+    lingkupTitle: "Mencari Makna Kata dan Ungkapan Menggunakan Alat Bantu",
     skenario:
       "Selama menerjemahkan teks panduan teknis, Anda menemui istilah khusus industri yang tidak ada di kamus umum dan alat bantu konvensional.",
     pertanyaan:
@@ -18,6 +27,7 @@ export const DEFAULT_STEP3_QUESTIONS = [
   },
   {
     id: "s3_q2",
+    lingkupTitle: "Mencari Makna Kata dan Ungkapan Menggunakan Alat Bantu",
     skenario:
       "Anda telah menemukan beberapa referensi dari alat bantu nonkonvensional (misalnya forum profesi atau korpus).",
     pertanyaan:
@@ -26,6 +36,7 @@ export const DEFAULT_STEP3_QUESTIONS = [
   },
   {
     id: "s3_q3",
+    lingkupTitle: "Memilih Metode Penerjemahan yang Tepat",
     skenario:
       "Klien meminta agar teks diterjemahkan dengan gaya bahasa santai untuk pembaca remaja, meskipun teks aslinya agak formal.",
     pertanyaan:
@@ -34,6 +45,7 @@ export const DEFAULT_STEP3_QUESTIONS = [
   },
   {
     id: "s3_q4",
+    lingkupTitle: "Memilih Metode Penerjemahan yang Tepat",
     skenario:
       "Anda menemui kalimat idiomatik yang jika diterjemahkan harfiah akan terdengar kaku di bahasa sasaran.",
     pertanyaan:
@@ -46,8 +58,8 @@ export interface FormFRIA04BProps {
   asesmenData?: Apl02FormData;
   skemaId?: number;
   konfigurasiId?: number;
-  questions?: typeof DEFAULT_STEP3_QUESTIONS;
-  step3Questions?: typeof DEFAULT_STEP3_QUESTIONS;
+  questions?: FormFRIA04BQuestion[];
+  step3Questions?: FormFRIA04BQuestion[];
   answers?: Record<string, { answer: string; achievement: boolean | null }>;
   step3Answers?: Record<
     string,
@@ -109,11 +121,12 @@ export interface FormFRIA04BProps {
   onNext?: () => void;
   onPrev?: () => void;
   isNextDisabled?: boolean;
+  onQuestionsLoaded?: (count: number) => void;
 }
 
 export function FormFRIA04B(props: FormFRIA04BProps) {
   const [apiQuestions, setApiQuestions] = useState<
-    typeof DEFAULT_STEP3_QUESTIONS | null
+    FormFRIA04BQuestion[] | null
   >(null);
 
   useEffect(() => {
@@ -143,6 +156,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                 : [];
               return subList.map((sp, spIdx: number) => ({
                 id: `s3_${(lingkup.id as string | number) || lIdx}_${(sp.id as string | number) || spIdx}`,
+                lingkupTitle: (lingkup.nama_lingkup as string) || `Lingkup ${lIdx + 1}`,
                 skenario:
                   (sp.skenario_pertanyaan as string) ||
                   (lingkup.nama_lingkup as string) ||
@@ -171,10 +185,16 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
   }, [props.konfigurasiId, props.skemaId]);
 
   const questions =
-    props.step3Questions ||
-    props.questions ||
+    (props.step3Questions && props.step3Questions.length > 0 ? props.step3Questions : null) ||
+    (props.questions && props.questions.length > 0 ? props.questions : null) ||
     apiQuestions ||
     DEFAULT_STEP3_QUESTIONS;
+
+  useEffect(() => {
+    if (props.onQuestionsLoaded) {
+      props.onQuestionsLoaded(questions.length);
+    }
+  }, [questions.length, props.onQuestionsLoaded]);
 
   const [localAnswers, setLocalAnswers] = useState<
     Record<string, { answer: string; achievement: boolean | null }>
@@ -302,28 +322,16 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
     setLocalAsesorDate(val);
   };
 
-  const lingkupList = [
-    {
-      title: "Mencari Makna Kata dan Ungkapan Menggunakan Alat Bantu",
-      qs: [questions[0], questions[1]].filter(Boolean),
-    },
-    {
-      title: "Memilih Metode Penerjemahan yang Tepat",
-      qs: [questions[2], questions[3]].filter(Boolean),
-    },
-    {
-      title: "Memilih Teknik Penerjemahan",
-      qs: [questions[4], questions[5]].filter(Boolean),
-    },
-    {
-      title: "Penilaian Hasil Terjemahan",
-      qs: [questions[6], questions[7]].filter(Boolean),
-    },
-    {
-      title: "Penyusunan Glosarium",
-      qs: [questions[8], questions[9]].filter(Boolean),
-    },
-  ].filter((l) => l.qs.length > 0);
+  const lingkupList = questions.reduce((acc, q) => {
+    const title = q.lingkupTitle || "Lingkup";
+    const existing = acc.find((l) => l.title === title);
+    if (existing) {
+      existing.qs.push(q);
+    } else {
+      acc.push({ title, qs: [q] });
+    }
+    return acc;
+  }, [] as { title: string; qs: FormFRIA04BQuestion[] }[]);
 
   return (
     <div className="animate-in fade-in duration-300">
