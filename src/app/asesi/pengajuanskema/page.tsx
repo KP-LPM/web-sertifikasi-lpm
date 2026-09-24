@@ -75,8 +75,20 @@ interface Breadcrumb {
   onClick?: () => void;
 }
 
-// Tambahkan tipe statusPembayaran ke Profile agar ESLint tidak protes
-type SubmissionProfile = Profile & { statusPembayaran?: string };
+// Tambahkan properti baru di SubmissionProfile untuk menampung alamat dari master_tuk
+type SubmissionProfile = Profile & { 
+  statusPembayaran?: string;
+  name: string;
+  kode: string;
+  date: string;
+  status: string;
+  tipeTuk: string;
+  asesmenDate?: string;
+  asesorName?: string;
+  virtualMeeting?: string;
+  tukName?: string;
+  alamatLengkap?: string;
+};
 
 export default function PengajuanSkemaPage() {
   const { user, setExtraCrumbs, showNotification, registeredProfile } = useAppContext();
@@ -191,7 +203,6 @@ export default function PengajuanSkemaPage() {
 
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
-  // Gunakan tipe SubmissionProfile yang sudah kita buat
   const [submissions, setSubmissions] = useState<SubmissionProfile[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
 
@@ -200,7 +211,6 @@ export default function PengajuanSkemaPage() {
     try {
       const data = await getPengajuanList();
       if (Array.isArray(data)) {
-        // Deklarasikan status_pembayaran di dalam tipe parameter
         const mappedList: SubmissionProfile[] = (data as Array<{
           id: number;
           nomorPengajuan?: string;
@@ -210,6 +220,7 @@ export default function PengajuanSkemaPage() {
           statusPembayaran?: string | boolean;
           skema?: { id?: number; namaSkema?: string; kodeSkema?: string };
           user?: { username?: string; email?: string };
+          master_tuk?: { nama?: string; alamat?: string; tipe?: string };
           dataPribadi?: {
             namaLengkap?: string;
             tempatLahir?: string;
@@ -242,6 +253,7 @@ export default function PengajuanSkemaPage() {
               alamat?: string;
               link_video?: string;
               users?: { profil?: { namaLengkap?: string } };
+              master_tuk?: { nama?: string; alamat?: string };
             };
           }>;
         }>).map((item) => {
@@ -254,6 +266,19 @@ export default function PengajuanSkemaPage() {
               })
               .replace(/\//g, "-")
             : "-";
+
+          // Logika Pemetaan TUK & Alamat (Sinkron dengan halaman Dashboard)
+          const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+          const tipeTuk = (jadwal?.tipe_tuk || item.master_tuk?.tipe || item.tuk || "Mandiri (Online)") as string;
+          const isOnline = tipeTuk.toLowerCase().includes("online") || tipeTuk.toLowerCase().includes("virtual");
+
+          const tukName = isOnline 
+            ? "Online" 
+            : (jadwal?.master_tuk?.nama || item.master_tuk?.nama || "UIN Sunan Gunung Djati Bandung");
+          
+          const alamatLengkap = isOnline 
+            ? "" 
+            : (jadwal?.master_tuk?.alamat || item.master_tuk?.alamat || jadwal?.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru");
 
           return {
             id: item.id,
@@ -292,7 +317,9 @@ export default function PengajuanSkemaPage() {
               item.dataPribadi?.alamatInstitusi || "",
             telpInstitusi: item.dataPribadi?.telpInstitusi || "",
             faxInstitusi: item.dataPribadi?.faxInstitusi || "",
-            tipeTuk: item.tuk || "Mandiri (Online)",
+            tipeTuk,
+            tukName,
+            alamatLengkap,
             penyesuaianWajar:
               item.dataPribadi?.memerlukanPenyesuaianWajar ?? false,
             berpengalaman: item.dataPribadi?.isBerpengalaman ?? false,
@@ -498,7 +525,7 @@ export default function PengajuanSkemaPage() {
 
         profileSetters.forEach(([val, setter, key]) => {
           if (val !== undefined && val !== null && val !== "") {
-            let actualVal = String(val);
+            const actualVal = String(val); // Diperbaiki: diubah dari let menjadi const
             setter(actualVal);
             if (key !== 'pendidikanTerakhir') {
               loaded[key as keyof typeof loaded] = true;
@@ -1136,7 +1163,7 @@ export default function PengajuanSkemaPage() {
                         <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                           TUK
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                        <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-75 sticky top-0 z-20 bg-[#0F172A]">
                           Alamat
                         </th>
                         <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
@@ -1219,12 +1246,12 @@ export default function PengajuanSkemaPage() {
                                 {item.tipeTuk || "-"}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-xs text-gray-500 font-medium">
+                            <td className="px-6 py-4 text-xs text-gray-500 font-medium" title={item.alamatLengkap || item.tukName}>
                               {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) && !item.tipeTuk?.includes("Online") && !item.tipeTuk?.includes("Virtual") ? (
                                 <>
-                                  <div className="font-medium text-slate-700">{item.alamatInstitusi || "-"}</div>
-                                  {item.alamatInstitusi && item.alamatInstitusi !== "-" && (
-                                    <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                                  <div className="font-medium text-slate-700">{item.tukName || "-"}</div>
+                                  {item.alamatLengkap && item.alamatLengkap !== "-" && (
+                                    <div className="text-[10px] text-gray-400 mt-0.5">{item.alamatLengkap}</div>
                                   )}
                                 </>
                               ) : "-"}
@@ -1263,7 +1290,7 @@ export default function PengajuanSkemaPage() {
                                     Tersedia
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
+                                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-50 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                                     <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
                                     Belum Tersedia
                                   </span>
