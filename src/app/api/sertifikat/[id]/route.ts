@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { sertifikatService } from "@/services/sertifikat.service";
 import { sendResponse } from "@/lib/response";
@@ -21,9 +21,9 @@ export async function DELETE(
 
     await sertifikatService.delete(pengajuanId);
     return sendResponse(200, "Berhasil menghapus sertifikat");
-  } catch (error: any) {
-    if (error.code === 'P2025') {
-       return sendResponse(404, "Sertifikat tidak ditemukan");
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && (error as { code: string }).code === 'P2025') {
+      return sendResponse(404, "Sertifikat tidak ditemukan");
     }
     console.error("Gagal menghapus sertifikat:", error);
     return sendResponse(500, "Internal server error");

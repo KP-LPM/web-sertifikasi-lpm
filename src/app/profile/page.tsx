@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SignatureCanvas from "react-signature-canvas";
 import { useRouter } from "next/navigation";
 import { forgotPassword, getUsersProfile } from "@/lib/api";
-import { DATA_PROVINSI, DATA_KOTA, DATA_PEKERJAAN, DATA_PENDIDIKAN } from "@/data/rujukan";
+import { DATA_PROVINSI, DATA_KOTA } from "@/data/rujukan";
 
 type SessionUser = {
   id?: string | number;
@@ -176,8 +176,8 @@ export default function Profile() {
         email: data.email || user?.email || prev.email,
         namaLengkap: namaAsli,
         tempatLahir: data.tempatLahir || data.tempat_lahir || "",
-        tanggalLahir: data.tanggalLahir || data.tanggal_lahir 
-          ? new Date(String(data.tanggalLahir || data.tanggal_lahir)).toISOString().split("T")[0] 
+        tanggalLahir: data.tanggalLahir || data.tanggal_lahir
+          ? new Date(String(data.tanggalLahir || data.tanggal_lahir)).toISOString().split("T")[0]
           : "",
         jenisKelamin: data.jenisKelamin || data.jenis_kelamin || "",
         alamat: data.alamat || data.alamat_rumah || prev.alamat,
