@@ -172,7 +172,18 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
     baseCrumbs = ROUTE_CRUMBS[pathname];
   }
 
-  if (!baseCrumbs) return null;
+  if (!baseCrumbs) {
+    // Handle dynamic routes
+    if (/^\/asesi\/pengajuanskema\/\d+\/edit$/.test(pathname)) {
+      baseCrumbs = [
+        { label: "Dashboard", href: "/asesi/overview" },
+        { label: "Pengajuan Skema", href: "/asesi/pengajuanskema" },
+        { label: "Revisi Pengajuan" },
+      ];
+    } else {
+      return null;
+    }
+  }
 
   const crumbs = [...baseCrumbs, ...(extraCrumbs || [])];
 

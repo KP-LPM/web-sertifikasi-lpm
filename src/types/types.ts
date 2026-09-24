@@ -470,6 +470,8 @@ export interface Apl01FormData {
   schemeDetail?: SchemeDetailInfo;
   checklist?: Record<string, "memenuhi" | "tidak memenuhi">;
   readOnly?: boolean;
+  onPreview?: (filename: string) => void;
+  onUpload?: (filename: string) => void;
   [key: string]: unknown;
 }
 

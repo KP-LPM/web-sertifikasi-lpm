@@ -940,7 +940,9 @@ export default function PengajuanSkemaPage() {
       statusSubFilter === "Semua" ||
       item.status.toLowerCase() === statusSubFilter.toLowerCase() ||
       (statusSubFilter.toLowerCase().includes("menunggu") &&
-        item.status.toLowerCase().includes("menunggu"));
+        item.status.toLowerCase().includes("menunggu")) ||
+      (statusSubFilter.toLowerCase() === "revisi" &&
+        item.status.toLowerCase().includes("revisi"));
     const matchesDate =
       !dateSubFilter ||
       (() => {
@@ -1290,9 +1292,9 @@ export default function PengajuanSkemaPage() {
                                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
                                   Terjadwal
                                 </span>
-                              ) : item.status?.toLowerCase() === "revisi" ? (
-                                <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
-                                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                              ) : item.status?.toLowerCase() === "revisi" || item.status?.toLowerCase() === "ditolak / revisi" ? (
+                                <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                                   Revisi
                                 </span>
                               ) : item.status?.toLowerCase() === "perlu perbaikan" ? (
@@ -1370,16 +1372,7 @@ export default function PengajuanSkemaPage() {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const scheme = schemesData.find((s) => s.kode === item.kode);
-                                      if (scheme) {
-                                        setSelectedScheme(scheme);
-                                      }
-                                      setTempEFormData((eFormData["FR.APL.02 Asesmen Mandiri"] as Record<string, unknown>) || {});
-                                      setActiveModalDoc({
-                                        isEForm: true,
-                                        name: "FR.APL.02 Asesmen Mandiri",
-                                        isPreview: false
-                                      });
+                                      window.location.href = `/asesi/pengajuanskema/${item.id}/edit`;
                                     }}
                                     className="inline-flex items-center gap-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
                                   >
