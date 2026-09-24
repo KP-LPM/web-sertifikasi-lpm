@@ -381,10 +381,12 @@ export default function AssessmentSchedule() {
         ? new Date(item.tanggal).toISOString().split("T")[0]
         : "",
       waktuMulai: item.waktu_mulai
-        ? new Date(item.waktu_mulai).toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
+        ? (String(item.waktu_mulai).includes("T") && !isNaN(Date.parse(String(item.waktu_mulai)))
+          ? new Date(item.waktu_mulai).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+          : String(item.waktu_mulai).substring(0, 5))
         : "08:00",
       linkVideo: item.link_video || "",
       tipeTuk: item.tipe_tuk || "Sewaktu",
