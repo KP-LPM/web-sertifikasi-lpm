@@ -213,6 +213,17 @@ export default function ManageSchemes() {
 
   useEffect(() => {
     fetchSchemes();
+
+    try {
+      const draft = localStorage.getItem("tambahSkemaFormDraft");
+      if (draft) {
+        const parsedDraft = JSON.parse(draft);
+        if (parsedDraft && typeof parsedDraft === "object" && Object.keys(parsedDraft).length > 0) {
+          setIsModalOpen(true);
+        }
+      }
+    } catch (err) {
+    }
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");

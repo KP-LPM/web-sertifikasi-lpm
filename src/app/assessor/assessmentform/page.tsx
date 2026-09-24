@@ -287,6 +287,46 @@ function AssessmentFormContent() {
   >(null);
   const [catatanAsesor, setCatatanAsesor] = useState("");
 
+  const isDraftLoaded = React.useRef(false);
+
+  useEffect(() => {
+    if (selectedAsesmen?.id && typeof window !== "undefined") {
+      try {
+        const draftStr = localStorage.getItem(`assessmentDraft_${selectedAsesmen.id}`);
+        if (draftStr) {
+          const draft = JSON.parse(draftStr);
+          if (draft.rekomendasiApl02) setRekomendasiApl02(draft.rekomendasiApl02);
+          if (draft.answersApl02) setAnswersApl02(draft.answersApl02);
+          if (draft.acuanPembanding) setAcuanPembanding(draft.acuanPembanding);
+          if (draft.metodeAsesmen) setMetodeAsesmen(draft.metodeAsesmen);
+          if (draft.instrumenAsesmen) setInstrumenAsesmen(draft.instrumenAsesmen);
+          if (draft.umpanBalikStep2) setUmpanBalikStep2(draft.umpanBalikStep2);
+          if (draft.rekomendasiStep3) setRekomendasiStep3(draft.rekomendasiStep3);
+          if (draft.potensiAsesi) setPotensiAsesi(draft.potensiAsesi);
+          if (draft.noAdjustment !== undefined) setNoAdjustment(draft.noAdjustment);
+          if (draft.adjustments) setAdjustments(draft.adjustments);
+          if (draft.step3Answers) setStep3Answers(draft.step3Answers);
+          if (draft.step4Answers) setStep4Answers(draft.step4Answers);
+          if (draft.umpanBalikStep4) setUmpanBalikStep4(draft.umpanBalikStep4);
+          if (draft.finalDecision) setFinalDecision(draft.finalDecision);
+          if (draft.catatanAsesor) setCatatanAsesor(draft.catatanAsesor);
+        }
+      } catch (e) {}
+      isDraftLoaded.current = true;
+    }
+  }, [selectedAsesmen?.id]);
+
+  useEffect(() => {
+    if (isDraftLoaded.current && selectedAsesmen?.id && typeof window !== "undefined") {
+      const draftData = {
+        rekomendasiApl02, answersApl02, acuanPembanding, metodeAsesmen, instrumenAsesmen,
+        umpanBalikStep2, rekomendasiStep3, potensiAsesi, noAdjustment, adjustments,
+        step3Answers, step4Answers, umpanBalikStep4, finalDecision, catatanAsesor,
+      };
+      localStorage.setItem(`assessmentDraft_${selectedAsesmen.id}`, JSON.stringify(draftData));
+    }
+  });
+
   // Validation
   const isStep1Valid =
     noAdjustment ||
@@ -408,6 +448,9 @@ function AssessmentFormContent() {
       }
 
       if (selectedAsesmen) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(`assessmentDraft_${selectedAsesmen.id}`);
+        }
         updateAssessmentItem(selectedAsesmen.id, {
           status: "Selesai",
           hasil: finalDecision,

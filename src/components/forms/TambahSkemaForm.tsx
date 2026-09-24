@@ -8,8 +8,6 @@ import {
   Layers,
   CheckSquare,
   ArrowLeft,
-  Copy,
-  Check,
   Eye,
   Briefcase,
   ClipboardCheck,
@@ -37,6 +35,8 @@ interface TambahSkemaFormProps {
   initialData?: Partial<MasterSkemaFormState> & { id?: number };
 }
 
+const DRAFT_KEY = "tambahSkemaFormDraft";
+
 export function TambahSkemaForm({
   onCancel,
   onSaveSuccess,
@@ -54,88 +54,123 @@ export function TambahSkemaForm({
   }, [initialData?.kodeSkema, setExtraCrumbs]);
 
   // Form State initialized from props or default initial state
-  const [formState, setFormState] = useState<MasterSkemaFormState>({
-    kodeSkema: initialData?.kodeSkema || "",
-    namaSkema: initialData?.namaSkema || "",
-    nomorSertifikat: initialData?.nomorSertifikat || "",
-    nomorRegistrasi: initialData?.nomorRegistrasi || "",
-    statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
-    konfigurasiSoalId: initialData?.konfigurasiSoalId || undefined,
-    persyaratanDasar:
-      initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
-        ? initialData.persyaratanDasar.map((p, idx) => ({
-          ...p,
-          namaDokumen: p.namaDokumen || "",
-          deskripsi: p.deskripsi || "",
-          urutan: p.urutan || idx + 1,
-          is_wajib: p.is_wajib ?? true,
-        }))
-        : [
-          {
-            namaDokumen: "Transkrip Nilai Semester 5",
-            deskripsi:
-              "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
-            urutan: 1,
-            is_wajib: true,
-          },
-        ],
-    persyaratanAdministrasi:
-      initialData?.persyaratanAdministrasi &&
-        initialData.persyaratanAdministrasi.length > 0
-        ? initialData.persyaratanAdministrasi.map((p, idx) => ({
-          ...p,
-          id: p.id || idx + 1,
-          namaDokumen: p.namaDokumen || "",
-          deskripsi: p.deskripsi || "",
-          isWajib: p.isWajib ?? true,
-          isAktif: p.isAktif ?? true,
-        }))
-        : [
-          {
-            id: 1,
-            namaDokumen: "Kartu Tanda Penduduk (KTP)",
-            deskripsi:
-              "Scan KTP asli atau identitas resmi yang masih berlaku.",
-            isWajib: true,
-            isAktif: true,
-          },
-        ],
-    unitKompetensi:
-      initialData?.unitKompetensi && initialData.unitKompetensi.length > 0
-        ? initialData.unitKompetensi.map((u, idx) => ({
-          ...u,
-          kodeUnit: u.kodeUnit || "",
-          judulUnit: u.judulUnit || "",
-          urutan: u.urutan || idx + 1,
-          elemen: (u.elemen || []).map((e, eIdx) => ({
-            ...e,
-            namaElemen: e.namaElemen || "",
-            urutan: e.urutan || eIdx + 1,
-            isWajib: e.isWajib ?? true,
-            kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
-              ? e.kriteriaUnjukKerja.map((k) => k || "")
-              : [""],
-          })),
-        }))
-        : [
-          {
-            kodeUnit: "J.611000.001.01",
-            judulUnit: "Merancang Topologi Jaringan",
-            urutan: 1,
-            elemen: [
-              {
-                namaElemen: "Menyiapkan perancangan topologi",
-                kriteriaUnjukKerja: [
-                  "1.1 Kebutuhan pengguna diidentifikasi.",
-                  "1.2 Perangkat jaringan ditentukan.",
-                ],
-                urutan: 1,
-                isWajib: true,
-              },
-            ],
-          },
-        ],
+  const [formState, setFormState] = useState<MasterSkemaFormState>(() => {
+    if (typeof window !== "undefined" && !initialData?.id && !initialData?.kodeSkema) {
+      try {
+        const draft = localStorage.getItem(DRAFT_KEY);
+        if (draft) {
+          const parsedDraft = JSON.parse(draft);
+          if (parsedDraft && typeof parsedDraft === "object") {
+            return parsedDraft;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load draft from localStorage", err);
+      }
+    }
+
+    return {
+      kodeSkema: initialData?.kodeSkema || "",
+      namaSkema: initialData?.namaSkema || "",
+      nomorSertifikat: initialData?.nomorSertifikat || "",
+      nomorRegistrasi: initialData?.nomorRegistrasi || "",
+      statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
+      konfigurasiSoalId: initialData?.konfigurasiSoalId || undefined,
+      persyaratanDasar:
+        initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
+          ? initialData.persyaratanDasar.map((p, idx) => ({
+            ...p,
+            namaDokumen: p.namaDokumen || "",
+            deskripsi: p.deskripsi || "",
+            urutan: p.urutan || idx + 1,
+            is_wajib: p.is_wajib ?? true,
+          }))
+          : [
+            {
+              namaDokumen: "Transkrip Nilai Semester 5",
+              deskripsi:
+                "Minimal semester 6 mahasiswa UIN SGD yang telah menyelesaikan matakuliah wajib skema.",
+              urutan: 1,
+              is_wajib: true,
+            },
+          ],
+      persyaratanAdministrasi:
+        initialData?.persyaratanAdministrasi &&
+          initialData.persyaratanAdministrasi.length > 0
+          ? initialData.persyaratanAdministrasi.map((p, idx) => ({
+            ...p,
+            id: p.id || idx + 1,
+            namaDokumen: p.namaDokumen || "",
+            deskripsi: p.deskripsi || "",
+            isWajib: p.isWajib ?? true,
+            isAktif: p.isAktif ?? true,
+          }))
+          : [
+            {
+              id: 1,
+              namaDokumen: "Kartu Tanda Penduduk (KTP)",
+              deskripsi:
+                "Scan KTP asli atau identitas resmi yang masih berlaku.",
+              isWajib: true,
+              isAktif: true,
+            },
+          ],
+      unitKompetensi:
+        initialData?.unitKompetensi && initialData.unitKompetensi.length > 0
+          ? initialData.unitKompetensi.map((u, idx) => ({
+            ...u,
+            kodeUnit: u.kodeUnit || "",
+            judulUnit: u.judulUnit || "",
+            urutan: u.urutan || idx + 1,
+            elemen: (u.elemen || []).map((e, eIdx) => ({
+              ...e,
+              namaElemen: e.namaElemen || "",
+              urutan: e.urutan || eIdx + 1,
+              isWajib: e.isWajib ?? true,
+              kriteriaUnjukKerja: Array.isArray(e.kriteriaUnjukKerja)
+                ? e.kriteriaUnjukKerja.map((k) => k || "")
+                : [""],
+            })),
+          }))
+          : [
+            {
+              kodeUnit: "J.611000.001.01",
+              judulUnit: "Merancang Topologi Jaringan",
+              urutan: 1,
+              elemen: [
+                {
+                  namaElemen: "Menyiapkan perancangan topologi",
+                  kriteriaUnjukKerja: [
+                    "1.1 Kebutuhan pengguna diidentifikasi.",
+                    "1.2 Perangkat jaringan ditentukan.",
+                  ],
+                  urutan: 1,
+                  isWajib: true,
+                },
+              ],
+            },
+          ],
+    };
   });
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && !initialData?.id && !initialData?.kodeSkema) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(formState));
+    }
+  }, [formState, isMounted, initialData?.id, initialData?.kodeSkema]);
+
+  const handleCancel = () => {
+    if (!initialData?.id && !initialData?.kodeSkema) {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+    onCancel();
+  };
 
   const [activeFormTab, setActiveFormTab] = useState<
     "frak07" | "fria04a" | "fria04b" | "fria07"
@@ -558,6 +593,9 @@ export function TambahSkemaForm({
         if (res && res.id) savedData = { ...payload, id: res.id };
       }
       if (onSaveSuccess) {
+        if (!initialData?.id && !initialData?.kodeSkema) {
+          localStorage.removeItem(DRAFT_KEY);
+        }
         onSaveSuccess(savedData);
       }
     } catch (err: unknown) {
@@ -582,7 +620,7 @@ export function TambahSkemaForm({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             className="w-10 h-10 rounded-lg flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 border border-[#008BE3]/20 transition-colors cursor-pointer shrink-0 shadow-xs"
             title="Kembali ke Kelola Skema"
           >
@@ -604,7 +642,7 @@ export function TambahSkemaForm({
         <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors shadow-2xs cursor-pointer flex-1 sm:flex-none text-center"
           >
             Batal
@@ -1466,7 +1504,7 @@ export function TambahSkemaForm({
       <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
         <button
           type="button"
-          onClick={onCancel}
+          onClick={handleCancel}
           className="px-5 py-2.5 text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors shadow-xs"
         >
           Batal

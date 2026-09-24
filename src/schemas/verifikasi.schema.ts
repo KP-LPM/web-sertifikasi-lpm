@@ -7,8 +7,8 @@ export const verifikasiApl01Schema = z.object({
   catatan: z.string().optional().nullable(),
   statusPembayaran: z.string().optional().nullable(),
   sumberAnggaran: z.string().optional().nullable(),
-  adminSignatureUrl: z.string().url("Format URL tidak valid").optional().nullable(),
-  lspSignatureUrl: z.string().url("Format URL tidak valid").optional().nullable(),
+  adminSignatureUrl: z.string().optional().nullable(),
+  lspSignatureUrl: z.string().optional().nullable(),
   assignedAsesorId: z.number().optional().nullable(),
 });
 

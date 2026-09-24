@@ -76,7 +76,7 @@ export default function RiwayatAsesmenAdmin() {
   const [assessmentList, setAssessmentList] = useState<AssessmentItem[]>([]);
   const [completedBatches, setCompletedBatches] = useState<CompletedBatchItem[]>([]);
   const [completedPleno, setCompletedPleno] = useState<PlenoDetailData[]>([]);
-  const [riwayatDetails, setRiwayatDetails] = useState<any[]>([]);
+  const [riwayatDetails, setRiwayatDetails] = useState<{ form_type: string;[key: string]: string | number | boolean | null | undefined }[]>([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -472,7 +472,7 @@ export default function RiwayatAsesmenAdmin() {
                         </div>
                       </div>
                       <button
-                        onClick={() => setPreviewForm(detail.form_type)}
+                        onClick={() => setPreviewForm(detail.form_type as "FR.APL.01" | "FR.APL.02" | "FR.AK.07" | "FR.IA.04A" | "FR.IA.04B" | "FR.IA.07")}
                         className="flex items-center gap-2 px-4 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-sm font-bold transition-colors cursor-pointer"
                       >
                         <Eye size={16} /> Pratinjau
@@ -513,8 +513,10 @@ export default function RiwayatAsesmenAdmin() {
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
                 {(() => {
                   const activeDetail = riwayatDetails.find((d) => d.form_type === previewForm);
-                  const formData = activeDetail?.form_data || {};
-                  const penilaian = activeDetail?.penilaian || {};
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const formData: any = activeDetail?.form_data || {};
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const penilaian: any = activeDetail?.penilaian || {};
 
                   return (
                     <>

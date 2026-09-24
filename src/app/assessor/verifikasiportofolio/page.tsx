@@ -89,10 +89,12 @@ export default function VerifikasiPortofolio() {
       try {
         const list = await getSkemaList();
         if (list && Array.isArray(list)) {
-          const schemes = list.map((s: any) => ({
-            id: s.id,
-            name: s.namaSkema || s.kodeSkema
-          })).filter(s => s.name);
+          const schemes = list
+            .filter((s: { id?: number | string; namaSkema?: string; kodeSkema?: string }) => s.id !== undefined && (s.namaSkema || s.kodeSkema))
+            .map((s: { id?: number | string; namaSkema?: string; kodeSkema?: string }) => ({
+              id: Number(s.id),
+              name: String(s.namaSkema || s.kodeSkema)
+            }));
           setAvailableSchemes(schemes);
           if (schemes.length > 0) {
             setFormData(prev => ({ ...prev, skema: schemes[0].name }));

@@ -877,7 +877,6 @@ export default function UsersManagement() {
                                 </div>
                                 <div>
                                   <p className="text-sm font-bold text-slate-800">{index + 1}. {doc.namaDokumen}</p>
-                                  <p className="text-xs text-slate-500">{(doc.fileName as string) || doc.namaDokumen}</p>
                                 </div>
                               </div>
                               <a href={doc.fileUrl || "#"} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors shadow-2xs ${doc.namaDokumen.toLowerCase().includes("jawaban") ? "text-purple-600" : "text-[#008BE3]"}`}>

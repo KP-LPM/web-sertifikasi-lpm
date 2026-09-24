@@ -19,7 +19,6 @@ import {
   User,
 } from "lucide-react";
 
-import { AVAILABLE_SCHEMES } from "@/data/schemes";
 import { FormDocumentTable } from "@/components/forms/asesi/FormDocumentTable";
 import { FormKompetensiTable } from "@/components/forms/asesi/FormKompetensiTable";
 import { EFormApl01 } from "@/components/forms/asesi/FormFRAPL01";
@@ -51,6 +50,7 @@ import {
   getPengajuanDetail,
   deletePengajuan,
   createRiwayatAsesmen,
+  getSkemaList,
 } from "@/lib/api";
 
 // --- INTERFACE UNTUK DATA RUJUKAN ---
@@ -269,10 +269,7 @@ export default function PengajuanSkemaPage() {
                 .toISOString()
                 .split("T")[0]
               : "",
-            jenisKelamin:
-              item.dataPribadi?.jenisKelamin === "Laki_laki"
-                ? "Laki-laki"
-                : item.dataPribadi?.jenisKelamin || "",
+            jenisKelamin: item.dataPribadi?.jenisKelamin || "",
             alamat: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.alamat || item.dataPribadi?.alamat || "",
             provinsi: item.dataPribadi?.kodeProvinsi || "",
             kota: item.dataPribadi?.kodeKota || "",
@@ -360,6 +357,100 @@ export default function PengajuanSkemaPage() {
 
   const [lockedFields, setLockedFields] = useState<Record<string, boolean>>({});
 
+  const isDraftLoaded = React.useRef(false);
+
+  React.useEffect(() => {
+    if (selectedScheme?.id && typeof window !== "undefined") {
+      try {
+        const draftStr = localStorage.getItem(`asesiPengajuanDraft_${selectedScheme.id}`);
+        if (draftStr) {
+          const draft = JSON.parse(draftStr);
+          if (draft) {
+            if (draft.eFormData) {
+              setEFormData(draft.eFormData);
+            }
+            import("@/lib/draftDb").then(({ loadDraftFiles }) => {
+              loadDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`).then((fileData) => {
+                if (fileData && Object.keys(fileData).length > 0) {
+                  setEFormData((prev) => ({ ...prev, ...fileData }));
+                }
+              });
+            });
+            if (draft.namaLengkap) setNamaLengkap(draft.namaLengkap);
+            if (draft.tempatLahir) setTempatLahir(draft.tempatLahir);
+            if (draft.tanggalLahir) setTanggalLahir(draft.tanggalLahir);
+            if (draft.jenisKelamin) setJenisKelamin(draft.jenisKelamin);
+            if (draft.alamat) setAlamat(draft.alamat);
+            if (draft.provinsi) setProvinsi(draft.provinsi);
+            if (draft.kota) setKota(draft.kota);
+            if (draft.nik) setNik(draft.nik);
+            if (draft.kewarganegaraan) setKewarganegaraan(draft.kewarganegaraan);
+            if (draft.kodePos) setKodePos(draft.kodePos);
+            if (draft.noTelp) setNoTelp(draft.noTelp);
+            if (draft.pendidikanTerakhir) setPendidikanTerakhir(draft.pendidikanTerakhir);
+            if (draft.pekerjaan) setPekerjaan(draft.pekerjaan);
+            if (draft.institusiPerusahaan) setInstitusiPerusahaan(draft.institusiPerusahaan);
+            if (draft.jabatan) setJabatan(draft.jabatan);
+            if (draft.emailInstitusi) setEmailInstitusi(draft.emailInstitusi);
+            if (draft.kodePosInstitusi) setKodePosInstitusi(draft.kodePosInstitusi);
+            if (draft.alamatInstitusi) setAlamatInstitusi(draft.alamatInstitusi);
+            if (draft.telpInstitusi) setTelpInstitusi(draft.telpInstitusi);
+            if (draft.faxInstitusi) setFaxInstitusi(draft.faxInstitusi);
+            if (draft.tuk) setTuk(draft.tuk);
+            if (draft.metode) setMetode(draft.metode);
+            if (draft.berpengalaman !== undefined) setBerpengalaman(draft.berpengalaman);
+            if (draft.step) setStep(draft.step);
+          }
+        }
+      } catch (e) { }
+      isDraftLoaded.current = true;
+    } else {
+      isDraftLoaded.current = false;
+    }
+  }, [selectedScheme?.id]);
+
+  React.useEffect(() => {
+    if (subView === "apply-form" && isDraftLoaded.current && selectedScheme?.id && typeof window !== "undefined") {
+      const cleanEFormData: Record<string, unknown> = {};
+      Object.keys(eFormData).forEach((k) => {
+        const val = eFormData[k];
+        if (val && !Array.isArray(val) && !(val instanceof File)) {
+          cleanEFormData[k] = val;
+        } else if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string') {
+          cleanEFormData[k] = val;
+        }
+      });
+
+      const draftData = {
+        eFormData: cleanEFormData,
+        namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, alamat,
+        provinsi, kota, nik, kewarganegaraan, kodePos, noTelp,
+        pendidikanTerakhir, pekerjaan, institusiPerusahaan, jabatan,
+        emailInstitusi, kodePosInstitusi, alamatInstitusi, telpInstitusi, faxInstitusi,
+        tuk, metode, berpengalaman, step,
+      };
+
+      localStorage.setItem(`asesiPengajuanDraft_${selectedScheme.id}`, JSON.stringify(draftData));
+
+      import("@/lib/draftDb").then(({ saveDraftFiles }) => {
+        saveDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`, eFormData);
+      });
+    }
+  });
+
+  React.useEffect(() => {
+    if (schemesData.length > 0 && typeof window !== "undefined") {
+      const activeId = localStorage.getItem("asesiActiveSchemeId");
+      if (activeId && !selectedScheme) {
+        const found = schemesData.find((s) => s.id === Number(activeId));
+        if (found) {
+          setSelectedScheme(found);
+          setSubView("apply-form");
+        }
+      }
+    }
+  }, [schemesData, selectedScheme]);
+
   React.useEffect(() => {
     const fetchProfil = async () => {
       const userId = Number(user?.id);
@@ -424,230 +515,152 @@ export default function PengajuanSkemaPage() {
     const fetchSchemes = async () => {
       setIsLoadingSchemes(true);
       try {
-        const response = await fetch("/api/skema");
-        if (response.ok) {
-          const result = await response.json();
-          const mappedSchemes: SchemeItem[] = result.data.map(
-            (skema: Record<string, unknown>) => {
-              const kodeSkema = String(
-                skema.kode_skema || skema.kodeSkema || "-",
-              );
-              const namaSkema = String(
-                skema.nama_skema || skema.namaSkema || "-",
-              );
+        const data = await getSkemaList();
+        const mappedSchemes: SchemeItem[] = data.map(
+          (skema: Record<string, unknown>) => {
+            const kodeSkema = String(
+              skema.kode_skema || skema.kodeSkema || "-",
+            );
+            const namaSkema = String(
+              skema.nama_skema || skema.namaSkema || "-",
+            );
 
-              const localMatch = (
-                AVAILABLE_SCHEMES as unknown as Array<{
-                  code?: string;
-                  kode?: string;
-                  name?: string;
-                  nama?: string;
-                  units?: Array<{
-                    code?: string;
-                    kode?: string;
-                    title?: string;
-                    judul?: string;
-                    elemen?: Array<{
-                      title?: string;
-                      nama?: string;
-                      kuk?: string[];
-                    }>;
-                  }>;
-                  persyaratanDasar?: Array<{
-                    name?: string;
-                    namaDokumen?: string;
-                    description?: string;
-                    deskripsi?: string;
-                  }>;
-                  buktiAdministratif?: Array<
-                    | string
-                    | {
-                      namaDokumen?: string;
-                      name?: string;
-                    }
-                  >;
-                }>
-              ).find(
-                (s) =>
-                  s.kode === kodeSkema ||
-                  s.code === kodeSkema ||
-                  s.nama === namaSkema ||
-                  s.name === namaSkema,
-              );
-
-              const rawUnits = Array.isArray(skema.unitKompetensi)
-                ? (skema.unitKompetensi as Array<Record<string, unknown>>)
-                : [];
-              const units: UnitKompetensiItem[] =
-                rawUnits.length > 0
-                  ? rawUnits.map((u, uIdx) => {
-                    const rawElemen = Array.isArray(u.elemenKompetensi)
-                      ? (u.elemenKompetensi as Array<Record<string, unknown>>)
-                      : Array.isArray(u.elemen)
-                        ? (u.elemen as Array<Record<string, unknown>>)
-                        : [];
-
-                    const elemen = rawElemen.map((el, eIdx) => {
-                      let kukList: string[] = [];
-                      if (Array.isArray(el.kriteriaUnjukKerja)) {
-                        kukList = el.kriteriaUnjukKerja as string[];
-                      } else if (Array.isArray(el.kuk)) {
-                        kukList = el.kuk as string[];
-                      } else if (typeof el.kriteriaUnjukKerja === "string") {
-                        try {
-                          const parsed = JSON.parse(el.kriteriaUnjukKerja);
-                          kukList = Array.isArray(parsed)
-                            ? parsed
-                            : [el.kriteriaUnjukKerja];
-                        } catch {
-                          kukList = el.kriteriaUnjukKerja
-                            .split("\n")
-                            .filter(Boolean);
-                        }
-                      }
-
-                      return {
-                        id: Number(el.id || eIdx + 1),
-                        namaElemen: String(
-                          el.namaElemen ||
-                          el.nama_elemen ||
-                          el.title ||
-                          el.nama ||
-                          `Elemen ${eIdx + 1}`,
-                        ),
-                        kriteriaUnjukKerja: kukList,
-                        urutan: Number(el.urutan || eIdx + 1),
-                        isWajib: el.isWajib !== false,
-                      };
-                    });
-
-                    return {
-                      id: Number(u.id || uIdx + 1),
-                      kodeUnit: String(
-                        u.kodeUnit ||
-                        u.kode_unit ||
-                        u.code ||
-                        u.kode ||
-                        "-",
-                      ),
-                      judulUnit: String(
-                        u.judulUnit ||
-                        u.judul_unit ||
-                        u.title ||
-                        u.judul ||
-                        "-",
-                      ),
-                      urutan: Number(u.urutan || uIdx + 1),
-                      elemen,
-                    };
-                  })
-                  : (localMatch?.units || []).map((u, uIdx) => ({
-                    id: uIdx + 1,
-                    kodeUnit: u.code || u.kode || "-",
-                    judulUnit: u.title || u.judul || "-",
-                    urutan: uIdx + 1,
-                    elemen: (u.elemen || []).map((el, eIdx) => ({
-                      id: eIdx + 1,
-                      namaElemen: el.title || el.nama || `Elemen ${eIdx + 1}`,
-                      kriteriaUnjukKerja: el.kuk || [],
-                      urutan: eIdx + 1,
-                      isWajib: true,
-                    })),
-                  }));
-
-              const rawPersyaratanDasar = Array.isArray(skema.persyaratanDasar)
-                ? (skema.persyaratanDasar as Array<Record<string, unknown>>)
-                : [];
-              const persyaratanDasar: PersyaratanDasar[] =
-                rawPersyaratanDasar.length > 0
-                  ? rawPersyaratanDasar.map((p, idx) => ({
-                    id: Number(p.id || idx + 1),
-                    namaDokumen: String(
-                      p.namaDokumen || p.name || p.nama || "Dokumen",
-                    ),
-                    deskripsi: p.deskripsi
-                      ? String(p.deskripsi)
-                      : p.description
-                        ? String(p.description)
-                        : "",
-                    urutan: Number(p.urutan || idx + 1),
-                    is_wajib: p.isWajib !== false,
-                  }))
-                  : (localMatch?.persyaratanDasar || []).map((p, idx) => ({
-                    id: idx + 1,
-                    namaDokumen: p.name || p.namaDokumen || "Dokumen",
-                    deskripsi: p.description || p.deskripsi || "",
-                    urutan: idx + 1,
-                    is_wajib: true,
-                  }));
-
-              const rawAdm = Array.isArray(skema.master_bukti_administratif)
-                ? (skema.master_bukti_administratif as Array<
-                  Record<string, unknown>
-                >)
-                : Array.isArray(skema.persyaratanAdministrasi)
-                  ? (skema.persyaratanAdministrasi as Array<
-                    Record<string, unknown>
-                  >)
+            const rawUnits = Array.isArray(skema.unitKompetensi)
+              ? (skema.unitKompetensi as Array<Record<string, unknown>>)
+              : [];
+            const units: UnitKompetensiItem[] = rawUnits.map((u, uIdx) => {
+              const rawElemen = Array.isArray(u.elemenKompetensi)
+                ? (u.elemenKompetensi as Array<Record<string, unknown>>)
+                : Array.isArray(u.elemen)
+                  ? (u.elemen as Array<Record<string, unknown>>)
                   : [];
 
-              const defaultBuktiAdm = [
-                {
-                  id: 1,
-                  namaDokumen: "Salinan KTP dan KTM",
-                  isWajib: true,
-                  isAktif: true,
-                },
-                {
-                  id: 2,
-                  namaDokumen:
-                    "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
-                  isWajib: true,
-                  isAktif: true,
-                },
-              ];
+              const elemen = rawElemen.map((el, eIdx) => {
+                let kukList: string[] = [];
+                if (Array.isArray(el.kriteriaUnjukKerja)) {
+                  kukList = el.kriteriaUnjukKerja as string[];
+                } else if (Array.isArray(el.kuk)) {
+                  kukList = el.kuk as string[];
+                } else if (typeof el.kriteriaUnjukKerja === "string") {
+                  try {
+                    const parsed = JSON.parse(el.kriteriaUnjukKerja);
+                    kukList = Array.isArray(parsed)
+                      ? parsed
+                      : [el.kriteriaUnjukKerja];
+                  } catch {
+                    kukList = el.kriteriaUnjukKerja
+                      .split("\n")
+                      .filter(Boolean);
+                  }
+                }
 
-              const persyaratanAdministrasi: PersyaratanAdministrasi[] =
-                rawAdm.length > 0
-                  ? rawAdm.map((a, idx) => ({
-                    id: Number(a.id || idx + 1),
-                    namaDokumen: String(
-                      a.namaDokumen || a.name || a.nama || "Dokumen",
-                    ),
-                    deskripsi: a.deskripsi ? String(a.deskripsi) : "",
-                    isWajib: a.isWajib !== false,
-                    isAktif: a.isAktif !== false,
-                  }))
-                  : localMatch?.buktiAdministratif &&
-                    localMatch.buktiAdministratif.length > 0
-                    ? localMatch.buktiAdministratif.map((item, idx) => ({
-                      id: idx + 1,
-                      namaDokumen:
-                        typeof item === "string"
-                          ? item
-                          : item.namaDokumen || item.name || "Dokumen",
-                      deskripsi: "",
-                      isWajib: true,
-                      isAktif: true,
-                    }))
-                    : defaultBuktiAdm;
+                return {
+                  id: Number(el.id || eIdx + 1),
+                  namaElemen: String(
+                    el.namaElemen ||
+                    el.nama_elemen ||
+                    el.title ||
+                    el.nama ||
+                    `Elemen ${eIdx + 1}`,
+                  ),
+                  kriteriaUnjukKerja: kukList,
+                  urutan: Number(el.urutan || eIdx + 1),
+                  isWajib: el.isWajib !== false,
+                };
+              });
 
               return {
-                ...skema,
-                id: Number(skema.id),
-                kode: kodeSkema,
-                nama: namaSkema,
-                status: "Active",
-                kategori: String(skema.kategori || "-"),
-                unitKompetensi: units,
-                persyaratanDasar,
-                persyaratanAdministrasi,
+                id: Number(u.id || uIdx + 1),
+                kodeUnit: String(
+                  u.kodeUnit ||
+                  u.kode_unit ||
+                  u.code ||
+                  u.kode ||
+                  "-",
+                ),
+                judulUnit: String(
+                  u.judulUnit ||
+                  u.judul_unit ||
+                  u.title ||
+                  u.judul ||
+                  "-",
+                ),
+                urutan: Number(u.urutan || uIdx + 1),
+                elemen,
               };
-            },
-          );
+            });
 
-          setSchemesData(mappedSchemes);
-        }
+            const rawPersyaratanDasar = Array.isArray(skema.persyaratanDasar)
+              ? (skema.persyaratanDasar as Array<Record<string, unknown>>)
+              : [];
+            const persyaratanDasar: PersyaratanDasar[] = rawPersyaratanDasar.map((p, idx) => ({
+              id: Number(p.id || idx + 1),
+              namaDokumen: String(
+                p.namaDokumen || p.name || p.nama || "Dokumen",
+              ),
+              deskripsi: p.deskripsi
+                ? String(p.deskripsi)
+                : p.description
+                  ? String(p.description)
+                  : "",
+              urutan: Number(p.urutan || idx + 1),
+              is_wajib: p.isWajib !== false,
+            }));
+
+            const rawAdm = Array.isArray(skema.master_bukti_administratif)
+              ? (skema.master_bukti_administratif as Array<
+                Record<string, unknown>
+              >)
+              : Array.isArray(skema.persyaratanAdministrasi)
+                ? (skema.persyaratanAdministrasi as Array<
+                  Record<string, unknown>
+                >)
+                : [];
+
+            const defaultBuktiAdm = [
+              {
+                id: 1,
+                namaDokumen: "Salinan KTP dan KTM",
+                isWajib: true,
+                isAktif: true,
+              },
+              {
+                id: 2,
+                namaDokumen:
+                  "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
+                isWajib: true,
+                isAktif: true,
+              },
+            ];
+
+            const persyaratanAdministrasi: PersyaratanAdministrasi[] =
+              rawAdm.length > 0
+                ? rawAdm.map((a, idx) => ({
+                  id: Number(a.id || idx + 1),
+                  namaDokumen: String(
+                    a.namaDokumen || a.name || a.nama || "Dokumen",
+                  ),
+                  deskripsi: a.deskripsi ? String(a.deskripsi) : "",
+                  isWajib: a.isWajib !== false,
+                  isAktif: a.isAktif !== false,
+                }))
+                : defaultBuktiAdm;
+
+            return {
+              ...skema,
+              id: Number(skema.id),
+              kode: kodeSkema,
+              nama: namaSkema,
+              status: "Active",
+              kategori: String(skema.kategori || "-"),
+              unitKompetensi: units,
+              persyaratanDasar,
+              persyaratanAdministrasi,
+            };
+          }
+        );
+
+        setSchemesData(mappedSchemes);
       } catch (error) {
         console.error("Gagal memuat skema:", error);
       } finally {
@@ -893,6 +906,14 @@ export default function PengajuanSkemaPage() {
       setTuk("");
       setMetode("");
       setBerpengalaman(false);
+      if (typeof window !== "undefined" && selectedScheme?.id) {
+        localStorage.removeItem(`asesiPengajuanDraft_${selectedScheme.id}`);
+        localStorage.removeItem("asesiActiveSchemeId");
+        import("@/lib/draftDb").then(({ deleteDraftFiles }) => {
+          deleteDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`);
+        });
+      }
+      setEFormData({});
       setStep(1);
       setSubView("list");
       await fetchSubmissions();
@@ -966,10 +987,7 @@ export default function PengajuanSkemaPage() {
     return tanggal;
   };
 
-  const effectiveSchemes =
-    schemesData.length > 0
-      ? schemesData
-      : (AVAILABLE_SCHEMES as unknown as SchemeItem[]);
+  const effectiveSchemes = schemesData;
 
   const filteredSchemes = effectiveSchemes.filter((item) => {
     const name = (item.nama || "")?.toLowerCase() ?? "";
@@ -1352,8 +1370,7 @@ export default function PengajuanSkemaPage() {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const scheme = schemesData.find((s) => s.kode === item.kode) ||
-                                        (AVAILABLE_SCHEMES as unknown as SchemeItem[]).find((s) => s.kode === item.kode);
+                                      const scheme = schemesData.find((s) => s.kode === item.kode);
                                       if (scheme) {
                                         setSelectedScheme(scheme);
                                       }
@@ -1924,6 +1941,9 @@ export default function PengajuanSkemaPage() {
                                   setSelectedScheme(scheme);
                                   setSubView("apply-form");
                                   setStep(1);
+                                  if (typeof window !== "undefined") {
+                                    localStorage.setItem("asesiActiveSchemeId", scheme.id.toString());
+                                  }
                                 }}
                                 className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer"
                               >
@@ -2460,7 +2480,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={kewarganegaraan}
-                      disabled={lockedFields.kewarganegaraan} onChange={(e) => setKewarganegaraan(e.target.value)}
+                      onChange={(e) => setKewarganegaraan(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800 cursor-pointer"
                     >
                       <option value="WNI">WNI</option>
@@ -2577,7 +2597,7 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={pekerjaan}
-                      disabled={lockedFields.pekerjaan} onChange={(e) => {
+                      onChange={(e) => {
                         setPekerjaan(e.target.value);
                         if (errors.pekerjaan)
                           setErrors({ ...errors, pekerjaan: false });
@@ -3437,7 +3457,26 @@ export default function PengajuanSkemaPage() {
               <button
                 onClick={() => {
                   setShowExitWarning(false);
-                  if (exitDestination) setSubView(exitDestination);
+                  if (exitDestination) {
+                    setSubView(exitDestination);
+                    if (typeof window !== "undefined") {
+                      localStorage.removeItem("asesiActiveSchemeId");
+                      if (selectedScheme?.id) {
+                        localStorage.removeItem(`asesiPengajuanDraft_${selectedScheme.id}`);
+                        import("@/lib/draftDb").then(({ deleteDraftFiles }) => {
+                          deleteDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`);
+                        });
+                      }
+                    }
+                    setEFormData({});
+                    setTuk("");
+                    setMetode("");
+                    setBerpengalaman(false);
+                    setStep(1);
+                    if (exitDestination === "list") {
+                      setSelectedScheme(null);
+                    }
+                  }
                 }}
                 className="px-4 py-2 font-bold text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors cursor-pointer"
               >

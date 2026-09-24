@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     revalidatePath("/api/skema");
 
     return sendResponse(201, "Skema berhasil dibuat!", newSkema);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // PERBAIKAN 2: Tangkap RateLimitError
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       return sendResponse(error.statusCode, error.message);
     }
     // Handle Prisma unique constraint violation
-    if (error?.code === "P2002") {
+    if (error !== null && typeof error === "object" && "code" in error && (error as { code?: string }).code === "P2002") {
       return sendResponse(400, "Kode skema sudah ada (duplikat). Silakan gunakan kode skema lain.");
     }
     console.log(error);

@@ -33,21 +33,11 @@ import {
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createKonfigurasiPertanyaan, getSkemaList } from "@/lib/api";
+import { createKonfigurasiPertanyaan, getSkemaList, getAllUsers } from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Dummy options removed. Skema options now loaded dynamically.
 
-const assessorOptions = [
-  {
-    value: "aditya_rahman",
-    label: "Aditya Rahman Syach, M.Kom (Asesor Utama)",
-  },
-  { value: "made_jaya", label: "I Made Jaya Artana, S.T., M.T. (Asesor)" },
-  {
-    value: "budi_santoso",
-    label: "Drs. Budi Santoso, M.Ak (Asesor Spesialis)",
-  },
-];
+
 
 const availableKUKOptions = [
   "M.692000.001.01 E1/KUK 1.1",
@@ -68,15 +58,8 @@ const initialWizardState: WizardFormState = {
       "Set Konfigurasi Pertanyaan Asesmen Komprehensif (FR.IA.04A & FR.IA.04B)",
     skemaSertifikasi: "network_admin",
     versi: "1.0",
-    penyusun: [
-      {
-        value: "aditya_rahman",
-        label: "Aditya Rahman Syach, M.Kom (Asesor Utama)",
-      },
-    ],
-    validator: [
-      { value: "made_jaya", label: "I Made Jaya Artana, S.T., M.T. (Asesor)" },
-    ],
+    penyusun: [],
+    validator: [],
     isDefault: false,
   },
   step1: {
@@ -230,20 +213,40 @@ function TambahKonfigurasiPertanyaanContent() {
     updateKonfigurasiPertanyaan,
     konfigurasiPertanyaan,
   } = useAppContext();
-  const [skemaOptions, setSkemaOptions] = useState<{value: string, label: string}[]>([]);
+  const [skemaOptions, setSkemaOptions] = useState<{ value: string, label: string }[]>([]);
+  const [assessorOptions, setAssessorOptions] = useState<{ value: string, label: string }[]>([]);
+
   useEffect(() => {
-    async function fetchSkema() {
+    async function fetchData() {
       try {
-        const res = await getSkemaList();
-        setSkemaOptions(res.map((s: any) => ({
-          value: s.id?.toString() || s.kodeSkema || s.namaSkema || s.name || s.id,
-          label: `${s.kodeSkema || s.kode || s.code || ''} - ${s.namaSkema || s.nama || s.name || ''}`.replace(/^- | -$/g, '').trim() || s.name,
+        const [skemaRes, usersRes] = await Promise.all([
+          getSkemaList().catch(() => []),
+          getAllUsers().catch(() => [])
+        ]);
+
+        if (Array.isArray(skemaRes)) {
+          setSkemaOptions(skemaRes.map((s: Record<string, string | number | undefined>) => ({
+            value: String(s.id?.toString() || s.kodeSkema || s.namaSkema || s.name || s.id || ''),
+            label: String(`${s.kodeSkema || s.kode || s.code || ''} - ${s.namaSkema || s.nama || s.name || ''}`.replace(/^- | -$/g, '').trim() || s.name || ''),
+          })));
+        }
+
+        const usersList = Array.isArray(usersRes)
+          ? usersRes
+          : usersRes && typeof usersRes === "object" && "data" in usersRes && Array.isArray((usersRes as { data: unknown[] }).data)
+            ? (usersRes as { data: unknown[] }).data
+            : [];
+
+        const assessors = usersList.filter((u: any) => u.role?.toLowerCase() === "asesor");
+        setAssessorOptions(assessors.map((a: any) => ({
+          value: a.id?.toString() || a.username,
+          label: `${a.namaLengkap || a.username} (Asesor)`
         })));
       } catch (e) {
         console.error(e);
       }
     }
-    fetchSkema();
+    fetchData();
   }, []);
 
   // Active step state (1 to 5)s
@@ -1240,18 +1243,16 @@ function TambahKonfigurasiPertanyaanContent() {
                       }
                     }
                   }}
-                  className={`flex flex-col items-center text-center group cursor-pointer relative z-10 transition-all ${
-                    isActive ? "scale-105" : "opacity-85 hover:opacity-100"
-                  }`}
+                  className={`flex flex-col items-center text-center group cursor-pointer relative z-10 transition-all ${isActive ? "scale-105" : "opacity-85 hover:opacity-100"
+                    }`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${
-                      isCompleted
-                        ? "bg-emerald-600 text-white border-2 border-emerald-600"
-                        : isActive
-                          ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
-                          : "bg-white text-slate-400 border-2 border-gray-300"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${isCompleted
+                      ? "bg-emerald-600 text-white border-2 border-emerald-600"
+                      : isActive
+                        ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
+                        : "bg-white text-slate-400 border-2 border-gray-300"
+                      }`}
                   >
                     {isCompleted ? (
                       <Check size={18} strokeWidth={3} />
@@ -1262,20 +1263,18 @@ function TambahKonfigurasiPertanyaanContent() {
 
                   <div className="mt-2 space-y-0.5">
                     <span
-                      className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${
-                        isActive
-                          ? "text-[#008BE3]"
-                          : isCompleted
-                            ? "text-emerald-700"
-                            : "text-slate-400"
-                      }`}
+                      className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${isActive
+                        ? "text-[#008BE3]"
+                        : isCompleted
+                          ? "text-emerald-700"
+                          : "text-slate-400"
+                        }`}
                     >
                       {st.code}
                     </span>
                     <span
-                      className={`text-xs font-black block leading-tight ${
-                        isActive ? "text-slate-900" : "text-slate-600"
-                      }`}
+                      className={`text-xs font-black block leading-tight ${isActive ? "text-slate-900" : "text-slate-600"
+                        }`}
                     >
                       {st.title}
                     </span>
@@ -1931,9 +1930,9 @@ function TambahKonfigurasiPertanyaanContent() {
                             onChange={(selected) => {
                               const selectedOptions = (selected ||
                                 []) as Array<{
-                                value: string;
-                                label: string;
-                              }>;
+                                  value: string;
+                                  label: string;
+                                }>;
                               updateStep3SubPertanyaan(
                                 lingkup.id,
                                 sub.id,
@@ -2385,11 +2384,10 @@ function TambahKonfigurasiPertanyaanContent() {
             type="button"
             onClick={handlePrevStep}
             disabled={activeStep === 1}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${
-              activeStep === 1
-                ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
-                : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
-            }`}
+            className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${activeStep === 1
+              ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
+              : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
+              }`}
           >
             <ChevronLeft size={18} /> Sebelumnya
           </button>

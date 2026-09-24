@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -510,27 +511,65 @@ export default function AssessmentSchedule() {
 
   useEffect(() => {
     fetchJadwalData();
+    if (typeof window !== "undefined") {
+      try {
+        const jadwalDraft = localStorage.getItem("jadwalAsesmenFormDraft");
+        if (jadwalDraft) {
+          const parsed = JSON.parse(jadwalDraft);
+          if (parsed && typeof parsed === "object" && (parsed.namaBatch || parsed.skema || parsed.nomorSurat)) {
+            setIsModalOpen(true);
+          }
+        }
+        const plenoDraft = localStorage.getItem("sidangPlenoFormDraft");
+        if (plenoDraft) {
+          const parsed = JSON.parse(plenoDraft);
+          if (parsed && typeof parsed === "object" && (parsed.title || parsed.batchCode || parsed.skema)) {
+            setIsPlenoModalOpen(true);
+          }
+        }
+      } catch { }
+    }
   }, []);
 
   const [selectedAsesiForJadwal, setSelectedAsesiForJadwal] = useState<
     number[]
   >([]);
-  const [formData, setFormData] = useState({
-    namaBatch: "",
-    nomorSurat: "",
-    skema: "",
-    metode: "Offline",
-    tipeTuk: "Sewaktu",
-    alamat: "UIN Sunan Gunung Djati Bandung",
-    tanggal: "",
-    waktuMulai: "08:00",
-    tuk: "",
-    namaAsesor: "",
-    suratTugasUrl: "",
-    totalKandidat: 0,
-    status: "Terjadwal",
-    linkVideo: "",
-  });
+
+  const loadJadwalDraft = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const draft = localStorage.getItem("jadwalAsesmenFormDraft");
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed && typeof parsed === "object") return parsed;
+        }
+      } catch { }
+    }
+    return {
+      namaBatch: "",
+      nomorSurat: "",
+      skema: "",
+      metode: "Offline",
+      tipeTuk: "Sewaktu",
+      alamat: "UIN Sunan Gunung Djati Bandung",
+      tanggal: "",
+      waktuMulai: "08:00",
+      tuk: "",
+      namaAsesor: "",
+      suratTugasUrl: "",
+      totalKandidat: 0,
+      status: "Terjadwal",
+      linkVideo: "",
+    };
+  };
+
+  const [formData, setFormData] = useState(loadJadwalDraft);
+
+  useEffect(() => {
+    if (!isEditMode && typeof window !== "undefined") {
+      localStorage.setItem("jadwalAsesmenFormDraft", JSON.stringify(formData));
+    }
+  }, [formData, isEditMode]);
 
   const handleAddSchedule = async () => {
     if (
@@ -609,7 +648,7 @@ export default function AssessmentSchedule() {
                     : undefined,
                 inisialAsesor: formData.namaAsesor
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")
                   .substring(0, 2)
                   .toUpperCase(),
@@ -625,7 +664,7 @@ export default function AssessmentSchedule() {
           ...formData,
           inisialAsesor: formData.namaAsesor
             .split(" ")
-            .map((n) => n[0])
+            .map((n: string) => n[0])
             .join("")
             .substring(0, 2)
             .toUpperCase(),
@@ -636,23 +675,11 @@ export default function AssessmentSchedule() {
       }
     }
 
+    if (!isEditMode && typeof window !== "undefined") {
+      localStorage.removeItem("jadwalAsesmenFormDraft");
+    }
     setIsModalOpen(false);
-    setFormData({
-      namaBatch: "",
-      nomorSurat: "",
-      skema: "",
-      metode: "Offline",
-      tipeTuk: "Sewaktu",
-      alamat: "UIN Sunan Gunung Djati Bandung",
-      tanggal: "",
-      waktuMulai: "08:00",
-      tuk: "",
-      namaAsesor: "",
-      suratTugasUrl: "",
-      totalKandidat: 0,
-      status: "Terjadwal",
-      linkVideo: "",
-    });
+    setFormData(loadJadwalDraft());
     setSelectedAsesiForJadwal([]);
   };
 
@@ -699,17 +726,47 @@ export default function AssessmentSchedule() {
     url: string;
   } | null>(null);
 
+  const loadPlenoDraft = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const draft = localStorage.getItem("sidangPlenoFormDraft");
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed && typeof parsed === "object") return parsed;
+        }
+      } catch { }
+    }
+    return {
+      id: undefined,
+      batchCode: "",
+      title: "",
+      tanggal: "",
+      waktu: "",
+      skema: "",
+      alamat: "Ruang Rapat Utama (Offline)",
+      detailAlamat: "",
+      deskripsi: "",
+      plenoAttendees: [],
+      suratPlenoName: "",
+      suratPlenoUrl: "",
+      linkSuratBeritaPleno: "",
+      linkSuratHasil: "",
+      status: "Terjadwal",
+      asesiList: [],
+    };
+  };
+
   const [plenoForm, setPlenoForm] = useState<{
     id?: number;
     batchCode?: string;
     title?: string;
     tanggal: string;
-    waktu: string; // diperbaiki dari "waktu" jadi 2 field terpisah
+    waktu: string;
     skema: string;
     alamat: string;
     detailAlamat?: string;
     deskripsi: string;
-    plenoAttendees: PlenoAttendee[]; // pakai interface yang sudah ada, bukan inline type
+    plenoAttendees: PlenoAttendee[];
     suratPlenoName?: string;
     suratPlenoUrl?: string;
     linkSuratBeritaPleno?: string;
@@ -717,24 +774,13 @@ export default function AssessmentSchedule() {
     status?: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     asesiList?: any[];
-  }>({
-    id: undefined,
-    batchCode: "",
-    title: "",
-    tanggal: "",
-    waktu: "",
-    skema: "",
-    alamat: "Ruang Rapat Utama (Offline)",
-    detailAlamat: "",
-    deskripsi: "",
-    plenoAttendees: [],
-    suratPlenoName: "",
-    suratPlenoUrl: "",
-    linkSuratBeritaPleno: "",
-    linkSuratHasil: "",
-    status: "Terjadwal",
-    asesiList: [],
-  });
+  }>(loadPlenoDraft);
+
+  useEffect(() => {
+    if (!isEditMode && typeof window !== "undefined") {
+      localStorage.setItem("sidangPlenoFormDraft", JSON.stringify(plenoForm));
+    }
+  }, [plenoForm, isEditMode]);
 
   const isAttendeeSelected = (nama: string, role: Role) => {
     return plenoForm.plenoAttendees.some(
@@ -850,25 +896,11 @@ export default function AssessmentSchedule() {
       }
 
       await fetchJadwalData();
+      if (!isEditMode && typeof window !== "undefined") {
+        localStorage.removeItem("sidangPlenoFormDraft");
+      }
       setIsPlenoModalOpen(false);
-      setPlenoForm({
-        id: undefined,
-        batchCode: "",
-        title: "",
-        tanggal: "",
-        waktu: "",
-        skema: "",
-        alamat: "Ruang Rapat Utama (Offline)",
-        detailAlamat: "",
-        deskripsi: "",
-        plenoAttendees: [],
-        suratPlenoName: "",
-        suratPlenoUrl: "",
-        linkSuratBeritaPleno: "",
-        linkSuratHasil: "",
-        status: "Terjadwal",
-        asesiList: [],
-      });
+      setPlenoForm(loadPlenoDraft());
       setSelectedAsesiForPleno([]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -922,7 +954,12 @@ export default function AssessmentSchedule() {
       >
         <div className="flex items-center gap-4">
           <button
-            onClick={() => setIsModalOpen(false)}
+            onClick={() => {
+              if (!isEditMode && typeof window !== "undefined") {
+                localStorage.removeItem("jadwalAsesmenFormDraft");
+              }
+              setIsModalOpen(false);
+            }}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali"
           >
@@ -1356,7 +1393,12 @@ export default function AssessmentSchedule() {
           </div>
           <div className="p-6 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                if (!isEditMode && typeof window !== "undefined") {
+                  localStorage.removeItem("jadwalAsesmenFormDraft");
+                }
+                setIsModalOpen(false);
+              }}
               className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
             >
               {isPreviewMode ? "Kembali" : "Batal"}
@@ -1392,7 +1434,12 @@ export default function AssessmentSchedule() {
       >
         <div className="flex items-center gap-4">
           <button
-            onClick={() => setIsPlenoModalOpen(false)}
+            onClick={() => {
+              if (!isEditMode && typeof window !== "undefined") {
+                localStorage.removeItem("sidangPlenoFormDraft");
+              }
+              setIsPlenoModalOpen(false);
+            }}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali"
           >
@@ -1766,7 +1813,12 @@ export default function AssessmentSchedule() {
 
           <div className="p-6 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
             <button
-              onClick={() => setIsPlenoModalOpen(false)}
+              onClick={() => {
+                if (!isEditMode && typeof window !== "undefined") {
+                  localStorage.removeItem("sidangPlenoFormDraft");
+                }
+                setIsPlenoModalOpen(false);
+              }}
               className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
             >
               {isPreviewMode ? "Kembali" : "Batal"}
@@ -1889,22 +1941,7 @@ export default function AssessmentSchedule() {
                 onClick={() => {
                   setIsPreviewMode(false);
                   setIsEditMode(false);
-                  setFormData({
-                    namaBatch: "",
-                    nomorSurat: "",
-                    skema: "",
-                    metode: "Offline",
-                    tipeTuk: "Sewaktu",
-                    alamat: "UIN Sunan Gunung Djati Bandung",
-                    tanggal: "",
-                    linkVideo: "",
-                    waktuMulai: "08:00",
-                    tuk: "",
-                    totalKandidat: 0,
-                    namaAsesor: "",
-                    suratTugasUrl: "",
-                    status: "Terjadwal",
-                  });
+                  setFormData(loadJadwalDraft());
                   setSelectedAsesiForJadwal([]);
                   setIsModalOpen(true);
                 }}
@@ -1920,17 +1957,7 @@ export default function AssessmentSchedule() {
                 onClick={() => {
                   setIsPreviewMode(false);
                   setIsEditMode(false);
-                  setPlenoForm({
-                    id: undefined,
-                    batchCode: "",
-                    tanggal: "",
-                    waktu: "",
-                    skema: "",
-                    alamat: "Ruang Rapat Utama (Offline)",
-                    deskripsi: "",
-                    plenoAttendees: [{ role: "", nama: "" }],
-                    suratPlenoName: "",
-                  });
+                  setPlenoForm(loadPlenoDraft());
                   setSelectedAsesiForPleno([]);
                   setIsPlenoModalOpen(true);
                 }}
@@ -2054,7 +2081,7 @@ export default function AssessmentSchedule() {
                                   {item.alamat ||
                                     "UIN Sunan Gunung Djati Bandung"}
                                 </span>
-                                {(item.alamat || "UIN Sunan Gunung Djati Bandung") && !item.alamat?.toLowerCase().includes("online") && (
+                                {(!item.alamat || !item.alamat.toLowerCase().includes("online")) && (
                                   <span className="text-[11px] text-gray-400 block mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</span>
                                 )}
                               </div>

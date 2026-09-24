@@ -102,21 +102,53 @@ export default function KelolaSurat() {
 
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  // Form State for creating new document
-  const [formData, setFormData] = useState<Partial<SuratItem>>({
-    nomorSurat: "",
-    judul: "",
-    kategori: "surat_masuk",
-    jenisSurat: "berita_acara_pleno",
-    tanggalDibuat: new Date().toISOString().split("T")[0],
-    tanggalTerbit: new Date().toISOString().split("T")[0],
-    penerbit: "LSP UIN Sunan Gunung Djati Bandung",
-    penerima: "",
-    skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-    status: "Terbit",
-    urlGdrive: "",
-    catatan: "",
-  });
+  const loadSuratDraft = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const draft = localStorage.getItem("suratFormDraft");
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed && typeof parsed === "object") return parsed;
+        }
+      } catch { }
+    }
+    return {
+      nomorSurat: "",
+      judul: "",
+      kategori: "surat_masuk",
+      jenisSurat: "berita_acara_pleno",
+      tanggalDibuat: new Date().toISOString().split("T")[0],
+      tanggalTerbit: new Date().toISOString().split("T")[0],
+      penerbit: "LSP UIN Sunan Gunung Djati Bandung",
+      penerima: "",
+      skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
+      status: "Terbit",
+      urlGdrive: "",
+      catatan: "",
+    } as Partial<SuratItem>;
+  };
+
+  const [formData, setFormData] = useState<Partial<SuratItem>>(loadSuratDraft);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("suratFormDraft", JSON.stringify(formData));
+    }
+  }, [formData]);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const draft = localStorage.getItem("suratFormDraft");
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed && typeof parsed === "object" && (parsed.nomorSurat || parsed.penerima || parsed.catatan || parsed.urlGdrive)) {
+            setIsCreateModalOpen(true);
+          }
+        }
+      } catch { }
+    }
+  }, []);
 
 
 
@@ -217,20 +249,10 @@ export default function KelolaSurat() {
         );
         fetchDocuments();
         setIsCreateModalOpen(false);
-        setFormData({
-          nomorSurat: "",
-          judul: "",
-          kategori: "surat_masuk",
-          jenisSurat: "berita_acara_pleno",
-          tanggalDibuat: new Date().toISOString().split("T")[0],
-          tanggalTerbit: new Date().toISOString().split("T")[0],
-          penerbit: "LSP UIN Sunan Gunung Djati Bandung",
-          penerima: "",
-          skemaSertifikasi: "Pemrogram Mobil Pertama (Mobile Developer)",
-          status: "Terbit",
-          urlGdrive: "",
-          catatan: "",
-        });
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("suratFormDraft");
+        }
+        setFormData(loadSuratDraft());
       } else {
         showNotification(result.message || "Gagal membuat surat.", "error");
       }
@@ -269,7 +291,10 @@ export default function KelolaSurat() {
 
         {!readOnly && (
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              setFormData(loadSuratDraft());
+              setIsCreateModalOpen(true);
+            }}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0"
           >
             <Plus size={16} className="stroke-3" />
@@ -643,7 +668,12 @@ export default function KelolaSurat() {
                 </h3>
               </div>
               <button
-                onClick={() => setIsCreateModalOpen(false)}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    localStorage.removeItem("suratFormDraft");
+                  }
+                  setIsCreateModalOpen(false);
+                }}
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
               >
                 <X size={18} />
@@ -823,7 +853,12 @@ export default function KelolaSurat() {
               <div className="pt-5 flex items-center justify-end gap-3 border-t border-gray-100">
                 <button
                   type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.removeItem("suratFormDraft");
+                    }
+                    setIsCreateModalOpen(false);
+                  }}
                   className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg font-bold text-xs md:text-sm transition-colors"
                 >
                   Batal

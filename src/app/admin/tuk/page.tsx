@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -131,7 +132,26 @@ export default function TukManagement() {
     master_tuk_inventaris?: BackendTukInventaris[];
   }
 
-  const [formData, setFormData] = useState<TukItem>(DEFAULT_FORM_DATA);
+  const loadTukDraft = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const draft = localStorage.getItem("tukFormDraft");
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed && typeof parsed === "object") return parsed;
+        }
+      } catch { }
+    }
+    return DEFAULT_FORM_DATA;
+  };
+
+  const [formData, setFormData] = useState<TukItem>(loadTukDraft);
+
+  useEffect(() => {
+    if (!isEditModalOpen && typeof window !== "undefined") {
+      localStorage.setItem("tukFormDraft", JSON.stringify(formData));
+    }
+  }, [formData, isEditModalOpen]);
 
   // ==========================================
   // PENGATURAN BREADCRUMB EXTRA DARI CONTEXT
@@ -186,14 +206,14 @@ export default function TukManagement() {
           inventaris:
             item.master_tuk_inventaris && item.master_tuk_inventaris.length > 0
               ? item.master_tuk_inventaris.map((inv) => ({
-                  nama: inv.nama,
-                  jumlah: inv.jumlah,
-                }))
+                nama: inv.nama,
+                jumlah: inv.jumlah,
+              }))
               : [
-                  { nama: "Meja", jumlah: 0 },
-                  { nama: "Kursi", jumlah: 0 },
-                  { nama: "Lemari", jumlah: 0 },
-                ],
+                { nama: "Meja", jumlah: 0 },
+                { nama: "Kursi", jumlah: 0 },
+                { nama: "Lemari", jumlah: 0 },
+              ],
         }));
         setTukData(mapped);
       } else {
@@ -210,7 +230,30 @@ export default function TukManagement() {
 
   useEffect(() => {
     fetchTukData();
+    if (typeof window !== "undefined") {
+      try {
+        const tukDraft = localStorage.getItem("tukFormDraft");
+        if (tukDraft) {
+          const parsed = JSON.parse(tukDraft);
+          if (
+            parsed &&
+            typeof parsed === "object" &&
+            (parsed.nama ||
+              parsed.keterangan ||
+              parsed.tipe ||
+              parsed.alamat ||
+              parsed.kapasitas ||
+              parsed.penanggung_jawab ||
+              parsed.status)
+          ) {
+            setIsModalOpen(true);
+          }
+        }
+      } catch { }
+    }
   }, []);
+
+  // loadTukDraft moved to earlier declaration
 
   // Filter
   const filteredTuk = tukData.filter((tuk) => {
@@ -263,7 +306,8 @@ export default function TukManagement() {
       showNotification?.("Data TUK berhasil diperbarui", "success");
     } catch (err: unknown) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : "Gagal memperbarui data TUK";
+      const msg =
+        err instanceof Error ? err.message : "Gagal memperbarui data TUK";
       showNotification?.(msg, "error");
     } finally {
       setIsSubmitting(false);
@@ -283,12 +327,16 @@ export default function TukManagement() {
         status: formData.status,
       });
       await fetchTukData();
+      if (!isEditModalOpen && typeof window !== "undefined") {
+        localStorage.removeItem("tukFormDraft");
+      }
       setIsModalOpen(false);
-      setFormData(DEFAULT_FORM_DATA);
+      setFormData(loadTukDraft());
       showNotification?.("TUK baru berhasil ditambahkan", "success");
     } catch (err: unknown) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : "Gagal menambahkan TUK baru";
+      const msg =
+        err instanceof Error ? err.message : "Gagal menambahkan TUK baru";
       showNotification?.(msg, "error");
     } finally {
       setIsSubmitting(false);
@@ -358,7 +406,7 @@ export default function TukManagement() {
             {!readOnly && (
               <button
                 onClick={() => {
-                  setFormData(DEFAULT_FORM_DATA);
+                  setFormData(loadTukDraft());
                   setIsModalOpen(true);
                 }}
                 className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-extrabold shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer w-full sm:w-auto"
@@ -426,92 +474,94 @@ export default function TukManagement() {
           ) : filteredTuk.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-2 border border-dashed border-slate-200 rounded-2xl">
               <Building2 size={36} className="text-slate-300" />
-              <p className="text-sm font-semibold text-slate-500">Tidak ada data TUK yang ditemukan</p>
+              <p className="text-sm font-semibold text-slate-500">
+                Tidak ada data TUK yang ditemukan
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <AnimatePresence>
                 {filteredTuk.map((tuk) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  key={tuk.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col group overflow-hidden"
-                >
-                  <div className="p-5 border-b border-gray-50 flex-1">
-                    <div className="flex justify-between items-start mb-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-[#008BE3] text-[11px] font-black tracking-wider uppercase border border-sky-100">
-                        {tuk.id}
-                      </span>
-                      <div className="flex items-center gap-1.5 sm:opacity-0 group-hover:opacity-100 opacity-100 transition-opacity">
-                        <button
-                          onClick={() => openDetailModal(tuk)}
-                          className="px-2.5 py-1 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
-                          title="Lihat Detail"
-                        >
-                          <Eye size={14} />
-                          <span>Detail</span>
-                        </button>
-                        {!readOnly && (
-                          <>
-                            <button
-                              onClick={() => openEditModal(tuk)}
-                              className="p-1.5 text-slate-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => openDeleteModal(tuk)}
-                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </>
-                        )}
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    key={tuk.id}
+                    className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col group overflow-hidden"
+                  >
+                    <div className="p-5 border-b border-gray-50 flex-1">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-[#008BE3] text-[11px] font-black tracking-wider uppercase border border-sky-100">
+                          {tuk.id}
+                        </span>
+                        <div className="flex items-center gap-1.5 sm:opacity-0 group-hover:opacity-100 opacity-100 transition-opacity">
+                          <button
+                            onClick={() => openDetailModal(tuk)}
+                            className="px-2.5 py-1 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+                            title="Lihat Detail"
+                          >
+                            <Eye size={14} />
+                            <span>Detail</span>
+                          </button>
+                          {!readOnly && (
+                            <>
+                              <button
+                                onClick={() => openEditModal(tuk)}
+                                className="p-1.5 text-slate-400 hover:text-[#008BE3] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => openDeleteModal(tuk)}
+                                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <h3 className="font-black text-slate-900 text-[15px] sm:text-base mb-1.5 leading-snug">
+                        {tuk.nama}
+                      </h3>
+
+                      <div className="flex items-start gap-2 mt-4 text-xs sm:text-sm text-slate-500 font-medium">
+                        <MapPin
+                          size={16}
+                          className="text-slate-400 shrink-0 mt-0.5"
+                        />
+                        <span className="line-clamp-2 leading-relaxed">
+                          {tuk.alamat}
+                        </span>
                       </div>
                     </div>
 
-                    <h3 className="font-black text-slate-900 text-[15px] sm:text-base mb-1.5 leading-snug">
-                      {tuk.nama}
-                    </h3>
-
-                    <div className="flex items-start gap-2 mt-4 text-xs sm:text-sm text-slate-500 font-medium">
-                      <MapPin
-                        size={16}
-                        className="text-slate-400 shrink-0 mt-0.5"
-                      />
-                      <span className="line-clamp-2 leading-relaxed">
-                        {tuk.alamat}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-slate-50/50 flex items-center justify-between mt-auto">
-                    <div className="flex items-center gap-4 text-xs font-bold">
-                      <div className="flex items-center gap-1.5 text-slate-600">
-                        <Building2 size={14} className="text-slate-400" />
-                        {tuk.kapasitas} Orang
+                    <div className="p-4 bg-slate-50/50 flex items-center justify-between mt-auto">
+                      <div className="flex items-center gap-4 text-xs font-bold">
+                        <div className="flex items-center gap-1.5 text-slate-600">
+                          <Building2 size={14} className="text-slate-400" />
+                          {tuk.kapasitas} Orang
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {tuk.status === "Aktif" ? (
+                            <span className="text-emerald-600 flex items-center gap-1">
+                              <CheckCircle size={14} /> Aktif
+                            </span>
+                          ) : (
+                            <span className="text-red-500 flex items-center gap-1">
+                              <XCircle size={14} /> Tidak Aktif
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        {tuk.status === "Aktif" ? (
-                          <span className="text-emerald-600 flex items-center gap-1">
-                            <CheckCircle size={14} /> Aktif
-                          </span>
-                        ) : (
-                          <span className="text-red-500 flex items-center gap-1">
-                            <XCircle size={14} /> Tidak Aktif
-                          </span>
-                        )}
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
+                        {tuk.tipe}
                       </div>
                     </div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
-                      {tuk.tipe}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
               </AnimatePresence>
             </div>
           )}
@@ -527,6 +577,9 @@ export default function TukManagement() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
+                  if (!isEditModalOpen && typeof window !== "undefined") {
+                    localStorage.removeItem("tukFormDraft");
+                  }
                   setIsModalOpen(false);
                   setIsEditModalOpen(false);
                 }}
@@ -606,12 +659,12 @@ export default function TukManagement() {
                   </label>
                   <input
                     type="number"
-                    placeholder="0"
-                    value={formData.kapasitas}
+                    placeholder="1"
+                    value={formData.kapasitas === 0 ? "" : formData.kapasitas}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        kapasitas: Number(e.target.value),
+                        kapasitas: e.target.value === "" ? 0 : Number(e.target.value),
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
@@ -695,12 +748,12 @@ export default function TukManagement() {
                         <input
                           type="number"
                           placeholder="Jml"
-                          value={inv.jumlah}
+                          value={inv.jumlah === 0 ? "" : inv.jumlah}
                           onChange={(e) =>
                             handleInventarisChange(
                               idx,
                               "jumlah",
-                              Number(e.target.value),
+                              e.target.value === "" ? 0 : Number(e.target.value),
                             )
                           }
                           className="w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
@@ -727,6 +780,9 @@ export default function TukManagement() {
             <div className="px-6 md:px-8 py-5 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3">
               <button
                 onClick={() => {
+                  if (!isEditModalOpen && typeof window !== "undefined") {
+                    localStorage.removeItem("tukFormDraft");
+                  }
                   setIsModalOpen(false);
                   setIsEditModalOpen(false);
                 }}
