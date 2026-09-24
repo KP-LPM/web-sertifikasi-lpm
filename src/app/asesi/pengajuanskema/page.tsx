@@ -844,6 +844,10 @@ export default function PengajuanSkemaPage() {
         }
       }
 
+      // PERBAIKAN: EKSTRAK DATA CHECKLIST APL-01 DARI STATE E-FORM
+      const apl01Data = (eFormData["01. FR.APL.01 Permohonan Sertifikasi"] as Record<string, unknown>) || {};
+      const checklistData = apl01Data.checklist || {};
+
       const payloadData = {
         name: selectedScheme?.nama || "Uji Kompetensi Mandiri",
         kode: selectedScheme?.kode || "001/SKM/LSP-KJN/II/2023",
@@ -875,6 +879,8 @@ export default function PengajuanSkemaPage() {
         berpengalaman,
         tandaTangan: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
         dokumen: uploadedDokumen,
+        // PERBAIKAN: SERTAKAN CHECKLIST KE DALAM PAYLOAD PENGAJUAN
+        checklist: checklistData, 
       };
 
       const response = await createPengajuan(payloadData);
@@ -1292,7 +1298,7 @@ export default function PengajuanSkemaPage() {
                                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
                                   Terjadwal
                                 </span>
-                              ) : item.status?.toLowerCase() === "revisi" || item.status?.toLowerCase() === "ditolak / revisi" ? (
+                              ) : item.status?.toLowerCase() === "revisi" || item.status?.toLowerCase() === "revisi" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                                   Revisi
