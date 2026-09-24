@@ -32,6 +32,9 @@ const formatDateID = (dateVal: string | Date | undefined | null) => {
   }
 };
 
+// Extend type untuk menampung alamat lengkap dari relasi master_tuk
+type ExtendedAssessment = RegisteredAssessment & { alamatLengkap?: string };
+
 export default function AsesiOverviewPage() {
   const { user } = useAppContext();
   const router = useRouter();
@@ -39,7 +42,7 @@ export default function AsesiOverviewPage() {
   // 1. Siapkan state untuk menampung nama dan ID
   const [namaLengkap, setNamaLengkap] = useState<string>("Asesi");
   const [asesiId, setAsesiId] = useState<string>("ASESI-0000");
-  const [assessments, setAssessments] = useState<RegisteredAssessment[]>([]);
+  const [assessments, setAssessments] = useState<ExtendedAssessment[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // 2. Pasang Radar buat narik data dari database
@@ -109,7 +112,7 @@ export default function AsesiOverviewPage() {
           }>;
         }
 
-        const mapped: RegisteredAssessment[] = (data as RawPengajuan[]).map(
+        const mapped: ExtendedAssessment[] = (data as RawPengajuan[]).map(
           (item) => {
             const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
             const asesorName =
@@ -124,14 +127,18 @@ export default function AsesiOverviewPage() {
               item.master_tuk?.tipe ||
               item.tuk ||
               "Mandiri") as TipeTuk;
-            const alamat =
-              jadwal?.alamat ||
-              jadwal?.master_tuk?.alamat ||
-              item.master_tuk?.alamat ||
-              (String(tipeTuk).toLowerCase().includes("online") ||
-                String(tipeTuk).toLowerCase().includes("virtual")
-                ? "Online"
-                : "-");
+            
+            const isOnline = String(tipeTuk).toLowerCase().includes("online") || String(tipeTuk).toLowerCase().includes("virtual");
+            
+            // Logika Nama TUK dan Alamat Lengkap
+            const tukName = isOnline 
+              ? "Online" 
+              : (jadwal?.master_tuk?.nama || item.master_tuk?.nama || "UIN Sunan Gunung Djati Bandung");
+            
+            const alamatLengkap = isOnline 
+              ? "" 
+              : (jadwal?.master_tuk?.alamat || item.master_tuk?.alamat || jadwal?.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru");
+
             const linkMeeting =
               jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
             const rekomendasi =
@@ -145,7 +152,8 @@ export default function AsesiOverviewPage() {
               skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
               kodeSkema: item.skema?.kodeSkema || item.skema?.kode_skema || "-",
               tipeTuk,
-              alamat,
+              alamat: tukName,
+              alamatLengkap,
               tanggalAsesmen: formattedDate,
               linkVirtualMeeting: linkMeeting,
               asesor: asesorName,
@@ -176,7 +184,7 @@ export default function AsesiOverviewPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const [selectedAssessment, setSelectedAssessment] =
-    useState<RegisteredAssessment | null>(null);
+    useState<ExtendedAssessment | null>(null);
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -231,7 +239,6 @@ export default function AsesiOverviewPage() {
       </span>
     );
   };
-
 
   // Fungsi Badge yang sudah diupdate dengan 5 status
   const getStatusBadge = (status: string) => {
@@ -643,11 +650,11 @@ export default function AsesiOverviewPage() {
                       </td>
                       <td
                         className="px-6 py-4 text-xs text-gray-500 font-medium"
-                        title={item.alamat}
+                        title={item.alamatLengkap || item.alamat}
                       >
                         <div className="font-medium text-slate-700">{item.alamat || "-"}</div>
-                        {item.alamat && item.alamat !== "-" && (
-                          <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                        {item.alamatLengkap && item.alamatLengkap !== "-" && (
+                          <div className="text-[10px] text-gray-400 mt-0.5">{item.alamatLengkap}</div>
                         )}
                       </td>
                       <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
@@ -858,7 +865,10 @@ export default function AsesiOverviewPage() {
               <div className="grid grid-cols-3 gap-2">
                 <span className="text-slate-500 font-semibold">Alamat</span>
                 <span className="col-span-2 text-slate-900">
-                  {selectedAssessment.alamat}
+                  <span className="block font-bold">{selectedAssessment.alamat}</span>
+                  {selectedAssessment.alamatLengkap && (
+                     <span className="block text-xs text-slate-500 mt-0.5">{selectedAssessment.alamatLengkap}</span>
+                  )}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
