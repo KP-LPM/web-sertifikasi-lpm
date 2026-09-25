@@ -101,8 +101,7 @@ export default function AssessorOverview() {
 
         if (profileRes.status === "fulfilled" && profileRes.value) {
           setProfileName(
-            profileRes.value.profil?.namaLengkap ||
-              profileRes.value.username ||
+            profileRes.value.namaLengkap ||
               user?.username ||
               "Asesor",
           );

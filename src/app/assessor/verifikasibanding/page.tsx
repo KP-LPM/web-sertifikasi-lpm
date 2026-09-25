@@ -91,6 +91,7 @@ function VerifikasiBandingList({
 }) {
   const { AssessmentItems } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Semua");
   const [displayedCount, setDisplayedCount] = useState(10);
   const [realBandingItems, setRealBandingItems] = useState<AssessmentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -161,7 +162,19 @@ function VerifikasiBandingList({
     const matchesSearch =
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.skema || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+      
+    const currentStatus = item.statusBanding || item.status || "Menunggu Verifikasi";
+    
+    let matchesStatus = true;
+    if (statusFilter === "Menunggu Verifikasi") {
+        matchesStatus = currentStatus === "Menunggu Verifikasi" || currentStatus === "Menunggu";
+    } else if (statusFilter === "Disetujui") {
+        matchesStatus = currentStatus === "Disetujui";
+    } else if (statusFilter === "Ditolak") {
+        matchesStatus = currentStatus === "Ditolak";
+    }
+
+    return matchesSearch && matchesStatus;
   });
 
   const displayedAssessments = filteredAssessments.slice(0, displayedCount);
@@ -205,6 +218,23 @@ function VerifikasiBandingList({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none text-xs sm:text-sm transition-all placeholder:text-slate-400"
             />
+          </div>
+          <div className="w-full md:w-auto">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full md:w-auto px-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3] outline-none text-xs sm:text-sm transition-all text-slate-600 font-medium cursor-pointer appearance-none pr-10 relative"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 12px center",
+              }}
+            >
+              <option value="Semua">Semua Status</option>
+              <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+              <option value="Disetujui">Banding Disetujui</option>
+              <option value="Ditolak">Banding Ditolak</option>
+            </select>
           </div>
         </div>
         <div className="overflow-x-auto relative">

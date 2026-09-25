@@ -264,7 +264,7 @@ export default function KonfigurasiPertanyaanList() {
                             }}
                             className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer"
                           >
-                            <Edit size={12} /> Ubah
+                            <Edit size={12} />
                           </button>
                           <button
                             onClick={() => {
@@ -275,7 +275,7 @@ export default function KonfigurasiPertanyaanList() {
                             }}
                             className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer"
                           >
-                            <Eye size={12} /> Detail
+                            <Eye size={12} />
                           </button>
                           <button
                             data-bypass-confirm="true"
@@ -285,7 +285,7 @@ export default function KonfigurasiPertanyaanList() {
                             }}
                             className="bg-white border border-gray-200 hover:bg-red-50 text-red-600 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer"
                           >
-                            <Trash2 size={12} /> Hapus
+                            <Trash2 size={12} />
                           </button>
                           <button
                             onClick={() => {
