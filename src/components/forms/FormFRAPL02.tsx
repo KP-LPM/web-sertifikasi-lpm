@@ -472,47 +472,33 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                         <div className="flex flex-col items-center justify-center gap-1.5">
                           {fileObj ? (
                             <>
-                              <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                              <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 mb-1">
                                 <CheckCircle className="w-3.5 h-3.5" />
                                 Telah Dilampirkan
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const files = Array.isArray(fileObj)
-                                    ? fileObj
-                                    : [fileObj];
-                                  if (files.length > 0) {
-                                    const f = files[0];
-                                    if (f instanceof File) {
-                                      window.open(
-                                        URL.createObjectURL(f),
-                                        "_blank",
-                                      );
-                                    } else if (typeof f === "string") {
-                                      window.open(f, "_blank");
-                                    } else if (
-                                      f &&
-                                      typeof f === "object" &&
-                                      "url" in f &&
-                                      f.url
-                                    ) {
-                                      window.open(String(f.url), "_blank");
-                                    } else {
-                                      const fileName =
-                                        f &&
-                                          typeof f === "object" &&
-                                          "name" in f
-                                          ? String(f.name)
-                                          : "File Bukti";
-                                      alert("Pratinjau dokumen: " + fileName);
-                                    }
-                                  }
-                                }}
-                                className="text-[#008BE3] hover:text-[#0076C2] text-xs font-bold flex items-center gap-1 hover:underline transition-all mt-0.5 cursor-pointer"
-                              >
-                                <Eye className="w-3.5 h-3.5" /> Lihat Bukti
-                              </button>
+                              <div className="flex flex-wrap justify-center gap-2">
+                                {(Array.isArray(fileObj) ? fileObj : [fileObj]).map((f, fIdx, arr) => (
+                                  <button
+                                    key={fIdx}
+                                    type="button"
+                                    onClick={() => {
+                                      if (f instanceof File) {
+                                        window.open(URL.createObjectURL(f), "_blank");
+                                      } else if (typeof f === "string") {
+                                        window.open(f, "_blank");
+                                      } else if (f && typeof f === "object" && "url" in f && f.url) {
+                                        window.open(String(f.url), "_blank");
+                                      } else {
+                                        const fileName = f && typeof f === "object" && "name" in f ? String(f.name) : "File Bukti";
+                                        alert("Pratinjau dokumen: " + fileName);
+                                      }
+                                    }}
+                                    className="text-[#008BE3] hover:text-[#0076C2] text-xs font-bold flex items-center gap-1 hover:underline transition-all cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" /> Lihat Bukti {arr.length > 1 ? fIdx + 1 : ""}
+                                  </button>
+                                ))}
+                              </div>
                             </>
                           ) : null}
                         </div>

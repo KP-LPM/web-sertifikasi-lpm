@@ -170,6 +170,7 @@ export default function PengajuanSkemaPage() {
   const [step, setStep] = useState<number>(1);
   const [showStep2Errors, setShowStep2Errors] = useState(false);
   const [showStep3Errors, setShowStep3Errors] = useState(false);
+  const [showStep4Errors, setShowStep4Errors] = useState(false);
 
   interface ActiveModalDoc {
     isEForm?: boolean;
@@ -182,6 +183,7 @@ export default function PengajuanSkemaPage() {
     null,
   );
   const [tempFiles, setTempFiles] = useState<File[]>([]);
+  const [previewIdx, setPreviewIdx] = useState<number>(0);
   const [eFormData, setEFormData] = useState<Record<string, unknown>>({});
   const [tempEFormData, setTempEFormData] = useState<Record<string, unknown>>(
     {},
@@ -832,8 +834,33 @@ export default function PengajuanSkemaPage() {
         scrollToTopMobile();
       }
     } else if (step === 4) {
-      setStep(5);
-      scrollToTopMobile();
+      // Validate every KUK element has portfolio evidence
+      const allKompetensi = (selectedScheme?.unitKompetensi || []).flatMap(
+        (unit: UnitKompetensiItem, uIdx: number) =>
+          (unit.elemen || []).map((el: ElemenKompetensiItem, eIdx: number) => ({
+            docName: unit.kodeUnit + " - " + el.namaElemen,
+            id: `u${uIdx}e${eIdx}`,
+          })),
+      );
+      const unfilledKuk = allKompetensi.filter(
+        (k) => !eFormData[k.docName] || (Array.isArray(eFormData[k.docName]) && (eFormData[k.docName] as unknown[]).length === 0),
+      );
+      if (unfilledKuk.length > 0) {
+        setShowStep4Errors(true);
+        showNotification(
+          "Harap lampirkan bukti portofolio untuk setiap KUK sebelum melanjutkan!",
+          "error",
+        );
+        // Scroll to first unfilled row
+        const firstUnfilled = document.getElementById(`kuk-row-${unfilledKuk[0].id}`);
+        if (firstUnfilled) {
+          firstUnfilled.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      } else {
+        setShowStep4Errors(false);
+        setStep(5);
+        scrollToTopMobile();
+      }
     } else if (step === 5) {
       handleSubmitForm();
     } else {
@@ -2254,6 +2281,26 @@ export default function PengajuanSkemaPage() {
                             setShowStep3Errors(false);
                             setStep(tabStep);
                           }
+                        } else if (step === 4 && tabStep > 4) {
+                          const allKompetensi = (selectedScheme?.unitKompetensi || []).flatMap(
+                            (unit: UnitKompetensiItem, uIdx: number) =>
+                              (unit.elemen || []).map((el: ElemenKompetensiItem, eIdx: number) => ({
+                                docName: unit.kodeUnit + " - " + el.namaElemen,
+                                id: `u${uIdx}e${eIdx}`,
+                              })),
+                          );
+                          const unfilledKuk = allKompetensi.filter(
+                            (k) => !eFormData[k.docName] || (Array.isArray(eFormData[k.docName]) && (eFormData[k.docName] as unknown[]).length === 0),
+                          );
+                          if (unfilledKuk.length > 0) {
+                            setShowStep4Errors(true);
+                            showNotification("Harap lampirkan bukti portofolio untuk setiap KUK!", "error");
+                            const firstUnfilled = document.getElementById(`kuk-row-${unfilledKuk[0].id}`);
+                            if (firstUnfilled) firstUnfilled.scrollIntoView({ behavior: "smooth", block: "center" });
+                          } else {
+                            setShowStep4Errors(false);
+                            setStep(tabStep);
+                          }
                         } else {
                           setStep(tabStep);
                         }
@@ -2991,6 +3038,7 @@ export default function PengajuanSkemaPage() {
                 eFormData={eFormData}
                 title="Bukti Kompetensi"
                 infoText="File Bukti Kompetensi akan ditampilkan pada Form APL - 02"
+                showErrors={showStep4Errors}
                 kompetensiList={(selectedScheme?.unitKompetensi || []).flatMap(
                   (unit: UnitKompetensiItem, uIdx: number) =>
                     (unit.elemen || []).map(
@@ -3219,7 +3267,7 @@ export default function PengajuanSkemaPage() {
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc?.isPreview ? 'max-w-4xl' : 'max-w-lg'} overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 text-sm">
+              <h3 className="font-bold text-slate-800 text-sm truncate pr-4">
                 {activeModalDoc?.isPreview
                   ? "Pratinjau Dokumen: "
                   : "Lampirkan File: "}
@@ -3230,8 +3278,9 @@ export default function PengajuanSkemaPage() {
                 onClick={() => {
                   setActiveModalDoc(null);
                   setTempFiles([]);
+                  setPreviewIdx(0);
                 }}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition-colors cursor-pointer shrink-0"
               >
                 <X size={20} />
               </button>
@@ -3239,90 +3288,148 @@ export default function PengajuanSkemaPage() {
 
             <div className="p-6">
               {activeModalDoc?.isPreview ? (
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[65vh] flex items-center justify-center">
-                    {(() => {
-                      const files = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[]) : [];
-                      const file = files?.[0];
-                      const url = (activeModalDoc?.url as string | undefined) || (file ? URL.createObjectURL(file) : null);
-                      const isImg = url?.match(/\.(jpeg|jpg|gif|png)$/i) || file?.type.startsWith("image/");
+                (() => {
+                  // Multi-file preview: from eFormData (array of File) or single URL from doc list
+                  const docFiles = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[] | undefined) : undefined;
+                  const singleUrl = activeModalDoc?.url as string | undefined;
+                  // Build list of {url, name, isFile}
+                  const previewItems: Array<{url: string; name: string; isFile: boolean; fileObj?: File}> =
+                    docFiles && Array.isArray(docFiles) && docFiles.length > 0
+                      ? docFiles.map((f) => ({
+                          url: URL.createObjectURL(f),
+                          name: f.name,
+                          isFile: true,
+                          fileObj: f,
+                        }))
+                      : singleUrl
+                        ? [{ url: singleUrl, name: activeModalDoc?.name as string || "Dokumen", isFile: false }]
+                        : [];
 
-                      if (url) {
-                        if (isImg) {
-                          return <img src={url} alt="Preview" className="w-full h-full object-contain bg-slate-100" />;
-                        }
-                        return <iframe src={url} className="w-full h-full rounded-lg bg-white" />;
-                      }
+                  const totalItems = previewItems.length;
+                  const safeIdx = Math.min(previewIdx, Math.max(0, totalItems - 1));
+                  const current = previewItems[safeIdx];
+                  const isImg = current?.url?.match(/\.(jpeg|jpg|gif|png)$/i) ||
+                    (current?.fileObj?.type?.startsWith("image/") ?? false);
 
-                      return (
-                        <div className="text-center p-6 opacity-60">
-                          <FileText
-                            size={48}
-                            className="mx-auto text-slate-400 mb-3"
-                          />
-                          <p className="font-bold text-slate-500">
-                            Pratinjau Dokumen
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1">
-                            {activeModalDoc?.name}
-                          </p>
+                  return (
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      {/* Counter + arrows */}
+                      {totalItems > 1 && (
+                        <div className="flex items-center gap-3 w-full justify-between">
+                          <button
+                            onClick={() => setPreviewIdx((i) => Math.max(0, i - 1))}
+                            disabled={safeIdx === 0}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
+                          >
+                            <ArrowLeft size={16} />
+                          </button>
+                          <span className="text-xs font-bold text-slate-500">
+                            {safeIdx + 1} / {totalItems}
+                          </span>
+                          <button
+                            onClick={() => setPreviewIdx((i) => Math.min(totalItems - 1, i + 1))}
+                            disabled={safeIdx === totalItems - 1}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-sm"
+                          >
+                            <ArrowRight size={16} />
+                          </button>
                         </div>
-                      );
-                    })()}
-                  </div>
-                  <div className="flex gap-2 justify-center mt-2 w-full">
-                    <button
-                      onClick={() => {
-                        const files = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[]) : [];
-                        const file = files?.[0];
-                        const url = (activeModalDoc?.url as string | undefined) || (file ? URL.createObjectURL(file) : null);
+                      )}
 
-                        if (url) {
-                          if (file && !activeModalDoc?.url) {
-                            const a = document.createElement("a");
-                            a.href = url;
-                            a.download = file.name || "download";
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                          } else {
-                            window.open(url, "_blank");
-                          }
-                        } else {
-                          showNotification("Dokumen tidak ditemukan.", "error");
-                        }
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
-                    >
-                      {activeModalDoc?.url ? <><FileText size={16} /> Buka File</> : <><Download size={16} /> Unduh</>}
-                    </button>
-                    {subView !== "list" && (
-                      <button
-                        onClick={() => {
-                          const newEFormData = { ...eFormData };
-                          if (typeof activeModalDoc?.name === "string") {
-                            delete newEFormData[activeModalDoc?.name];
-                          }
-                          setEFormData(newEFormData);
-                          setActiveModalDoc(null);
-                          setTempFiles([]);
-                        }}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-500 font-bold rounded-lg text-sm hover:bg-red-50 transition-colors shadow-xs cursor-pointer"
-                      >
-                        <Trash2 size={16} /> Hapus File
-                      </button>
-                    )}
-                  </div>
-                </div>
+                      <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[60vh] flex items-center justify-center">
+                        {current ? (
+                          isImg ? (
+                            <img src={current.url} alt="Preview" className="w-full h-full object-contain bg-slate-100" />
+                          ) : (
+                            <iframe src={current.url} className="w-full h-full rounded-lg bg-white" />
+                          )
+                        ) : (
+                          <div className="text-center p-6 opacity-60">
+                            <FileText size={48} className="mx-auto text-slate-400 mb-3" />
+                            <p className="font-bold text-slate-500">Pratinjau Dokumen</p>
+                            <p className="text-xs text-slate-400 mt-1">{activeModalDoc?.name}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Thumbnail strip for multi-file */}
+                      {totalItems > 1 && (
+                        <div className="flex gap-2 overflow-x-auto py-1 w-full justify-center">
+                          {previewItems.map((item, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setPreviewIdx(i)}
+                              className={`shrink-0 w-12 h-12 rounded-lg border-2 overflow-hidden transition-all cursor-pointer ${
+                                i === safeIdx
+                                  ? "border-[#008BE3] shadow-md"
+                                  : "border-slate-200 hover:border-slate-400"
+                              }`}
+                            >
+                              {item.url.match(/\.(jpeg|jpg|gif|png)$/i) || item.fileObj?.type?.startsWith("image/") ? (
+                                <img src={item.url} alt={`thumb-${i}`} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                                  <FileText size={16} className="text-slate-400" />
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 justify-center mt-1 w-full">
+                        <button
+                          onClick={() => {
+                            if (!current) { showNotification("Dokumen tidak ditemukan.", "error"); return; }
+                            if (current.isFile && current.fileObj) {
+                              const a = document.createElement("a");
+                              a.href = current.url;
+                              a.download = current.fileObj.name || "download";
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                            } else {
+                              window.open(current.url, "_blank");
+                            }
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                        >
+                          {current?.isFile ? <><Download size={16} /> Unduh</> : <><FileText size={16} /> Buka File</>}
+                        </button>
+                        {subView !== "list" && (
+                          <button
+                            onClick={() => {
+                              const newEFormData = { ...eFormData };
+                              if (typeof activeModalDoc?.name === "string") {
+                                delete newEFormData[activeModalDoc?.name];
+                              }
+                              setEFormData(newEFormData);
+                              setActiveModalDoc(null);
+                              setTempFiles([]);
+                              setPreviewIdx(0);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-500 font-bold rounded-lg text-sm hover:bg-red-50 transition-colors shadow-xs cursor-pointer"
+                          >
+                            <Trash2 size={16} /> Hapus Semua
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <>
-                  {activeModalDoc?.isBuktiKompetensi && (
-                    <div className="mb-4">
-                      <p className="text-sm font-bold text-slate-800 mb-2">
-                        Pilih dari Dokumen Persyaratan Dasar:
+                  {activeModalDoc?.isBuktiKompetensi ? (
+                    /* Bukti Kompetensi: hanya pilih dari dokumen yang sudah diupload */
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 mb-1">
+                        Pilih Dokumen Bukti Portofolio
+                      </p>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Pilih dari dokumen yang telah diunggah pada Persyaratan Dasar atau Bukti Administratif.
                       </p>
                       <select
-                        className="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white text-slate-700 cursor-pointer"
+                        className="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white text-slate-700 cursor-pointer focus:border-[#008BE3] outline-none"
                         onChange={(e) => {
                           if (e.target.value) {
                             const docName = e.target.value;
@@ -3354,72 +3461,92 @@ export default function PengajuanSkemaPage() {
                               (eFormData[docName] as File[]) &&
                               (eFormData[docName] as File[]).length > 0,
                           )
-                          .map((docName: string, idx: number) => (
-                            <option key={idx} value={docName}>
+                          .map((docName: string, dIdx: number) => (
+                            <option key={dIdx} value={docName}>
                               {docName}
                             </option>
                           ))}
                       </select>
-                      <div className="flex items-center gap-3 my-4">
-                        <div className="h-px bg-slate-200 flex-1"></div>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                          Atau
-                        </span>
-                        <div className="h-px bg-slate-200 flex-1"></div>
-                      </div>
-                    </div>
-                  )}
-                  <label className="relative bg-slate-50 border border-slate-200 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-100 transition-colors">
-                    <Upload size={32} className="text-[#008BE3] mb-3" />
-                    <p className="text-sm font-bold text-slate-800 mb-1">
-                      Klik atau seret file ke sini
-                    </p>
-                    <p className="text-xs text-slate-500 font-medium">
-                      Mendukung file PDF, JPG, PNG (Maks 5MB)
-                    </p>
-                    <input
-                      type="file"
-                      multiple
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          const newFiles = Array.from(e.target.files);
-                          setTempFiles([...tempFiles, ...newFiles]);
-                        }
-                      }}
-                    />
-                  </label>
-                  {tempFiles.length > 0 && (
-                    <div className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2">
-                      {tempFiles.map((file, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold">
-                            <CheckCircle
-                              size={16}
-                              className="text-emerald-600 shrink-0"
-                            />
-                            <span className="truncate max-w-50 sm:max-w-xs">
-                              {file.name || "Telah diunggah"}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => {
-                              const newFiles = tempFiles.filter(
-                                (_, i) => i !== idx,
-                              );
-                              setTempFiles(newFiles);
-                            }}
-                            className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors cursor-pointer"
-                            title="Hapus File"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                      {tempFiles.length > 0 && (
+                        <div className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2">
+                          <p className="text-xs font-bold text-slate-600 mb-1">File yang akan disimpan:</p>
+                          {tempFiles.map((file, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold">
+                                <CheckCircle size={16} className="text-emerald-600 shrink-0" />
+                                <span className="truncate max-w-50 sm:max-w-xs">
+                                  {file.name || "Telah diunggah"}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const newFiles = tempFiles.filter((_, i) => i !== idx);
+                                  setTempFiles(newFiles);
+                                }}
+                                className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors cursor-pointer"
+                                title="Hapus File"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
+                  ) : (
+                    /* Regular upload: persyaratan dasar & bukti administratif */
+                    <>
+                      <label className="relative bg-slate-50 border border-slate-200 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-100 transition-colors">
+                        <Upload size={32} className="text-[#008BE3] mb-3" />
+                        <p className="text-sm font-bold text-slate-800 mb-1">
+                          Klik atau seret file ke sini
+                        </p>
+                        <p className="text-xs text-slate-500 font-medium">
+                          Mendukung file PDF, JPG, PNG (Maks 5MB)
+                        </p>
+                        <input
+                          type="file"
+                          multiple
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              const newFiles = Array.from(e.target.files);
+                              setTempFiles([...tempFiles, ...newFiles]);
+                            }
+                          }}
+                        />
+                      </label>
+                      {tempFiles.length > 0 && (
+                        <div className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2">
+                          {tempFiles.map((file, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold">
+                                <CheckCircle size={16} className="text-emerald-600 shrink-0" />
+                                <span className="truncate max-w-50 sm:max-w-xs">
+                                  {file.name || "Telah diunggah"}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const newFiles = tempFiles.filter((_, i) => i !== idx);
+                                  setTempFiles(newFiles);
+                                }}
+                                className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors cursor-pointer"
+                                title="Hapus File"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -3429,6 +3556,7 @@ export default function PengajuanSkemaPage() {
                 onClick={() => {
                   setActiveModalDoc(null);
                   setTempFiles([]);
+                  setPreviewIdx(0);
                 }}
                 className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer"
               >
