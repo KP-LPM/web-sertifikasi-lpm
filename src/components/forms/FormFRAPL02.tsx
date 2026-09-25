@@ -295,6 +295,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   ).length;
   const isAllKBKFilled =
     totalElements > 0 && filledElementsCount === totalElements;
+  const hasBK = Object.values(answers).some((val) => val === "BK");
 
   useEffect(() => {
     if (props.onFormStatusChange) {
@@ -302,12 +303,27 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     }
   }, [totalElements, filledElementsCount, isAllKBKFilled, props.onFormStatusChange]);
 
+  useEffect(() => {
+    if (!props.readOnly && !props.isAsesi && hasBK && rekomendasi !== "Tidak dapat dilanjutkan") {
+      handleRekomendasiChangeInternal("Tidak dapat dilanjutkan");
+    }
+  }, [hasBK, rekomendasi, props.readOnly, props.isAsesi]);
+
   const handleAnswerChangeInternal = (key: string, val: "K" | "BK") => {
     if (props.readOnly || props.isAsesi) return;
+    const newAnswers = { ...answers, [key]: val };
+    
     if (props.onAnswerChange) {
       props.onAnswerChange(key, val);
     } else {
-      setLocalAnswers((prev) => ({ ...prev, [key]: val }));
+      setLocalAnswers(newAnswers);
+    }
+
+    const currentHasBK = Object.values(newAnswers).some((v) => v === "BK");
+    if (currentHasBK) {
+      handleRekomendasiChangeInternal("Tidak dapat dilanjutkan");
+    } else {
+      handleRekomendasiChangeInternal("Dapat dilanjutkan");
     }
   };
 
@@ -518,16 +534,16 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
           Rekomendasi Untuk Asesi:
         </p>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer text-slate-800">
+          <label className={`flex items-center gap-2 cursor-pointer ${hasBK ? "opacity-50" : "text-slate-800"}`}>
             <input
               type="radio"
               name="rekomendasi_apl02"
-              disabled={props.readOnly || props.isAsesi}
+              disabled={props.readOnly || props.isAsesi || hasBK}
               checked={rekomendasi === "Dapat dilanjutkan"}
               onChange={() =>
                 handleRekomendasiChangeInternal("Dapat dilanjutkan")
               }
-              className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3]"
+              className="w-4 h-4 text-[#008BE3] focus:ring-[#008BE3] disabled:cursor-not-allowed"
             />
             <span>Asesmen dapat dilanjutkan</span>
           </label>

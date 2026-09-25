@@ -786,35 +786,59 @@ function AssessmentFormContent() {
                   <td className="py-2 text-slate-600">
                     FR.AK.07 - Penyesuaian yang Wajar
                   </td>
-                  <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
-                    <Check size={14} /> Selesai
-                  </td>
+                  {rekomendasiApl02 === "Tidak dapat dilanjutkan" ? (
+                    <td className="py-2 text-right font-bold text-slate-400 flex items-center justify-end gap-1">
+                      Tidak dilanjutkan
+                    </td>
+                  ) : (
+                    <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
+                      <Check size={14} /> Selesai
+                    </td>
+                  )}
                 </tr>
                 <tr>
                   <td className="py-2 text-slate-600">
                     FR.IA.04A - Penjelasan Proyek Singkat
                   </td>
-                  <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
-                    <Check size={14} /> Selesai
-                  </td>
+                  {rekomendasiApl02 === "Tidak dapat dilanjutkan" ? (
+                    <td className="py-2 text-right font-bold text-slate-400 flex items-center justify-end gap-1">
+                      Tidak dilanjutkan
+                    </td>
+                  ) : (
+                    <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
+                      <Check size={14} /> Selesai
+                    </td>
+                  )}
                 </tr>
                 <tr>
                   <td className="py-2 text-slate-600">
                     FR.IA.04B - Penilaian Proyek Singkat
                   </td>
-                  <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
-                    <Check size={14} /> {Object.keys(step3Answers).length} /{" "}
-                    {step3QuestionsCount} Terjawab
-                  </td>
+                  {rekomendasiApl02 === "Tidak dapat dilanjutkan" ? (
+                    <td className="py-2 text-right font-bold text-slate-400 flex items-center justify-end gap-1">
+                      Tidak dilanjutkan
+                    </td>
+                  ) : (
+                    <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
+                      <Check size={14} /> {Object.keys(step3Answers).length} /{" "}
+                      {step3QuestionsCount} Terjawab
+                    </td>
+                  )}
                 </tr>
                 <tr>
                   <td className="py-2 text-slate-600">
                     FR.IA.07 - Pertanyaan Lisan
                   </td>
-                  <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
-                    <Check size={14} /> {Object.keys(step4Answers).length} /{" "}
-                    {step4QuestionsCount} Terjawab
-                  </td>
+                  {rekomendasiApl02 === "Tidak dapat dilanjutkan" ? (
+                    <td className="py-2 text-right font-bold text-slate-400 flex items-center justify-end gap-1">
+                      Tidak dilanjutkan
+                    </td>
+                  ) : (
+                    <td className="py-2 text-right font-bold text-emerald-600 flex items-center justify-end gap-1">
+                      <Check size={14} /> {Object.keys(step4Answers).length} /{" "}
+                      {step4QuestionsCount} Terjawab
+                    </td>
+                  )}
                 </tr>
               </tbody>
             </table>
