@@ -91,7 +91,8 @@ type SubmissionProfile = Profile & {
 };
 
 export default function PengajuanSkemaPage() {
-  const { user, setExtraCrumbs, showNotification, registeredProfile } = useAppContext();
+  const { user, setExtraCrumbs, showNotification, registeredProfile } =
+    useAppContext();
 
   const [subView, setSubView] = useState<
     "list" | "choose-scheme" | "apply-form"
@@ -120,17 +121,16 @@ export default function PengajuanSkemaPage() {
     [subView],
   );
 
-  const [selectedDetailSubmission, setSelectedDetailSubmission] =
-    useState<
-      | (Profile & {
+  const [selectedDetailSubmission, setSelectedDetailSubmission] = useState<
+    | (Profile & {
         dokumenList?: Array<{
           id: number;
           namaDokumen: string;
           fileUrl: string;
         }>;
       })
-      | null
-    >(null);
+    | null
+  >(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
 
   React.useEffect(() => {
@@ -204,81 +204,93 @@ export default function PengajuanSkemaPage() {
   const [expandedSchemes, setExpandedSchemes] = useState<string[]>([]);
 
   const [submissions, setSubmissions] = useState<SubmissionProfile[]>([]);
-  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] =
+    useState<boolean>(true);
 
   const fetchSubmissions = React.useCallback(async () => {
     setIsLoadingSubmissions(true);
     try {
       const data = await getPengajuanList();
       if (Array.isArray(data)) {
-        const mappedList: SubmissionProfile[] = (data as Array<{
-          id: number;
-          nomorPengajuan?: string;
-          status: string;
-          tuk?: string;
-          createdAt: string | Date;
-          statusPembayaran?: string | boolean;
-          skema?: { id?: number; namaSkema?: string; kodeSkema?: string };
-          user?: { username?: string; email?: string };
-          master_tuk?: { nama?: string; alamat?: string; tipe?: string };
-          dataPribadi?: {
-            namaLengkap?: string;
-            tempatLahir?: string;
-            tanggalLahir?: string | Date;
-            jenisKelamin?: string;
-            alamat?: string;
-            kodeProvinsi?: string;
-            kodeKota?: string;
-            nik?: string;
-            kewarganegaraan?: string;
-            kodePosAsesi?: string;
-            noHp?: string;
-            pendidikanTerakhir?: string;
-            pekerjaan?: string;
-            namaInstitusi?: string;
-            jabatan?: string;
-            emailInstitusi?: string;
-            kodePosInstitusi?: string;
-            alamatInstitusi?: string;
-            telpInstitusi?: string;
-            faxInstitusi?: string;
-            memerlukanPenyesuaianWajar?: boolean;
-            isBerpengalaman?: boolean;
-          };
-          jadwal_asesmen_peserta?: Array<{
-            jadwal_asesmen?: {
-              tanggal?: string | Date;
-              waktu_mulai?: string | Date;
-              tipe_tuk?: string;
+        const mappedList: SubmissionProfile[] = (
+          data as Array<{
+            id: number;
+            nomorPengajuan?: string;
+            status: string;
+            tuk?: string;
+            createdAt: string | Date;
+            statusPembayaran?: string | boolean;
+            skema?: { id?: number; namaSkema?: string; kodeSkema?: string };
+            user?: { username?: string; email?: string };
+            master_tuk?: { nama?: string; alamat?: string; tipe?: string };
+            dataPribadi?: {
+              namaLengkap?: string;
+              tempatLahir?: string;
+              tanggalLahir?: string | Date;
+              jenisKelamin?: string;
               alamat?: string;
-              link_video?: string;
-              users?: { profil?: { namaLengkap?: string } };
-              master_tuk?: { nama?: string; alamat?: string };
+              kodeProvinsi?: string;
+              kodeKota?: string;
+              nik?: string;
+              kewarganegaraan?: string;
+              kodePosAsesi?: string;
+              noHp?: string;
+              pendidikanTerakhir?: string;
+              pekerjaan?: string;
+              namaInstitusi?: string;
+              jabatan?: string;
+              emailInstitusi?: string;
+              kodePosInstitusi?: string;
+              alamatInstitusi?: string;
+              telpInstitusi?: string;
+              faxInstitusi?: string;
+              isBerpengalaman?: boolean;
             };
-          }>;
-        }>).map((item) => {
+            jadwal_asesmen_peserta?: Array<{
+              jadwal_asesmen?: {
+                tanggal?: string | Date;
+                waktu_mulai?: string | Date;
+                tipe_tuk?: string;
+                alamat?: string;
+                link_video?: string;
+                users?: { profil?: { namaLengkap?: string } };
+                master_tuk?: { nama?: string; alamat?: string };
+              };
+            }>;
+          }>
+        ).map((item) => {
           const dateStr = item.createdAt
             ? new Date(item.createdAt)
-              .toLocaleDateString("id-ID", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-              .replace(/\//g, "-")
+                .toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+                .replace(/\//g, "-")
             : "-";
 
           // Logika Pemetaan TUK & Alamat (Sinkron dengan halaman Dashboard)
           const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
-          const tipeTuk = (jadwal?.tipe_tuk || item.master_tuk?.tipe || item.tuk || "Mandiri (Online)") as string;
-          const isOnline = tipeTuk.toLowerCase().includes("online") || tipeTuk.toLowerCase().includes("virtual");
+          const tipeTuk = (jadwal?.tipe_tuk ||
+            item.master_tuk?.tipe ||
+            item.tuk ||
+            "Mandiri (Online)") as string;
+          const isOnline =
+            tipeTuk.toLowerCase().includes("online") ||
+            tipeTuk.toLowerCase().includes("virtual");
 
           const tukName = isOnline
             ? "Online"
-            : (jadwal?.master_tuk?.nama || item.master_tuk?.nama || "UIN Sunan Gunung Djati Bandung");
+            : jadwal?.master_tuk?.nama ||
+              item.master_tuk?.nama ||
+              "UIN Sunan Gunung Djati Bandung";
 
           const alamatLengkap = isOnline
             ? ""
-            : (jadwal?.master_tuk?.alamat || item.master_tuk?.alamat || jadwal?.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru");
+            : jadwal?.master_tuk?.alamat ||
+              item.master_tuk?.alamat ||
+              jadwal?.alamat ||
+              "Jl. A.H. Nasution No. 105, Cipadung, Cibiru";
 
           return {
             id: item.id,
@@ -291,46 +303,52 @@ export default function PengajuanSkemaPage() {
             tempatLahir: item.dataPribadi?.tempatLahir || "",
             tanggalLahir: item.dataPribadi?.tanggalLahir
               ? new Date(item.dataPribadi.tanggalLahir)
-                .toISOString()
-                .split("T")[0]
+                  .toISOString()
+                  .split("T")[0]
               : "",
             jenisKelamin: item.dataPribadi?.jenisKelamin || "",
-            alamat: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.alamat || item.dataPribadi?.alamat || "",
+            alamat:
+              item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.alamat ||
+              item.dataPribadi?.alamat ||
+              "",
             provinsi: item.dataPribadi?.kodeProvinsi || "",
             kota: item.dataPribadi?.kodeKota || "",
             nik: item.dataPribadi?.nik || "",
-            kewarganegaraan:
-              item.dataPribadi?.kewarganegaraan || "Indonesia",
+            kewarganegaraan: item.dataPribadi?.kewarganegaraan || "Indonesia",
             kodePos: item.dataPribadi?.kodePosAsesi || "",
             noHp: item.dataPribadi?.noHp || "",
             telepon: item.dataPribadi?.noHp || "",
-            pendidikanTerakhir:
-              item.dataPribadi?.pendidikanTerakhir || "",
+            pendidikanTerakhir: item.dataPribadi?.pendidikanTerakhir || "",
             pekerjaan: item.dataPribadi?.pekerjaan || "",
-            institusiPerusahaan:
-              item.dataPribadi?.namaInstitusi || "",
+            institusiPerusahaan: item.dataPribadi?.namaInstitusi || "",
             jabatan: item.dataPribadi?.jabatan || "",
             emailInstitusi: item.dataPribadi?.emailInstitusi || "",
-            kodePosInstitusi:
-              item.dataPribadi?.kodePosInstitusi || "",
-            alamatInstitusi:
-              item.dataPribadi?.alamatInstitusi || "",
+            kodePosInstitusi: item.dataPribadi?.kodePosInstitusi || "",
+            alamatInstitusi: item.dataPribadi?.alamatInstitusi || "",
             telpInstitusi: item.dataPribadi?.telpInstitusi || "",
             faxInstitusi: item.dataPribadi?.faxInstitusi || "",
             tipeTuk,
             tukName,
             alamatLengkap,
-            penyesuaianWajar:
-              item.dataPribadi?.memerlukanPenyesuaianWajar ?? false,
             berpengalaman: item.dataPribadi?.isBerpengalaman ?? false,
-            statusPembayaran: item.statusPembayaran === "Sudah Bayar" || item.statusPembayaran === "Sudah" || item.statusPembayaran === true
-              ? "Sudah"
-              : "Belum",
-            asesmenDate: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal
-              ? new Date(item.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal).toISOString()
+            statusPembayaran:
+              item.statusPembayaran === "Sudah Bayar" ||
+              item.statusPembayaran === "Sudah" ||
+              item.statusPembayaran === true
+                ? "Sudah"
+                : "Belum",
+            asesmenDate: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen
+              ?.tanggal
+              ? new Date(
+                  item.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal,
+                ).toISOString()
               : undefined,
-            asesorName: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.namaLengkap || "",
-            virtualMeeting: item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.link_video || "",
+            asesorName:
+              item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil
+                ?.namaLengkap || "",
+            virtualMeeting:
+              item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.link_video ||
+              "",
           };
         });
         setSubmissions(mappedList);
@@ -380,7 +398,6 @@ export default function PengajuanSkemaPage() {
   const [tuk, setTuk] = useState("");
   const [metode, setMetode] = useState("");
   const [berpengalaman, setBerpengalaman] = useState(false);
-  const [penyesuaianWajar, setPenyesuaianWajar] = useState(false);
 
   const [lockedFields, setLockedFields] = useState<Record<string, boolean>>({});
 
@@ -389,7 +406,9 @@ export default function PengajuanSkemaPage() {
   React.useEffect(() => {
     if (selectedScheme?.id && typeof window !== "undefined") {
       try {
-        const draftStr = localStorage.getItem(`asesiPengajuanDraft_${selectedScheme.id}`);
+        const draftStr = localStorage.getItem(
+          `asesiPengajuanDraft_${selectedScheme.id}`,
+        );
         if (draftStr) {
           const draft = JSON.parse(draftStr);
           if (draft) {
@@ -397,11 +416,13 @@ export default function PengajuanSkemaPage() {
               setEFormData(draft.eFormData);
             }
             import("@/lib/draftDb").then(({ loadDraftFiles }) => {
-              loadDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`).then((fileData) => {
-                if (fileData && Object.keys(fileData).length > 0) {
-                  setEFormData((prev) => ({ ...prev, ...fileData }));
-                }
-              });
+              loadDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`).then(
+                (fileData) => {
+                  if (fileData && Object.keys(fileData).length > 0) {
+                    setEFormData((prev) => ({ ...prev, ...fileData }));
+                  }
+                },
+              );
             });
             if (draft.namaLengkap) setNamaLengkap(draft.namaLengkap);
             if (draft.tempatLahir) setTempatLahir(draft.tempatLahir);
@@ -411,25 +432,33 @@ export default function PengajuanSkemaPage() {
             if (draft.provinsi) setProvinsi(draft.provinsi);
             if (draft.kota) setKota(draft.kota);
             if (draft.nik) setNik(draft.nik);
-            if (draft.kewarganegaraan) setKewarganegaraan(draft.kewarganegaraan);
+            if (draft.kewarganegaraan)
+              setKewarganegaraan(draft.kewarganegaraan);
             if (draft.kodePos) setKodePos(draft.kodePos);
             if (draft.noTelp) setNoTelp(draft.noTelp);
-            if (draft.pendidikanTerakhir) setPendidikanTerakhir(draft.pendidikanTerakhir);
+            if (draft.pendidikanTerakhir)
+              setPendidikanTerakhir(draft.pendidikanTerakhir);
             if (draft.pekerjaan) setPekerjaan(draft.pekerjaan);
-            if (draft.institusiPerusahaan) setInstitusiPerusahaan(draft.institusiPerusahaan);
+            if (draft.institusiPerusahaan)
+              setInstitusiPerusahaan(draft.institusiPerusahaan);
             if (draft.jabatan) setJabatan(draft.jabatan);
             if (draft.emailInstitusi) setEmailInstitusi(draft.emailInstitusi);
-            if (draft.kodePosInstitusi) setKodePosInstitusi(draft.kodePosInstitusi);
-            if (draft.alamatInstitusi) setAlamatInstitusi(draft.alamatInstitusi);
+            if (draft.kodePosInstitusi)
+              setKodePosInstitusi(draft.kodePosInstitusi);
+            if (draft.alamatInstitusi)
+              setAlamatInstitusi(draft.alamatInstitusi);
             if (draft.telpInstitusi) setTelpInstitusi(draft.telpInstitusi);
             if (draft.faxInstitusi) setFaxInstitusi(draft.faxInstitusi);
             if (draft.tuk) setTuk(draft.tuk);
             if (draft.metode) setMetode(draft.metode);
-            if (draft.berpengalaman !== undefined) setBerpengalaman(draft.berpengalaman);
+            if (draft.berpengalaman !== undefined)
+              setBerpengalaman(draft.berpengalaman);
             if (draft.step) setStep(draft.step);
           }
         }
-      } catch (e) { console.warn("Failed to load draft", e); }
+      } catch (e) {
+        console.warn("Failed to load draft", e);
+      }
       isDraftLoaded.current = true;
     } else {
       isDraftLoaded.current = false;
@@ -437,27 +466,58 @@ export default function PengajuanSkemaPage() {
   }, [selectedScheme?.id]);
 
   React.useEffect(() => {
-    if (subView === "apply-form" && isDraftLoaded.current && selectedScheme?.id && typeof window !== "undefined") {
+    if (
+      subView === "apply-form" &&
+      isDraftLoaded.current &&
+      selectedScheme?.id &&
+      typeof window !== "undefined"
+    ) {
       const cleanEFormData: Record<string, unknown> = {};
       Object.keys(eFormData).forEach((k) => {
         const val = eFormData[k];
         if (val && !Array.isArray(val) && !(val instanceof File)) {
           cleanEFormData[k] = val;
-        } else if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string') {
+        } else if (
+          Array.isArray(val) &&
+          val.length > 0 &&
+          typeof val[0] === "string"
+        ) {
           cleanEFormData[k] = val;
         }
       });
 
       const draftData = {
         eFormData: cleanEFormData,
-        namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, alamat,
-        provinsi, kota, nik, kewarganegaraan, kodePos, noTelp,
-        pendidikanTerakhir, pekerjaan, institusiPerusahaan, jabatan,
-        emailInstitusi, kodePosInstitusi, alamatInstitusi, telpInstitusi, faxInstitusi,
-        tuk, metode, berpengalaman, step,
+        namaLengkap,
+        tempatLahir,
+        tanggalLahir,
+        jenisKelamin,
+        alamat,
+        provinsi,
+        kota,
+        nik,
+        kewarganegaraan,
+        kodePos,
+        noTelp,
+        pendidikanTerakhir,
+        pekerjaan,
+        institusiPerusahaan,
+        jabatan,
+        emailInstitusi,
+        kodePosInstitusi,
+        alamatInstitusi,
+        telpInstitusi,
+        faxInstitusi,
+        tuk,
+        metode,
+        berpengalaman,
+        step,
       };
 
-      localStorage.setItem(`asesiPengajuanDraft_${selectedScheme.id}`, JSON.stringify(draftData));
+      localStorage.setItem(
+        `asesiPengajuanDraft_${selectedScheme.id}`,
+        JSON.stringify(draftData),
+      );
 
       import("@/lib/draftDb").then(({ saveDraftFiles }) => {
         saveDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`, eFormData);
@@ -494,45 +554,63 @@ export default function PengajuanSkemaPage() {
         const loaded: Record<string, boolean> = {};
 
         const profileSetters: [unknown, (val: string) => void, string][] = [
-          [dataProfil.namaLengkap, setNamaLengkap, 'namaLengkap'],
-          [dataProfil.nik, setNik, 'nik'],
-          [dataProfil.tempatLahir, setTempatLahir, 'tempatLahir'],
+          [dataProfil.namaLengkap, setNamaLengkap, "namaLengkap"],
+          [dataProfil.nik, setNik, "nik"],
+          [dataProfil.tempatLahir, setTempatLahir, "tempatLahir"],
           [
             dataProfil.tanggalLahir
               ? new Date(String(dataProfil.tanggalLahir))
-                .toISOString()
-                .split("T")[0]
+                  .toISOString()
+                  .split("T")[0]
               : null,
-            setTanggalLahir, 'tanggalLahir'
+            setTanggalLahir,
+            "tanggalLahir",
           ],
-          [dataProfil.jenisKelamin === "Laki_laki" ? "Laki-laki" : dataProfil.jenisKelamin, setJenisKelamin, 'jenisKelamin'],
-          [dataProfil.kewarganegaraan, setKewarganegaraan, 'kewarganegaraan'],
-          [dataProfil.noHp, setNoTelp, 'noTelp'],
-          [dataProfil.alamat, setAlamat, 'alamat'],
-          [dataProfil.kodeProvinsi, setProvinsi, 'provinsi'],
-          [dataProfil.kodeKota, setKota, 'kota'],
-          [dataProfil.kodePos, setKodePos, 'kodePos'],
           [
-            dataProfil.pendidikanTerakhir === "SMA" ? "SMA/Sederajat" : 
-            dataProfil.pendidikanTerakhir === "S1" ? "S1/D4" : 
-            dataProfil.pendidikanTerakhir, 
-            setPendidikanTerakhir, 'pendidikanTerakhir'
+            dataProfil.jenisKelamin === "Laki_laki"
+              ? "Laki-laki"
+              : dataProfil.jenisKelamin,
+            setJenisKelamin,
+            "jenisKelamin",
           ],
-          [dataProfil.pekerjaan, setPekerjaan, 'pekerjaan'],
-          [dataProfil.namaInstitusi, setInstitusiPerusahaan, 'institusiPerusahaan'],
-          [dataProfil.jabatan, setJabatan, 'jabatan'],
-          [dataProfil.emailInstitusi, setEmailInstitusi, 'emailInstitusi'],
-          [dataProfil.kodePosInstitusi, setKodePosInstitusi, 'kodePosInstitusi'],
-          [dataProfil.telpInstitusi, setTelpInstitusi, 'telpInstitusi'],
-          [dataProfil.alamatInstitusi, setAlamatInstitusi, 'alamatInstitusi'],
-          [dataProfil.faxInstitusi, setFaxInstitusi, 'faxInstitusi'],
+          [dataProfil.kewarganegaraan, setKewarganegaraan, "kewarganegaraan"],
+          [dataProfil.noHp, setNoTelp, "noTelp"],
+          [dataProfil.alamat, setAlamat, "alamat"],
+          [dataProfil.kodeProvinsi, setProvinsi, "provinsi"],
+          [dataProfil.kodeKota, setKota, "kota"],
+          [dataProfil.kodePos, setKodePos, "kodePos"],
+          [
+            dataProfil.pendidikanTerakhir === "SMA"
+              ? "SMA/Sederajat"
+              : dataProfil.pendidikanTerakhir === "S1"
+                ? "S1/D4"
+                : dataProfil.pendidikanTerakhir,
+            setPendidikanTerakhir,
+            "pendidikanTerakhir",
+          ],
+          [dataProfil.pekerjaan, setPekerjaan, "pekerjaan"],
+          [
+            dataProfil.namaInstitusi,
+            setInstitusiPerusahaan,
+            "institusiPerusahaan",
+          ],
+          [dataProfil.jabatan, setJabatan, "jabatan"],
+          [dataProfil.emailInstitusi, setEmailInstitusi, "emailInstitusi"],
+          [
+            dataProfil.kodePosInstitusi,
+            setKodePosInstitusi,
+            "kodePosInstitusi",
+          ],
+          [dataProfil.telpInstitusi, setTelpInstitusi, "telpInstitusi"],
+          [dataProfil.alamatInstitusi, setAlamatInstitusi, "alamatInstitusi"],
+          [dataProfil.faxInstitusi, setFaxInstitusi, "faxInstitusi"],
         ];
 
         profileSetters.forEach(([val, setter, key]) => {
           if (val !== undefined && val !== null && val !== "") {
             const actualVal = String(val); // Diperbaiki: diubah dari let menjadi const
             setter(actualVal);
-            if (key !== 'pendidikanTerakhir') {
+            if (key !== "pendidikanTerakhir") {
               loaded[key as keyof typeof loaded] = true;
             }
           }
@@ -583,9 +661,7 @@ export default function PengajuanSkemaPage() {
                       ? parsed
                       : [el.kriteriaUnjukKerja];
                   } catch {
-                    kukList = el.kriteriaUnjukKerja
-                      .split("\n")
-                      .filter(Boolean);
+                    kukList = el.kriteriaUnjukKerja.split("\n").filter(Boolean);
                   }
                 }
 
@@ -593,10 +669,10 @@ export default function PengajuanSkemaPage() {
                   id: Number(el.id || eIdx + 1),
                   namaElemen: String(
                     el.namaElemen ||
-                    el.nama_elemen ||
-                    el.title ||
-                    el.nama ||
-                    `Elemen ${eIdx + 1}`,
+                      el.nama_elemen ||
+                      el.title ||
+                      el.nama ||
+                      `Elemen ${eIdx + 1}`,
                   ),
                   kriteriaUnjukKerja: kukList,
                   urutan: Number(el.urutan || eIdx + 1),
@@ -607,18 +683,10 @@ export default function PengajuanSkemaPage() {
               return {
                 id: Number(u.id || uIdx + 1),
                 kodeUnit: String(
-                  u.kodeUnit ||
-                  u.kode_unit ||
-                  u.code ||
-                  u.kode ||
-                  "-",
+                  u.kodeUnit || u.kode_unit || u.code || u.kode || "-",
                 ),
                 judulUnit: String(
-                  u.judulUnit ||
-                  u.judul_unit ||
-                  u.title ||
-                  u.judul ||
-                  "-",
+                  u.judulUnit || u.judul_unit || u.title || u.judul || "-",
                 ),
                 urutan: Number(u.urutan || uIdx + 1),
                 elemen,
@@ -628,28 +696,29 @@ export default function PengajuanSkemaPage() {
             const rawPersyaratanDasar = Array.isArray(skema.persyaratanDasar)
               ? (skema.persyaratanDasar as Array<Record<string, unknown>>)
               : [];
-            const persyaratanDasar: PersyaratanDasar[] = rawPersyaratanDasar.map((p, idx) => ({
-              id: Number(p.id || idx + 1),
-              namaDokumen: String(
-                p.namaDokumen || p.name || p.nama || "Dokumen",
-              ),
-              deskripsi: p.deskripsi
-                ? String(p.deskripsi)
-                : p.description
-                  ? String(p.description)
-                  : "",
-              urutan: Number(p.urutan || idx + 1),
-              is_wajib: p.isWajib !== false,
-            }));
+            const persyaratanDasar: PersyaratanDasar[] =
+              rawPersyaratanDasar.map((p, idx) => ({
+                id: Number(p.id || idx + 1),
+                namaDokumen: String(
+                  p.namaDokumen || p.name || p.nama || "Dokumen",
+                ),
+                deskripsi: p.deskripsi
+                  ? String(p.deskripsi)
+                  : p.description
+                    ? String(p.description)
+                    : "",
+                urutan: Number(p.urutan || idx + 1),
+                is_wajib: p.isWajib !== false,
+              }));
 
             const rawAdm = Array.isArray(skema.master_bukti_administratif)
               ? (skema.master_bukti_administratif as Array<
-                Record<string, unknown>
-              >)
-              : Array.isArray(skema.persyaratanAdministrasi)
-                ? (skema.persyaratanAdministrasi as Array<
                   Record<string, unknown>
                 >)
+              : Array.isArray(skema.persyaratanAdministrasi)
+                ? (skema.persyaratanAdministrasi as Array<
+                    Record<string, unknown>
+                  >)
                 : [];
 
             const defaultBuktiAdm = [
@@ -671,14 +740,14 @@ export default function PengajuanSkemaPage() {
             const persyaratanAdministrasi: PersyaratanAdministrasi[] =
               rawAdm.length > 0
                 ? rawAdm.map((a, idx) => ({
-                  id: Number(a.id || idx + 1),
-                  namaDokumen: String(
-                    a.namaDokumen || a.name || a.nama || "Dokumen",
-                  ),
-                  deskripsi: a.deskripsi ? String(a.deskripsi) : "",
-                  isWajib: a.isWajib !== false,
-                  isAktif: a.isAktif !== false,
-                }))
+                    id: Number(a.id || idx + 1),
+                    namaDokumen: String(
+                      a.namaDokumen || a.name || a.nama || "Dokumen",
+                    ),
+                    deskripsi: a.deskripsi ? String(a.deskripsi) : "",
+                    isWajib: a.isWajib !== false,
+                    isAktif: a.isAktif !== false,
+                  }))
                 : defaultBuktiAdm;
 
             return {
@@ -692,7 +761,7 @@ export default function PengajuanSkemaPage() {
               persyaratanDasar,
               persyaratanAdministrasi,
             };
-          }
+          },
         );
 
         setSchemesData(mappedSchemes);
@@ -844,7 +913,10 @@ export default function PengajuanSkemaPage() {
 
   const handleSubmitForm = async () => {
     try {
-      showNotification("Mengunggah dokumen dan memproses pengajuan...", "success");
+      showNotification(
+        "Mengunggah dokumen dan memproses pengajuan...",
+        "success",
+      );
 
       const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> =
         [];
@@ -880,7 +952,11 @@ export default function PengajuanSkemaPage() {
       }
 
       // PERBAIKAN: EKSTRAK DATA CHECKLIST APL-01 DARI STATE E-FORM
-      const apl01Data = (eFormData["01. FR.APL.01 Permohonan Sertifikasi"] as Record<string, unknown>) || {};
+      const apl01Data =
+        (eFormData["01. FR.APL.01 Permohonan Sertifikasi"] as Record<
+          string,
+          unknown
+        >) || {};
       const checklistData = apl01Data.checklist || {};
 
       const payloadData = {
@@ -910,9 +986,11 @@ export default function PengajuanSkemaPage() {
         faxInstitusi,
         tuk: tuk || "Mandiri",
         metode,
-        penyesuaianWajar,
         berpengalaman,
-        tandaTangan: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
+        tandaTangan:
+          (registeredProfile as Record<string, string>)?.tanda_tangan ||
+          (registeredProfile as Record<string, string>)?.tandaTangan ||
+          "",
         dokumen: uploadedDokumen,
         // PERBAIKAN: SERTAKAN CHECKLIST KE DALAM PAYLOAD PENGAJUAN
         checklist: checklistData,
@@ -963,14 +1041,26 @@ export default function PengajuanSkemaPage() {
       if (error instanceof Error) {
         showNotification(error.message, "error");
       } else {
-        showNotification("Yah, terjadi kesalahan saat mengirim pengajuan.", "error");
+        showNotification(
+          "Yah, terjadi kesalahan saat mengirim pengajuan.",
+          "error",
+        );
       }
     }
   };
 
   const filteredSubmissions = submissions.filter((item) => {
     const s = (item.status || "").toLowerCase();
-    if (["menunggu pleno", "selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(s)) {
+    if (
+      [
+        "menunggu pleno",
+        "selesai",
+        "lulus",
+        "tidak lulus",
+        "kompeten",
+        "belum kompeten",
+      ].includes(s)
+    ) {
       return false;
     }
 
@@ -1058,12 +1148,12 @@ export default function PengajuanSkemaPage() {
 
   const currentSchemeDetail: SchemeDetailInfo | undefined = selectedScheme
     ? {
-      ...selectedScheme,
-      nama: selectedScheme.nama,
-      units: selectedScheme.unitKompetensi,
-      persyaratanDasar: selectedScheme.persyaratanDasar,
-      buktiAdministratif: selectedScheme.persyaratanAdministrasi,
-    }
+        ...selectedScheme,
+        nama: selectedScheme.nama,
+        units: selectedScheme.unitKompetensi,
+        persyaratanDasar: selectedScheme.persyaratanDasar,
+        buktiAdministratif: selectedScheme.persyaratanAdministrasi,
+      }
     : undefined;
 
   return (
@@ -1134,7 +1224,9 @@ export default function PengajuanSkemaPage() {
                       className="bg-gray-50 border border-gray-200/50 text-[14px] rounded-lg px-3 h-10 outline-none text-gray-700 cursor-pointer font-bold"
                     >
                       <option value="Semua">Semua Status</option>
-                      <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                      <option value="Menunggu Verifikasi">
+                        Menunggu Verifikasi
+                      </option>
                       <option value="Terverifikasi">Terverifikasi</option>
                       <option value="Terjadwal">Terjadwal</option>
                       <option value="Revisi">Revisi</option>
@@ -1214,12 +1306,13 @@ export default function PengajuanSkemaPage() {
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                  : idx % 3 === 1
-                                    ? "bg-[#84CC16]/10 text-[#73B412]"
-                                    : "bg-slate-100 text-slate-600"
-                                  }`}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                    : idx % 3 === 1
+                                      ? "bg-[#84CC16]/10 text-[#73B412]"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
                               >
                                 {idx + 1}
                               </div>
@@ -1238,28 +1331,55 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="px-6 py-4">
                               <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${(item.tipeTuk || "").includes("Sewaktu")
-                                  ? "bg-blue-50 text-blue-700 border-blue-200"
-                                  : (item.tipeTuk || "").includes("Tempat Kerja")
-                                    ? "bg-purple-50 text-purple-700 border-purple-200"
-                                    : (item.tipeTuk || "").includes("Virtual") ||
-                                      (item.tipeTuk || "").includes("Online")
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                      : "bg-orange-50 text-orange-700 border-orange-200"
-                                  }`}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                  (item.tipeTuk || "").includes("Sewaktu")
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : (item.tipeTuk || "").includes(
+                                          "Tempat Kerja",
+                                        )
+                                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                                      : (item.tipeTuk || "").includes(
+                                            "Virtual",
+                                          ) ||
+                                          (item.tipeTuk || "").includes(
+                                            "Online",
+                                          )
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                        : "bg-orange-50 text-orange-700 border-orange-200"
+                                }`}
                               >
                                 {item.tipeTuk || "-"}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-xs text-gray-500 font-medium" title={item.alamatLengkap || item.tukName}>
-                              {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) && !item.tipeTuk?.includes("Online") && !item.tipeTuk?.includes("Virtual") ? (
+                            <td
+                              className="px-6 py-4 text-xs text-gray-500 font-medium"
+                              title={item.alamatLengkap || item.tukName}
+                            >
+                              {[
+                                "TERJADWAL",
+                                "MENUNGGU PLENO",
+                                "SELESAI",
+                                "LULUS",
+                                "TIDAK LULUS",
+                                "KOMPETEN",
+                                "BELUM KOMPETEN",
+                              ].includes(item.status.toUpperCase()) &&
+                              !item.tipeTuk?.includes("Online") &&
+                              !item.tipeTuk?.includes("Virtual") ? (
                                 <>
-                                  <div className="font-medium text-slate-700">{item.tukName || "-"}</div>
-                                  {item.alamatLengkap && item.alamatLengkap !== "-" && (
-                                    <div className="text-[10px] text-gray-400 mt-0.5">{item.alamatLengkap}</div>
-                                  )}
+                                  <div className="font-medium text-slate-700">
+                                    {item.tukName || "-"}
+                                  </div>
+                                  {item.alamatLengkap &&
+                                    item.alamatLengkap !== "-" && (
+                                      <div className="text-[10px] text-gray-400 mt-0.5">
+                                        {item.alamatLengkap}
+                                      </div>
+                                    )}
                                 </>
-                              ) : "-"}
+                              ) : (
+                                "-"
+                              )}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium whitespace-nowrap">
                               <span className="inline-flex items-center gap-1.5">
@@ -1268,27 +1388,62 @@ export default function PengajuanSkemaPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm text-gray-600 font-medium whitespace-nowrap">
-                              {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) ? (
+                              {[
+                                "TERJADWAL",
+                                "MENUNGGU PLENO",
+                                "SELESAI",
+                                "LULUS",
+                                "TIDAK LULUS",
+                                "KOMPETEN",
+                                "BELUM KOMPETEN",
+                              ].includes(item.status.toUpperCase()) ? (
                                 <span className="inline-flex items-center gap-1.5">
-                                  <Calendar size={14} className="text-gray-400" />
-                                  {item.asesmenDate ? formatTanggal(item.asesmenDate) : "-"}
+                                  <Calendar
+                                    size={14}
+                                    className="text-gray-400"
+                                  />
+                                  {item.asesmenDate
+                                    ? formatTanggal(item.asesmenDate)
+                                    : "-"}
                                 </span>
                               ) : (
-                                <span className="text-gray-400 font-semibold px-2">-</span>
+                                <span className="text-gray-400 font-semibold px-2">
+                                  -
+                                </span>
                               )}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold whitespace-nowrap">
-                              {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) ? (
+                              {[
+                                "TERJADWAL",
+                                "MENUNGGU PLENO",
+                                "SELESAI",
+                                "LULUS",
+                                "TIDAK LULUS",
+                                "KOMPETEN",
+                                "BELUM KOMPETEN",
+                              ].includes(item.status.toUpperCase()) ? (
                                 <span className="inline-flex items-center gap-1.5">
                                   <User size={14} className="text-gray-400" />
                                   {item.asesorName || "-"}
                                 </span>
                               ) : (
-                                <span className="text-gray-400 font-semibold px-2">-</span>
+                                <span className="text-gray-400 font-semibold px-2">
+                                  -
+                                </span>
                               )}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                              {["TERJADWAL", "MENUNGGU PLENO", "SELESAI", "LULUS", "TIDAK LULUS", "KOMPETEN", "BELUM KOMPETEN"].includes(item.status.toUpperCase()) && (item.tipeTuk?.includes("Online") || item.tipeTuk?.includes("Virtual")) ? (
+                              {[
+                                "TERJADWAL",
+                                "MENUNGGU PLENO",
+                                "SELESAI",
+                                "LULUS",
+                                "TIDAK LULUS",
+                                "KOMPETEN",
+                                "BELUM KOMPETEN",
+                              ].includes(item.status.toUpperCase()) &&
+                              (item.tipeTuk?.includes("Online") ||
+                                item.tipeTuk?.includes("Virtual")) ? (
                                 item.virtualMeeting ? (
                                   <span className="inline-flex items-center gap-1 bg-[#008BE3]/10 text-[#008BE3] border border-[#008BE3]/20 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap ">
                                     <span className="w-1.5 h-1.5 bg-[#008BE3] rounded-full"></span>
@@ -1301,7 +1456,9 @@ export default function PengajuanSkemaPage() {
                                   </span>
                                 )
                               ) : (
-                                <span className="text-gray-400 font-semibold px-2">-</span>
+                                <span className="text-gray-400 font-semibold px-2">
+                                  -
+                                </span>
                               )}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
@@ -1318,12 +1475,14 @@ export default function PengajuanSkemaPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap">
-                              {item.status?.toLowerCase() === "menunggu verifikasi" ? (
+                              {item.status?.toLowerCase() ===
+                              "menunggu verifikasi" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
                                   Menunggu Verifikasi
                                 </span>
-                              ) : item.status?.toLowerCase() === "terverifikasi" ? (
+                              ) : item.status?.toLowerCase() ===
+                                "terverifikasi" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                                   Terverifikasi
@@ -1333,12 +1492,14 @@ export default function PengajuanSkemaPage() {
                                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
                                   Terjadwal
                                 </span>
-                              ) : item.status?.toLowerCase() === "revisi" || item.status?.toLowerCase() === "revisi" ? (
+                              ) : item.status?.toLowerCase() === "revisi" ||
+                                item.status?.toLowerCase() === "revisi" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                                   Revisi
                                 </span>
-                              ) : item.status?.toLowerCase() === "perlu perbaikan" ? (
+                              ) : item.status?.toLowerCase() ===
+                                "perlu perbaikan" ? (
                                 <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
                                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
                                   Perlu Perbaikan
@@ -1357,17 +1518,21 @@ export default function PengajuanSkemaPage() {
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
                               <div className="flex items-center justify-center gap-2">
-                                {item.status.toUpperCase() === "TERJADWAL" && item.tipeTuk === "Mandiri (Online)" && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      showNotification("Fitur Ujian Online belum tersedia", "error");
-                                    }}
-                                    className="inline-flex items-center gap-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
-                                  >
-                                    Mulai Ujian
-                                  </button>
-                                )}
+                                {item.status.toUpperCase() === "TERJADWAL" &&
+                                  item.tipeTuk === "Mandiri (Online)" && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        showNotification(
+                                          "Fitur Ujian Online belum tersedia",
+                                          "error",
+                                        );
+                                      }}
+                                      className="inline-flex items-center gap-1.5 bg-[#008BE3] hover:bg-[#0076C2] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                                    >
+                                      Mulai Ujian
+                                    </button>
+                                  )}
 
                                 <button
                                   onClick={async (e) => {
@@ -1375,7 +1540,9 @@ export default function PengajuanSkemaPage() {
                                     setSelectedDetailSubmission(item);
                                     setIsLoadingDetail(true);
                                     try {
-                                      const detail = await getPengajuanDetail(item.id);
+                                      const detail = await getPengajuanDetail(
+                                        item.id,
+                                      );
                                       if (detail) {
                                         setSelectedDetailSubmission({
                                           ...item,
@@ -1383,7 +1550,10 @@ export default function PengajuanSkemaPage() {
                                         });
                                       }
                                     } catch (err) {
-                                      console.error("Gagal memuat detail pengajuan:", err);
+                                      console.error(
+                                        "Gagal memuat detail pengajuan:",
+                                        err,
+                                      );
                                     } finally {
                                       setIsLoadingDetail(false);
                                     }
@@ -1394,7 +1564,9 @@ export default function PengajuanSkemaPage() {
                                   Detail
                                 </button>
 
-                                {item.status?.toLowerCase().includes("menunggu") && (
+                                {item.status
+                                  ?.toLowerCase()
+                                  .includes("menunggu") && (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1409,7 +1581,9 @@ export default function PengajuanSkemaPage() {
                                   </button>
                                 )}
 
-                                {item.status?.toLowerCase().includes("revisi") && (
+                                {item.status
+                                  ?.toLowerCase()
+                                  .includes("revisi") && (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1464,10 +1638,11 @@ export default function PengajuanSkemaPage() {
                         <button
                           key={page}
                           onClick={() => setSubPage(page)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${subPage === page
-                            ? "bg-[#008BE3] text-white border border-[#008BE3]"
-                            : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
-                            }`}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                            subPage === page
+                              ? "bg-[#008BE3] text-white border border-[#008BE3]"
+                              : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
+                          }`}
                         >
                           {page}
                         </button>
@@ -1611,7 +1786,7 @@ export default function PengajuanSkemaPage() {
                                 ? ` | Telp: ${selectedDetailSubmission.telepon}`
                                 : ""}
                               {!selectedDetailSubmission.noHp &&
-                                !selectedDetailSubmission.telepon
+                              !selectedDetailSubmission.telepon
                                 ? "-"
                                 : ""}
                             </td>
@@ -1663,7 +1838,7 @@ export default function PengajuanSkemaPage() {
                                 ? ` | Fax: ${selectedDetailSubmission.faxInstitusi}`
                                 : ""}
                               {!selectedDetailSubmission.kodePosInstitusi &&
-                                !selectedDetailSubmission.faxInstitusi
+                              !selectedDetailSubmission.faxInstitusi
                                 ? "-"
                                 : ""}
                             </td>
@@ -1701,16 +1876,6 @@ export default function PengajuanSkemaPage() {
                             <td className="p-3">
                               {selectedDetailSubmission.tipeTuk ||
                                 "Mandiri (Online)"}
-                            </td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="border-r border-slate-200 p-3 bg-slate-50/50 font-semibold">
-                              Penyesuaian Wajar
-                            </td>
-                            <td className="p-3">
-                              {selectedDetailSubmission.penyesuaianWajar
-                                ? "Ya"
-                                : "Tidak"}
                             </td>
                           </tr>
                           <tr className="hover:bg-slate-50 transition-colors">
@@ -1757,7 +1922,10 @@ export default function PengajuanSkemaPage() {
                             </div>
                             <button
                               onClick={() => {
-                                window.open(`/api/surat/cetakapl01?id=${selectedDetailSubmission.id}`, "_blank");
+                                window.open(
+                                  `/api/surat/cetakapl01?id=${selectedDetailSubmission.id}`,
+                                  "_blank",
+                                );
                               }}
                               className="text-xs font-bold text-blue-600 underline hover:text-blue-800"
                             >
@@ -1783,7 +1951,10 @@ export default function PengajuanSkemaPage() {
                             </div>
                             <button
                               onClick={() => {
-                                window.open(`/api/surat/cetakapl02?id=${selectedDetailSubmission.id}`, "_blank");
+                                window.open(
+                                  `/api/surat/cetakapl02?id=${selectedDetailSubmission.id}`,
+                                  "_blank",
+                                );
                               }}
                               className="text-xs font-bold text-blue-600 underline hover:text-blue-800"
                             >
@@ -1796,7 +1967,13 @@ export default function PengajuanSkemaPage() {
                           selectedDetailSubmission.dokumenList.map((dok) => (
                             <div
                               key={dok.id}
-                              onClick={() => setActiveModalDoc({ isPreview: true, name: dok.namaDokumen, url: dok.fileUrl })}
+                              onClick={() =>
+                                setActiveModalDoc({
+                                  isPreview: true,
+                                  name: dok.namaDokumen,
+                                  url: dok.fileUrl,
+                                })
+                              }
                               className="p-4 border border-slate-200 rounded-lg flex flex-col justify-between hover:border-[#008BE3] hover:bg-slate-50 transition-all group shadow-sm bg-white cursor-pointer"
                             >
                               <div className="flex items-start gap-3">
@@ -1826,7 +2003,10 @@ export default function PengajuanSkemaPage() {
                   <div className="p-6 md:p-8 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 mt-auto">
                     <button
                       onClick={() => {
-                        window.open(`/api/surat/cetakbukti?id=${selectedDetailSubmission.id}`, "_blank");
+                        window.open(
+                          `/api/surat/cetakbukti?id=${selectedDetailSubmission.id}`,
+                          "_blank",
+                        );
                       }}
                       className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold text-sm px-4 py-2.5 rounded-lg transition-all shadow-sm cursor-pointer"
                     >
@@ -1935,12 +2115,13 @@ export default function PengajuanSkemaPage() {
                           >
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                  : idx % 3 === 1
-                                    ? "bg-[#84CC16]/10 text-[#73B412]"
-                                    : "bg-slate-100 text-slate-600"
-                                  }`}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${
+                                  idx % 3 === 0
+                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                    : idx % 3 === 1
+                                      ? "bg-[#84CC16]/10 text-[#73B412]"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
                               >
                                 {idx + 1}
                               </div>
@@ -1976,7 +2157,10 @@ export default function PengajuanSkemaPage() {
                                   setSubView("apply-form");
                                   setStep(1);
                                   if (typeof window !== "undefined") {
-                                    localStorage.setItem("asesiActiveSchemeId", scheme.id.toString());
+                                    localStorage.setItem(
+                                      "asesiActiveSchemeId",
+                                      scheme.id.toString(),
+                                    );
                                   }
                                 }}
                                 className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer"
@@ -2052,10 +2236,11 @@ export default function PengajuanSkemaPage() {
                   <button
                     key={idx}
                     onClick={() => setSchemePage(idx + 1)}
-                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${schemePage === idx + 1
-                      ? "bg-[#008BE3] text-white"
-                      : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
-                      }`}
+                    className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${
+                      schemePage === idx + 1
+                        ? "bg-[#008BE3] text-white"
+                        : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
+                    }`}
                   >
                     {idx + 1}
                   </button>
@@ -2258,10 +2443,11 @@ export default function PengajuanSkemaPage() {
                           setStep(tabStep);
                         }
                       }}
-                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${isActive
-                        ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
-                        : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
-                        }`}
+                      className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
+                        isActive
+                          ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
+                          : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
+                      }`}
                     >
                       {tabLabel}
                     </button>
@@ -2286,7 +2472,8 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={namaLengkap}
-                      disabled={lockedFields.namaLengkap} onChange={(e) => setNamaLengkap(e.target.value)}
+                      disabled={lockedFields.namaLengkap}
+                      onChange={(e) => setNamaLengkap(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-[#008BE3] font-semibold text-slate-800"
                     />
                   </div>
@@ -2297,15 +2484,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={tempatLahir}
-                      disabled={lockedFields.tempatLahir} onChange={(e) => {
+                      disabled={lockedFields.tempatLahir}
+                      onChange={(e) => {
                         setTempatLahir(e.target.value);
                         if (errors.tempatLahir)
                           setErrors({ ...errors, tempatLahir: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.tempatLahir
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3]"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.tempatLahir
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.tempatLahir ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2324,15 +2513,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="date"
                       value={tanggalLahir}
-                      disabled={lockedFields.tanggalLahir} onChange={(e) => {
+                      disabled={lockedFields.tanggalLahir}
+                      onChange={(e) => {
                         setTanggalLahir(e.target.value);
                         if (errors.tanggalLahir)
                           setErrors({ ...errors, tanggalLahir: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${errors.tanggalLahir
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3]"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${
+                        errors.tanggalLahir
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.tanggalLahir && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2345,10 +2536,11 @@ export default function PengajuanSkemaPage() {
                       <span className="text-red-500">*</span> Jenis Kelamin
                     </label>
                     <div
-                      className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${errors.jenisKelamin
-                        ? "border-red-400 bg-red-50/10"
-                        : "border-transparent"
-                        }`}
+                      className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${
+                        errors.jenisKelamin
+                          ? "border-red-400 bg-red-50/10"
+                          : "border-transparent"
+                      }`}
                     >
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
                         <input
@@ -2395,16 +2587,18 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={provinsi}
-                      disabled={lockedFields.provinsi} onChange={(e) => {
+                      disabled={lockedFields.provinsi}
+                      onChange={(e) => {
                         setProvinsi(e.target.value);
                         setKota("");
                         if (errors.provinsi)
                           setErrors({ ...errors, provinsi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        } cursor-pointer`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.provinsi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      } cursor-pointer`}
                     >
                       <option value="">Pilih Provinsi</option>
                       {provinsis.map((prov) => (
@@ -2430,13 +2624,15 @@ export default function PengajuanSkemaPage() {
                         setKota(e.target.value);
                         if (errors.kota) setErrors({ ...errors, kota: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${!provinsi
-                        ? "bg-slate-100 cursor-not-allowed"
-                        : "bg-white cursor-pointer"
-                        } ${errors.kota
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        !provinsi
+                          ? "bg-slate-100 cursor-not-allowed"
+                          : "bg-white cursor-pointer"
+                      } ${
+                        errors.kota
                           ? "border-red-400 bg-red-50/10 focus:border-red-500"
                           : "border-slate-300 focus:border-[#008BE3]"
-                        }`}
+                      }`}
                     >
                       <option value="">Pilih Kota/Kabupaten</option>
                       {kotas
@@ -2463,16 +2659,18 @@ export default function PengajuanSkemaPage() {
                   <input
                     type="text"
                     value={alamat}
-                    disabled={lockedFields.alamat} onChange={(e) => {
+                    disabled={lockedFields.alamat}
+                    onChange={(e) => {
                       setAlamat(e.target.value);
                       if (errors.alamat)
                         setErrors({ ...errors, alamat: false });
                     }}
                     placeholder="Masukkan alamat lengkap"
-                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.alamat
-                      ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                      : "border-slate-300 focus:border-[#008BE3] bg-white"
-                      }`}
+                    className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                      errors.alamat
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
+                    }`}
                   />
                   {errors.alamat && (
                     <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2489,14 +2687,16 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={nik}
-                      disabled={lockedFields.nik} onChange={(e) => {
+                      disabled={lockedFields.nik}
+                      onChange={(e) => {
                         setNik(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.nik) setErrors({ ...errors, nik: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.nik
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3]"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.nik
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.nik ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2528,15 +2728,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={kodePos}
-                      disabled={lockedFields.kodePos} onChange={(e) => {
+                      disabled={lockedFields.kodePos}
+                      onChange={(e) => {
                         setKodePos(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.kodePos)
                           setErrors({ ...errors, kodePos: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kodePos
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3]"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.kodePos
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3]"
+                      }`}
                     />
                     {errors.kodePos ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2555,15 +2757,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={noTelp}
-                      disabled={lockedFields.noHp} onChange={(e) => {
+                      disabled={lockedFields.noHp}
+                      onChange={(e) => {
                         setNoTelp(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.noTelp)
                           setErrors({ ...errors, noTelp: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.noTelp
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.noTelp
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.noTelp && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2589,15 +2793,17 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={pendidikanTerakhir}
-                      disabled={lockedFields.pendidikanTerakhir} onChange={(e) => {
+                      disabled={lockedFields.pendidikanTerakhir}
+                      onChange={(e) => {
                         setPendidikanTerakhir(e.target.value);
                         if (errors.pendidikanTerakhir)
                           setErrors({ ...errors, pendidikanTerakhir: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pendidikanTerakhir
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.pendidikanTerakhir
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Pendidikan
@@ -2636,10 +2842,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.pekerjaan)
                           setErrors({ ...errors, pekerjaan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pekerjaan
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.pekerjaan
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Pekerjaan
@@ -2663,15 +2870,17 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <select
                       value={institusiPerusahaan}
-                      disabled={lockedFields.institusiPerusahaan} onChange={(e) => {
+                      disabled={lockedFields.institusiPerusahaan}
+                      onChange={(e) => {
                         setInstitusiPerusahaan(e.target.value);
                         if (errors.institusiPerusahaan)
                           setErrors({ ...errors, institusiPerusahaan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.institusiPerusahaan
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.institusiPerusahaan
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Institusi/Perusahaan
@@ -2695,15 +2904,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={jabatan}
-                      disabled={lockedFields.jabatan} onChange={(e) => {
+                      disabled={lockedFields.jabatan}
+                      onChange={(e) => {
                         setJabatan(e.target.value);
                         if (errors.jabatan)
                           setErrors({ ...errors, jabatan: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.jabatan
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.jabatan
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.jabatan && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2719,15 +2930,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="email"
                       value={emailInstitusi}
-                      disabled={lockedFields.emailInstitusi} onChange={(e) => {
+                      disabled={lockedFields.emailInstitusi}
+                      onChange={(e) => {
                         setEmailInstitusi(e.target.value);
                         if (errors.emailInstitusi)
                           setErrors({ ...errors, emailInstitusi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.emailInstitusi
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.emailInstitusi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.emailInstitusi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2742,7 +2955,8 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={kodePosInstitusi}
-                      disabled={lockedFields.kodePosInstitusi} onChange={(e) =>
+                      disabled={lockedFields.kodePosInstitusi}
+                      onChange={(e) =>
                         setKodePosInstitusi(
                           e.target.value.replace(/[^0-9]/g, ""),
                         )
@@ -2758,15 +2972,17 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={telpInstitusi}
-                      disabled={lockedFields.telpInstitusi} onChange={(e) => {
+                      disabled={lockedFields.telpInstitusi}
+                      onChange={(e) => {
                         setTelpInstitusi(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.telpInstitusi)
                           setErrors({ ...errors, telpInstitusi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.telpInstitusi
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${
+                        errors.telpInstitusi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.telpInstitusi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2781,15 +2997,17 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <textarea
                       value={alamatInstitusi}
-                      disabled={lockedFields.alamatInstitusi} onChange={(e) => {
+                      disabled={lockedFields.alamatInstitusi}
+                      onChange={(e) => {
                         setAlamatInstitusi(e.target.value);
                         if (errors.alamatInstitusi)
                           setErrors({ ...errors, alamatInstitusi: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${errors.alamatInstitusi
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${
+                        errors.alamatInstitusi
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     />
                     {errors.alamatInstitusi && (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
@@ -2804,7 +3022,8 @@ export default function PengajuanSkemaPage() {
                     <input
                       type="text"
                       value={faxInstitusi}
-                      disabled={lockedFields.faxInstitusi} onChange={(e) =>
+                      disabled={lockedFields.faxInstitusi}
+                      onChange={(e) =>
                         setFaxInstitusi(e.target.value.replace(/[^0-9]/g, ""))
                       }
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-[#008BE3] bg-white font-semibold text-slate-800"
@@ -2832,10 +3051,11 @@ export default function PengajuanSkemaPage() {
                         setTuk(e.target.value);
                         if (errors.tuk) setErrors({ ...errors, tuk: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.tuk
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih TUK
@@ -2863,10 +3083,11 @@ export default function PengajuanSkemaPage() {
                         if (errors.metode)
                           setErrors({ ...errors, metode: false });
                       }}
-                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.metode
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
-                        }`}
+                      className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${
+                        errors.metode
+                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      }`}
                     >
                       <option value="" disabled>
                         Pilih Metode
@@ -2881,26 +3102,6 @@ export default function PengajuanSkemaPage() {
                     )}
                   </div>
 
-                  <div className="col-span-full">
-                    <label className="flex items-start gap-3 cursor-pointer p-4 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={penyesuaianWajar}
-                        onChange={(e) => setPenyesuaianWajar(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 text-[#008BE3] rounded border-slate-300 cursor-pointer"
-                      />
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-800">
-                          Memerlukan Penyesuaian Wajar (FR.AK.07)
-                        </p>
-                        <p className="text-[11px] text-slate-500 mt-1">
-                          Centang jika Anda memiliki kondisi tertentu yang
-                          memerlukan penyesuaian saat asesmen.
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-
                   <div className="col-span-full flex flex-col gap-2">
                     <label className="block text-xs font-bold text-slate-700">
                       Berpengalaman pada Skema yang Diajukan
@@ -2908,12 +3109,14 @@ export default function PengajuanSkemaPage() {
                     <button
                       type="button"
                       onClick={() => setBerpengalaman(!berpengalaman)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${berpengalaman ? "bg-[#005C46]" : "bg-slate-200"
-                        }`}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        berpengalaman ? "bg-[#005C46]" : "bg-slate-200"
+                      }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${berpengalaman ? "translate-x-5" : "translate-x-0"
-                          }`}
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                          berpengalaman ? "translate-x-5" : "translate-x-0"
+                        }`}
                       />
                     </button>
                   </div>
@@ -2928,8 +3131,8 @@ export default function PengajuanSkemaPage() {
                   if (doc.isEForm && doc.name)
                     setTempEFormData(
                       (eFormData[doc.name] as
-                        | Record<string, unknown>
-                        | undefined) ?? ({} as Record<string, unknown>),
+                        Record<string, unknown> | undefined) ??
+                        ({} as Record<string, unknown>),
                     );
                 }}
                 title="Persyaratan Dasar"
@@ -2959,8 +3162,8 @@ export default function PengajuanSkemaPage() {
                   if (doc.isEForm && doc.name)
                     setTempEFormData(
                       (eFormData[doc.name] as
-                        | Record<string, unknown>
-                        | undefined) || ({} as Record<string, unknown>),
+                        Record<string, unknown> | undefined) ||
+                        ({} as Record<string, unknown>),
                     );
                 }}
                 title="Bukti Administratif"
@@ -2984,8 +3187,8 @@ export default function PengajuanSkemaPage() {
                   if (doc.isEForm && doc.name)
                     setTempEFormData(
                       (eFormData[doc.name] as
-                        | Record<string, unknown>
-                        | undefined) || ({} as Record<string, unknown>),
+                        Record<string, unknown> | undefined) ||
+                        ({} as Record<string, unknown>),
                     );
                 }}
                 eFormData={eFormData}
@@ -3015,8 +3218,8 @@ export default function PengajuanSkemaPage() {
                     if (doc.isEForm && doc.name)
                       setTempEFormData(
                         (eFormData[doc.name] as
-                          | Record<string, unknown>
-                          | undefined) || ({} as Record<string, unknown>),
+                          Record<string, unknown> | undefined) ||
+                          ({} as Record<string, unknown>),
                       );
                   }}
                   title="Persyaratan Pendaftaran"
@@ -3040,22 +3243,22 @@ export default function PengajuanSkemaPage() {
 
                 {(!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                   !eFormData["02. FR.APL.02 Asesmen Mandiri"]) && (
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
-                      <AlertTriangle
-                        size={16}
-                        className="shrink-0 text-amber-500 mt-0.5"
-                      />
-                      <div className="min-w-0">
-                        <span className="font-bold block mb-1">Perhatian</span>
-                        Anda harus mengisi dan menyimpan (
-                        <span className="font-semibold text-amber-900">
-                          Simpan Data
-                        </span>
-                        ) kedua E-Form di atas sebelum dapat men-submit pengajuan
-                        skema ini.
-                      </div>
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-800 text-xs shadow-sm">
+                    <AlertTriangle
+                      size={16}
+                      className="shrink-0 text-amber-500 mt-0.5"
+                    />
+                    <div className="min-w-0">
+                      <span className="font-bold block mb-1">Perhatian</span>
+                      Anda harus mengisi dan menyimpan (
+                      <span className="font-semibold text-amber-900">
+                        Simpan Data
+                      </span>
+                      ) kedua E-Form di atas sebelum dapat men-submit pengajuan
+                      skema ini.
                     </div>
-                  )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -3067,12 +3270,13 @@ export default function PengajuanSkemaPage() {
                   (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
                 }
-                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${step === 5 &&
+                className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${
+                  step === 5 &&
                   (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
-                  ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                  : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
-                  }`}
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
+                }`}
               >
                 {step === 5 ? "Ajukan" : "Selanjutnya"}
                 <ArrowRight size={14} />
@@ -3109,10 +3313,21 @@ export default function PengajuanSkemaPage() {
                     pendidikanTerakhir,
                     namaInstitusi: institusiPerusahaan,
                     jabatan,
-                    skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
-                    nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
+                    skema:
+                      selectedScheme?.nama ||
+                      (tempEFormData?.skema as string) ||
+                      "",
+                    nomorSkema:
+                      selectedScheme?.kode ||
+                      (tempEFormData?.nomorSkema as string) ||
+                      "",
                     schemeDetail: currentSchemeDetail,
-                    signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
+                    signature:
+                      (registeredProfile as Record<string, string>)
+                        ?.tanda_tangan ||
+                      (registeredProfile as Record<string, string>)
+                        ?.tandaTangan ||
+                      "",
                     readOnly: activeModalDoc?.isPreview,
                     ...(tempEFormData || {}),
                   }}
@@ -3124,10 +3339,21 @@ export default function PengajuanSkemaPage() {
                   formData={{
                     ...(tempEFormData || {}),
                     namaLengkap,
-                    skema: selectedScheme?.nama || (tempEFormData?.skema as string) || "",
-                    nomorSkema: selectedScheme?.kode || (tempEFormData?.nomorSkema as string) || "",
+                    skema:
+                      selectedScheme?.nama ||
+                      (tempEFormData?.skema as string) ||
+                      "",
+                    nomorSkema:
+                      selectedScheme?.kode ||
+                      (tempEFormData?.nomorSkema as string) ||
+                      "",
                     schemeDetail: currentSchemeDetail,
-                    signature: (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan || "",
+                    signature:
+                      (registeredProfile as Record<string, string>)
+                        ?.tanda_tangan ||
+                      (registeredProfile as Record<string, string>)
+                        ?.tandaTangan ||
+                      "",
                     readOnly: activeModalDoc?.isPreview,
                   }}
                   onChange={(val) => setTempEFormData(val)}
@@ -3173,7 +3399,9 @@ export default function PengajuanSkemaPage() {
                   onClick={() => {
                     const today = new Date().toISOString().split("T")[0];
                     if (activeModalDoc?.name?.includes("APL.01")) {
-                      const tujuanAsesmen = (tempEFormData as Record<string, unknown>)?.tujuan;
+                      const tujuanAsesmen = (
+                        tempEFormData as Record<string, unknown>
+                      )?.tujuan;
 
                       if (!tujuanAsesmen) {
                         showNotification("Harap isi Tujuan Asesmen", "error");
@@ -3183,20 +3411,30 @@ export default function PengajuanSkemaPage() {
                         return;
                       }
 
-                      const ttdAsesi = (tempEFormData as Record<string, unknown>)?.ttdAsesi || (registeredProfile as Record<string, string>)?.tanda_tangan || (registeredProfile as Record<string, string>)?.tandaTangan;
+                      const ttdAsesi =
+                        (tempEFormData as Record<string, unknown>)?.ttdAsesi ||
+                        (registeredProfile as Record<string, string>)
+                          ?.tanda_tangan ||
+                        (registeredProfile as Record<string, string>)
+                          ?.tandaTangan;
                       if (!ttdAsesi) {
-                        showNotification("Harap lengkapi tanda tangan Anda", "error");
+                        showNotification(
+                          "Harap lengkapi tanda tangan Anda",
+                          "error",
+                        );
                         window.dispatchEvent(
                           new CustomEvent("scroll-to-apl01-signature-error"),
                         );
                         return;
                       }
 
-                      (tempEFormData as Record<string, unknown>).asesiDate = today;
+                      (tempEFormData as Record<string, unknown>).asesiDate =
+                        today;
                     } else if (activeModalDoc?.name?.includes("APL.02")) {
                       // VALIDASI K/BK DIHAPUS / DIMATIKAN
                       // Asesi sekarang bisa langsung klik Simpan Data walau K/BK belum diceklis
-                      (tempEFormData as Record<string, unknown>).asesiDate = today;
+                      (tempEFormData as Record<string, unknown>).asesiDate =
+                        today;
                     }
                     const key = String(activeModalDoc?.name ?? "");
                     setEFormData({ ...eFormData, [key]: tempEFormData });
@@ -3217,7 +3455,9 @@ export default function PengajuanSkemaPage() {
       {/* VIEW 5: DOCUMENT / UPLOAD MODAL */}
       {activeModalDoc && !activeModalDoc?.isEForm && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc?.isPreview ? 'max-w-4xl' : 'max-w-lg'} overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
+          <div
+            className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc?.isPreview ? "max-w-4xl" : "max-w-lg"} overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+          >
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">
                 {activeModalDoc?.isPreview
@@ -3242,16 +3482,33 @@ export default function PengajuanSkemaPage() {
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[65vh] flex items-center justify-center">
                     {(() => {
-                      const files = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[]) : [];
+                      const files = activeModalDoc?.name
+                        ? (eFormData[activeModalDoc.name] as File[])
+                        : [];
                       const file = files?.[0];
-                      const url = (activeModalDoc?.url as string | undefined) || (file ? URL.createObjectURL(file) : null);
-                      const isImg = url?.match(/\.(jpeg|jpg|gif|png)$/i) || file?.type.startsWith("image/");
+                      const url =
+                        (activeModalDoc?.url as string | undefined) ||
+                        (file ? URL.createObjectURL(file) : null);
+                      const isImg =
+                        url?.match(/\.(jpeg|jpg|gif|png)$/i) ||
+                        file?.type.startsWith("image/");
 
                       if (url) {
                         if (isImg) {
-                          return <img src={url} alt="Preview" className="w-full h-full object-contain bg-slate-100" />;
+                          return (
+                            <img
+                              src={url}
+                              alt="Preview"
+                              className="w-full h-full object-contain bg-slate-100"
+                            />
+                          );
                         }
-                        return <iframe src={url} className="w-full h-full rounded-lg bg-white" />;
+                        return (
+                          <iframe
+                            src={url}
+                            className="w-full h-full rounded-lg bg-white"
+                          />
+                        );
                       }
 
                       return (
@@ -3273,9 +3530,13 @@ export default function PengajuanSkemaPage() {
                   <div className="flex gap-2 justify-center mt-2 w-full">
                     <button
                       onClick={() => {
-                        const files = activeModalDoc?.name ? (eFormData[activeModalDoc.name] as File[]) : [];
+                        const files = activeModalDoc?.name
+                          ? (eFormData[activeModalDoc.name] as File[])
+                          : [];
                         const file = files?.[0];
-                        const url = (activeModalDoc?.url as string | undefined) || (file ? URL.createObjectURL(file) : null);
+                        const url =
+                          (activeModalDoc?.url as string | undefined) ||
+                          (file ? URL.createObjectURL(file) : null);
 
                         if (url) {
                           if (file && !activeModalDoc?.url) {
@@ -3294,7 +3555,15 @@ export default function PengajuanSkemaPage() {
                       }}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
                     >
-                      {activeModalDoc?.url ? <><FileText size={16} /> Buka File</> : <><Download size={16} /> Unduh</>}
+                      {activeModalDoc?.url ? (
+                        <>
+                          <FileText size={16} /> Buka File
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} /> Unduh
+                        </>
+                      )}
                     </button>
                     {subView !== "list" && (
                       <button
@@ -3438,7 +3707,10 @@ export default function PengajuanSkemaPage() {
                 <button
                   onClick={() => {
                     if (tempFiles.length === 0) {
-                      showNotification("Harap pilih file terlebih dahulu.", "error");
+                      showNotification(
+                        "Harap pilih file terlebih dahulu.",
+                        "error",
+                      );
                       return;
                     }
                     if (typeof activeModalDoc?.name === "string") {
@@ -3496,9 +3768,13 @@ export default function PengajuanSkemaPage() {
                     if (typeof window !== "undefined") {
                       localStorage.removeItem("asesiActiveSchemeId");
                       if (selectedScheme?.id) {
-                        localStorage.removeItem(`asesiPengajuanDraft_${selectedScheme.id}`);
+                        localStorage.removeItem(
+                          `asesiPengajuanDraft_${selectedScheme.id}`,
+                        );
                         import("@/lib/draftDb").then(({ deleteDraftFiles }) => {
-                          deleteDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`);
+                          deleteDraftFiles(
+                            `asesiPengajuanFiles_${selectedScheme.id}`,
+                          );
                         });
                       }
                     }
@@ -3537,7 +3813,8 @@ export default function PengajuanSkemaPage() {
             <div className="p-5 flex flex-col items-center justify-center text-center bg-white">
               <AlertTriangle size={48} className="text-orange-500 mb-4" />
               <p className="text-slate-600 font-medium">
-                Apakah Anda yakin ingin membatalkan pengajuan ini? Data tidak dapat dikembalikan.
+                Apakah Anda yakin ingin membatalkan pengajuan ini? Data tidak
+                dapat dikembalikan.
               </p>
             </div>
             <div className="p-5 border-t border-slate-100 flex justify-end gap-3 bg-gray-50">
@@ -3551,11 +3828,17 @@ export default function PengajuanSkemaPage() {
                 onClick={async () => {
                   try {
                     await deletePengajuan(cancelItemId);
-                    showNotification("Pengajuan berhasil dibatalkan", "success");
+                    showNotification(
+                      "Pengajuan berhasil dibatalkan",
+                      "success",
+                    );
                     setCancelItemId(null);
                     await fetchSubmissions();
                   } catch (err: unknown) {
-                    const msg = err instanceof Error ? err.message : "Gagal membatalkan pengajuan";
+                    const msg =
+                      err instanceof Error
+                        ? err.message
+                        : "Gagal membatalkan pengajuan";
                     showNotification(msg, "error");
                   }
                 }}

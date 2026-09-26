@@ -58,12 +58,12 @@ export default function AsesiHistoryPage() {
           skema?: { namaSkema?: string; kodeSkema?: string; kode_skema?: string; };
           master_tuk?: { nama?: string; alamat?: string; tipe?: string };
           hasil_asesmen?: { id?: number; hasil?: string; link_video?: string; created_at?: string | Date };
-          sertifikat?: { 
-            nomor_sertifikat?: string; 
+          sertifikat?: {
+            nomor_sertifikat?: string;
             no_sertifikat?: string; // Disesuaikan dengan payload admin
-            tanggal_kadaluarsa?: string | Date; 
+            tanggal_kadaluarsa?: string | Date;
             tanggal_terbit?: string | Date;
-            status?: string; 
+            status?: string;
             file_url?: string;
             gdrive_url?: string; // Disesuaikan dengan payload admin
           };
@@ -109,7 +109,7 @@ export default function AsesiHistoryPage() {
               (isOnline ? "Online" : "-");
             const linkMeeting =
               jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
-            
+
             // Evaluasi Status dan Hasil yang kebal case-sensitive
             const isSelesai = String(item.status || "").toLowerCase() === "selesai";
             const hasilAsesmen = item.hasil_asesmen?.hasil || item.apl02_penilaian?.rekomendasi_apl02 || "-";
@@ -119,14 +119,14 @@ export default function AsesiHistoryPage() {
               item.sertifikat?.no_sertifikat ||
               item.sertifikat?.nomor_sertifikat ||
               (isSelesai && isKompeten ? "Menunggu Terbit" : "-");
-              
+
             const rawExpiry = item.sertifikat?.tanggal_kadaluarsa || item.sertifikat?.tanggal_terbit;
             const tanggalBerlaku = rawExpiry
               ? formatDateID(rawExpiry)
               : (item.sertifikat?.no_sertifikat || item.sertifikat?.nomor_sertifikat)
                 ? "-"
                 : (isSelesai && isKompeten ? "Menunggu Terbit" : "-");
-                
+
             const rawPenilaian = item.hasil_asesmen?.created_at || jadwal?.tanggal || item.createdAt;
             const tanggalPenilaian = formatDateID(rawPenilaian);
 
@@ -297,7 +297,7 @@ export default function AsesiHistoryPage() {
     (item) =>
       item.noSertifikat && item.noSertifikat !== "-" && String(item.noSertifikat).toLowerCase() !== "menunggu terbit",
   ).length;
-  
+
   const totalAsesmenSelesai = historyData.filter(
     (item) => String(item.statusAsesmen).toLowerCase() === "selesai" || String(item.rekomendasi).toLowerCase() === "kompeten",
   ).length;
@@ -1012,20 +1012,31 @@ export default function AsesiHistoryPage() {
                           <Eye size={14} />
                           Detail
                         </button>
-                        
+
                         {/* TOMBOL LIHAT/UNDUH SERTIFIKAT */}
                         {String(item.statusAsesmen).toLowerCase() === "selesai" &&
                           String(item.rekomendasi).toLowerCase() === "kompeten" &&
                           item.noSertifikat !== "-" &&
                           String(item.noSertifikat).toLowerCase() !== "menunggu terbit" && (
-                            <a
-                              href={item.linkSertifikat || "#"}
-                              target={item.linkSertifikat ? "_blank" : "_self"}
-                              rel={item.linkSertifikat ? "noopener noreferrer" : undefined}
-                              onClick={(e) => {
-                                if (!item.linkSertifikat) {
-                                  e.preventDefault();
-                                  setCertificatePreview(item);
+                            <button
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                try {
+                                  const res = await fetch(`/api/pengajuanskema/${item.id}/sertifikat`);
+                                  const json = await res.json();
+                                  if (res.ok && json.data && json.data.gdrive_url) {
+                                    window.open(json.data.gdrive_url, '_blank', 'noopener,noreferrer');
+                                  } else if (item.linkSertifikat) {
+                                    window.open(item.linkSertifikat, '_blank', 'noopener,noreferrer');
+                                  } else {
+                                    setCertificatePreview(item);
+                                  }
+                                } catch {
+                                  if (item.linkSertifikat) {
+                                    window.open(item.linkSertifikat, '_blank', 'noopener,noreferrer');
+                                  } else {
+                                    setCertificatePreview(item);
+                                  }
                                 }
                               }}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
@@ -1034,9 +1045,9 @@ export default function AsesiHistoryPage() {
                                 <ExternalLink size={14} />
                                 Link Sertifikat
                               </>
-                            </a>
+                            </button>
                           )}
-                          
+
                         {/* TOMBOL BANDING */}
                         {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(String(item.statusAsesmen).toLowerCase()) &&
                           (String(item.rekomendasi).toLowerCase() === "belum kompeten" || String(item.statusAsesmen).toLowerCase() === "belum kompeten") && (
@@ -1235,34 +1246,47 @@ export default function AsesiHistoryPage() {
                     </div>
                   </>
                 )}
-                
+
                 {/* TOMBOL UNDUH SERTIFIKAT DI MODAL DETAIL JUGA DISESUAIKAN */}
                 {String(selectedAssessment.statusAsesmen).toLowerCase() === "selesai" &&
-                 String(selectedAssessment.rekomendasi).toLowerCase() === "kompeten" &&
-                 selectedAssessment.noSertifikat !== "-" &&
-                 String(selectedAssessment.noSertifikat).toLowerCase() !== "menunggu terbit" && (
-                   <div className="pt-4 mt-4 border-t border-slate-100 flex justify-end">
-                     <a
-                       href={selectedAssessment.linkSertifikat || "#"}
-                       target={selectedAssessment.linkSertifikat ? "_blank" : "_self"}
-                       rel={selectedAssessment.linkSertifikat ? "noopener noreferrer" : undefined}
-                       onClick={(e) => {
-                         if (!selectedAssessment.linkSertifikat) {
-                           e.preventDefault();
-                           const targetAssessment = selectedAssessment; 
-                           setSelectedAssessment(null);
-                           setCertificatePreview(targetAssessment);
-                         }
-                       }}
-                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
-                     >
-                       <>
-                         <ExternalLink size={16} />
-                         Link Sertifikat
-                       </>
-                     </a>
-                   </div>
-                 )}
+                  String(selectedAssessment.rekomendasi).toLowerCase() === "kompeten" &&
+                  selectedAssessment.noSertifikat !== "-" &&
+                  String(selectedAssessment.noSertifikat).toLowerCase() !== "menunggu terbit" && (
+                    <div className="pt-4 mt-4 border-t border-slate-100 flex justify-end">
+                      <button
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          try {
+                            const res = await fetch(`/api/pengajuanskema/${selectedAssessment.id}/sertifikat`);
+                            const json = await res.json();
+                            if (res.ok && json.data && json.data.gdrive_url) {
+                              window.open(json.data.gdrive_url, '_blank', 'noopener,noreferrer');
+                            } else if (selectedAssessment.linkSertifikat) {
+                              window.open(selectedAssessment.linkSertifikat, '_blank', 'noopener,noreferrer');
+                            } else {
+                              const targetAssessment = selectedAssessment;
+                              setSelectedAssessment(null);
+                              setCertificatePreview(targetAssessment);
+                            }
+                          } catch {
+                            if (selectedAssessment.linkSertifikat) {
+                              window.open(selectedAssessment.linkSertifikat, '_blank', 'noopener,noreferrer');
+                            } else {
+                              const targetAssessment = selectedAssessment;
+                              setSelectedAssessment(null);
+                              setCertificatePreview(targetAssessment);
+                            }
+                          }
+                        }}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#008BE3] border border-[#008BE3] text-white rounded-lg text-xs font-bold hover:bg-[#007AC9] transition-all shadow-2xs"
+                      >
+                        <>
+                          <ExternalLink size={16} />
+                          Link Sertifikat
+                        </>
+                      </button>
+                    </div>
+                  )}
               </div>
               {String(selectedAssessment.rekomendasi).toLowerCase() === "belum kompeten" &&
                 (() => {
