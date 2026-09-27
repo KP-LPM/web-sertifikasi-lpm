@@ -146,7 +146,8 @@ export default function AssessmentSchedule() {
 
               const asesiDetail =
                 apiAvailableAsesis.find((a) => a.id === asesiId) ||
-                apiCompletedAsesis.find((a) => a.id === asesiId);
+                apiCompletedAsesis.find((a) => a.id === asesiId) ||
+                apiScheduledAsesis.find((a) => a.id === asesiId);
               if (asesiDetail) {
                 return asesiDetail.user?.profil?.namaLengkap &&
                   asesiDetail.user.profil.namaLengkap.trim() !== ""
@@ -391,6 +392,9 @@ export default function AssessmentSchedule() {
   const [apiAvailableAsesis, setApiAvailableAsesis] = useState<
     BackendPengajuanItem[]
   >([]);
+  const [apiScheduledAsesis, setApiScheduledAsesis] = useState<
+    BackendPengajuanItem[]
+  >([]);
 
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
 
@@ -459,6 +463,7 @@ export default function AssessmentSchedule() {
         pengajuanRes,
         completedPengajuanRes,
         plenoRes,
+        terjadwalPengajuanRes,
       ] = await Promise.allSettled([
         getJadwalList(),
         getSkemaList(),
@@ -467,6 +472,7 @@ export default function AssessmentSchedule() {
         getPengajuanList({ status: "Terverifikasi" }),
         getPengajuanList({ status: "Menunggu Pleno" }),
         getPlenoList(),
+        getPengajuanList({ status: "Terjadwal" }),
       ]);
 
       if (
@@ -506,6 +512,13 @@ export default function AssessmentSchedule() {
               a.verifikasi_pengajuan?.status_pembayaran === "Sudah",
           ),
         );
+      }
+
+      if (
+        terjadwalPengajuanRes.status === "fulfilled" &&
+        Array.isArray(terjadwalPengajuanRes.value)
+      ) {
+        setApiScheduledAsesis(terjadwalPengajuanRes.value as BackendPengajuanItem[]);
       }
 
       if (
@@ -1002,7 +1015,17 @@ export default function AssessmentSchedule() {
   );
 
   if (isModalOpen) {
-    const availableAsesi = apiAvailableAsesis
+    const combinedAsesis = [...apiAvailableAsesis];
+    
+    if (isPreviewMode || isEditMode) {
+      apiScheduledAsesis.forEach(scheduled => {
+        if (selectedAsesiForJadwal.includes(scheduled.id) && !combinedAsesis.some(a => a.id === scheduled.id)) {
+          combinedAsesis.push(scheduled);
+        }
+      });
+    }
+
+    const availableAsesi = combinedAsesis
       .filter((a) => {
         const namaSkema =
           typeof a.skema === "object"
