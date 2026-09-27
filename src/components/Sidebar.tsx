@@ -89,8 +89,8 @@ export function Sidebar() {
           )}
         </div>
 
-        <nav className="flex-1 flex flex-col justify-between">
-          <div className="space-y-1">
+        <nav className="flex-1 flex flex-col justify-between overflow-hidden">
+          <div className="space-y-1 flex-1 overflow-y-auto pr-1 custom-scrollbar">
             {navItems.map((item) => {
               // Aktif jika path saat ini sama atau merupakan sub-halaman dari item ini
               const isActive =
@@ -127,7 +127,7 @@ export function Sidebar() {
             })}
           </div>
 
-          <div className="pt-4 border-t border-white/10">
+          <div className="pt-4 mt-2 border-t border-white/10 shrink-0">
             {/* Logout Button */}
             <button
               onClick={logout}

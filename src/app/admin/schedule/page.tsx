@@ -2112,6 +2112,9 @@ export default function AssessmentSchedule() {
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
+                    Judul Asesmen
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-30 sticky top-0 z-20 bg-[#0F172A]">
@@ -2174,6 +2177,11 @@ export default function AssessmentSchedule() {
                           key={item.id}
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
+                          <td className="px-6 py-4 align-middle whitespace-nowrap">
+                            <div className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
+                              {item.namaBatch || "-"}
+                            </div>
+                          </td>
                           <td className="px-6 py-4 align-middle whitespace-nowrap">
                             <div className="text-[14px] font-bold text-[#008BE3] whitespace-nowrap">
                               {item.skema || "-"}
