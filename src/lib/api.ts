@@ -3,9 +3,36 @@ import type { RegisterPayload } from "@/types/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
+const requestCache = new Map<string, { promise: Promise<Response>, timestamp: number }>();
+
+export async function cachedFetch(url: string, options?: RequestInit, ttlMs = 2000) {
+  if (options?.method && options.method !== "GET") {
+    return fetch(url, options);
+  }
+
+  const cacheKey = `${options?.method || 'GET'}:${url}`;
+  const now = Date.now();
+
+  if (requestCache.has(cacheKey)) {
+    const cached = requestCache.get(cacheKey)!;
+    if (now - cached.timestamp < ttlMs) {
+      return cached.promise.then(res => res.clone());
+    }
+  }
+
+  const promise = fetch(url, options);
+  requestCache.set(cacheKey, { promise, timestamp: now });
+
+  setTimeout(() => {
+    requestCache.delete(cacheKey);
+  }, ttlMs);
+
+  return promise.then(res => res.clone());
+}
+
 export const getAuthHeaders = () => {
   const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+    typeof window !== "undefined" ? sessionStorage.getItem("token") || "" : "";
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -143,7 +170,7 @@ export async function getPengajuanList(filters?: {
 }
 
 export async function getPengajuanDetail(id: number) {
-  const res = await fetch(`${BASE_URL}/pengajuanskema/${id}`, {
+  const res = await cachedFetch(`${BASE_URL}/pengajuanskema/${id}`, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });
@@ -586,7 +613,7 @@ export async function getKonfigurasiPertanyaanList(params?: {
   if (params?.status) searchParams.append("status", params.status);
 
   const url = `${BASE_URL}/konfigurasipertanyaan${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
-  const res = await fetch(url, {
+  const res = await cachedFetch(url, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });
@@ -601,7 +628,7 @@ export async function getKonfigurasiPertanyaanList(params?: {
 }
 
 export async function getKonfigurasiPertanyaanDetail(id: number) {
-  const res = await fetch(`${BASE_URL}/konfigurasipertanyaan/${id}`, {
+  const res = await cachedFetch(`${BASE_URL}/konfigurasipertanyaan/${id}`, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });
@@ -632,6 +659,24 @@ export async function createKonfigurasiPertanyaan(
   return json.data;
 }
 
+export async function updateKonfigurasiPertanyaanAPI(
+  id: number,
+  data: Record<string, unknown>,
+) {
+  const res = await fetch(`${BASE_URL}/konfigurasipertanyaan/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal memperbarui konfigurasi pertanyaan");
+  }
+  return json.data;
+}
+
 export async function deleteKonfigurasiPertanyaan(id: number) {
   const res = await fetch(`${BASE_URL}/konfigurasipertanyaan/${id}`, {
     method: "DELETE",
@@ -651,7 +696,7 @@ export async function deleteKonfigurasiPertanyaan(id: number) {
 // ============================================================
 
 export async function getSkemaList() {
-  const res = await fetch(`${BASE_URL}/skema`, {
+  const res = await cachedFetch(`${BASE_URL}/skema`, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });
@@ -664,7 +709,7 @@ export async function getSkemaList() {
 }
 
 export async function getSkemaDetail(id: number) {
-  const res = await fetch(`${BASE_URL}/skema/${id}`, {
+  const res = await cachedFetch(`${BASE_URL}/skema/${id}`, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });

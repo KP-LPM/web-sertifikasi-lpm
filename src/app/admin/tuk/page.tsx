@@ -135,7 +135,7 @@ export default function TukManagement() {
   const loadTukDraft = () => {
     if (typeof window !== "undefined") {
       try {
-        const draft = localStorage.getItem("tukFormDraft");
+        const draft = sessionStorage.getItem("tukFormDraft");
         if (draft) {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
@@ -149,7 +149,7 @@ export default function TukManagement() {
 
   useEffect(() => {
     if (!isEditModalOpen && typeof window !== "undefined") {
-      localStorage.setItem("tukFormDraft", JSON.stringify(formData));
+      sessionStorage.setItem("tukFormDraft", JSON.stringify(formData));
     }
   }, [formData, isEditModalOpen]);
 
@@ -232,7 +232,7 @@ export default function TukManagement() {
     fetchTukData();
     if (typeof window !== "undefined") {
       try {
-        const tukDraft = localStorage.getItem("tukFormDraft");
+        const tukDraft = sessionStorage.getItem("tukFormDraft");
         if (tukDraft) {
           const parsed = JSON.parse(tukDraft);
           if (
@@ -328,7 +328,7 @@ export default function TukManagement() {
       });
       await fetchTukData();
       if (!isEditModalOpen && typeof window !== "undefined") {
-        localStorage.removeItem("tukFormDraft");
+        sessionStorage.removeItem("tukFormDraft");
       }
       setIsModalOpen(false);
       setFormData(loadTukDraft());
@@ -577,7 +577,7 @@ export default function TukManagement() {
               <button
                 onClick={() => {
                   if (!isEditModalOpen && typeof window !== "undefined") {
-                    localStorage.removeItem("tukFormDraft");
+                    sessionStorage.removeItem("tukFormDraft");
                   }
                   setIsModalOpen(false);
                   setIsEditModalOpen(false);
@@ -780,7 +780,7 @@ export default function TukManagement() {
               <button
                 onClick={() => {
                   if (!isEditModalOpen && typeof window !== "undefined") {
-                    localStorage.removeItem("tukFormDraft");
+                    sessionStorage.removeItem("tukFormDraft");
                   }
                   setIsModalOpen(false);
                   setIsEditModalOpen(false);

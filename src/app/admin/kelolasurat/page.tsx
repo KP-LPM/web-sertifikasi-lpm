@@ -104,7 +104,7 @@ export default function KelolaSurat() {
   const loadSuratDraft = () => {
     if (typeof window !== "undefined") {
       try {
-        const draft = localStorage.getItem("suratFormDraft");
+        const draft = sessionStorage.getItem("suratFormDraft");
         if (draft) {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
@@ -131,14 +131,14 @@ export default function KelolaSurat() {
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("suratFormDraft", JSON.stringify(formData));
+      sessionStorage.setItem("suratFormDraft", JSON.stringify(formData));
     }
   }, [formData]);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const draft = localStorage.getItem("suratFormDraft");
+        const draft = sessionStorage.getItem("suratFormDraft");
         if (draft) {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object" && (parsed.nomorSurat || parsed.penerima || parsed.catatan || parsed.urlGdrive)) {
@@ -243,7 +243,7 @@ export default function KelolaSurat() {
         fetchDocuments();
         setIsCreateModalOpen(false);
         if (typeof window !== "undefined") {
-          localStorage.removeItem("suratFormDraft");
+          sessionStorage.removeItem("suratFormDraft");
         }
         setFormData(loadSuratDraft());
       } else {
@@ -667,7 +667,7 @@ export default function KelolaSurat() {
               <button
                 onClick={() => {
                   if (typeof window !== "undefined") {
-                    localStorage.removeItem("suratFormDraft");
+                    sessionStorage.removeItem("suratFormDraft");
                   }
                   setIsCreateModalOpen(false);
                 }}
@@ -852,7 +852,7 @@ export default function KelolaSurat() {
                   type="button"
                   onClick={() => {
                     if (typeof window !== "undefined") {
-                      localStorage.removeItem("suratFormDraft");
+                      sessionStorage.removeItem("suratFormDraft");
                     }
                     setIsCreateModalOpen(false);
                   }}

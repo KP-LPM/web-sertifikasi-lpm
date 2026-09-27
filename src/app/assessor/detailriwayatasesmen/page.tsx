@@ -187,7 +187,7 @@ export default function DetailRiwayatAsesmen() {
 
           <div className="space-y-8">
             <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800">
+              <div className="bg-slate-100 p-4 border-b border-slate-200 font-bold text-slate-800">
                 FR.APL.02 - Asesmen Mandiri
               </div>
               <div className="p-4 bg-white flex items-center justify-between">
@@ -198,9 +198,6 @@ export default function DetailRiwayatAsesmen() {
                   <div className="min-w-0">
                     <p className="font-bold text-slate-800 text-sm">
                       FR_APL_02_Signed.pdf
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Telah diisi oleh Asesi dan Diverifikasi Asesor
                     </p>
                   </div>
                 </div>
@@ -227,9 +224,6 @@ export default function DetailRiwayatAsesmen() {
                   <div className="min-w-0">
                     <p className="font-bold text-slate-800 text-sm">
                       FR_AK_07_Signed.pdf
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Telah diisi oleh Asesi dan Asesor
                     </p>
                   </div>
                 </div>
@@ -263,9 +257,6 @@ export default function DetailRiwayatAsesmen() {
                   <div className="min-w-0">
                     <p className="font-bold text-slate-800 text-sm">
                       FR_IA_04A_Signed.pdf
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Telah diisi oleh Asesi dan Asesor
                     </p>
                   </div>
                 </div>
@@ -301,9 +292,7 @@ export default function DetailRiwayatAsesmen() {
                     <p className="font-bold text-slate-800 text-sm">
                       FR_IA_04B_Signed.pdf
                     </p>
-                    <p className="text-xs text-slate-500">
-                      Telah diisi oleh Asesi dan Asesor
-                    </p>
+
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -337,9 +326,6 @@ export default function DetailRiwayatAsesmen() {
                   <div className="min-w-0">
                     <p className="font-bold text-slate-800 text-sm">
                       FR_IA_07_Signed.pdf
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Telah diisi oleh Asesi dan Asesor
                     </p>
                   </div>
                 </div>

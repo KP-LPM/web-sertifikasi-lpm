@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -7,7 +8,6 @@ import {
   Check,
   ChevronRight,
   ChevronLeft,
-  CheckSquare,
   ListTodo,
   MessageSquare,
   Send,
@@ -17,11 +17,16 @@ import {
   CheckCircle2,
   ShieldCheck,
   FileSpreadsheet,
+  Eye,
+  X,
+  FileText,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
+import { FormFRIA04A } from "@/components/forms/FormFRIA04A";
+import { FormFRIA04B } from "@/components/forms/FormFRIA04B";
+import { FormFRIA07 } from "@/components/forms/FormFRIA07";
 import {
   ConfigurationMetadata,
-  Step1Question,
   Step2BlokA,
   Step2BlokB,
   Step3LingkupPenyajian,
@@ -32,11 +37,15 @@ import {
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createKonfigurasiPertanyaan, getSkemaList, getAllUsers, getKonfigurasiPertanyaanDetail } from "@/lib/api";
+import {
+  createKonfigurasiPertanyaan,
+  getSkemaList,
+  getAllUsers,
+  getKonfigurasiPertanyaanDetail,
+  updateKonfigurasiPertanyaanAPI,
+} from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Dummy options removed. Skema options now loaded dynamically.
-
-
 
 const availableKUKOptions = [
   "M.692000.001.01 E1/KUK 1.1",
@@ -55,16 +64,13 @@ const initialWizardState: WizardFormState = {
     namaKonfigurasi: "",
     skemaSertifikasi: "",
     versi: "1.0",
-    penyusun: [],
-    validator: [],
     isDefault: false,
-  },
-  step1: {
-    type: "CHECKLIST_MULTIPLE_CHOICE",
-    questions: [],
   },
   step2: {
     type: "INSTRUCTION_SCENARIO",
+    penyusun: [],
+    validator: [],
+    supervisor: [],
     blokA: {
       skenarioStudiKasus: "",
       informasiYangDiberikan: [""],
@@ -79,10 +85,14 @@ const initialWizardState: WizardFormState = {
   },
   step3: {
     type: "NESTED_ESSAY_PROYEK",
+    penyusun: [],
+    validator: [],
     lingkups: [],
   },
   step4: {
     type: "ESSAY_WITH_KEY_ANSWER",
+    penyusun: [],
+    validator: [],
     questions: [],
   },
 };
@@ -99,36 +109,67 @@ function TambahKonfigurasiPertanyaanContent() {
     updateKonfigurasiPertanyaan,
     konfigurasiPertanyaan,
   } = useAppContext();
-  const [skemaOptions, setSkemaOptions] = useState<{ value: string, label: string }[]>([]);
-  const [assessorOptions, setAssessorOptions] = useState<{ value: string, label: string }[]>([]);
+  const [skemaOptions, setSkemaOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [assessorOptions, setAssessorOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [skemaRes, usersRes] = await Promise.all([
           getSkemaList().catch(() => []),
-          getAllUsers().catch(() => [])
+          getAllUsers().catch(() => []),
         ]);
 
         if (Array.isArray(skemaRes)) {
-          setSkemaOptions(skemaRes.map((s: Record<string, string | number | undefined>) => ({
-            value: String(s.id?.toString() || s.kodeSkema || s.namaSkema || s.name || s.id || ''),
-            label: String(`${s.kodeSkema || s.kode || s.code || ''} - ${s.namaSkema || s.nama || s.name || ''}`.replace(/^- | -$/g, '').trim() || s.name || ''),
-          })));
+          setSkemaOptions(
+            skemaRes.map((s: Record<string, string | number | undefined>) => ({
+              value: String(
+                s.id?.toString() ||
+                s.kodeSkema ||
+                s.namaSkema ||
+                s.name ||
+                s.id ||
+                "",
+              ),
+              label: String(
+                `${s.kodeSkema || s.kode || s.code || ""} - ${s.namaSkema || s.nama || s.name || ""}`
+                  .replace(/^- | -$/g, "")
+                  .trim() ||
+                s.name ||
+                "",
+              ),
+            })),
+          );
         }
 
         const usersList = Array.isArray(usersRes)
           ? usersRes
-          : usersRes && typeof usersRes === "object" && "data" in usersRes && Array.isArray((usersRes as { data: unknown[] }).data)
+          : usersRes &&
+            typeof usersRes === "object" &&
+            "data" in usersRes &&
+            Array.isArray((usersRes as { data: unknown[] }).data)
             ? (usersRes as { data: unknown[] }).data
             : [];
 
-        type UserItem = { role?: string; id?: string | number; username?: string; namaLengkap?: string; };
-        const assessors = (usersList as UserItem[]).filter(u => u.role?.toLowerCase() === "asesor");
-        setAssessorOptions(assessors.map(a => ({
-          value: a.id?.toString() || a.username || "",
-          label: `${a.namaLengkap || a.username || "Unknown"} (Asesor)`
-        })));
+        type UserItem = {
+          role?: string;
+          id?: string | number;
+          username?: string;
+          profil?: { namaLengkap?: string };
+        };
+        const assessors = (usersList as UserItem[]).filter(
+          (u) => u.role?.toLowerCase() === "asesor",
+        );
+        setAssessorOptions(
+          assessors.map((a) => ({
+            value: a.id?.toString() || a.username || "",
+            label: `${a.profil?.namaLengkap || a.username || "Unknown"} (Asesor)`,
+          })),
+        );
       } catch (e) {
         console.error(e);
       }
@@ -147,98 +188,215 @@ function TambahKonfigurasiPertanyaanContent() {
   // Central Wizard Form State
   const [formData, setFormData] = useState<WizardFormState>(initialWizardState);
 
+  // Preview Modal State
+  const [previewForm, setPreviewForm] = useState<string | null>(null);
+  const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false);
+
+  const currentPreviewData = {
+    step2: {
+      skenario_studi_kasus: formData.step2.blokA.skenarioStudiKasus,
+      informasi_yang_diberikan: formData.step2.blokA.informasiYangDiberikan,
+      lingkup_bahasan_studi_kasus:
+        formData.step2.blokA.lingkupBahasanStudiKasus,
+      perlengkapan_dan_bahan: formData.step2.blokA.perlengkapanDanBahan,
+      fokus_presentasi: formData.step2.blokB.fokusPresentasi,
+      ketentuan_alokasi_waktu: formData.step2.blokB.ketentuanAlokasiWaktu,
+    },
+    step3: formData.step3.lingkups.map((l) => ({
+      nama_lingkup: l.namaLingkup,
+      sub_pertanyaan: l.subPertanyaans.map((sp) => ({
+        skenario_pertanyaan: sp.skenarioPertanyaan,
+        kode_kuk: sp.kodeKUK,
+        ekspektasi_tanggapan: sp.ekspektasiTanggapan,
+      })),
+    })),
+    step4: formData.step4.questions.map((q) => ({
+      pertanyaan_lisan: q.pertanyaanLisan,
+      kode_kuk_ref: q.kodeKUKRef,
+      kunci_jawaban: q.kunciJawaban,
+    })),
+  };
+
   // Load existing data if editing or viewing detail
   useEffect(() => {
     if ((isEdit || isReadOnly) && konfigurasiId) {
       async function loadExistingData() {
         try {
-          const detail = await getKonfigurasiPertanyaanDetail(Number(konfigurasiId));
+          const detail = await getKonfigurasiPertanyaanDetail(
+            Number(konfigurasiId),
+          );
           if (detail) {
             setFormData((prev) => {
-              // Format penyusun
-              const formatPenyusun = (list: { user_id?: string | number; nama?: string }[]) => {
+              const formatPenyusun = (
+                list: {
+                  user_id?: string | number;
+                  nama?: string;
+                  users?: any;
+                }[],
+              ) => {
                 if (!list) return [];
                 return list.map((item) => ({
                   value: String(item.user_id || item.nama || ""),
-                  label: String(item.nama || ""),
+                  label: String(
+                    item.users?.profil?.namaLengkap ||
+                    item.users?.username ||
+                    item.nama ||
+                    "",
+                  ),
+                  no_met: item.users?.profil?.nomorRegistrasiMet || "-",
+                  tanda_tangan: item.users?.profil?.tandaTangan || undefined,
                 }));
               };
 
               const newMetadata = {
                 namaKonfigurasi: detail.nama || prev.metadata.namaKonfigurasi,
-                skemaSertifikasi: String(detail.skema_id || detail.skema || prev.metadata.skemaSertifikasi),
+                skemaSertifikasi: String(
+                  detail.skema_id ||
+                  detail.skema ||
+                  prev.metadata.skemaSertifikasi,
+                ),
                 versi: detail.versi || "1.0",
-                penyusun: detail.konfigurasi_pertanyaan_penyusun
-                  ? formatPenyusun(detail.konfigurasi_pertanyaan_penyusun)
-                  : prev.metadata.penyusun,
-                validator: prev.metadata.validator,
+                // penyusun and validator loaded per step if available
+
                 isDefault: detail.is_default ?? false,
               };
 
-              const step1Questions = detail.konfigurasi_step1_pertanyaan?.length > 0
-                ? detail.konfigurasi_step1_pertanyaan.map((q: { id?: string | number; pertanyaan_text?: string; konfigurasi_step1_opsi?: { id?: string | number; opsi_text?: string; is_valid?: boolean | number }[] }) => ({
-                  id: `q-${q.id || Math.random()}`,
-                  pertanyaanText: q.pertanyaan_text || "",
-                  options: q.konfigurasi_step1_opsi?.map((o: { id?: string | number; opsi_text?: string; is_valid?: boolean | number }) => ({
-                    id: `opt-${o.id || Math.random()}`,
-                    text: o.opsi_text || "",
-                    isValid: Boolean(o.is_valid),
-                  })) || [],
-                }))
-                : prev.step1.questions;
-
               const step2Data = detail.konfigurasi_step2_skenario;
-              const step2BlokA = step2Data ? {
-                skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
-                informasiYangDiberikan: Array.isArray(step2Data.informasi_yang_diberikan) && step2Data.informasi_yang_diberikan.length > 0 ? step2Data.informasi_yang_diberikan : [""],
-                lingkupBahasanStudiKasus: Array.isArray(step2Data.lingkup_bahasan_studi_kasus) && step2Data.lingkup_bahasan_studi_kasus.length > 0 ? step2Data.lingkup_bahasan_studi_kasus : [""],
-                perlengkapanDanBahan: step2Data.perlengkapan_dan_bahan || "",
-              } : prev.step2.blokA;
+              const step2BlokA = step2Data
+                ? {
+                  skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
+                  informasiYangDiberikan:
+                    Array.isArray(step2Data.informasi_yang_diberikan) &&
+                      step2Data.informasi_yang_diberikan.length > 0
+                      ? step2Data.informasi_yang_diberikan
+                      : [""],
+                  lingkupBahasanStudiKasus:
+                    Array.isArray(step2Data.lingkup_bahasan_studi_kasus) &&
+                      step2Data.lingkup_bahasan_studi_kasus.length > 0
+                      ? step2Data.lingkup_bahasan_studi_kasus
+                      : [""],
+                  perlengkapanDanBahan:
+                    step2Data.perlengkapan_dan_bahan || "",
+                }
+                : prev.step2.blokA;
 
-              const step2BlokB = step2Data ? {
-                fokusPresentasi: Array.isArray(step2Data.fokus_presentasi) && step2Data.fokus_presentasi.length > 0 ? step2Data.fokus_presentasi : [""],
-                ketentuanAlokasiWaktu: step2Data.ketentuan_alokasi_waktu || "",
-                kriteriaEvaluasiAsesor: Array.isArray(step2Data.kriteria_evaluasi_asesor) && step2Data.kriteria_evaluasi_asesor.length > 0 ? step2Data.kriteria_evaluasi_asesor : [""],
-              } : prev.step2.blokB;
+              const step2BlokB = step2Data
+                ? {
+                  fokusPresentasi:
+                    Array.isArray(step2Data.fokus_presentasi) &&
+                      step2Data.fokus_presentasi.length > 0
+                      ? step2Data.fokus_presentasi
+                      : [""],
+                  ketentuanAlokasiWaktu:
+                    step2Data.ketentuan_alokasi_waktu || "",
+                  kriteriaEvaluasiAsesor:
+                    Array.isArray(step2Data.kriteria_evaluasi_asesor) &&
+                      step2Data.kriteria_evaluasi_asesor.length > 0
+                      ? step2Data.kriteria_evaluasi_asesor
+                      : [""],
+                }
+                : prev.step2.blokB;
 
-              const step3Lingkups = detail.konfigurasi_step3_lingkup?.length > 0
-                ? detail.konfigurasi_step3_lingkup.map((l: { id?: string | number; nama_lingkup?: string; konfigurasi_step3_sub_pertanyaan?: { id?: string | number; skenario_pertanyaan?: string; kode_kuk?: string[]; ekspektasi_tanggapan?: string }[] }) => ({
-                  id: `lingkup-${l.id || Math.random()}`,
-                  namaLingkup: l.nama_lingkup || "",
-                  subPertanyaans: l.konfigurasi_step3_sub_pertanyaan?.map((sub: { id?: string | number; skenario_pertanyaan?: string; kode_kuk?: string[]; ekspektasi_tanggapan?: string }) => ({
-                    id: `sub-${sub.id || Math.random()}`,
-                    skenarioPertanyaan: sub.skenario_pertanyaan || "",
-                    kodeKUK: Array.isArray(sub.kode_kuk) ? sub.kode_kuk : [],
-                    ekspektasiTanggapan: sub.ekspektasi_tanggapan || "",
-                  })) || [],
-                }))
-                : prev.step3.lingkups;
+              const step3Lingkups =
+                detail.konfigurasi_step3_lingkup?.length > 0
+                  ? detail.konfigurasi_step3_lingkup.map(
+                    (l: {
+                      id?: string | number;
+                      nama_lingkup?: string;
+                      konfigurasi_step3_sub_pertanyaan?: {
+                        id?: string | number;
+                        skenario_pertanyaan?: string;
+                        kode_kuk?: string[];
+                        ekspektasi_tanggapan?: string;
+                      }[];
+                    }) => ({
+                      id: `lingkup-${l.id || Math.random()}`,
+                      namaLingkup: l.nama_lingkup || "",
+                      subPertanyaans:
+                        l.konfigurasi_step3_sub_pertanyaan?.map(
+                          (sub: {
+                            id?: string | number;
+                            skenario_pertanyaan?: string;
+                            kode_kuk?: string[];
+                            ekspektasi_tanggapan?: string;
+                          }) => ({
+                            id: `sub-${sub.id || Math.random()}`,
+                            skenarioPertanyaan: sub.skenario_pertanyaan || "",
+                            kodeKUK: Array.isArray(sub.kode_kuk)
+                              ? sub.kode_kuk
+                              : [],
+                            ekspektasiTanggapan:
+                              sub.ekspektasi_tanggapan || "",
+                          }),
+                        ) || [],
+                    }),
+                  )
+                  : prev.step3.lingkups;
 
-              const step4Questions = detail.konfigurasi_step4_pertanyaan?.length > 0
-                ? detail.konfigurasi_step4_pertanyaan.map((q: { id?: string | number; kode_kuk_ref?: string; pertanyaan_lisan?: string; kunci_jawaban?: string }) => ({
-                  id: `q4-${q.id || Math.random()}`,
-                  kodeKUKRef: q.kode_kuk_ref || "",
-                  pertanyaanLisan: q.pertanyaan_lisan || "",
-                  kunciJawaban: q.kunci_jawaban || "",
-                }))
-                : prev.step4.questions;
+              const step4Questions =
+                detail.konfigurasi_step4_pertanyaan?.length > 0
+                  ? detail.konfigurasi_step4_pertanyaan.map(
+                    (q: {
+                      id?: string | number;
+                      kode_kuk_ref?: string;
+                      pertanyaan_lisan?: string;
+                      kunci_jawaban?: string;
+                    }) => ({
+                      id: `q4-${q.id || Math.random()}`,
+                      kodeKUKRef: q.kode_kuk_ref || "",
+                      pertanyaanLisan: q.pertanyaan_lisan || "",
+                      kunciJawaban: q.kunci_jawaban || "",
+                    }),
+                  )
+                  : prev.step4.questions;
+
+              const getAsesors = (type: string, peran: string) => {
+                if (!detail.form_asesor || !Array.isArray(detail.form_asesor))
+                  return [];
+                return formatPenyusun(
+                  detail.form_asesor.filter(
+                    (a: any) => a.form_type === type && a.peran === peran,
+                  ),
+                );
+              };
 
               return {
                 ...prev,
                 metadata: newMetadata,
-                step1: { ...prev.step1, questions: step1Questions },
-                step2: { ...prev.step2, blokA: step2BlokA, blokB: step2BlokB },
-                step3: { ...prev.step3, lingkups: step3Lingkups },
-                step4: { ...prev.step4, questions: step4Questions },
+
+                step2: {
+                  ...prev.step2,
+                  blokA: step2BlokA,
+                  blokB: step2BlokB,
+                  penyusun: getAsesors("step2", "Penyusun"),
+                  validator: getAsesors("step2", "Validator"),
+                  supervisor: getAsesors("step2", "Supervisor"),
+                },
+                step3: {
+                  ...prev.step3,
+                  lingkups: step3Lingkups,
+                  penyusun: getAsesors("step3", "Penyusun"),
+                  validator: getAsesors("step3", "Validator"),
+                },
+                step4: {
+                  ...prev.step4,
+                  questions: step4Questions,
+                  penyusun: getAsesors("step4", "Penyusun"),
+                  validator: getAsesors("step4", "Validator"),
+                },
               };
             });
           }
         } catch (error) {
           console.error("Gagal memuat detail konfigurasi:", error);
           // Fallback reading from context if backend fetch fails
-          const existing = konfigurasiPertanyaan.find((k) => k.id === Number(konfigurasiId));
+          const existing = konfigurasiPertanyaan.find(
+            (k) => k.id === Number(konfigurasiId),
+          );
           if (existing) {
-            const existingWithData = existing as unknown as { formData?: WizardFormState };
+            const existingWithData = existing as unknown as {
+              formData?: WizardFormState;
+            };
             if (existingWithData.formData) {
               setFormData(existingWithData.formData);
             }
@@ -268,114 +426,6 @@ function TambahKonfigurasiPertanyaanContent() {
     setFormData((prev) => ({
       ...prev,
       metadata: { ...prev.metadata, [field]: value },
-    }));
-  };
-
-  // --------------------------------------------------------------------------
-  // STEP 1 HANDLERS (CHECKLIST_MULTIPLE_CHOICE)
-  // --------------------------------------------------------------------------
-  const addStep1Question = () => {
-    const newQ: Step1Question = {
-      id: `q-${Date.now()}`,
-      pertanyaanText: "",
-      options: [
-        { id: `opt-${Date.now()}-1`, text: "", isValid: false },
-        { id: `opt-${Date.now()}-2`, text: "", isValid: false },
-      ],
-    };
-    setFormData((prev) => ({
-      ...prev,
-      step1: { ...prev.step1, questions: [...prev.step1.questions, newQ] },
-    }));
-  };
-
-  const removeStep1Question = (id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      step1: {
-        ...prev.step1,
-        questions: prev.step1.questions.filter((q) => q.id !== id),
-      },
-    }));
-  };
-
-  const updateStep1QuestionText = (id: string, text: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      step1: {
-        ...prev.step1,
-        questions: prev.step1.questions.map((q) =>
-          q.id === id ? { ...q, pertanyaanText: text } : q,
-        ),
-      },
-    }));
-  };
-
-  const addStep1Option = (qId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      step1: {
-        ...prev.step1,
-        questions: prev.step1.questions.map((q) => {
-          if (q.id === qId) {
-            return {
-              ...q,
-              options: [
-                ...q.options,
-                { id: `opt-${Date.now()}`, text: "", isValid: false },
-              ],
-            };
-          }
-          return q;
-        }),
-      },
-    }));
-  };
-
-  const removeStep1Option = (qId: string, optId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      step1: {
-        ...prev.step1,
-        questions: prev.step1.questions.map((q) => {
-          if (q.id === qId) {
-            return { ...q, options: q.options.filter((o) => o.id !== optId) };
-          }
-          return q;
-        }),
-      },
-    }));
-  };
-
-  const updateStep1Option = (
-    qId: string,
-    optId: string,
-    text: string,
-    isValid?: boolean,
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      step1: {
-        ...prev.step1,
-        questions: prev.step1.questions.map((q) => {
-          if (q.id === qId) {
-            return {
-              ...q,
-              options: q.options.map((o) => {
-                if (o.id === optId) {
-                  return {
-                    ...o,
-                    text: text !== undefined ? text : o.text,
-                    isValid: isValid !== undefined ? isValid : o.isValid,
-                  };
-                }
-                return o;
-              }),
-            };
-          }
-          return q;
-        }),
-      },
     }));
   };
 
@@ -686,36 +736,6 @@ function TambahKonfigurasiPertanyaanContent() {
     }
 
     if (step === 1) {
-      if (formData.step1.questions.length === 0) {
-        setValidationError(
-          "Step 1 minimal harus memiliki 1 pertanyaan Penyesuaian Wajar.",
-        );
-        return false;
-      }
-      for (let i = 0; i < formData.step1.questions.length; i++) {
-        const q = formData.step1.questions[i];
-        if (!q.pertanyaanText.trim()) {
-          setValidationError(`Pertanyaan #${i + 1} di Step 1 belum diisi.`);
-          return false;
-        }
-        if (q.options.length < 2) {
-          setValidationError(
-            `Pertanyaan #${i + 1} di Step 1 minimal harus memiliki 2 opsi jawaban.`,
-          );
-          return false;
-        }
-        for (const opt of q.options) {
-          if (!opt.text.trim()) {
-            setValidationError(
-              `Opsi pada Pertanyaan #${i + 1} di Step 1 tidak boleh kosong.`,
-            );
-            return false;
-          }
-        }
-      }
-    }
-
-    if (step === 2) {
       if (!formData.step2.blokA.skenarioStudiKasus.trim()) {
         setValidationError("Skenario Studi Kasus (Blok A) wajib diisi.");
         return false;
@@ -766,10 +786,10 @@ function TambahKonfigurasiPertanyaanContent() {
       }
     }
 
-    if (step === 3) {
+    if (step === 2) {
       if (formData.step3.lingkups.length === 0) {
         setValidationError(
-          "Step 3 minimal harus memiliki 1 Lingkup Penyajian.",
+          "Form pertanyaan lisan minimal harus memiliki 1 Lingkup Penyajian.",
         );
         return false;
       }
@@ -777,7 +797,7 @@ function TambahKonfigurasiPertanyaanContent() {
         const lingkup = formData.step3.lingkups[i];
         if (!lingkup.namaLingkup.trim()) {
           setValidationError(
-            `Nama Lingkup Penyajian #${i + 1} di Step 3 wajib diisi.`,
+            `Nama Lingkup Penyajian #${i + 1} di Form Pertanyaan Lisan wajib diisi.`,
           );
           return false;
         }
@@ -799,7 +819,7 @@ function TambahKonfigurasiPertanyaanContent() {
       }
     }
 
-    if (step === 4) {
+    if (step === 3) {
       if (formData.step4.questions.length === 0) {
         setValidationError("Step 4 minimal harus memiliki 1 Pertanyaan Lisan.");
         return false;
@@ -840,7 +860,7 @@ function TambahKonfigurasiPertanyaanContent() {
     }
   };
 
-  const handleSaveToContext = (publishStatus: "draft" | "published") => {
+  const handleSaveToContext = async (publishStatus: "draft" | "published") => {
     // Re-validate all steps if publishing
     if (publishStatus === "published") {
       for (let s = 1; s <= 4; s++) {
@@ -864,18 +884,11 @@ function TambahKonfigurasiPertanyaanContent() {
         "Teknisi Muda Jaringan Komputer",
       tipeForm: "Multi-Step Wizard",
       versi: formData.metadata.versi,
-      penyusun: formData.metadata.penyusun,
-      validator: formData.metadata.validator,
       isDefault: formData.metadata.isDefault,
-      status: (publishStatus === "published" ? "Aktif" : "Tidak Aktif") as "Aktif" | "Tidak Aktif",
+      status: (publishStatus === "published" ? "Aktif" : "Tidak Aktif") as
+        "Aktif" | "Tidak Aktif",
       formData: formData,
       subPertanyaans: [
-        {
-          id: "sp1",
-          nama: "Penyesuaian Wajar",
-          tipePertanyaan: "checkbox_multiple",
-          questions: formData.step1.questions,
-        },
         {
           id: "sp2",
           nama: "Penjelasan Singkat Proyek",
@@ -898,67 +911,112 @@ function TambahKonfigurasiPertanyaanContent() {
       ],
     };
 
-    if (isEdit && konfigurasiId) {
-      updateKonfigurasiPertanyaan(Number(konfigurasiId), payload);
-    } else {
-      addKonfigurasiPertanyaan(payload);
-      createKonfigurasiPertanyaan({
-        nama_konfigurasi: configName,
-        skema_id: 1,
-        versi: formData.metadata.versi || "1.0",
-        status: publishStatus === "published" ? "Terbit" : "Draft",
-        tipe_form: "Multi-Step Wizard",
-      }).catch((err) => {
-        console.warn("Gagal simpan konfigurasi ke backend:", err);
-      });
-    }
+    const extractPenyusun = (
+      list: any[] | undefined,
+      peran: string,
+      type: string,
+    ) => {
+      if (!list) return [];
+      return list.map((item) => ({
+        peran: peran,
+        form_type: type,
+        user_id: !isNaN(Number(item.value)) ? Number(item.value) : undefined,
+      }));
+    };
 
-    setIsSuccessToast(
-      publishStatus === "published"
-        ? "Konfigurasi Pertanyaan berhasil diterbitkan!"
-        : "Draft Konfigurasi Pertanyaan berhasil disimpan.",
-    );
-    setTimeout(() => {
-      router.push("/assessor/konfigurasipertanyaan");
-    }, 1200);
+    const apiPayload = {
+      nama: configName,
+      skema_id: Number(formData.metadata.skemaSertifikasi) || 1,
+      tipe_form: "Multi-Step Wizard",
+      versi: formData.metadata.versi || "1.0",
+      is_default: formData.metadata.isDefault,
+      status: publishStatus === "published" ? "published" : "Draft",
+      penyusun: [
+        ...extractPenyusun(formData.step2.penyusun, "Penyusun", "step2"),
+        ...extractPenyusun(formData.step2.validator, "Validator", "step2"),
+        ...extractPenyusun(formData.step2.supervisor, "Supervisor", "step2"),
+        ...extractPenyusun(formData.step3.penyusun, "Penyusun", "step3"),
+        ...extractPenyusun(formData.step3.validator, "Validator", "step3"),
+        ...extractPenyusun(formData.step4.penyusun, "Penyusun", "step4"),
+        ...extractPenyusun(formData.step4.validator, "Validator", "step4"),
+      ],
+      step1: [],
+      step2: {
+        skenario_studi_kasus: formData.step2.blokA.skenarioStudiKasus,
+        informasi_yang_diberikan: formData.step2.blokA.informasiYangDiberikan,
+        lingkup_bahasan_studi_kasus:
+          formData.step2.blokA.lingkupBahasanStudiKasus,
+        perlengkapan_dan_bahan: formData.step2.blokA.perlengkapanDanBahan,
+        fokus_presentasi: formData.step2.blokB.fokusPresentasi,
+        ketentuan_alokasi_waktu: formData.step2.blokB.ketentuanAlokasiWaktu,
+        kriteria_evaluasi_asesor: formData.step2.blokB.kriteriaEvaluasiAsesor,
+      },
+      step3: formData.step3.lingkups.map((l) => ({
+        nama_lingkup: l.namaLingkup,
+        sub_pertanyaan: l.subPertanyaans.map((sp) => ({
+          skenario_pertanyaan: sp.skenarioPertanyaan,
+          kode_kuk: sp.kodeKUK,
+          ekspektasi_tanggapan: sp.ekspektasiTanggapan,
+        })),
+      })),
+      step4: formData.step4.questions.map((q) => ({
+        pertanyaan_lisan: q.pertanyaanLisan,
+        kode_kuk_ref: q.kodeKUKRef,
+        kunci_jawaban: q.kunciJawaban,
+      })),
+    };
+
+    try {
+      if (isEdit && konfigurasiId) {
+        updateKonfigurasiPertanyaan(Number(konfigurasiId), payload);
+        await updateKonfigurasiPertanyaanAPI(Number(konfigurasiId), apiPayload);
+      } else {
+        addKonfigurasiPertanyaan(payload);
+        await createKonfigurasiPertanyaan(apiPayload);
+      }
+
+      setIsSuccessToast(
+        publishStatus === "published"
+          ? "Konfigurasi Pertanyaan berhasil diterbitkan!"
+          : "Draft Konfigurasi Pertanyaan berhasil disimpan.",
+      );
+      setTimeout(() => {
+        router.push("/assessor/konfigurasipertanyaan");
+      }, 1200);
+    } catch (err) {
+      console.warn("Gagal simpan konfigurasi ke backend:", err);
+    }
   };
 
   // Steps Metainfo for Stepper Header
   const stepsInfo = [
     {
       number: 1,
-      title: "Penyesuaian Wajar",
-      code: "STEP 1",
-      icon: CheckSquare,
-      desc: "Checklist Pilihan Valid",
+      title: "Penjelasan Singkat Proyek",
+      code: "FORM FR.IA.04A",
+      icon: FileSpreadsheet,
+      desc: "",
     },
     {
       number: 2,
-      title: "Skenario",
-      code: "STEP 2",
-      icon: FileSpreadsheet,
-      desc: "Blok A & Blok B",
+      title: "Penilaian Proyek Singkat",
+      code: "FORM FR.IA.04B",
+      icon: ListTodo,
+      desc: "",
     },
     {
       number: 3,
-      title: "Nested",
-      code: "STEP 3",
-      icon: ListTodo,
-      desc: "Nested Lingkup & Soal",
+      title: "Pertanyaan Lisan",
+      code: "FORM FR.IA.07",
+      icon: MessageSquare,
+      desc: "",
     },
     {
       number: 4,
-      title: "Pertanyaan Lisan",
-      code: "STEP 4",
-      icon: MessageSquare,
-      desc: "Pertanyaan + Kunci",
-    },
-    {
-      number: 5,
-      title: "Finalisasi & Review",
-      code: "STEP 5",
+      title: "Finalisasi",
+      code: "Review",
       icon: ShieldCheck,
-      desc: "Ringkasan & Terbit",
+      desc: "",
     },
   ];
 
@@ -1002,23 +1060,62 @@ function TambahKonfigurasiPertanyaanContent() {
           </button>
           <div className="min-w-0">
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Wizard Konfigurasi Pertanyaan
+              Konfigurasi Pertanyaan
             </h2>
             <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-tight">
-              Penyusunan Multi-Step Instrumen Asesmen (Step 1 - Step 5
-              Berurutan)
+              Penyusunan Form Asesmen
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <div className="relative mr-2">
+            <button
+              onClick={() => setIsPreviewMenuOpen(!isPreviewMenuOpen)}
+              onBlur={() => setTimeout(() => setIsPreviewMenuOpen(false), 200)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs md:text-sm font-bold transition-all shadow-xs flex items-center gap-2"
+            >
+              <Eye size={16} /> Pratinjau Form
+            </button>
+            <div
+              className={`absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-xl p-2 z-50 ${isPreviewMenuOpen ? "block" : "hidden"}`}
+            >
+              <button
+                onClick={() => {
+                  setPreviewForm("FR.IA.04A");
+                  setIsPreviewMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors"
+              >
+                FR.IA.04A (Proyek)
+              </button>
+              <button
+                onClick={() => {
+                  setPreviewForm("FR.IA.04B");
+                  setIsPreviewMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors"
+              >
+                FR.IA.04B (Penilaian)
+              </button>
+              <button
+                onClick={() => {
+                  setPreviewForm("FR.IA.07");
+                  setIsPreviewMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors"
+              >
+                FR.IA.07 (Pertanyaan Lisan)
+              </button>
+            </div>
+          </div>
           <button
             onClick={() => handleSaveToContext("draft")}
             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-xs md:text-sm font-bold transition-all shadow-xs flex items-center gap-2"
           >
             <Save size={16} /> Simpan Draft
           </button>
-          {activeStep === 5 && (
+          {activeStep === 4 && (
             <button
               onClick={() => handleSaveToContext("published")}
               className="px-5 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-bold transition-all shadow-sm flex items-center gap-2"
@@ -1034,7 +1131,7 @@ function TambahKonfigurasiPertanyaanContent() {
         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div className="flex items-center gap-2 font-black text-slate-900 text-sm md:text-base">
             <Settings size={18} className="text-[#008BE3]" />
-            <span>Informasi General & Metadata Konfigurasi</span>
+            <span>Informasi General</span>
           </div>
           <span className="text-xs text-slate-400 font-mono">
             Versi {formData.metadata.versi}
@@ -1092,74 +1189,20 @@ function TambahKonfigurasiPertanyaanContent() {
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg outline-none focus:border-[#008BE3] font-mono text-slate-800 bg-white"
             />
           </div>
-
-          <div className="md:col-span-2 space-y-1">
-            <label className="font-bold text-slate-700 block">
-              Penyusun (Asesor)
-            </label>
-            <Select
-              isDisabled={isReadOnly}
-              isMulti
-              options={assessorOptions}
-              value={formData.metadata.penyusun}
-              onChange={(val) =>
-                updateMetadata(
-                  "penyusun",
-                  val as Array<{ value: string; label: string }>,
-                )
-              }
-              className="basic-multi-select text-xs"
-              placeholder="Pilih Penyusun..."
-              menuPortalTarget={
-                typeof document !== "undefined" ? document.body : null
-              }
-              styles={{
-                menuPortal: (base: Record<string, unknown>) => ({
-                  ...base,
-                  zIndex: 9999,
-                }),
-              }}
-            />
-          </div>
-
-          <div className="md:col-span-2 space-y-1">
-            <label className="font-bold text-slate-700 block">Validator</label>
-            <Select
-              isDisabled={isReadOnly}
-              isMulti
-              options={assessorOptions}
-              value={formData.metadata.validator}
-              onChange={(val) =>
-                updateMetadata(
-                  "validator",
-                  val as Array<{ value: string; label: string }>,
-                )
-              }
-              className="basic-multi-select text-xs"
-              placeholder="Pilih Validator..."
-              menuPortalTarget={
-                typeof document !== "undefined" ? document.body : null
-              }
-              styles={{
-                menuPortal: (base: Record<string, unknown>) => ({
-                  ...base,
-                  zIndex: 9999,
-                }),
-              }}
-            />
-          </div>
         </div>
       </div>
 
       {/* STEPPER NAVIGATION BAR (STEP 1 -> STEP 5) */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-4 md:p-6 overflow-x-auto">
         <div className="min-w-175">
-          <div className="grid grid-cols-5 gap-2 relative">
+          <div className="grid grid-cols-4 gap-2 relative">
             {/* Connecting Progress Line */}
             <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-100 z-0">
               <div
                 className="h-full bg-[#008BE3] transition-all duration-300"
-                style={{ width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%` }}
+                style={{
+                  width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%`,
+                }}
               />
             </div>
 
@@ -1184,10 +1227,10 @@ function TambahKonfigurasiPertanyaanContent() {
                 >
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${isCompleted
-                      ? "bg-emerald-600 text-white border-2 border-emerald-600"
-                      : isActive
-                        ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
-                        : "bg-white text-slate-400 border-2 border-gray-300"
+                        ? "bg-emerald-600 text-white border-2 border-emerald-600"
+                        : isActive
+                          ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
+                          : "bg-white text-slate-400 border-2 border-gray-300"
                       }`}
                   >
                     {isCompleted ? (
@@ -1200,10 +1243,10 @@ function TambahKonfigurasiPertanyaanContent() {
                   <div className="mt-2 space-y-0.5">
                     <span
                       className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${isActive
-                        ? "text-[#008BE3]"
-                        : isCompleted
-                          ? "text-emerald-700"
-                          : "text-slate-400"
+                          ? "text-[#008BE3]"
+                          : isCompleted
+                            ? "text-emerald-700"
+                            : "text-slate-400"
                         }`}
                     >
                       {st.code}
@@ -1228,173 +1271,97 @@ function TambahKonfigurasiPertanyaanContent() {
       {/* DYNAMIC WIZARD STEP CONTENT PANEL */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
         {/* =================================================================== */}
-        {/* STEP 1: Penyesuaian Wajar                                          */}
+        {/* STEP 1: Skenario Studi Kasus                                  */}
         {/* =================================================================== */}
         {activeStep === 1 && (
-          <div className="p-6 md:p-8 space-y-6">
-            <div className="bg-sky-50/80 border border-sky-200 rounded-xl p-4 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#008BE3] text-white flex items-center justify-center shrink-0 font-bold">
+          <div className="p-6 md:p-8 space-y-8">
+            <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 font-bold">
                 1
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 1: Penyesuaian Wajar
-                </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Input daftar pertanyaan/pernyataan penyesuaian wajar dengan
-                  opsi jawaban berupa <strong>Checklist Pilihan Ganda</strong>.
-                  Centang opsi yang dikategorikan sebagai opsi valid.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {formData.step1.questions.map((q, qIdx) => (
-                <div
-                  key={q.id}
-                  className="border border-slate-200 rounded-xl p-5 md:p-6 bg-slate-50/50 space-y-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                      <span className="w-7 h-7 rounded-lg bg-[#008BE3] text-white flex items-center justify-center font-mono text-xs">
-                        P{qIdx + 1}
-                      </span>
-                      <span>Pertanyaan / Pernyataan Penyesuaian Wajar</span>
-                    </div>
-
-                    {formData.step1.questions.length > 1 && !isReadOnly && (
-                      <button
-                        onClick={() => removeStep1Question(q.id)}
-                        className="text-rose-600 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-1 text-xs font-bold"
-                      >
-                        <Trash2 size={15} /> Hapus Pertanyaan
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <textarea
-                      value={q.pertanyaanText}
-                      onChange={(e) =>
-                        updateStep1QuestionText(q.id, e.target.value)
-                      }
-                      disabled={isReadOnly}
-                      placeholder="Masukkan Teks Pertanyaan/Pernyataan Penyesuaian Wajar..."
-                      rows={2}
-                      className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-[#008BE3] text-sm bg-white font-medium text-slate-800"
-                    />
-                  </div>
-
-                  {/* Options Array */}
-                  <div className="space-y-3 pt-2">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                      <span>
-                        Daftar Opsi Jawaban (Berikan centang jika opsi dianggap
-                        Valid/Disetujui):
-                      </span>
-                      <span className="text-slate-400 font-normal">
-                        {q.options.length} Opsi
-                      </span>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {q.options.map((opt, optIdx) => (
-                        <div
-                          key={opt.id}
-                          className="flex items-center gap-3 bg-white p-2.5 border border-gray-200 rounded-lg"
-                        >
-                          <label className="flex items-center gap-2 cursor-pointer shrink-0">
-                            <input
-                              type="checkbox"
-                              checked={opt.isValid}
-                              onChange={(e) =>
-                                updateStep1Option(
-                                  q.id,
-                                  opt.id,
-                                  opt.text,
-                                  e.target.checked,
-                                )
-                              }
-                              disabled={isReadOnly}
-                              className="w-4 h-4 rounded text-[#008BE3] focus:ring-[#008BE3] border-gray-300"
-                            />
-                            <span className="text-xs font-bold text-slate-600 font-mono">
-                              Opsi {String.fromCharCode(65 + optIdx)}
-                            </span>
-                          </label>
-
-                          <input
-                            type="text"
-                            value={opt.text}
-                            onChange={(e) =>
-                              updateStep1Option(q.id, opt.id, e.target.value)
-                            }
-                            disabled={isReadOnly}
-                            placeholder={`Teks Opsi ${String.fromCharCode(65 + optIdx)}...`}
-                            className="flex-1 px-3 py-1.5 border border-gray-200 rounded-md text-xs md:text-sm outline-none focus:border-[#008BE3]"
-                          />
-
-                          {opt.isValid && (
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold text-[10px] shrink-0">
-                              Opsi Valid
-                            </span>
-                          )}
-
-                          {q.options.length > 2 && !isReadOnly && (
-                            <button
-                              onClick={() => removeStep1Option(q.id, opt.id)}
-                              className="text-gray-400 hover:text-rose-600 p-1 rounded transition-colors shrink-0"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {!isReadOnly && (
-                      <button
-                        onClick={() => addStep1Option(q.id)}
-                        className="mt-2 text-[#008BE3] hover:text-[#0076C2] text-xs font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#008BE3]/30 hover:bg-sky-50 transition-colors"
-                      >
-                        <Plus size={14} /> Tambah Opsi
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {!isReadOnly && (
-                <button
-                  onClick={addStep1Question}
-                  className="w-full py-3 border-2 border-dashed border-[#008BE3]/40 text-[#008BE3] hover:bg-sky-50/50 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Plus size={18} /> Tambah Pertanyaan Penyesuaian Wajar
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* =================================================================== */}
-        {/* STEP 2: Penjelasan Singkat Proyek                                  */}
-        {/* =================================================================== */}
-        {activeStep === 2 && (
-          <div className="p-6 md:p-8 space-y-8">
-            <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 font-bold">
-                2
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-base font-black text-slate-900">
-                  STEP 2: Penjelasan Singkat Proyek
+                  Penjelasan Singkat Proyek
                 </h3>
                 <p className="text-xs text-blue-900/90 mt-0.5">
-                  Petunjuk Skenario Studi Kasus proyek Asesi. Terbagi menjadi{" "}
+                  Terbagi menjadi{" "}
                   <strong>BLOK A (Hal yang Harus Disiapkan/Dihasilkan)</strong>{" "}
-                  dan <strong>BLOK B (Hal yang Perlu Didemonstrasikan)</strong>.{" "}
-                  <em>TIDAK ADA input jawaban Asesi pada step ini.</em>
+                  dan <strong>BLOK B (Hal yang Perlu Didemonstrasikan)</strong>
+                  .{" "}
                 </p>
+              </div>
+            </div>
+
+            {/* PENYUSUN, VALIDATOR, SUPERVISOR */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border border-blue-200 rounded-2xl p-6 bg-linear-to-b from-blue-50/30 to-white">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Penyusun (Asesor)
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step2.penyusun}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step2: { ...p.step2, penyusun: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Penyusun..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Validator
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step2.validator}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step2: { ...p.step2, validator: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Validator..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Supervisor
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step2.supervisor}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step2: { ...p.step2, supervisor: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Supervisor..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
               </div>
             </div>
 
@@ -1737,21 +1704,71 @@ function TambahKonfigurasiPertanyaanContent() {
         {/* =================================================================== */}
         {/* STEP 3: Penilaian Proyek Singkat                                   */}
         {/* =================================================================== */}
-        {activeStep === 3 && (
+        {activeStep === 2 && (
           <div className="p-6 md:p-8 space-y-6">
             <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold">
-                3
+                2
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 3: Penilaian Proyek Singkat
+                  Penilaian Proyek Singkat
                 </h3>
                 <p className="text-xs text-emerald-900/90 mt-0.5">
-                  Menggunakan <strong>Nested Array</strong> (Satu Lingkup
-                  Penyajian dapat memiliki BANYAK Pertanyaan). Kelola Lingkup
-                  Penyajian dan Sub-Pertanyaan studi kasus terkait KUK.
+                  Satu Lingkup Penyajian dapat memiliki banyak Pertanyaan.
+                  Kelola Lingkup Penyajian dan Sub-Pertanyaan studi kasus
+                  terkait KUK.
                 </p>
+              </div>
+            </div>
+
+            {/* PENYUSUN, VALIDATOR */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-emerald-200 rounded-2xl p-6 bg-linear-to-b from-emerald-50/30 to-white">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Penyusun (Asesor)
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step3.penyusun}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step3: { ...p.step3, penyusun: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Penyusun..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Validator
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step3.validator}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step3: { ...p.step3, validator: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Validator..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
               </div>
             </div>
 
@@ -1938,23 +1955,72 @@ function TambahKonfigurasiPertanyaanContent() {
         )}
 
         {/* =================================================================== */}
-        {/* STEP 4: Pertanyaan Lisan                                            */}
+        {/* STEP 3: Pertanyaan Lisan                                            */}
         {/* =================================================================== */}
-        {activeStep === 4 && (
+        {activeStep === 3 && (
           <div className="p-6 md:p-8 space-y-6">
             <div className="bg-purple-50/80 border border-purple-200 rounded-xl p-4 flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-purple-700 text-white flex items-center justify-center shrink-0 font-bold">
-                4
+                3
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 4: Pertanyaan Lisan
+                  Pertanyaan Lisan
                 </h3>
                 <p className="text-xs text-purple-900/90 mt-0.5">
                   Input daftar pertanyaan lisan beserta pemetaan KUK.{" "}
-                  <strong>KUNCI JAWABAN WAJIB DIISI</strong> oleh Asesor sebagai
-                  tolok ukur penilaian objektif.
+                  <strong>KUNCI JAWABAN WAJIB DIISI</strong> oleh Asesor.
                 </p>
+              </div>
+            </div>
+
+            {/* PENYUSUN, VALIDATOR */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-purple-200 rounded-2xl p-6 bg-linear-to-b from-purple-50/30 to-white">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Penyusun (Asesor)
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step4.penyusun}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step4: { ...p.step4, penyusun: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Penyusun..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Validator
+                </label>
+                <Select
+                  isDisabled={isReadOnly}
+                  isMulti
+                  options={assessorOptions}
+                  value={formData.step4.validator}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step4: { ...p.step4, validator: val as any },
+                    }))
+                  }
+                  className="basic-multi-select text-xs"
+                  placeholder="Pilih Validator..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                />
               </div>
             </div>
 
@@ -1982,8 +2048,8 @@ function TambahKonfigurasiPertanyaanContent() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1.5 md:col-span-1">
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-1.5">
                       <label className="font-bold text-slate-700 block text-xs">
                         Kode Reference KUK
                       </label>
@@ -2003,7 +2069,7 @@ function TambahKonfigurasiPertanyaanContent() {
                       />
                     </div>
 
-                    <div className="space-y-1.5 md:col-span-2">
+                    <div className="space-y-1.5">
                       <label className="font-bold text-slate-700 block text-xs">
                         <span className="text-rose-500">*</span> Pertanyaan
                         Lisan
@@ -2025,7 +2091,7 @@ function TambahKonfigurasiPertanyaanContent() {
                     </div>
 
                     {/* Key Answer Textarea (Required) */}
-                    <div className="space-y-1.5 md:col-span-3 bg-purple-100/50 p-3.5 border border-purple-200 rounded-lg">
+                    <div className="space-y-1.5 bg-purple-100/50 p-3.5 border border-purple-200 rounded-lg">
                       <label className="font-extrabold text-purple-900 text-xs flex items-center gap-1.5">
                         <KeyIcon size={14} className="text-purple-700" />
                         <span className="text-rose-500">*</span> KUNCI JAWABAN
@@ -2063,21 +2129,20 @@ function TambahKonfigurasiPertanyaanContent() {
         )}
 
         {/* =================================================================== */}
-        {/* STEP 5: Finalisasi & Review Preview                                 */}
+        {/* STEP 4: Finalisasi & Review Preview                                 */}
         {/* =================================================================== */}
-        {activeStep === 5 && (
+        {activeStep === 4 && (
           <div className="p-6 md:p-8 space-y-8">
             <div className="bg-emerald-500/10 border border-emerald-300 rounded-2xl p-5 flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold shadow-xs">
-                5
+                4
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 5: Finalisasi & Review Preview
+                  Finalisasi & Review
                 </h3>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  Tinjau seluruh konfigurasi instrumen dari Step 1 hingga Step 4
-                  sebelum diterbitkan.
+                  Tinjau seluruh konfigurasi pertanyaan sebelum diterbitkan.
                 </p>
               </div>
             </div>
@@ -2120,65 +2185,18 @@ function TambahKonfigurasiPertanyaanContent() {
                 </div>
               </div>
 
-              {/* Step 1 Preview */}
-              <div className="border border-sky-200 rounded-xl p-5 bg-sky-50/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
-                    <CheckSquare size={16} className="text-[#008BE3]" />
-                    Step 1: Penyesuaian Wajar ({
-                      formData.step1.questions.length
-                    }{" "}
-                    Pertanyaan)
-                  </h4>
-                  <button
-                    onClick={() => setActiveStep(1)}
-                    className="text-xs font-bold text-[#008BE3] hover:underline"
-                  >
-                    Edit Step 1
-                  </button>
-                </div>
-                {formData.step1.questions.map((q, idx) => (
-                  <div
-                    key={q.id}
-                    className="bg-white p-3.5 border border-sky-100 rounded-lg text-xs space-y-2"
-                  >
-                    <p className="font-bold text-slate-900">
-                      {idx + 1}. {q.pertanyaanText}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-3">
-                      {q.options.map((opt, oIdx) => (
-                        <div
-                          key={opt.id}
-                          className={`p-2 rounded border text-xs flex items-center gap-2 ${opt.isValid ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-gray-50 border-gray-200 text-gray-600"}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={opt.isValid}
-                            readOnly
-                            className="rounded text-emerald-600"
-                          />
-                          <span>
-                            {String.fromCharCode(65 + oIdx)}. {opt.text}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               {/* Step 2 Preview: FR.IA.04A */}
               <div className="border border-blue-200 rounded-xl p-5 bg-blue-50/30 space-y-4">
                 <div className="flex items-center justify-between border-b border-blue-200 pb-2">
                   <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                     <FileSpreadsheet size={16} className="text-blue-600" />
-                    Step 2: Penjelasan Singkat Proyek (FR.IA.04A)
+                    Penjelasan Singkat Proyek (FR.IA.04A)
                   </h4>
                   <button
-                    onClick={() => setActiveStep(2)}
+                    onClick={() => setActiveStep(1)}
                     className="text-xs font-bold text-blue-600 hover:underline"
                   >
-                    Edit Step 2
+                    Edit Penjelasan Singkat Proyek
                   </button>
                 </div>
 
@@ -2232,14 +2250,14 @@ function TambahKonfigurasiPertanyaanContent() {
                 <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
                   <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                     <ListTodo size={16} className="text-emerald-600" />
-                    Step 3: Penilaian Proyek Singkat - FR.IA.04B (
+                    Penilaian Proyek Singkat - FR.IA.04B (
                     {formData.step3.lingkups.length} Lingkup)
                   </h4>
                   <button
-                    onClick={() => setActiveStep(3)}
+                    onClick={() => setActiveStep(2)}
                     className="text-xs font-bold text-emerald-600 hover:underline"
                   >
-                    Edit Step 3
+                    Edit Penilaian Proyek Singkat
                   </button>
                 </div>
 
@@ -2280,14 +2298,14 @@ function TambahKonfigurasiPertanyaanContent() {
                 <div className="flex items-center justify-between border-b border-purple-200 pb-2">
                   <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                     <MessageSquare size={16} className="text-purple-700" />
-                    Step 4: Pertanyaan Lisan - FR.IA.07 (
+                    Pertanyaan Lisan - FR.IA.07 (
                     {formData.step4.questions.length} Pertanyaan)
                   </h4>
                   <button
-                    onClick={() => setActiveStep(4)}
+                    onClick={() => setActiveStep(3)}
                     className="text-xs font-bold text-purple-700 hover:underline"
                   >
-                    Edit Step 4
+                    Edit Pertanyaan Lisan
                   </button>
                 </div>
 
@@ -2321,18 +2339,18 @@ function TambahKonfigurasiPertanyaanContent() {
             onClick={handlePrevStep}
             disabled={activeStep === 1}
             className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${activeStep === 1
-              ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
-              : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
+                ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
+                : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
               }`}
           >
             <ChevronLeft size={18} /> Sebelumnya
           </button>
 
           <div className="text-xs font-bold text-slate-400 font-mono hidden sm:block">
-            Step {activeStep} dari 5
+            Step {activeStep} dari {stepsInfo.length}
           </div>
 
-          {activeStep < 5 ? (
+          {activeStep < stepsInfo.length ? (
             <button
               type="button"
               onClick={handleNextStep}
@@ -2351,6 +2369,162 @@ function TambahKonfigurasiPertanyaanContent() {
           )}
         </div>
       </div>
+
+      {/* Preview Modal Overlay */}
+      <AnimatePresence>
+        {previewForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-xs flex flex-col items-center justify-start p-2 sm:p-6 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-auto overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]"
+            >
+              <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0 border-b border-slate-800">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#008BE3] flex items-center justify-center text-white font-black text-sm">
+                    <FileText size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-base leading-tight text-white flex items-center gap-2">
+                      Pratinjau Form:{" "}
+                      <span className="text-[#008BE3]">{previewForm}</span>
+                    </h3>
+                    <p className="text-xs text-slate-300 font-medium">
+                      Preview Data Konfigurasi Saat Ini
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    onClick={() => setPreviewForm(null)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer"
+                  >
+                    <X size={16} />{" "}
+                    <span className="hidden sm:inline">Tutup</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-8 overflow-y-auto bg-slate-50/50 flex-1">
+                <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
+                  {previewForm === "FR.IA.04A" && (
+                    <FormFRIA04A
+                      readOnly={true}
+                      asesmenData={
+                        {
+                          nama: "Nama Asesi (Contoh)",
+                          skema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.label || "Skema Sertifikasi",
+                          noSkema: "00/LSP/0000",
+                          tuk: "Sewaktu",
+                          metodeAsesmen: "Offline",
+                          tanggal: new Date().toISOString(),
+                          asesor: formData.step2.penyusun[0]?.label || "Asesor",
+                          asesorReg: "-",
+                        } as any
+                      }
+                      previewData={currentPreviewData}
+                      penyusun={formData.step2.penyusun.map((p) => ({
+                        nama: p.label,
+                        noMet: p.no_met || "-",
+                        tandaTangan: p.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                      validator={formData.step2.validator.map((v) => ({
+                        nama: v.label,
+                        noMet: v.no_met || "-",
+                        tandaTangan: v.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                    />
+                  )}
+                  {previewForm === "FR.IA.04B" && (
+                    <FormFRIA04B
+                      readOnly={true}
+                      asesmenData={
+                        {
+                          nama: "Nama Asesi (Contoh)",
+                          skema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.label || "Skema Sertifikasi",
+                          noSkema: "00/LSP/0000",
+                          tuk: "Sewaktu",
+                          metodeAsesmen: "Offline",
+                          tanggal: new Date().toISOString(),
+                          asesor: formData.step2.penyusun[0]?.label || "Asesor",
+                          asesorReg: "-",
+                        } as any
+                      }
+                      previewData={currentPreviewData}
+                      penyusun={formData.step2.penyusun.map((p) => ({
+                        nama: p.label,
+                        noMet: p.no_met || "-",
+                        tandaTangan: p.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                      validator={formData.step2.validator.map((v) => ({
+                        nama: v.label,
+                        noMet: v.no_met || "-",
+                        tandaTangan: v.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                    />
+                  )}
+                  {previewForm === "FR.IA.07" && (
+                    <FormFRIA07
+                      readOnly={true}
+                      asesmenData={
+                        {
+                          nama: "Nama Asesi (Contoh)",
+                          skema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.label || "Skema Sertifikasi",
+                          noSkema: "00/LSP/0000",
+                          tuk: "Sewaktu",
+                          metodeAsesmen: "Offline",
+                          tanggal: new Date().toISOString(),
+                          asesor: formData.step3.penyusun[0]?.label || "Asesor",
+                          asesorReg: "-",
+                        } as any
+                      }
+                      previewData={currentPreviewData}
+                      penyusun={formData.step3.penyusun.map((p) => ({
+                        nama: p.label,
+                        noMet: p.no_met || "-",
+                        tandaTangan: p.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                      validator={formData.step3.validator.map((v) => ({
+                        nama: v.label,
+                        noMet: v.no_met || "-",
+                        tandaTangan: v.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                    />
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

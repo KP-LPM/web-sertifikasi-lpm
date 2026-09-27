@@ -215,7 +215,7 @@ export default function ManageSchemes() {
     fetchSchemes();
 
     try {
-      const draft = localStorage.getItem("tambahSkemaFormDraft");
+      const draft = sessionStorage.getItem("tambahSkemaFormDraft");
       if (draft) {
         const parsedDraft = JSON.parse(draft);
         if (parsedDraft && typeof parsedDraft === "object" && Object.keys(parsedDraft).length > 0) {

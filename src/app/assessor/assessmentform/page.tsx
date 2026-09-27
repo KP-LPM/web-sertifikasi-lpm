@@ -12,7 +12,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useAppContext } from "@/context/context";
-import { saveHasilAsesmen, getPengajuanDetail, createRiwayatAsesmen, upsertRiwayatAsesmen } from "@/lib/api";
+import { saveHasilAsesmen, getPengajuanDetail, createRiwayatAsesmen, upsertRiwayatAsesmen, getKonfigurasiPertanyaanList, getKonfigurasiPertanyaanDetail } from "@/lib/api";
 import {
   FormFRAPL02,
   FormFRAK07,
@@ -21,6 +21,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
+import { AssessmentItem } from "@/types/types";
 
 type AsesmenData = {
   nama: string;
@@ -36,7 +37,9 @@ type AsesmenData = {
 
 function AssessmentFormContent() {
   const router = useRouter();
-  const { selectedAsesmen, updateAssessmentItem, setExtraCrumbs, user, registeredProfile } = useAppContext();
+  const searchParams = useSearchParams();
+  const pengajuanIdParam = searchParams.get("pengajuanId");
+  const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem, setExtraCrumbs, user, registeredProfile } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,8 +53,25 @@ function AssessmentFormContent() {
   });
 
   useEffect(() => {
-    if (selectedAsesmen?.id) {
-      getPengajuanDetail(Number(selectedAsesmen.id)).then((data) => {
+    const targetId = selectedAsesmen?.id || pengajuanIdParam;
+    if (targetId) {
+      getPengajuanDetail(Number(targetId)).then((data) => {
+        if (!selectedAsesmen || !selectedAsesmen.nama) {
+          const rebuiltAsesmen = {
+            id: Number(targetId),
+            nama: data?.dataPribadi?.namaLengkap || "-",
+            skema: data?.skema?.namaSkema || "-",
+            noSkema: data?.skema?.kodeSkema || "-",
+            tuk: data?.master_tuk?.nama_tuk || "-",
+            metodeAsesmen: data?.metode_asesmen || "Observasi Langsung",
+            tanggal: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal_mulai ? new Date(data.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal_mulai).toISOString().split("T")[0] : "-",
+            asesor: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.namaLengkap || "-",
+            asesorReg: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.nomorRegistrasiMet || "-",
+            skemaId: data?.skemaId || data?.skema_id,
+          };
+          setSelectedAsesmen(rebuiltAsesmen as unknown as AssessmentItem);
+        }
+
         if (data?.dokumen && Array.isArray(data.dokumen)) {
           const files: Record<string, { name: string, url: string }[]> = {};
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,9 +116,63 @@ function AssessmentFormContent() {
         } else {
           setAsesiDateApl02(today);
         }
+
+        // Fetch Konfigurasi Pertanyaan for Penyusun & Validator based on skema_id from pengajuan data
+        const fetchedSkemaId = data?.skema_id || data?.skemaId;
+        if (fetchedSkemaId) {
+          getKonfigurasiPertanyaanList({ skemaId: Number(fetchedSkemaId) })
+            .then(async (list) => {
+              if (Array.isArray(list) && list.length > 0) {
+                const confList = list[0];
+                const conf = await getKonfigurasiPertanyaanDetail(confList.id);
+                const formAsesors = conf.form_asesor || [];
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const getPenyusun = (formType: string) => formAsesors.filter((a: any) => (a.peran || "").toLowerCase() === 'penyusun' && a.form_type === formType).map((a: any) => ({
+                  nama: a.users?.profil?.namaLengkap || "",
+                  noMet: a.users?.profil?.nomorRegistrasiMet || "",
+                  ttdTanggal: a.ttd_tanggal ? new Date(a.ttd_tanggal).toISOString().split('T')[0] : "",
+                  tandaTangan: a.users?.profil?.tanda_tangan || a.users?.profil?.tandaTangan || ""
+                }));
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const getValidator = (formType: string) => formAsesors.filter((a: any) => (a.peran || "").toLowerCase() === 'validator' && a.form_type === formType).map((a: any) => ({
+                  nama: a.users?.profil?.namaLengkap || "",
+                  noMet: a.users?.profil?.nomorRegistrasiMet || "",
+                  ttdTanggal: a.ttd_tanggal ? new Date(a.ttd_tanggal).toISOString().split('T')[0] : "",
+                  tandaTangan: a.users?.profil?.tanda_tangan || a.users?.profil?.tandaTangan || ""
+                }));
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const getSupervisor = (formType: string) => formAsesors.filter((a: any) => (a.peran || "").toLowerCase() === 'supervisor' && a.form_type === formType).map((a: any) => ({
+                  nama: a.users?.profil?.namaLengkap || "",
+                  noMet: a.users?.profil?.nomorRegistrasiMet || "",
+                  ttdTanggal: a.ttd_tanggal ? new Date(a.ttd_tanggal).toISOString().split('T')[0] : ""
+                }));
+
+                const p2 = getPenyusun('step2');
+                const v2 = getValidator('step2');
+                const s2 = getSupervisor('step2');
+                if (p2.length > 0) setPenyusun(p2);
+                if (v2.length > 0) setValidator(v2);
+                if (s2.length > 0) setSupervisorNameStep2(s2[0].nama);
+
+                const p3 = getPenyusun('step3');
+                const v3 = getValidator('step3');
+                if (p3.length > 0) setPenyusunStep3(p3);
+                if (v3.length > 0) setValidatorStep3(v3);
+
+                const p4 = getPenyusun('step4');
+                const v4 = getValidator('step4');
+                if (p4.length > 0) setPenyusunStep4(p4);
+                if (v4.length > 0) setValidatorStep4(v4);
+              }
+            })
+            .catch(err => console.error("Failed to load konfigurasi:", err));
+        }
       }).catch(err => console.error("Failed to load pengajuan detail:", err));
     }
-  }, [selectedAsesmen, user]);
+  }, [selectedAsesmen?.id, pengajuanIdParam, user]);
 
   // Sync asesor signature from registeredProfile whenever it loads
   useEffect(() => {
@@ -118,14 +192,14 @@ function AssessmentFormContent() {
   }, [currentStep]);
 
   useEffect(() => {
-    if (selectedAsesmen?.nama) {
+    if (selectedAsesmen?.nama && selectedAsesmen.nama !== "-") {
       setExtraCrumbs([
         { label: selectedAsesmen.namaBatch || "Batch", href: "/assessor/candidates" },
         { label: selectedAsesmen.nama },
       ]);
     }
     return () => setExtraCrumbs([]);
-  }, [selectedAsesmen, setExtraCrumbs]);
+  }, [selectedAsesmen?.nama, selectedAsesmen?.namaBatch, setExtraCrumbs]);
 
   // Data Asesmen
   const asesmenData = {
@@ -289,12 +363,15 @@ function AssessmentFormContent() {
   >(null);
   const [catatanAsesor, setCatatanAsesor] = useState("");
 
-  const isDraftLoaded = React.useRef(false);
+
+
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
   useEffect(() => {
-    if (selectedAsesmen?.id && typeof window !== "undefined") {
+    const targetId = selectedAsesmen?.id || pengajuanIdParam;
+    if (targetId && typeof window !== "undefined") {
       try {
-        const draftStr = localStorage.getItem(`assessmentDraft_${selectedAsesmen.id}`);
+        const draftStr = sessionStorage.getItem(`assessmentDraft_${targetId}`);
         if (draftStr) {
           const draft = JSON.parse(draftStr);
           if (draft.rekomendasiApl02) setRekomendasiApl02(draft.rekomendasiApl02);
@@ -314,20 +391,26 @@ function AssessmentFormContent() {
           if (draft.catatanAsesor) setCatatanAsesor(draft.catatanAsesor);
         }
       } catch (e) { console.warn("Failed to load draft", e); }
-      isDraftLoaded.current = true;
+      setIsDraftLoaded(true);
     }
-  }, [selectedAsesmen?.id]);
+  }, [selectedAsesmen?.id, pengajuanIdParam]);
 
   useEffect(() => {
-    if (isDraftLoaded.current && selectedAsesmen?.id && typeof window !== "undefined") {
+    const targetId = selectedAsesmen?.id || pengajuanIdParam;
+    if (isDraftLoaded && targetId && typeof window !== "undefined") {
       const draftData = {
         rekomendasiApl02, answersApl02, acuanPembanding, metodeAsesmen, instrumenAsesmen,
         umpanBalikStep2, rekomendasiStep3, potensiAsesi, noAdjustment, adjustments,
         step3Answers, step4Answers, umpanBalikStep4, finalDecision, catatanAsesor,
       };
-      localStorage.setItem(`assessmentDraft_${selectedAsesmen.id}`, JSON.stringify(draftData));
+      sessionStorage.setItem(`assessmentDraft_${targetId}`, JSON.stringify(draftData));
     }
-  });
+  }, [
+    isDraftLoaded, selectedAsesmen?.id, pengajuanIdParam, rekomendasiApl02, answersApl02,
+    acuanPembanding, metodeAsesmen, instrumenAsesmen, umpanBalikStep2,
+    rekomendasiStep3, potensiAsesi, noAdjustment, adjustments,
+    step3Answers, step4Answers, umpanBalikStep4, finalDecision, catatanAsesor
+  ]);
 
   // Validation
   const isStep1Valid =
@@ -359,8 +442,6 @@ function AssessmentFormContent() {
         step4Answers[q.id]?.achievement !== null,
     );
 
-  const searchParams = useSearchParams();
-  const pengajuanIdParam = searchParams.get("pengajuanId");
 
   const handleSubmit = async () => {
     if (!finalDecision) return;
@@ -451,7 +532,7 @@ function AssessmentFormContent() {
 
       if (selectedAsesmen) {
         if (typeof window !== "undefined") {
-          localStorage.removeItem(`assessmentDraft_${selectedAsesmen.id}`);
+          sessionStorage.removeItem(`assessmentDraft_${selectedAsesmen.id}`);
         }
         updateAssessmentItem(selectedAsesmen.id, {
           status: "Selesai",

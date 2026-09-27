@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 
     return sendResponse(201, "Konfigurasi berhasil dibuat", result);
   } catch (error) {
+    console.error("[POST /api/konfigurasi-soal]", error);
     if (error instanceof RateLimitError) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
@@ -69,7 +70,6 @@ export async function POST(request: NextRequest) {
     if (error instanceof ClientError) {
       return sendResponse(error.statusCode, error.message);
     }
-    console.error("[POST /api/konfigurasi-soal]", error);
     return sendResponse(500, "Internal server error");
   }
 }

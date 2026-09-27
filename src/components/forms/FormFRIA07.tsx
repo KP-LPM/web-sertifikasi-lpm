@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
-import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
+import { Apl02FormData, PenyusunValidatorItem, PreviewDataConfig } from "@/types/types";
 import {
   getKonfigurasiPertanyaanList,
   getKonfigurasiPertanyaanDetail,
@@ -113,6 +113,7 @@ export interface FormFRIA07Props {
   readOnly?: boolean;
   isAsesi?: boolean;
   showHeader?: boolean;
+  previewData?: PreviewDataConfig;
   onNext?: () => void;
   onPrev?: () => void;
   isNextDisabled?: boolean;
@@ -129,14 +130,16 @@ export function FormFRIA07(props: FormFRIA07Props) {
     let isMounted = true;
     async function loadQuestions() {
       try {
-        let conf = null;
-        if (props.konfigurasiId) {
-          conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
-        } else if (props.skemaId) {
-          const list = await getKonfigurasiPertanyaanList({
-            skemaId: props.skemaId,
-          });
-          if (Array.isArray(list) && list.length > 0) conf = list[0];
+        let conf = props.previewData || null;
+        if (!conf) {
+          if (props.konfigurasiId) {
+            conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
+          } else if (props.skemaId) {
+            const list = await getKonfigurasiPertanyaanList({
+              skemaId: props.skemaId,
+            });
+            if (Array.isArray(list) && list.length > 0) conf = list[0];
+          }
         }
 
         if (
@@ -670,6 +673,74 @@ export function FormFRIA07(props: FormFRIA07Props) {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      {/* Table Penyusun dan Validator */}
+      <div className="mt-8 border border-slate-300 bg-white text-sm">
+        <div className="font-bold p-2 uppercase">PENYUSUN DAN VALIDATOR</div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-white border-y border-slate-300 text-left">
+                <th className="border border-slate-300 p-2 w-1/5 uppercase">STATUS</th>
+                <th className="border border-slate-300 p-2 w-12 text-center uppercase">NO</th>
+                <th className="border border-slate-300 p-2 w-1/4 uppercase">NAMA</th>
+                <th className="border border-slate-300 p-2 w-1/5 uppercase">NOMOR MET</th>
+                <th className="border border-slate-300 p-2 w-1/4 uppercase">TANDA TANGAN DAN TANGGAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: Math.max(2, (props.penyusunStep4 || props.penyusun)?.length || 2) }).map((_, idx) => (
+                <tr key={`penyusun-${idx}`}>
+                  {idx === 0 && (
+                    <td className="border border-slate-300 p-2 font-bold align-top uppercase" rowSpan={Math.max(2, (props.penyusunStep4 || props.penyusun)?.length || 2)}>
+                      PENYUSUN
+                    </td>
+                  )}
+                  <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
+                  <td className="border border-slate-300 p-2">{(props.penyusunStep4 || props.penyusun)?.[idx]?.nama || ""}</td>
+                  <td className="border border-slate-300 p-2">{(props.penyusunStep4 || props.penyusun)?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">
+                    <div className="flex flex-col items-center gap-1">
+                      {!!(props.penyusunStep4 || props.penyusun)?.[idx]?.tandaTangan && (
+                        <img
+                          src={(props.penyusunStep4 || props.penyusun)?.[idx].tandaTangan as string}
+                          alt="Tanda Tangan Penyusun"
+                          className="h-10 object-contain"
+                        />
+                      )}
+                      <span>{(props.penyusunStep4 || props.penyusun)?.[idx]?.ttdTanggal || ""}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {Array.from({ length: Math.max(2, (props.validatorStep4 || props.validator)?.length || 2) }).map((_, idx) => (
+                <tr key={`validator-${idx}`}>
+                  {idx === 0 && (
+                    <td className="border border-slate-300 p-2 font-bold align-top uppercase" rowSpan={Math.max(2, (props.validatorStep4 || props.validator)?.length || 2)}>
+                      VALIDATOR
+                    </td>
+                  )}
+                  <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
+                  <td className="border border-slate-300 p-2">{(props.validatorStep4 || props.validator)?.[idx]?.nama || ""}</td>
+                  <td className="border border-slate-300 p-2">{(props.validatorStep4 || props.validator)?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">
+                    <div className="flex flex-col items-center gap-1">
+                      {!!(props.validatorStep4 || props.validator)?.[idx]?.tandaTangan && (
+                        <img
+                          src={(props.validatorStep4 || props.validator)?.[idx].tandaTangan as string}
+                          alt="Tanda Tangan Validator"
+                          className="h-10 object-contain"
+                        />
+                      )}
+                      <span>{(props.validatorStep4 || props.validator)?.[idx]?.ttdTanggal || ""}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Navigation */}

@@ -19,7 +19,7 @@ model User {
   resetTokenExpiry                DateTime?                         @map("reset_token_expiry")
   isActive                        Boolean?                          @default(false) @map("is_active")
   jadwal_asesmen                  jadwal_asesmen[]
-  konfigurasi_pertanyaan_penyusun konfigurasi_pertanyaan_penyusun[]
+  form_asesor                     Form_Asesor[]
   pengajuanSkema                  PengajuanSkema[]
   pleno_asesi                     pleno_asesi[]
   pleno_attendee                  pleno_attendee[]
@@ -265,21 +265,23 @@ model apl02_penilaian {
   created_at               DateTime                   @default(now()) @db.Timestamp(6)
   updated_at               DateTime                   @default(now()) @db.Timestamp(6)
   pengajuan_skema          PengajuanSkema             @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  apl02_penyusun_validator apl02_penyusun_validator[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model apl02_penyusun_validator {
-  id              Int             @id @default(autoincrement())
-  apl02_id        Int
-  peran           String          @db.VarChar
-  nama            String
-  no_met          String?         @db.VarChar
-  ttd_tanggal     DateTime?       @db.Date
-  apl02_penilaian apl02_penilaian @relation(fields: [apl02_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model Form_Asesor {
+  id                     Int                    @id @default(autoincrement())
+  konfigurasi_id         Int
+  form_type              String                 @db.VarChar
+  peran                  String                 @db.VarChar
+  user_id                Int?
+  ttd_tanggal            DateTime?              @db.Date
+  urutan                 Int                    @default(1)
+  konfigurasi_pertanyaan konfigurasi_pertanyaan @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                  User?                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([apl02_id], map: "idx_apl02_penyusun_validator_apl02_id")
+  @@index([konfigurasi_id], map: "idx_form_asesor_konfigurasi_id")
+  @@index([user_id], map: "idx_form_asesor_user_id")
+  @@map("form_asesor")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -364,32 +366,18 @@ model konfigurasi_pertanyaan {
   created_at                                                            DateTime                          @default(now()) @db.Timestamp(6)
   updated_at                                                            DateTime                          @default(now()) @db.Timestamp(6)
   master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema            MasterSkema?                      @relation("konfigurasi_pertanyaan_skema_idTomaster_skema", fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  konfigurasi_pertanyaan_penyusun                                       konfigurasi_pertanyaan_penyusun[]
   konfigurasi_step1_pertanyaan                                          konfigurasi_step1_pertanyaan[]
   konfigurasi_step2_skenario                                            konfigurasi_step2_skenario?
   konfigurasi_step3_lingkup                                             konfigurasi_step3_lingkup[]
   konfigurasi_step4_pertanyaan                                          konfigurasi_step4_pertanyaan[]
   master_skema_master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan MasterSkema[]                     @relation("master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan")
+  form_asesor                                                           Form_Asesor[]
 
   @@index([skema_id], map: "idx_konfigurasi_pertanyaan_published", where: raw("((status)::text = 'published'::text)"))
   @@index([skema_id], map: "idx_konfigurasi_pertanyaan_skema_id")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model konfigurasi_pertanyaan_penyusun {
-  id                     Int                    @id @default(autoincrement())
-  konfigurasi_id         Int
-  peran                  String                 @db.VarChar
-  user_id                Int?
-  nama                   String
-  urutan                 Int                    @default(1)
-  konfigurasi_pertanyaan konfigurasi_pertanyaan @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users                  User?                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([konfigurasi_id], map: "idx_konfigurasi_pertanyaan_penyusun_konfigurasi_id")
-  @@index([user_id], map: "idx_konfigurasi_pertanyaan_penyusun_user_id")
-}
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model konfigurasi_step1_opsi {
