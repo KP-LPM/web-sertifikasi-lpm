@@ -43,6 +43,22 @@ export default function EditPengajuanSkema() {
       const dp = data.dataPribadi as Record<string, unknown> | undefined;
       const adminCatatan = data.verifikasi_pengajuan?.catatan;
 
+      const rawAdm = (data.skema?.master_bukti_administratif as unknown[]) || (data.skema?.buktiAdministratif as unknown[]) || [];
+      const defaultBuktiAdm = [
+        {
+          id: 1,
+          namaDokumen: "Salinan KTP dan KTM",
+          isWajib: true,
+          isAktif: true,
+        },
+        {
+          id: 2,
+          namaDokumen: "Pasfoto berwarna ukuran 3 x 4 sebanyak 2 (dua) lembar",
+          isWajib: true,
+          isAktif: true,
+        },
+      ];
+
       setApl01FormData({
         isAdmin: false,
         readOnly: false,
@@ -56,7 +72,7 @@ export default function EditPengajuanSkema() {
         ...dp,
         schemeDetail: {
           ...data.skema,
-          buktiAdministratif: (data.skema?.master_bukti_administratif as unknown[]) || (data.skema?.buktiAdministratif as unknown[]) || [],
+          buktiAdministratif: rawAdm.length > 0 ? rawAdm : defaultBuktiAdm,
           persyaratanDasar: (data.skema?.persyaratanDasar as unknown[]) || [],
           buktiKompetensi: (data.skema?.buktiKompetensi as unknown[]) || [],
         },
@@ -145,14 +161,14 @@ export default function EditPengajuanSkema() {
           tandaTangan: apl01FormData.ttdAsesi as string | undefined,
         },
         status: "Menunggu Verifikasi",
-        dokumen: cleanDokumen, 
+        dokumen: cleanDokumen,
       };
 
       await updatePengajuan(Number(params.id), updateData);
       showNotification("Revisi berhasil disimpan. Status kembali ke Menunggu Verifikasi.", "success");
       router.push("/asesi/pengajuanskema");
-      
-      } catch (error: unknown) {
+
+    } catch (error: unknown) {
       let errorMessage = "Gagal menyimpan revisi";
 
       // Tangkap pesan error bawaan (jika ada)
@@ -177,13 +193,13 @@ export default function EditPengajuanSkema() {
       // Casting error ke struktur ApiError
       const apiError = error as ApiError;
       const fieldErrors = apiError.response?.data?.data?.fieldErrors;
-      
+
       if (fieldErrors?.dataPribadi && fieldErrors.dataPribadi.length > 0) {
         errorMessage = `Gagal menyimpan: Data Pribadi - ${fieldErrors.dataPribadi.join(", ")}`;
       } else if (apiError.response?.data?.message) {
         errorMessage = apiError.response.data.message;
       }
-      
+
       showNotification(errorMessage, "error");
     } finally {
       setIsSubmitting(false);

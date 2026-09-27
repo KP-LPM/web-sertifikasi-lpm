@@ -32,7 +32,7 @@ export async function cachedFetch(url: string, options?: RequestInit, ttlMs = 20
 
 export const getAuthHeaders = () => {
   const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+    typeof window !== "undefined" ? sessionStorage.getItem("token") || "" : "";
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

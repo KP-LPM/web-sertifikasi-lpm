@@ -273,7 +273,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   >(() => {
     if (typeof window !== "undefined") {
       try {
-        const saved = localStorage.getItem("konfigurasi_pertanyaan_data");
+        const saved = sessionStorage.getItem("konfigurasi_pertanyaan_data");
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -288,7 +288,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        localStorage.setItem(
+        sessionStorage.setItem(
           "konfigurasi_pertanyaan_data",
           JSON.stringify(konfigurasiPertanyaan),
         );
@@ -362,7 +362,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showNotification("Berhasil keluar dari akun.", "success");
         setIsLoggingOut(true);
         await signOut({ redirect: false });
-        localStorage.clear();
+        sessionStorage.clear();
         setTimeout(() => {
           window.location.href = "/login";
         }, 1500);

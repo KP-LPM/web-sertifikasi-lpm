@@ -408,7 +408,7 @@ export default function PengajuanSkemaPage() {
   React.useEffect(() => {
     if (selectedScheme?.id && typeof window !== "undefined") {
       try {
-        const draftStr = localStorage.getItem(
+        const draftStr = sessionStorage.getItem(
           `asesiPengajuanDraft_${selectedScheme.id}`,
         );
         if (draftStr) {
@@ -516,7 +516,7 @@ export default function PengajuanSkemaPage() {
         step,
       };
 
-      localStorage.setItem(
+      sessionStorage.setItem(
         `asesiPengajuanDraft_${selectedScheme.id}`,
         JSON.stringify(draftData),
       );
@@ -529,7 +529,7 @@ export default function PengajuanSkemaPage() {
 
   React.useEffect(() => {
     if (schemesData.length > 0 && typeof window !== "undefined") {
-      const activeId = localStorage.getItem("asesiActiveSchemeId");
+      const activeId = sessionStorage.getItem("asesiActiveSchemeId");
       if (activeId && !selectedScheme) {
         const found = schemesData.find((s) => s.id === Number(activeId));
         if (found) {
@@ -1053,8 +1053,8 @@ export default function PengajuanSkemaPage() {
       setMetode("");
       setBerpengalaman(false);
       if (typeof window !== "undefined" && selectedScheme?.id) {
-        localStorage.removeItem(`asesiPengajuanDraft_${selectedScheme.id}`);
-        localStorage.removeItem("asesiActiveSchemeId");
+        sessionStorage.removeItem(`asesiPengajuanDraft_${selectedScheme.id}`);
+        sessionStorage.removeItem("asesiActiveSchemeId");
         import("@/lib/draftDb").then(({ deleteDraftFiles }) => {
           deleteDraftFiles(`asesiPengajuanFiles_${selectedScheme.id}`);
         });
@@ -2180,7 +2180,7 @@ export default function PengajuanSkemaPage() {
                                   setSubView("apply-form");
                                   setStep(1);
                                   if (typeof window !== "undefined") {
-                                    localStorage.setItem(
+                                    sessionStorage.setItem(
                                       "asesiActiveSchemeId",
                                       scheme.id.toString(),
                                     );
@@ -3836,9 +3836,9 @@ export default function PengajuanSkemaPage() {
                   if (exitDestination) {
                     setSubView(exitDestination);
                     if (typeof window !== "undefined") {
-                      localStorage.removeItem("asesiActiveSchemeId");
+                      sessionStorage.removeItem("asesiActiveSchemeId");
                       if (selectedScheme?.id) {
-                        localStorage.removeItem(
+                        sessionStorage.removeItem(
                           `asesiPengajuanDraft_${selectedScheme.id}`,
                         );
                         import("@/lib/draftDb").then(({ deleteDraftFiles }) => {

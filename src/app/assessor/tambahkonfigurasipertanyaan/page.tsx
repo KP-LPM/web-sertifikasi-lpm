@@ -37,11 +37,15 @@ import {
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createKonfigurasiPertanyaan, getSkemaList, getAllUsers, getKonfigurasiPertanyaanDetail, updateKonfigurasiPertanyaanAPI } from "@/lib/api";
+import {
+  createKonfigurasiPertanyaan,
+  getSkemaList,
+  getAllUsers,
+  getKonfigurasiPertanyaanDetail,
+  updateKonfigurasiPertanyaanAPI,
+} from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Dummy options removed. Skema options now loaded dynamically.
-
-
 
 const availableKUKOptions = [
   "M.692000.001.01 E1/KUK 1.1",
@@ -105,36 +109,67 @@ function TambahKonfigurasiPertanyaanContent() {
     updateKonfigurasiPertanyaan,
     konfigurasiPertanyaan,
   } = useAppContext();
-  const [skemaOptions, setSkemaOptions] = useState<{ value: string, label: string }[]>([]);
-  const [assessorOptions, setAssessorOptions] = useState<{ value: string, label: string }[]>([]);
+  const [skemaOptions, setSkemaOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [assessorOptions, setAssessorOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [skemaRes, usersRes] = await Promise.all([
           getSkemaList().catch(() => []),
-          getAllUsers().catch(() => [])
+          getAllUsers().catch(() => []),
         ]);
 
         if (Array.isArray(skemaRes)) {
-          setSkemaOptions(skemaRes.map((s: Record<string, string | number | undefined>) => ({
-            value: String(s.id?.toString() || s.kodeSkema || s.namaSkema || s.name || s.id || ''),
-            label: String(`${s.kodeSkema || s.kode || s.code || ''} - ${s.namaSkema || s.nama || s.name || ''}`.replace(/^- | -$/g, '').trim() || s.name || ''),
-          })));
+          setSkemaOptions(
+            skemaRes.map((s: Record<string, string | number | undefined>) => ({
+              value: String(
+                s.id?.toString() ||
+                s.kodeSkema ||
+                s.namaSkema ||
+                s.name ||
+                s.id ||
+                "",
+              ),
+              label: String(
+                `${s.kodeSkema || s.kode || s.code || ""} - ${s.namaSkema || s.nama || s.name || ""}`
+                  .replace(/^- | -$/g, "")
+                  .trim() ||
+                s.name ||
+                "",
+              ),
+            })),
+          );
         }
 
         const usersList = Array.isArray(usersRes)
           ? usersRes
-          : usersRes && typeof usersRes === "object" && "data" in usersRes && Array.isArray((usersRes as { data: unknown[] }).data)
+          : usersRes &&
+            typeof usersRes === "object" &&
+            "data" in usersRes &&
+            Array.isArray((usersRes as { data: unknown[] }).data)
             ? (usersRes as { data: unknown[] }).data
             : [];
 
-        type UserItem = { role?: string; id?: string | number; username?: string; profil?: { namaLengkap?: string } };
-        const assessors = (usersList as UserItem[]).filter(u => u.role?.toLowerCase() === "asesor");
-        setAssessorOptions(assessors.map(a => ({
-          value: a.id?.toString() || a.username || "",
-          label: `${a.profil?.namaLengkap || a.username || "Unknown"} (Asesor)`
-        })));
+        type UserItem = {
+          role?: string;
+          id?: string | number;
+          username?: string;
+          profil?: { namaLengkap?: string };
+        };
+        const assessors = (usersList as UserItem[]).filter(
+          (u) => u.role?.toLowerCase() === "asesor",
+        );
+        setAssessorOptions(
+          assessors.map((a) => ({
+            value: a.id?.toString() || a.username || "",
+            label: `${a.profil?.namaLengkap || a.username || "Unknown"} (Asesor)`,
+          })),
+        );
       } catch (e) {
         console.error(e);
       }
@@ -161,24 +196,25 @@ function TambahKonfigurasiPertanyaanContent() {
     step2: {
       skenario_studi_kasus: formData.step2.blokA.skenarioStudiKasus,
       informasi_yang_diberikan: formData.step2.blokA.informasiYangDiberikan,
-      lingkup_bahasan_studi_kasus: formData.step2.blokA.lingkupBahasanStudiKasus,
+      lingkup_bahasan_studi_kasus:
+        formData.step2.blokA.lingkupBahasanStudiKasus,
       perlengkapan_dan_bahan: formData.step2.blokA.perlengkapanDanBahan,
       fokus_presentasi: formData.step2.blokB.fokusPresentasi,
       ketentuan_alokasi_waktu: formData.step2.blokB.ketentuanAlokasiWaktu,
     },
-    step3: formData.step3.lingkups.map(l => ({
+    step3: formData.step3.lingkups.map((l) => ({
       nama_lingkup: l.namaLingkup,
-      sub_pertanyaan: l.subPertanyaans.map(sp => ({
+      sub_pertanyaan: l.subPertanyaans.map((sp) => ({
         skenario_pertanyaan: sp.skenarioPertanyaan,
         kode_kuk: sp.kodeKUK,
-        ekspektasi_tanggapan: sp.ekspektasiTanggapan
-      }))
+        ekspektasi_tanggapan: sp.ekspektasiTanggapan,
+      })),
     })),
-    step4: formData.step4.questions.map(q => ({
+    step4: formData.step4.questions.map((q) => ({
       pertanyaan_lisan: q.pertanyaanLisan,
       kode_kuk_ref: q.kodeKUKRef,
-      kunci_jawaban: q.kunciJawaban
-    }))
+      kunci_jawaban: q.kunciJawaban,
+    })),
   };
 
   // Load existing data if editing or viewing detail
@@ -186,14 +222,27 @@ function TambahKonfigurasiPertanyaanContent() {
     if ((isEdit || isReadOnly) && konfigurasiId) {
       async function loadExistingData() {
         try {
-          const detail = await getKonfigurasiPertanyaanDetail(Number(konfigurasiId));
+          const detail = await getKonfigurasiPertanyaanDetail(
+            Number(konfigurasiId),
+          );
           if (detail) {
             setFormData((prev) => {
-              const formatPenyusun = (list: { user_id?: string | number; nama?: string; users?: any }[]) => {
+              const formatPenyusun = (
+                list: {
+                  user_id?: string | number;
+                  nama?: string;
+                  users?: any;
+                }[],
+              ) => {
                 if (!list) return [];
                 return list.map((item) => ({
                   value: String(item.user_id || item.nama || ""),
-                  label: String(item.users?.profil?.namaLengkap || item.users?.username || item.nama || ""),
+                  label: String(
+                    item.users?.profil?.namaLengkap ||
+                    item.users?.username ||
+                    item.nama ||
+                    "",
+                  ),
                   no_met: item.users?.profil?.nomorRegistrasiMet || "-",
                   tanda_tangan: item.users?.profil?.tandaTangan || undefined,
                 }));
@@ -201,7 +250,11 @@ function TambahKonfigurasiPertanyaanContent() {
 
               const newMetadata = {
                 namaKonfigurasi: detail.nama || prev.metadata.namaKonfigurasi,
-                skemaSertifikasi: String(detail.skema_id || detail.skema || prev.metadata.skemaSertifikasi),
+                skemaSertifikasi: String(
+                  detail.skema_id ||
+                  detail.skema ||
+                  prev.metadata.skemaSertifikasi,
+                ),
                 versi: detail.versi || "1.0",
                 // penyusun and validator loaded per step if available
 
@@ -209,44 +262,102 @@ function TambahKonfigurasiPertanyaanContent() {
               };
 
               const step2Data = detail.konfigurasi_step2_skenario;
-              const step2BlokA = step2Data ? {
-                skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
-                informasiYangDiberikan: Array.isArray(step2Data.informasi_yang_diberikan) && step2Data.informasi_yang_diberikan.length > 0 ? step2Data.informasi_yang_diberikan : [""],
-                lingkupBahasanStudiKasus: Array.isArray(step2Data.lingkup_bahasan_studi_kasus) && step2Data.lingkup_bahasan_studi_kasus.length > 0 ? step2Data.lingkup_bahasan_studi_kasus : [""],
-                perlengkapanDanBahan: step2Data.perlengkapan_dan_bahan || "",
-              } : prev.step2.blokA;
+              const step2BlokA = step2Data
+                ? {
+                  skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
+                  informasiYangDiberikan:
+                    Array.isArray(step2Data.informasi_yang_diberikan) &&
+                      step2Data.informasi_yang_diberikan.length > 0
+                      ? step2Data.informasi_yang_diberikan
+                      : [""],
+                  lingkupBahasanStudiKasus:
+                    Array.isArray(step2Data.lingkup_bahasan_studi_kasus) &&
+                      step2Data.lingkup_bahasan_studi_kasus.length > 0
+                      ? step2Data.lingkup_bahasan_studi_kasus
+                      : [""],
+                  perlengkapanDanBahan:
+                    step2Data.perlengkapan_dan_bahan || "",
+                }
+                : prev.step2.blokA;
 
-              const step2BlokB = step2Data ? {
-                fokusPresentasi: Array.isArray(step2Data.fokus_presentasi) && step2Data.fokus_presentasi.length > 0 ? step2Data.fokus_presentasi : [""],
-                ketentuanAlokasiWaktu: step2Data.ketentuan_alokasi_waktu || "",
-                kriteriaEvaluasiAsesor: Array.isArray(step2Data.kriteria_evaluasi_asesor) && step2Data.kriteria_evaluasi_asesor.length > 0 ? step2Data.kriteria_evaluasi_asesor : [""],
-              } : prev.step2.blokB;
+              const step2BlokB = step2Data
+                ? {
+                  fokusPresentasi:
+                    Array.isArray(step2Data.fokus_presentasi) &&
+                      step2Data.fokus_presentasi.length > 0
+                      ? step2Data.fokus_presentasi
+                      : [""],
+                  ketentuanAlokasiWaktu:
+                    step2Data.ketentuan_alokasi_waktu || "",
+                  kriteriaEvaluasiAsesor:
+                    Array.isArray(step2Data.kriteria_evaluasi_asesor) &&
+                      step2Data.kriteria_evaluasi_asesor.length > 0
+                      ? step2Data.kriteria_evaluasi_asesor
+                      : [""],
+                }
+                : prev.step2.blokB;
 
-              const step3Lingkups = detail.konfigurasi_step3_lingkup?.length > 0
-                ? detail.konfigurasi_step3_lingkup.map((l: { id?: string | number; nama_lingkup?: string; konfigurasi_step3_sub_pertanyaan?: { id?: string | number; skenario_pertanyaan?: string; kode_kuk?: string[]; ekspektasi_tanggapan?: string }[] }) => ({
-                  id: `lingkup-${l.id || Math.random()}`,
-                  namaLingkup: l.nama_lingkup || "",
-                  subPertanyaans: l.konfigurasi_step3_sub_pertanyaan?.map((sub: { id?: string | number; skenario_pertanyaan?: string; kode_kuk?: string[]; ekspektasi_tanggapan?: string }) => ({
-                    id: `sub-${sub.id || Math.random()}`,
-                    skenarioPertanyaan: sub.skenario_pertanyaan || "",
-                    kodeKUK: Array.isArray(sub.kode_kuk) ? sub.kode_kuk : [],
-                    ekspektasiTanggapan: sub.ekspektasi_tanggapan || "",
-                  })) || [],
-                }))
-                : prev.step3.lingkups;
+              const step3Lingkups =
+                detail.konfigurasi_step3_lingkup?.length > 0
+                  ? detail.konfigurasi_step3_lingkup.map(
+                    (l: {
+                      id?: string | number;
+                      nama_lingkup?: string;
+                      konfigurasi_step3_sub_pertanyaan?: {
+                        id?: string | number;
+                        skenario_pertanyaan?: string;
+                        kode_kuk?: string[];
+                        ekspektasi_tanggapan?: string;
+                      }[];
+                    }) => ({
+                      id: `lingkup-${l.id || Math.random()}`,
+                      namaLingkup: l.nama_lingkup || "",
+                      subPertanyaans:
+                        l.konfigurasi_step3_sub_pertanyaan?.map(
+                          (sub: {
+                            id?: string | number;
+                            skenario_pertanyaan?: string;
+                            kode_kuk?: string[];
+                            ekspektasi_tanggapan?: string;
+                          }) => ({
+                            id: `sub-${sub.id || Math.random()}`,
+                            skenarioPertanyaan: sub.skenario_pertanyaan || "",
+                            kodeKUK: Array.isArray(sub.kode_kuk)
+                              ? sub.kode_kuk
+                              : [],
+                            ekspektasiTanggapan:
+                              sub.ekspektasi_tanggapan || "",
+                          }),
+                        ) || [],
+                    }),
+                  )
+                  : prev.step3.lingkups;
 
-              const step4Questions = detail.konfigurasi_step4_pertanyaan?.length > 0
-                ? detail.konfigurasi_step4_pertanyaan.map((q: { id?: string | number; kode_kuk_ref?: string; pertanyaan_lisan?: string; kunci_jawaban?: string }) => ({
-                  id: `q4-${q.id || Math.random()}`,
-                  kodeKUKRef: q.kode_kuk_ref || "",
-                  pertanyaanLisan: q.pertanyaan_lisan || "",
-                  kunciJawaban: q.kunci_jawaban || "",
-                }))
-                : prev.step4.questions;
+              const step4Questions =
+                detail.konfigurasi_step4_pertanyaan?.length > 0
+                  ? detail.konfigurasi_step4_pertanyaan.map(
+                    (q: {
+                      id?: string | number;
+                      kode_kuk_ref?: string;
+                      pertanyaan_lisan?: string;
+                      kunci_jawaban?: string;
+                    }) => ({
+                      id: `q4-${q.id || Math.random()}`,
+                      kodeKUKRef: q.kode_kuk_ref || "",
+                      pertanyaanLisan: q.pertanyaan_lisan || "",
+                      kunciJawaban: q.kunci_jawaban || "",
+                    }),
+                  )
+                  : prev.step4.questions;
 
               const getAsesors = (type: string, peran: string) => {
-                if (!detail.form_asesor || !Array.isArray(detail.form_asesor)) return [];
-                return formatPenyusun(detail.form_asesor.filter((a: any) => a.form_type === type && a.peran === peran));
+                if (!detail.form_asesor || !Array.isArray(detail.form_asesor))
+                  return [];
+                return formatPenyusun(
+                  detail.form_asesor.filter(
+                    (a: any) => a.form_type === type && a.peran === peran,
+                  ),
+                );
               };
 
               return {
@@ -257,21 +368,21 @@ function TambahKonfigurasiPertanyaanContent() {
                   ...prev.step2,
                   blokA: step2BlokA,
                   blokB: step2BlokB,
-                  penyusun: getAsesors('step2', 'Penyusun'),
-                  validator: getAsesors('step2', 'Validator'),
-                  supervisor: getAsesors('step2', 'Supervisor'),
+                  penyusun: getAsesors("step2", "Penyusun"),
+                  validator: getAsesors("step2", "Validator"),
+                  supervisor: getAsesors("step2", "Supervisor"),
                 },
                 step3: {
                   ...prev.step3,
                   lingkups: step3Lingkups,
-                  penyusun: getAsesors('step3', 'Penyusun'),
-                  validator: getAsesors('step3', 'Validator'),
+                  penyusun: getAsesors("step3", "Penyusun"),
+                  validator: getAsesors("step3", "Validator"),
                 },
                 step4: {
                   ...prev.step4,
                   questions: step4Questions,
-                  penyusun: getAsesors('step4', 'Penyusun'),
-                  validator: getAsesors('step4', 'Validator'),
+                  penyusun: getAsesors("step4", "Penyusun"),
+                  validator: getAsesors("step4", "Validator"),
                 },
               };
             });
@@ -279,9 +390,13 @@ function TambahKonfigurasiPertanyaanContent() {
         } catch (error) {
           console.error("Gagal memuat detail konfigurasi:", error);
           // Fallback reading from context if backend fetch fails
-          const existing = konfigurasiPertanyaan.find((k) => k.id === Number(konfigurasiId));
+          const existing = konfigurasiPertanyaan.find(
+            (k) => k.id === Number(konfigurasiId),
+          );
           if (existing) {
-            const existingWithData = existing as unknown as { formData?: WizardFormState };
+            const existingWithData = existing as unknown as {
+              formData?: WizardFormState;
+            };
             if (existingWithData.formData) {
               setFormData(existingWithData.formData);
             }
@@ -674,7 +789,7 @@ function TambahKonfigurasiPertanyaanContent() {
     if (step === 2) {
       if (formData.step3.lingkups.length === 0) {
         setValidationError(
-          "Step 3 minimal harus memiliki 1 Lingkup Penyajian.",
+          "Form pertanyaan lisan minimal harus memiliki 1 Lingkup Penyajian.",
         );
         return false;
       }
@@ -682,7 +797,7 @@ function TambahKonfigurasiPertanyaanContent() {
         const lingkup = formData.step3.lingkups[i];
         if (!lingkup.namaLingkup.trim()) {
           setValidationError(
-            `Nama Lingkup Penyajian #${i + 1} di Step 3 wajib diisi.`,
+            `Nama Lingkup Penyajian #${i + 1} di Form Pertanyaan Lisan wajib diisi.`,
           );
           return false;
         }
@@ -770,10 +885,10 @@ function TambahKonfigurasiPertanyaanContent() {
       tipeForm: "Multi-Step Wizard",
       versi: formData.metadata.versi,
       isDefault: formData.metadata.isDefault,
-      status: (publishStatus === "published" ? "Aktif" : "Tidak Aktif") as "Aktif" | "Tidak Aktif",
+      status: (publishStatus === "published" ? "Aktif" : "Tidak Aktif") as
+        "Aktif" | "Tidak Aktif",
       formData: formData,
       subPertanyaans: [
-
         {
           id: "sp2",
           nama: "Penjelasan Singkat Proyek",
@@ -796,7 +911,11 @@ function TambahKonfigurasiPertanyaanContent() {
       ],
     };
 
-    const extractPenyusun = (list: any[] | undefined, peran: string, type: string) => {
+    const extractPenyusun = (
+      list: any[] | undefined,
+      peran: string,
+      type: string,
+    ) => {
       if (!list) return [];
       return list.map((item) => ({
         peran: peran,
@@ -825,7 +944,8 @@ function TambahKonfigurasiPertanyaanContent() {
       step2: {
         skenario_studi_kasus: formData.step2.blokA.skenarioStudiKasus,
         informasi_yang_diberikan: formData.step2.blokA.informasiYangDiberikan,
-        lingkup_bahasan_studi_kasus: formData.step2.blokA.lingkupBahasanStudiKasus,
+        lingkup_bahasan_studi_kasus:
+          formData.step2.blokA.lingkupBahasanStudiKasus,
         perlengkapan_dan_bahan: formData.step2.blokA.perlengkapanDanBahan,
         fokus_presentasi: formData.step2.blokB.fokusPresentasi,
         ketentuan_alokasi_waktu: formData.step2.blokB.ketentuanAlokasiWaktu,
@@ -872,34 +992,33 @@ function TambahKonfigurasiPertanyaanContent() {
   const stepsInfo = [
     {
       number: 1,
-      title: "Skenario",
-      code: "STEP 1",
+      title: "Penjelasan Singkat Proyek",
+      code: "FORM FR.IA.04A",
       icon: FileSpreadsheet,
-      desc: "Blok A & Blok B",
+      desc: "",
     },
     {
       number: 2,
-      title: "Nested",
-      code: "STEP 2",
+      title: "Penilaian Proyek Singkat",
+      code: "FORM FR.IA.04B",
       icon: ListTodo,
-      desc: "Nested Lingkup & Soal",
+      desc: "",
     },
     {
       number: 3,
       title: "Pertanyaan Lisan",
-      code: "STEP 3",
+      code: "FORM FR.IA.07",
       icon: MessageSquare,
-      desc: "Pertanyaan + Kunci",
+      desc: "",
     },
     {
       number: 4,
-      title: "Finalisasi & Review",
-      code: "STEP 4",
+      title: "Finalisasi",
+      code: "Review",
       icon: ShieldCheck,
-      desc: "Ringkasan & Terbit",
+      desc: "",
     },
   ];
-
 
   return (
     <div className="space-y-6 pb-28 text-sm text-gray-700">
@@ -941,11 +1060,10 @@ function TambahKonfigurasiPertanyaanContent() {
           </button>
           <div className="min-w-0">
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              Wizard Konfigurasi Pertanyaan
+              Konfigurasi Pertanyaan
             </h2>
             <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-tight">
-              Penyusunan Multi-Step Instrumen Asesmen (Step 1 - Step 4
-              Berurutan)
+              Penyusunan Form Asesmen
             </p>
           </div>
         </div>
@@ -959,10 +1077,36 @@ function TambahKonfigurasiPertanyaanContent() {
             >
               <Eye size={16} /> Pratinjau Form
             </button>
-            <div className={`absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-xl p-2 z-50 ${isPreviewMenuOpen ? 'block' : 'hidden'}`}>
-              <button onClick={() => { setPreviewForm("FR.IA.04A"); setIsPreviewMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors">FR.IA.04A (Proyek)</button>
-              <button onClick={() => { setPreviewForm("FR.IA.04B"); setIsPreviewMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors">FR.IA.04B (Penilaian)</button>
-              <button onClick={() => { setPreviewForm("FR.IA.07"); setIsPreviewMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors">FR.IA.07 (Pertanyaan Lisan)</button>
+            <div
+              className={`absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-xl p-2 z-50 ${isPreviewMenuOpen ? "block" : "hidden"}`}
+            >
+              <button
+                onClick={() => {
+                  setPreviewForm("FR.IA.04A");
+                  setIsPreviewMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors"
+              >
+                FR.IA.04A (Proyek)
+              </button>
+              <button
+                onClick={() => {
+                  setPreviewForm("FR.IA.04B");
+                  setIsPreviewMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors"
+              >
+                FR.IA.04B (Penilaian)
+              </button>
+              <button
+                onClick={() => {
+                  setPreviewForm("FR.IA.07");
+                  setIsPreviewMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg text-slate-700 font-medium transition-colors"
+              >
+                FR.IA.07 (Pertanyaan Lisan)
+              </button>
             </div>
           </div>
           <button
@@ -987,7 +1131,7 @@ function TambahKonfigurasiPertanyaanContent() {
         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div className="flex items-center gap-2 font-black text-slate-900 text-sm md:text-base">
             <Settings size={18} className="text-[#008BE3]" />
-            <span>Informasi General & Metadata Konfigurasi</span>
+            <span>Informasi General</span>
           </div>
           <span className="text-xs text-slate-400 font-mono">
             Versi {formData.metadata.versi}
@@ -1045,7 +1189,6 @@ function TambahKonfigurasiPertanyaanContent() {
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg outline-none focus:border-[#008BE3] font-mono text-slate-800 bg-white"
             />
           </div>
-
         </div>
       </div>
 
@@ -1057,7 +1200,9 @@ function TambahKonfigurasiPertanyaanContent() {
             <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-100 z-0">
               <div
                 className="h-full bg-[#008BE3] transition-all duration-300"
-                style={{ width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%` }}
+                style={{
+                  width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%`,
+                }}
               />
             </div>
 
@@ -1082,10 +1227,10 @@ function TambahKonfigurasiPertanyaanContent() {
                 >
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${isCompleted
-                      ? "bg-emerald-600 text-white border-2 border-emerald-600"
-                      : isActive
-                        ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
-                        : "bg-white text-slate-400 border-2 border-gray-300"
+                        ? "bg-emerald-600 text-white border-2 border-emerald-600"
+                        : isActive
+                          ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
+                          : "bg-white text-slate-400 border-2 border-gray-300"
                       }`}
                   >
                     {isCompleted ? (
@@ -1098,10 +1243,10 @@ function TambahKonfigurasiPertanyaanContent() {
                   <div className="mt-2 space-y-0.5">
                     <span
                       className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${isActive
-                        ? "text-[#008BE3]"
-                        : isCompleted
-                          ? "text-emerald-700"
-                          : "text-slate-400"
+                          ? "text-[#008BE3]"
+                          : isCompleted
+                            ? "text-emerald-700"
+                            : "text-slate-400"
                         }`}
                     >
                       {st.code}
@@ -1136,60 +1281,86 @@ function TambahKonfigurasiPertanyaanContent() {
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 1: Skenario Studi Kasus
+                  Penjelasan Singkat Proyek
                 </h3>
                 <p className="text-xs text-blue-900/90 mt-0.5">
-                  Petunjuk Skenario Studi Kasus proyek Asesi. Terbagi menjadi{" "}
+                  Terbagi menjadi{" "}
                   <strong>BLOK A (Hal yang Harus Disiapkan/Dihasilkan)</strong>{" "}
-                  dan <strong>BLOK B (Hal yang Perlu Didemonstrasikan)</strong>.{" "}
-                  <em>TIDAK ADA input jawaban Asesi pada step ini.</em>
+                  dan <strong>BLOK B (Hal yang Perlu Didemonstrasikan)</strong>
+                  .{" "}
                 </p>
               </div>
             </div>
 
-
             {/* PENYUSUN, VALIDATOR, SUPERVISOR */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border border-blue-200 rounded-2xl p-6 bg-linear-to-b from-blue-50/30 to-white">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Penyusun (Asesor)</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Penyusun (Asesor)
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step2.penyusun}
-                  onChange={(val) => setFormData(p => ({ ...p, step2: { ...p.step2, penyusun: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step2: { ...p.step2, penyusun: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Penyusun..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Validator</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Validator
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step2.validator}
-                  onChange={(val) => setFormData(p => ({ ...p, step2: { ...p.step2, validator: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step2: { ...p.step2, validator: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Validator..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Supervisor</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Supervisor
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step2.supervisor}
-                  onChange={(val) => setFormData(p => ({ ...p, step2: { ...p.step2, supervisor: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step2: { ...p.step2, supervisor: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Supervisor..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
             </div>
@@ -1541,12 +1712,12 @@ function TambahKonfigurasiPertanyaanContent() {
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 2: Penilaian Proyek Singkat
+                  Penilaian Proyek Singkat
                 </h3>
                 <p className="text-xs text-emerald-900/90 mt-0.5">
-                  Menggunakan <strong>Nested Array</strong> (Satu Lingkup
-                  Penyajian dapat memiliki BANYAK Pertanyaan). Kelola Lingkup
-                  Penyajian dan Sub-Pertanyaan studi kasus terkait KUK.
+                  Satu Lingkup Penyajian dapat memiliki banyak Pertanyaan.
+                  Kelola Lingkup Penyajian dan Sub-Pertanyaan studi kasus
+                  terkait KUK.
                 </p>
               </div>
             </div>
@@ -1554,31 +1725,49 @@ function TambahKonfigurasiPertanyaanContent() {
             {/* PENYUSUN, VALIDATOR */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-emerald-200 rounded-2xl p-6 bg-linear-to-b from-emerald-50/30 to-white">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Penyusun (Asesor)</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Penyusun (Asesor)
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step3.penyusun}
-                  onChange={(val) => setFormData(p => ({ ...p, step3: { ...p.step3, penyusun: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step3: { ...p.step3, penyusun: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Penyusun..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Validator</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Validator
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step3.validator}
-                  onChange={(val) => setFormData(p => ({ ...p, step3: { ...p.step3, validator: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step3: { ...p.step3, validator: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Validator..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
             </div>
@@ -1776,12 +1965,11 @@ function TambahKonfigurasiPertanyaanContent() {
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 3: Pertanyaan Lisan
+                  Pertanyaan Lisan
                 </h3>
                 <p className="text-xs text-purple-900/90 mt-0.5">
                   Input daftar pertanyaan lisan beserta pemetaan KUK.{" "}
-                  <strong>KUNCI JAWABAN WAJIB DIISI</strong> oleh Asesor sebagai
-                  tolok ukur penilaian objektif.
+                  <strong>KUNCI JAWABAN WAJIB DIISI</strong> oleh Asesor.
                 </p>
               </div>
             </div>
@@ -1789,31 +1977,49 @@ function TambahKonfigurasiPertanyaanContent() {
             {/* PENYUSUN, VALIDATOR */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-purple-200 rounded-2xl p-6 bg-linear-to-b from-purple-50/30 to-white">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Penyusun (Asesor)</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Penyusun (Asesor)
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step4.penyusun}
-                  onChange={(val) => setFormData(p => ({ ...p, step4: { ...p.step4, penyusun: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step4: { ...p.step4, penyusun: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Penyusun..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block text-xs">Validator</label>
+                <label className="font-bold text-slate-700 block text-xs">
+                  Validator
+                </label>
                 <Select
                   isDisabled={isReadOnly}
                   isMulti
                   options={assessorOptions}
                   value={formData.step4.validator}
-                  onChange={(val) => setFormData(p => ({ ...p, step4: { ...p.step4, validator: val as any } }))}
+                  onChange={(val) =>
+                    setFormData((p) => ({
+                      ...p,
+                      step4: { ...p.step4, validator: val as any },
+                    }))
+                  }
                   className="basic-multi-select text-xs"
                   placeholder="Pilih Validator..."
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
                 />
               </div>
             </div>
@@ -1842,8 +2048,8 @@ function TambahKonfigurasiPertanyaanContent() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1.5 md:col-span-1">
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-1.5">
                       <label className="font-bold text-slate-700 block text-xs">
                         Kode Reference KUK
                       </label>
@@ -1863,7 +2069,7 @@ function TambahKonfigurasiPertanyaanContent() {
                       />
                     </div>
 
-                    <div className="space-y-1.5 md:col-span-2">
+                    <div className="space-y-1.5">
                       <label className="font-bold text-slate-700 block text-xs">
                         <span className="text-rose-500">*</span> Pertanyaan
                         Lisan
@@ -1885,7 +2091,7 @@ function TambahKonfigurasiPertanyaanContent() {
                     </div>
 
                     {/* Key Answer Textarea (Required) */}
-                    <div className="space-y-1.5 md:col-span-3 bg-purple-100/50 p-3.5 border border-purple-200 rounded-lg">
+                    <div className="space-y-1.5 bg-purple-100/50 p-3.5 border border-purple-200 rounded-lg">
                       <label className="font-extrabold text-purple-900 text-xs flex items-center gap-1.5">
                         <KeyIcon size={14} className="text-purple-700" />
                         <span className="text-rose-500">*</span> KUNCI JAWABAN
@@ -1933,11 +2139,10 @@ function TambahKonfigurasiPertanyaanContent() {
               </div>
               <div className="min-w-0">
                 <h3 className="text-base font-black text-slate-900">
-                  STEP 4: Finalisasi & Review Preview
+                  Finalisasi & Review
                 </h3>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  Tinjau seluruh konfigurasi instrumen dari Step 1 hingga Step 4
-                  sebelum diterbitkan.
+                  Tinjau seluruh konfigurasi pertanyaan sebelum diterbitkan.
                 </p>
               </div>
             </div>
@@ -1980,20 +2185,18 @@ function TambahKonfigurasiPertanyaanContent() {
                 </div>
               </div>
 
-
-
               {/* Step 2 Preview: FR.IA.04A */}
               <div className="border border-blue-200 rounded-xl p-5 bg-blue-50/30 space-y-4">
                 <div className="flex items-center justify-between border-b border-blue-200 pb-2">
                   <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                     <FileSpreadsheet size={16} className="text-blue-600" />
-                    Step 1: Penjelasan Singkat Proyek (FR.IA.04A)
+                    Penjelasan Singkat Proyek (FR.IA.04A)
                   </h4>
                   <button
                     onClick={() => setActiveStep(1)}
                     className="text-xs font-bold text-blue-600 hover:underline"
                   >
-                    Edit Step 1
+                    Edit Penjelasan Singkat Proyek
                   </button>
                 </div>
 
@@ -2047,14 +2250,14 @@ function TambahKonfigurasiPertanyaanContent() {
                 <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
                   <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                     <ListTodo size={16} className="text-emerald-600" />
-                    Step 2: Penilaian Proyek Singkat - FR.IA.04B (
+                    Penilaian Proyek Singkat - FR.IA.04B (
                     {formData.step3.lingkups.length} Lingkup)
                   </h4>
                   <button
                     onClick={() => setActiveStep(2)}
                     className="text-xs font-bold text-emerald-600 hover:underline"
                   >
-                    Edit Step 2
+                    Edit Penilaian Proyek Singkat
                   </button>
                 </div>
 
@@ -2095,14 +2298,14 @@ function TambahKonfigurasiPertanyaanContent() {
                 <div className="flex items-center justify-between border-b border-purple-200 pb-2">
                   <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                     <MessageSquare size={16} className="text-purple-700" />
-                    Step 3: Pertanyaan Lisan - FR.IA.07 (
+                    Pertanyaan Lisan - FR.IA.07 (
                     {formData.step4.questions.length} Pertanyaan)
                   </h4>
                   <button
                     onClick={() => setActiveStep(3)}
                     className="text-xs font-bold text-purple-700 hover:underline"
                   >
-                    Edit Step 3
+                    Edit Pertanyaan Lisan
                   </button>
                 </div>
 
@@ -2136,8 +2339,8 @@ function TambahKonfigurasiPertanyaanContent() {
             onClick={handlePrevStep}
             disabled={activeStep === 1}
             className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${activeStep === 1
-              ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
-              : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
+                ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
+                : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
               }`}
           >
             <ChevronLeft size={18} /> Sebelumnya
@@ -2189,7 +2392,8 @@ function TambahKonfigurasiPertanyaanContent() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-extrabold text-base leading-tight text-white flex items-center gap-2">
-                      Pratinjau Form: <span className="text-[#008BE3]">{previewForm}</span>
+                      Pratinjau Form:{" "}
+                      <span className="text-[#008BE3]">{previewForm}</span>
                     </h3>
                     <p className="text-xs text-slate-300 font-medium">
                       Preview Data Konfigurasi Saat Ini
@@ -2202,7 +2406,8 @@ function TambahKonfigurasiPertanyaanContent() {
                     onClick={() => setPreviewForm(null)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer"
                   >
-                    <X size={16} /> <span className="hidden sm:inline">Tutup</span>
+                    <X size={16} />{" "}
+                    <span className="hidden sm:inline">Tutup</span>
                   </button>
                 </div>
               </div>
@@ -2212,55 +2417,106 @@ function TambahKonfigurasiPertanyaanContent() {
                   {previewForm === "FR.IA.04A" && (
                     <FormFRIA04A
                       readOnly={true}
-                      asesmenData={{
-                        nama: "Nama Asesi (Contoh)",
-                        skema: skemaOptions.find(s => s.value === String(formData.metadata.skemaSertifikasi))?.label || "Skema Sertifikasi",
-                        noSkema: "00/LSP/0000",
-                        tuk: "Sewaktu",
-                        metodeAsesmen: "Offline",
-                        tanggal: new Date().toISOString(),
-                        asesor: formData.step2.penyusun[0]?.label || "Asesor",
-                        asesorReg: "-",
-                      } as any}
+                      asesmenData={
+                        {
+                          nama: "Nama Asesi (Contoh)",
+                          skema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.label || "Skema Sertifikasi",
+                          noSkema: "00/LSP/0000",
+                          tuk: "Sewaktu",
+                          metodeAsesmen: "Offline",
+                          tanggal: new Date().toISOString(),
+                          asesor: formData.step2.penyusun[0]?.label || "Asesor",
+                          asesorReg: "-",
+                        } as any
+                      }
                       previewData={currentPreviewData}
-                      penyusun={formData.step2.penyusun.map(p => ({ nama: p.label, noMet: p.no_met || "-", ttdTanggal: p.tanda_tangan || "-" }))}
-                      validator={formData.step2.validator.map(v => ({ nama: v.label, noMet: v.no_met || "-", ttdTanggal: v.tanda_tangan || "-" }))}
+                      penyusun={formData.step2.penyusun.map((p) => ({
+                        nama: p.label,
+                        noMet: p.no_met || "-",
+                        tandaTangan: p.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                      validator={formData.step2.validator.map((v) => ({
+                        nama: v.label,
+                        noMet: v.no_met || "-",
+                        tandaTangan: v.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
                     />
                   )}
                   {previewForm === "FR.IA.04B" && (
                     <FormFRIA04B
                       readOnly={true}
-                      asesmenData={{
-                        nama: "Nama Asesi (Contoh)",
-                        skema: skemaOptions.find(s => s.value === String(formData.metadata.skemaSertifikasi))?.label || "Skema Sertifikasi",
-                        noSkema: "00/LSP/0000",
-                        tuk: "Sewaktu",
-                        metodeAsesmen: "Offline",
-                        tanggal: new Date().toISOString(),
-                        asesor: formData.step2.penyusun[0]?.label || "Asesor",
-                        asesorReg: "-",
-                      } as any}
+                      asesmenData={
+                        {
+                          nama: "Nama Asesi (Contoh)",
+                          skema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.label || "Skema Sertifikasi",
+                          noSkema: "00/LSP/0000",
+                          tuk: "Sewaktu",
+                          metodeAsesmen: "Offline",
+                          tanggal: new Date().toISOString(),
+                          asesor: formData.step2.penyusun[0]?.label || "Asesor",
+                          asesorReg: "-",
+                        } as any
+                      }
                       previewData={currentPreviewData}
-                      penyusun={formData.step2.penyusun.map(p => ({ nama: p.label, noMet: p.no_met || "-", ttdTanggal: p.tanda_tangan || "-" }))}
-                      validator={formData.step2.validator.map(v => ({ nama: v.label, noMet: v.no_met || "-", ttdTanggal: v.tanda_tangan || "-" }))}
+                      penyusun={formData.step2.penyusun.map((p) => ({
+                        nama: p.label,
+                        noMet: p.no_met || "-",
+                        tandaTangan: p.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                      validator={formData.step2.validator.map((v) => ({
+                        nama: v.label,
+                        noMet: v.no_met || "-",
+                        tandaTangan: v.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
                     />
                   )}
                   {previewForm === "FR.IA.07" && (
                     <FormFRIA07
                       readOnly={true}
-                      asesmenData={{
-                        nama: "Nama Asesi (Contoh)",
-                        skema: skemaOptions.find(s => s.value === String(formData.metadata.skemaSertifikasi))?.label || "Skema Sertifikasi",
-                        noSkema: "00/LSP/0000",
-                        tuk: "Sewaktu",
-                        metodeAsesmen: "Offline",
-                        tanggal: new Date().toISOString(),
-                        asesor: formData.step3.penyusun[0]?.label || "Asesor",
-                        asesorReg: "-",
-                      } as any}
+                      asesmenData={
+                        {
+                          nama: "Nama Asesi (Contoh)",
+                          skema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.label || "Skema Sertifikasi",
+                          noSkema: "00/LSP/0000",
+                          tuk: "Sewaktu",
+                          metodeAsesmen: "Offline",
+                          tanggal: new Date().toISOString(),
+                          asesor: formData.step3.penyusun[0]?.label || "Asesor",
+                          asesorReg: "-",
+                        } as any
+                      }
                       previewData={currentPreviewData}
-                      penyusun={formData.step3.penyusun.map(p => ({ nama: p.label, noMet: p.no_met || "-", ttdTanggal: p.tanda_tangan || "-" }))}
-                      validator={formData.step3.validator.map(v => ({ nama: v.label, noMet: v.no_met || "-", ttdTanggal: v.tanda_tangan || "-" }))}
+                      penyusun={formData.step3.penyusun.map((p) => ({
+                        nama: p.label,
+                        noMet: p.no_met || "-",
+                        tandaTangan: p.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
+                      validator={formData.step3.validator.map((v) => ({
+                        nama: v.label,
+                        noMet: v.no_met || "-",
+                        tandaTangan: v.tanda_tangan,
+                        ttdTanggal: "-",
+                      }))}
                     />
                   )}
                 </div>

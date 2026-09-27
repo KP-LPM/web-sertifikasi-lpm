@@ -572,7 +572,7 @@ export default function AssessmentSchedule() {
     fetchJadwalData();
     if (typeof window !== "undefined") {
       try {
-        const jadwalDraft = localStorage.getItem("jadwalAsesmenFormDraft");
+        const jadwalDraft = sessionStorage.getItem("jadwalAsesmenFormDraft");
         if (jadwalDraft) {
           const parsed = JSON.parse(jadwalDraft);
           if (
@@ -583,7 +583,7 @@ export default function AssessmentSchedule() {
             setIsModalOpen(true);
           }
         }
-        const plenoDraft = localStorage.getItem("sidangPlenoFormDraft");
+        const plenoDraft = sessionStorage.getItem("sidangPlenoFormDraft");
         if (plenoDraft) {
           const parsed = JSON.parse(plenoDraft);
           if (
@@ -605,7 +605,7 @@ export default function AssessmentSchedule() {
   const loadJadwalDraft = () => {
     if (typeof window !== "undefined") {
       try {
-        const draft = localStorage.getItem("jadwalAsesmenFormDraft");
+        const draft = sessionStorage.getItem("jadwalAsesmenFormDraft");
         if (draft) {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
@@ -634,7 +634,7 @@ export default function AssessmentSchedule() {
 
   useEffect(() => {
     if (!isEditMode && typeof window !== "undefined") {
-      localStorage.setItem("jadwalAsesmenFormDraft", JSON.stringify(formData));
+      sessionStorage.setItem("jadwalAsesmenFormDraft", JSON.stringify(formData));
     }
   }, [formData, isEditMode]);
 
@@ -746,7 +746,7 @@ export default function AssessmentSchedule() {
     }
 
     if (!isEditMode && typeof window !== "undefined") {
-      localStorage.removeItem("jadwalAsesmenFormDraft");
+      sessionStorage.removeItem("jadwalAsesmenFormDraft");
     }
     setIsModalOpen(false);
     setFormData(loadJadwalDraft());
@@ -808,7 +808,7 @@ export default function AssessmentSchedule() {
   const loadPlenoDraft = () => {
     if (typeof window !== "undefined") {
       try {
-        const draft = localStorage.getItem("sidangPlenoFormDraft");
+        const draft = sessionStorage.getItem("sidangPlenoFormDraft");
         if (draft) {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
@@ -856,7 +856,7 @@ export default function AssessmentSchedule() {
 
   useEffect(() => {
     if (!isEditMode && typeof window !== "undefined") {
-      localStorage.setItem("sidangPlenoFormDraft", JSON.stringify(plenoForm));
+      sessionStorage.setItem("sidangPlenoFormDraft", JSON.stringify(plenoForm));
     }
   }, [plenoForm, isEditMode]);
 
@@ -971,7 +971,7 @@ export default function AssessmentSchedule() {
 
       await fetchJadwalData();
       if (!isEditMode && typeof window !== "undefined") {
-        localStorage.removeItem("sidangPlenoFormDraft");
+        sessionStorage.removeItem("sidangPlenoFormDraft");
       }
       setIsPlenoModalOpen(false);
       setPlenoForm(loadPlenoDraft());
@@ -1036,7 +1036,7 @@ export default function AssessmentSchedule() {
           <button
             onClick={() => {
               if (!isEditMode && typeof window !== "undefined") {
-                localStorage.removeItem("jadwalAsesmenFormDraft");
+                sessionStorage.removeItem("jadwalAsesmenFormDraft");
               }
               setIsModalOpen(false);
             }}
@@ -1471,7 +1471,7 @@ export default function AssessmentSchedule() {
             <button
               onClick={() => {
                 if (!isEditMode && typeof window !== "undefined") {
-                  localStorage.removeItem("jadwalAsesmenFormDraft");
+                  sessionStorage.removeItem("jadwalAsesmenFormDraft");
                 }
                 setIsModalOpen(false);
               }}
@@ -1513,7 +1513,7 @@ export default function AssessmentSchedule() {
           <button
             onClick={() => {
               if (!isEditMode && typeof window !== "undefined") {
-                localStorage.removeItem("sidangPlenoFormDraft");
+                sessionStorage.removeItem("sidangPlenoFormDraft");
               }
               setIsPlenoModalOpen(false);
             }}
@@ -1884,7 +1884,7 @@ export default function AssessmentSchedule() {
             <button
               onClick={() => {
                 if (!isEditMode && typeof window !== "undefined") {
-                  localStorage.removeItem("sidangPlenoFormDraft");
+                  sessionStorage.removeItem("sidangPlenoFormDraft");
                 }
                 setIsPlenoModalOpen(false);
               }}

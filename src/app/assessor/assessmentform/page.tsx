@@ -371,7 +371,7 @@ function AssessmentFormContent() {
     const targetId = selectedAsesmen?.id || pengajuanIdParam;
     if (targetId && typeof window !== "undefined") {
       try {
-        const draftStr = localStorage.getItem(`assessmentDraft_${targetId}`);
+        const draftStr = sessionStorage.getItem(`assessmentDraft_${targetId}`);
         if (draftStr) {
           const draft = JSON.parse(draftStr);
           if (draft.rekomendasiApl02) setRekomendasiApl02(draft.rekomendasiApl02);
@@ -403,7 +403,7 @@ function AssessmentFormContent() {
         umpanBalikStep2, rekomendasiStep3, potensiAsesi, noAdjustment, adjustments,
         step3Answers, step4Answers, umpanBalikStep4, finalDecision, catatanAsesor,
       };
-      localStorage.setItem(`assessmentDraft_${targetId}`, JSON.stringify(draftData));
+      sessionStorage.setItem(`assessmentDraft_${targetId}`, JSON.stringify(draftData));
     }
   }, [
     isDraftLoaded, selectedAsesmen?.id, pengajuanIdParam, rekomendasiApl02, answersApl02,
@@ -532,7 +532,7 @@ function AssessmentFormContent() {
 
       if (selectedAsesmen) {
         if (typeof window !== "undefined") {
-          localStorage.removeItem(`assessmentDraft_${selectedAsesmen.id}`);
+          sessionStorage.removeItem(`assessmentDraft_${selectedAsesmen.id}`);
         }
         updateAssessmentItem(selectedAsesmen.id, {
           status: "Selesai",

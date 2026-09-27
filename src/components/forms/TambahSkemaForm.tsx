@@ -57,7 +57,7 @@ export function TambahSkemaForm({
   const [formState, setFormState] = useState<MasterSkemaFormState>(() => {
     if (typeof window !== "undefined" && !initialData?.id && !initialData?.kodeSkema) {
       try {
-        const draft = localStorage.getItem(DRAFT_KEY);
+        const draft = sessionStorage.getItem(DRAFT_KEY);
         if (draft) {
           const parsedDraft = JSON.parse(draft);
           if (parsedDraft && typeof parsedDraft === "object") {
@@ -65,7 +65,7 @@ export function TambahSkemaForm({
           }
         }
       } catch (err) {
-        console.error("Failed to load draft from localStorage", err);
+        console.error("Failed to load draft from sessionStorage", err);
       }
     }
 
@@ -164,13 +164,13 @@ export function TambahSkemaForm({
 
   useEffect(() => {
     if (isMounted && !initialData?.id && !initialData?.kodeSkema) {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(formState));
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(formState));
     }
   }, [formState, isMounted, initialData?.id, initialData?.kodeSkema]);
 
   const handleCancel = () => {
     if (!initialData?.id && !initialData?.kodeSkema) {
-      localStorage.removeItem(DRAFT_KEY);
+      sessionStorage.removeItem(DRAFT_KEY);
     }
     onCancel();
   };
@@ -600,7 +600,7 @@ export function TambahSkemaForm({
       }
       if (onSaveSuccess) {
         if (!initialData?.id && !initialData?.kodeSkema) {
-          localStorage.removeItem(DRAFT_KEY);
+          sessionStorage.removeItem(DRAFT_KEY);
         }
         onSaveSuccess(savedData);
       }
