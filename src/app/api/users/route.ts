@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const { username, email, password, role, isActive } =
+    const { username, email, password, role, isActive, asalAsesor } =
       BaseUserSchema.parse(body);
     const namaLengkap = body.namaLengkap;
 
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role,
       isActive,
+      asalAsesor,
       namaLengkap,
     });
 

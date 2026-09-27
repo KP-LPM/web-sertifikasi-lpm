@@ -38,7 +38,7 @@ export class ProfileRepository {
   }
 
   async registerWithProfile(
-    userData: { username: string; email: string; password: string; role: Role },
+    userData: { username: string; email: string; password: string; role: Role, asalAsesor?: string | null },
     profileData: Prisma.ProfilPenggunaCreateWithoutUserInput,
   ) {
     return await db.$transaction(async (tx) => {

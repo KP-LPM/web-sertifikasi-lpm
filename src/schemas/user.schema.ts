@@ -14,6 +14,7 @@ export const BaseUserSchema = z.object({
     "komite_skema",
   ]),
   isActive: z.boolean(),
+  asalAsesor: z.enum(["Internal", "Eksternal"]).optional().nullable(),
 });
 
 export type BaseUserInput = z.infer<typeof BaseUserSchema>;

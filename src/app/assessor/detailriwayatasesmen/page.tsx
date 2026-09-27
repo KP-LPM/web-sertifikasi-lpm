@@ -24,17 +24,6 @@ import {
 import { getRiwayatAsesmen } from "@/lib/api";
 import { useAppContext } from "@/context/context";
 
-type AsesmenData = {
-  nama: string;
-  skema: string;
-  noSkema: string;
-  tuk: string;
-  metodeAsesmen: string;
-  tanggal: string;
-  asesor: string;
-  asesorReg?: string;
-  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-};
 
 export default function DetailRiwayatAsesmen() {
   const router = useRouter();
@@ -458,21 +447,29 @@ export default function DetailRiwayatAsesmen() {
                   const asesiDt = activeDetail?.tanggal_ttd_asesi ? new Date(activeDetail.tanggal_ttd_asesi as string).toISOString().split('T')[0] : (formData.asesiDate || selectedAsesmen.tglAsesmen);
                   const asesorDt = activeDetail?.tanggal_ttd_asesor ? new Date(activeDetail.tanggal_ttd_asesor as string).toISOString().split('T')[0] : (formData.asesorDate || selectedAsesmen.tglAsesmen);
 
-                  const mappedPenyusun = (formData.penyusun as any[])?.map((p: any) => {
+                  type ValidatorPenyusun = {
+                    nama: string;
+                    noMet: string;
+                    tandaTangan: string;
+                    ttdTanggal: string;
+                    [key: string]: unknown;
+                  };
+
+                  const mappedPenyusun = (formData.penyusun as ValidatorPenyusun[])?.map((p: ValidatorPenyusun) => {
                     const isAsesor = p.nama === selectedAsesmen.asesor;
                     return {
                       ...p,
-                      noMet: p.noMet || (isAsesor ? selectedAsesmen.asesorReg : ""),
+                      noMet: p.noMet || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
                       tandaTangan: p.tandaTangan || (isAsesor ? asesorSig : ""),
                       ttdTanggal: p.ttdTanggal || (isAsesor ? asesorDt : "")
                     };
                   }) || [];
 
-                  const mappedValidator = (formData.validator as any[])?.map((v: any) => {
+                  const mappedValidator = (formData.validator as ValidatorPenyusun[])?.map((v: ValidatorPenyusun) => {
                     const isAsesor = v.nama === selectedAsesmen.asesor;
                     return {
                       ...v,
-                      noMet: v.noMet || (isAsesor ? selectedAsesmen.asesorReg : ""),
+                      noMet: v.noMet || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
                       tandaTangan: v.tandaTangan || (isAsesor ? asesorSig : ""),
                       ttdTanggal: v.ttdTanggal || (isAsesor ? asesorDt : "")
                     };
