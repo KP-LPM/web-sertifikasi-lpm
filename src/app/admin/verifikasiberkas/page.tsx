@@ -186,6 +186,7 @@ export default function UsersManagement() {
     email?: string;
     role: string;
     isVerified?: boolean;
+    asalAsesor?: string | null;
     nomor_registrasi_met?: string;
     profil?: BackendProfilPengguna[] | BackendProfilPengguna;
     portfolio_asesor?: {
@@ -311,7 +312,7 @@ export default function UsersManagement() {
           (p) => p.status_asesor === "Internal"
         );
         const isInternalProfil = profil?.namaInstitusi?.toLowerCase().includes("uin");
-        const asalAsesor = hasInternalPortfolio || isInternalProfil ? "Internal" : "Eksternal";
+        const asalAsesor = u.asalAsesor || (hasInternalPortfolio || isInternalProfil ? "Internal" : "Eksternal");
 
         const listSkema = u.portfolio_asesor?.map(p => p.master_skema?.namaSkema).filter(Boolean);
         const skemaText = listSkema && listSkema.length > 0 ? Array.from(new Set(listSkema)).join(", ") : "Belum Ada";

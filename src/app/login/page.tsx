@@ -156,6 +156,10 @@ export default function Login() {
         mode === "asesor"
           ? String(formDataObj.get("pendidikan_terakhir") || "")
           : undefined,
+      asalAsesor:
+        mode === "asesor"
+          ? String(formDataObj.get("asalAsesor") || "")
+          : undefined,
       tanda_tangan: tandaTangan,
     };
 
@@ -705,6 +709,21 @@ export default function Login() {
 
                   {mode === "asesor" && (
                     <>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+                          Asal Asesor <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          name="asalAsesor"
+                          className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
+                          required
+                        >
+                          <option value="">Pilih Asal Asesor</option>
+                          <option value="Internal">Internal</option>
+                          <option value="Eksternal">Eksternal</option>
+                        </select>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
   Pendidikan Terakhir <span className="text-red-500">*</span>

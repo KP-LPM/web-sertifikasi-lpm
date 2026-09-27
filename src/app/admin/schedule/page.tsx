@@ -146,7 +146,8 @@ export default function AssessmentSchedule() {
 
               const asesiDetail =
                 apiAvailableAsesis.find((a) => a.id === asesiId) ||
-                apiCompletedAsesis.find((a) => a.id === asesiId);
+                apiCompletedAsesis.find((a) => a.id === asesiId) ||
+                apiScheduledAsesis.find((a) => a.id === asesiId);
               if (asesiDetail) {
                 return asesiDetail.user?.profil?.namaLengkap &&
                   asesiDetail.user.profil.namaLengkap.trim() !== ""
@@ -391,6 +392,9 @@ export default function AssessmentSchedule() {
   const [apiAvailableAsesis, setApiAvailableAsesis] = useState<
     BackendPengajuanItem[]
   >([]);
+  const [apiScheduledAsesis, setApiScheduledAsesis] = useState<
+    BackendPengajuanItem[]
+  >([]);
 
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
 
@@ -459,6 +463,7 @@ export default function AssessmentSchedule() {
         pengajuanRes,
         completedPengajuanRes,
         plenoRes,
+        terjadwalPengajuanRes,
       ] = await Promise.allSettled([
         getJadwalList(),
         getSkemaList(),
@@ -467,6 +472,7 @@ export default function AssessmentSchedule() {
         getPengajuanList({ status: "Terverifikasi" }),
         getPengajuanList({ status: "Menunggu Pleno" }),
         getPlenoList(),
+        getPengajuanList({ status: "Terjadwal" }),
       ]);
 
       if (
@@ -506,6 +512,13 @@ export default function AssessmentSchedule() {
               a.verifikasi_pengajuan?.status_pembayaran === "Sudah",
           ),
         );
+      }
+
+      if (
+        terjadwalPengajuanRes.status === "fulfilled" &&
+        Array.isArray(terjadwalPengajuanRes.value)
+      ) {
+        setApiScheduledAsesis(terjadwalPengajuanRes.value as BackendPengajuanItem[]);
       }
 
       if (
@@ -1002,7 +1015,17 @@ export default function AssessmentSchedule() {
   );
 
   if (isModalOpen) {
-    const availableAsesi = apiAvailableAsesis
+    const combinedAsesis = [...apiAvailableAsesis];
+    
+    if (isPreviewMode || isEditMode) {
+      apiScheduledAsesis.forEach(scheduled => {
+        if (selectedAsesiForJadwal.includes(scheduled.id) && !combinedAsesis.some(a => a.id === scheduled.id)) {
+          combinedAsesis.push(scheduled);
+        }
+      });
+    }
+
+    const availableAsesi = combinedAsesis
       .filter((a) => {
         const namaSkema =
           typeof a.skema === "object"
@@ -2089,6 +2112,9 @@ export default function AssessmentSchedule() {
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
+                    Judul Asesmen
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-30 sticky top-0 z-20 bg-[#0F172A]">
@@ -2151,6 +2177,11 @@ export default function AssessmentSchedule() {
                           key={item.id}
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
+                          <td className="px-6 py-4 align-middle whitespace-nowrap">
+                            <div className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
+                              {item.namaBatch || "-"}
+                            </div>
+                          </td>
                           <td className="px-6 py-4 align-middle whitespace-nowrap">
                             <div className="text-[14px] font-bold text-[#008BE3] whitespace-nowrap">
                               {item.skema || "-"}

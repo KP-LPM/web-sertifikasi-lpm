@@ -46,6 +46,7 @@ export class AuthService {
       nomor_registrasi_met,
       pendidikan_terakhir,
       alamat_wilayah,
+      asalAsesor,
       tanda_tangan,
     } = payload;
 
@@ -54,7 +55,7 @@ export class AuthService {
     }
 
     if (role === "asesor") {
-      if (!nomor_registrasi_met || !pendidikan_terakhir) {
+      if (!nomor_registrasi_met || !pendidikan_terakhir || !asalAsesor) {
         throw new ValidationError("Data khusus Asesor wajib diisi!");
       }
     } else if (role === "asesi") {
@@ -110,6 +111,7 @@ export class AuthService {
         email,
         password: hashedPassword,
         role: role as Role,
+        asalAsesor: role === "asesor" ? asalAsesor : null,
       },
       {
         nik,

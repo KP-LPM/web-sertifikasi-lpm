@@ -13,6 +13,7 @@ export class UserRepository {
         role: true,
         isActive: true,
         isVerified: true,
+        asalAsesor: true,
         profil: {
           select: {
             namaLengkap: true,
@@ -52,10 +53,11 @@ export class UserRepository {
   }
 
   async createUser(data: BaseUserInput & { namaLengkap?: string }) {
-    const { namaLengkap, ...userData } = data;
+    const { namaLengkap, asalAsesor, ...userData } = data;
     return await db.user.create({
       data: {
         ...userData,
+        asalAsesor: userData.role === "asesor" ? asalAsesor : null,
         profil: namaLengkap ? {
           create: {
             namaLengkap,
@@ -70,6 +72,7 @@ export class UserRepository {
     id: number,
     data: {
       isActive: boolean;
+      asalAsesor?: string | null;
     },
   ) {
     return await db.user.update({
@@ -78,6 +81,7 @@ export class UserRepository {
       },
       data: {
         isActive: data.isActive,
+        ...(data.asalAsesor !== undefined ? { asalAsesor: data.asalAsesor } : {}),
       },
     });
   }

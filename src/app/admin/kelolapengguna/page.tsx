@@ -34,6 +34,7 @@ interface BackendUserItem {
   profil?: {
     namaLengkap?: string;
   };
+  asalAsesor?: string | null;
 }
 
 const ROLE_OPTIONS = [
@@ -81,6 +82,7 @@ export default function KelolaPengguna() {
             username: u.username || "",
             email: u.email || "",
             role: (u.role as Role) || "asesi",
+            asalAsesor: u.asalAsesor || null,
             namaLengkap: u.profil?.namaLengkap || u.username || "-",
             status: statusStr,
           };
@@ -108,6 +110,7 @@ export default function KelolaPengguna() {
     namaLengkap: "",
     email: "",
     role: "asesi",
+    asalAsesor: "Internal",
     status: "Aktif" as UserItem["status"],
     tempPassword: "",
   });
@@ -131,6 +134,7 @@ export default function KelolaPengguna() {
       namaLengkap: "",
       email: "",
       role: "asesi",
+      asalAsesor: "Internal",
       status: "Aktif",
       tempPassword: "LSP" + Math.floor(100000 + Math.random() * 900000) + "!",
     });
@@ -153,6 +157,7 @@ export default function KelolaPengguna() {
         email: formData.email.trim(),
         password: formData.tempPassword,
         role: formData.role,
+        asalAsesor: formData.role === "asesor" ? formData.asalAsesor : null,
         isActive: formData.status !== "Nonaktif",
         namaLengkap: formData.namaLengkap.trim(),
       };
@@ -176,6 +181,7 @@ export default function KelolaPengguna() {
       namaLengkap: userItem.namaLengkap,
       email: userItem.email,
       role: userItem.role as Role,
+      asalAsesor: userItem.asalAsesor || "Internal",
       status: userItem.status,
       tempPassword: userItem.tempPassword || "",
     });
@@ -203,7 +209,7 @@ export default function KelolaPengguna() {
     }
 
     try {
-      const updateData: Record<string, unknown> = { isActive };
+      const updateData: Record<string, unknown> = { isActive, asalAsesor: formData.role === "asesor" ? formData.asalAsesor : null };
 
       const data = await updateUserAdmin(Number(selectedUser.id), updateData);
 
@@ -219,6 +225,7 @@ export default function KelolaPengguna() {
                 ...u,
                 status: formData.status,
                 role: formData.role,
+                asalAsesor: formData.role === "asesor" ? formData.asalAsesor : null,
                 email: formData.email,
                 username: formData.username,
                 isVerified: isVerified,
@@ -725,6 +732,30 @@ export default function KelolaPengguna() {
                         ))}
                       </select>
                     </div>
+
+                    {formData.role === "asesor" && (
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                          Asal Asesor{" "}
+                          {!readOnly && <span className="text-rose-500">*</span>}
+                        </label>
+                        <select
+                          disabled={readOnly}
+                          value={formData.asalAsesor}
+                          onChange={(e) =>
+                            setFormData({ ...formData, asalAsesor: e.target.value })
+                          }
+                          className={`w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none ${
+                            readOnly
+                              ? "bg-slate-100 text-slate-700 cursor-not-allowed"
+                              : "bg-white text-slate-800 focus:border-[#008BE3] cursor-pointer"
+                          }`}
+                        >
+                          <option value="Internal">Internal</option>
+                          <option value="Eksternal">Eksternal</option>
+                        </select>
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1.5">

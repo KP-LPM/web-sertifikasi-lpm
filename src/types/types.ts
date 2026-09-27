@@ -141,6 +141,7 @@ export interface UserItem {
   status: "Aktif" | "Nonaktif" | string; // computed dari isActive
   nik?: string;
   tempPassword?: string;
+  asalAsesor?: string | null;
   namaInstitusi?: string;
   jabatan?: string;
   versiKonfigurasi?: string;
@@ -1035,6 +1036,7 @@ export interface RegisterPayload {
   kewarganegaraan?: string;
   nomor_registrasi_met?: string;
   pendidikan_terakhir?: string;
+  asalAsesor?: string;
   alamat_wilayah?: string;
   tanda_tangan?: string;
 }

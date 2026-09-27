@@ -392,7 +392,7 @@ export default function VerifikasiPortofolio() {
             <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4">
               {isUploadModalOpen
                 ? "Lengkapi informasi portofolio untuk diajukan."
-                : "Upload dan kelola dokumen portofolio Anda untuk diverifikasi oleh admin."}
+                : "Upload dan kelola dokumen portofolio untuk Asesor Eksternal agar dapat diverifikasi oleh admin."}
             </p>
           </div>
         </div>

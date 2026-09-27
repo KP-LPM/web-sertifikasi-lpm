@@ -41,7 +41,7 @@ export class UserService {
     return newUser;
   }
 
-  async updateUserStatus(id: number, data: { isActive: boolean }) {
+  async updateUserStatus(id: number, data: { isActive: boolean; asalAsesor?: string | null }) {
     const existingUser = await this.userRepository.getUserById(id);
     if (!existingUser) {
       throw new NotFoundError("User tidak ditemukan");
