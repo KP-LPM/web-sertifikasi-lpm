@@ -271,7 +271,7 @@ export default function UsersManagement() {
         };
       });
 
-      const asesorUsersRaw = rawUsers.filter((u) => u.role === "asesor");
+      const asesorUsersRaw = rawUsers.filter((u) => u.role === "asesor" && Array.isArray(u.portfolio_asesor) && u.portfolio_asesor.length > 0);
       const mappedAsesor: UserItem[] = asesorUsersRaw.map((u) => {
         const profil = Array.isArray(u.profil) ? u.profil[0] : u.profil;
         const namaLengkap = profil?.namaLengkap || u.username;
