@@ -45,6 +45,16 @@ export class KonfigurasiService {
     return config;
   }
 
+  async updateAll(id: number, data: CreateKonfigurasiInput) {
+    await this.getById(id);
+
+    const config = await this.repo.updateAll(id, data);
+    if (!config) {
+      throw new InvariantError("Gagal memperbarui konfigurasi");
+    }
+    return config;
+  }
+
   async delete(id: number) {
     await this.getById(id);
 

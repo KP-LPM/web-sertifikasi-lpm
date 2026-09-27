@@ -6,24 +6,12 @@ const JsonArray = z.array(z.any()).default([]);
 
 export const PenyusunSchema = z.object({
   peran: z.string().trim().min(1, "Peran wajib diisi"),
-  nama: z.string().trim().min(1, "Nama penyusun wajib diisi"),
-  user_id: z.number().int().optional().nullable(),
+  user_id: z.number().int({ message: "Asesor wajib dipilih dari daftar" }),
+  form_type: z.string().optional().nullable(),
 });
-
-export const Step1OpsiSchema = z.object({
-  urutan: z.number().int().optional(),
-  opsi_text: z.string().trim().min(1),
-  is_valid: z.boolean().default(false),
-});
-
 export const Step1PertanyaanSchema = z.object({
   urutan: z.number().int().optional(),
-  pertanyaan_text: z.string().trim().min(1, "Pertanyaan wajib diisi"),
-  opsi: z.array(Step1OpsiSchema).default([]),
-});
-
-export const UpdateStep1Schema = z.object({
-  pertanyaan: z.array(Step1PertanyaanSchema),
+  pertanyaan_text: z.string().trim().min(1),
 });
 
 export const Step2SkenarioSchema = z.object({
@@ -56,6 +44,9 @@ export const Step4PertanyaanSchema = z.object({
   kunci_jawaban: z.string().optional().nullable(),
 });
 
+export const UpdateStep1Schema = z.object({
+  pertanyaan: z.array(Step1PertanyaanSchema),
+});
 export const UpdateStep3Schema = z.object({
   lingkup: z.array(Step3LingkupSchema),
 });

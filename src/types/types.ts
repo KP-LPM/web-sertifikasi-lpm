@@ -31,6 +31,8 @@ export type StatusAsesmen = "Selesai" | "Belum Selesai" | string;
 export interface PenyusunOption {
   value: string;
   label: string;
+  no_met?: string;
+  tanda_tangan?: string;
 }
 
 // --- Modul soal legacy (kemungkinan sudah digantikan KonfigurasiPertanyaanItem) ---
@@ -62,8 +64,7 @@ export interface KonfigurasiPertanyaanItem {
   skema: string;
   tipeForm: string;
   versi: string;
-  penyusun: PenyusunOption[];
-  validator: PenyusunOption[];
+
   isDefault: boolean;
   status: "Aktif" | "Tidak Aktif";
   subPertanyaans: unknown[]; // sesuaikan tipenya sesuai struktur Sub Pertanyaan final
@@ -690,9 +691,31 @@ export interface ConfigurationMetadata {
   namaKonfigurasi: string;
   skemaSertifikasi: string;
   versi: string;
-  penyusun: PenyusunOption[];
-  validator: PenyusunOption[];
   isDefault: boolean;
+}
+
+export interface PreviewDataConfig {
+  step2?: {
+    skenario_studi_kasus?: string | null;
+    informasi_yang_diberikan?: string[];
+    lingkup_bahasan_studi_kasus?: string[];
+    perlengkapan_dan_bahan?: string | null;
+    fokus_presentasi?: string[];
+    ketentuan_alokasi_waktu?: string | null;
+  };
+  step3?: {
+    nama_lingkup: string;
+    sub_pertanyaan: {
+      skenario_pertanyaan: string;
+      kode_kuk: string[];
+      ekspektasi_tanggapan?: string | null;
+    }[];
+  }[];
+  step4?: {
+    pertanyaan_lisan: string;
+    kode_kuk_ref?: string | null;
+    kunci_jawaban?: string | null;
+  }[];
 }
 
 // --- Wizard state (BELUM tersimpan ke DB) — id boleh tetap string
@@ -732,6 +755,9 @@ export interface Step2Data {
   type: "INSTRUCTION_SCENARIO";
   blokA: Step2BlokA;
   blokB: Step2BlokB;
+  penyusun: PenyusunOption[];
+  validator: PenyusunOption[];
+  supervisor?: PenyusunOption[];
 }
 
 export interface Step3SubPertanyaan {
@@ -750,6 +776,8 @@ export interface Step3LingkupPenyajian {
 export interface Step3Data {
   type: "NESTED_ESSAY_PROYEK";
   lingkups: Step3LingkupPenyajian[];
+  penyusun: PenyusunOption[];
+  validator: PenyusunOption[];
 }
 
 export interface Step4Question {
@@ -762,11 +790,12 @@ export interface Step4Question {
 export interface Step4Data {
   type: "ESSAY_WITH_KEY_ANSWER";
   questions: Step4Question[];
+  penyusun: PenyusunOption[];
+  validator: PenyusunOption[];
 }
 
 export interface WizardFormState {
   metadata: ConfigurationMetadata;
-  step1: Step1Data;
   step2: Step2Data;
   step3: Step3Data;
   step4: Step4Data;

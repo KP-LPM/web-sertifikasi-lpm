@@ -23,11 +23,26 @@ export class KonfigurasiRepository {
     return await db.konfigurasi_pertanyaan.findUnique({
       where: { id },
       include: {
-        konfigurasi_pertanyaan_penyusun: { orderBy: { urutan: "asc" } },
-        konfigurasi_step1_pertanyaan: {
+        form_asesor: {
           orderBy: { urutan: "asc" },
-          include: { konfigurasi_step1_opsi: { orderBy: { urutan: "asc" } } },
+          include: {
+            users: {
+              select: {
+                id: true,
+                email: true,
+                role: true,
+                profil: {
+                  select: {
+                    namaLengkap: true,
+                    nomorRegistrasiMet: true,
+                    tandaTangan: true,
+                  }
+                }
+              }
+            }
+          }
         },
+
         konfigurasi_step2_skenario: true,
         konfigurasi_step3_lingkup: {
           orderBy: { urutan: "asc" },
@@ -46,18 +61,13 @@ export class KonfigurasiRepository {
     return await db.konfigurasi_pertanyaan.create({
       data: {
         ...mainData,
-        konfigurasi_pertanyaan_penyusun: {
-          create: penyusun.map((p, i) => ({ ...p, urutan: i + 1 })),
-        },
         konfigurasi_step1_pertanyaan: {
-          create: step1.map((p, i) => ({
-            pertanyaan_text: p.pertanyaan_text,
-            urutan: i + 1,
-            konfigurasi_step1_opsi: {
-              create: p.opsi.map((o, j) => ({ ...o, urutan: j + 1 })),
-            },
-          })),
+          create: step1.map((p, i) => ({ ...p, urutan: i + 1 })),
         },
+        form_asesor: {
+          create: penyusun.map((p, i) => ({ ...p, urutan: i + 1, form_type: p.form_type || 'step2', ttd_tanggal: new Date() })),
+        },
+
         konfigurasi_step2_skenario: step2 ? { create: step2 } : undefined,
         konfigurasi_step3_lingkup: {
           create: step3.map((l, i) => ({
@@ -85,6 +95,47 @@ export class KonfigurasiRepository {
     });
   }
 
+  async updateAll(id: number, data: CreateKonfigurasiInput) {
+    const { step1, step2, step3, step4, penyusun, ...mainData } = data;
+    return await db.konfigurasi_pertanyaan.update({
+      where: { id },
+      data: {
+        ...mainData,
+        konfigurasi_step1_pertanyaan: {
+          deleteMany: {},
+          create: step1.map((p, i) => ({ ...p, urutan: i + 1 })),
+        },
+        form_asesor: {
+          deleteMany: {},
+          create: penyusun.map((p, i) => ({ ...p, urutan: i + 1, form_type: p.form_type || 'step2', ttd_tanggal: new Date() })),
+        },
+        konfigurasi_step2_skenario: step2 ? {
+          upsert: {
+            create: step2,
+            update: step2
+          }
+        } : undefined,
+        konfigurasi_step3_lingkup: {
+          deleteMany: {},
+          create: step3.map((l, i) => ({
+            nama_lingkup: l.nama_lingkup,
+            urutan: i + 1,
+            konfigurasi_step3_sub_pertanyaan: {
+              create: l.sub_pertanyaan.map((sub, j) => ({
+                ...sub,
+                urutan: j + 1,
+              })),
+            },
+          })),
+        },
+        konfigurasi_step4_pertanyaan: {
+          deleteMany: {},
+          create: step4.map((p, i) => ({ ...p, urutan: i + 1 })),
+        },
+      },
+    });
+  }
+
   async updateStatus(id: number, status: string) {
     return await db.konfigurasi_pertanyaan.update({
       where: { id },
@@ -105,9 +156,6 @@ export class KonfigurasiRepository {
           create: data.map((p, i) => ({
             pertanyaan_text: p.pertanyaan_text,
             urutan: i + 1,
-            konfigurasi_step1_opsi: {
-              create: p.opsi.map((o, j) => ({ ...o, urutan: j + 1 })),
-            },
           })),
         },
       },

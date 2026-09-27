@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
 import { SignatureModal } from "./SignatureModal";
-import { Apl02FormData, PenyusunValidatorItem } from "@/types/types";
+import { Apl02FormData, PenyusunValidatorItem, PreviewDataConfig } from "@/types/types";
 import {
   getKonfigurasiPertanyaanList,
   getKonfigurasiPertanyaanDetail,
@@ -13,6 +13,7 @@ export interface FormFRIA04AProps {
   asesmenData?: Apl02FormData;
   skemaId?: number;
   konfigurasiId?: number;
+  previewData?: PreviewDataConfig;
   umpanBalik?: string;
   onUmpanBalikChange?: (val: string) => void;
   asesiSignature?: string;
@@ -39,7 +40,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
   const [localUmpanBalik, setLocalUmpanBalik] = useState("");
   const [localAsesiSig, setLocalAsesiSig] = useState("");
   const [localAsesorSig, setLocalAsesorSig] = useState("");
-  const [localSupervisorName, setLocalSupervisorName] = useState("");
+  const localSupervisorName = "";
   const [localSupervisorSig, setLocalSupervisorSig] = useState("");
 
 
@@ -64,14 +65,16 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
     let isMounted = true;
     async function loadData() {
       try {
-        let conf = null;
-        if (props.konfigurasiId) {
-          conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
-        } else if (props.skemaId) {
-          const list = await getKonfigurasiPertanyaanList({
-            skemaId: props.skemaId,
-          });
-          if (Array.isArray(list) && list.length > 0) conf = list[0];
+        let conf = props.previewData || null;
+        if (!conf) {
+          if (props.konfigurasiId) {
+            conf = await getKonfigurasiPertanyaanDetail(props.konfigurasiId);
+          } else if (props.skemaId) {
+            const list = await getKonfigurasiPertanyaanList({
+              skemaId: props.skemaId,
+            });
+            if (Array.isArray(list) && list.length > 0) conf = list[0];
+          }
         }
 
         if (isMounted && conf && conf.step2) {
@@ -501,41 +504,28 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                           </td>
                           <td className="p-4 w-1/3 align-top">
                             <div className="font-bold mb-2">
-                              Nama & Tanda Tangan Supervisor (Jika ada)
+                              Nama & Tanda Tangan Supervisor
                             </div>
                             <input
                               type="text"
-                              disabled={props.readOnly || props.isAsesi}
-                              className="w-full border-b border-slate-300 outline-none focus:border-slate-800 text-sm mb-2 bg-transparent py-1"
+                              disabled={true}
+                              className="w-full border-b border-slate-300 outline-none focus:border-slate-800 text-sm mb-2 bg-transparent py-1 disabled:opacity-70 disabled:cursor-not-allowed"
                               placeholder="Nama Supervisor..."
                               value={supervisorName}
-                              onChange={(e) =>
-                                props.onSupervisorNameChange
-                                  ? props.onSupervisorNameChange(e.target.value)
-                                  : setLocalSupervisorName(e.target.value)
-                              }
                             />
                             {supervisorSignature ? (
                               <img
                                 src={supervisorSignature}
                                 alt="Tanda Tangan Supervisor"
-                                className="h-20 object-contain cursor-pointer"
-                                onClick={() =>
-                                  !props.readOnly &&
-                                  setIsSupervisorSigModalOpen(true)
-                                }
+                                className="h-20 object-contain"
                               />
                             ) : (
-                              <button
-                                type="button"
-                                disabled={props.readOnly || props.isAsesi}
-                                onClick={() =>
-                                  setIsSupervisorSigModalOpen(true)
-                                }
-                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded"
+                              <div
+
+                                className="px-4 py-2 bg-slate-100 border border-slate-300 text-slate-400 text-xs font-bold rounded cursor-not-allowed"
                               >
-                                Tanda Tangan Supervisor
-                              </button>
+                                Belum Ada Tanda Tangan Supervisor
+                              </div>
                             )}
                           </td>
                         </tr>
@@ -552,6 +542,74 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
           meliputi tentang pemecahan masalah dan analisa
         </p>
 
+      </div>
+
+      {/* Table Penyusun dan Validator */}
+      <div className="mt-8 border border-slate-300 bg-white text-sm">
+        <div className="font-bold p-2 uppercase">PENYUSUN DAN VALIDATOR</div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-white border-y border-slate-300 text-left">
+                <th className="border border-slate-300 p-2 w-1/5 uppercase">STATUS</th>
+                <th className="border border-slate-300 p-2 w-12 text-center uppercase">NO</th>
+                <th className="border border-slate-300 p-2 w-1/4 uppercase">NAMA</th>
+                <th className="border border-slate-300 p-2 w-1/5 uppercase">NOMOR MET</th>
+                <th className="border border-slate-300 p-2 w-1/4 uppercase">TANDA TANGAN DAN TANGGAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: Math.max(2, props.penyusun?.length || 2) }).map((_, idx) => (
+                <tr key={`penyusun-${idx}`}>
+                  {idx === 0 && (
+                    <td className="border border-slate-300 p-2 font-bold align-top uppercase" rowSpan={Math.max(2, props.penyusun?.length || 2)}>
+                      PENYUSUN
+                    </td>
+                  )}
+                  <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
+                  <td className="border border-slate-300 p-2">{props.penyusun?.[idx]?.nama || ""}</td>
+                  <td className="border border-slate-300 p-2">{props.penyusun?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">
+                    <div className="flex flex-col items-center gap-1">
+                      {!!props.penyusun?.[idx]?.tandaTangan && (
+                        <img
+                          src={props.penyusun[idx].tandaTangan as string}
+                          alt="Tanda Tangan Penyusun"
+                          className="h-10 object-contain"
+                        />
+                      )}
+                      <span>{props.penyusun?.[idx]?.ttdTanggal || ""}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {Array.from({ length: Math.max(2, props.validator?.length || 2) }).map((_, idx) => (
+                <tr key={`validator-${idx}`}>
+                  {idx === 0 && (
+                    <td className="border border-slate-300 p-2 font-bold align-top uppercase" rowSpan={Math.max(2, props.validator?.length || 2)}>
+                      VALIDATOR
+                    </td>
+                  )}
+                  <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
+                  <td className="border border-slate-300 p-2">{props.validator?.[idx]?.nama || ""}</td>
+                  <td className="border border-slate-300 p-2">{props.validator?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">
+                    <div className="flex flex-col items-center gap-1">
+                      {!!props.validator?.[idx]?.tandaTangan && (
+                        <img
+                          src={props.validator[idx].tandaTangan as string}
+                          alt="Tanda Tangan Validator"
+                          className="h-10 object-contain"
+                        />
+                      )}
+                      <span>{props.validator?.[idx]?.ttdTanggal || ""}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Navigation */}

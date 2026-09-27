@@ -2,30 +2,31 @@ import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 import { konfigurasiService } from "@/services/konfigurasipertanyaan.service";
-import { UpdateKonfigurasiMainSchema } from "@/schemas/konfigurasipertanyaan.schema";
+import { CreateKonfigurasiSchema } from "@/schemas/konfigurasipertanyaan.schema";
 import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { getToken } from "next-auth/jwt";
 
 type Context = { params: Promise<{ id: string }> };
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest, context: Context) {
   try {
     rateLimitApi(request, {
       limit: 20,
       windowMs: 60 * 1000,
-      key: "post-publish-konfigurasi-soal", 
+      key: "post-publish-konfigurasi-soal",
     });
 
-    // const token = await getToken({ req: request });
-    // if (!token || (token.role !== "asesor" && token.role !== "admin")) {
-    //   return sendResponse(
-    //     403,
-    //     "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
-    //   );
-    // }
+    const token = await getToken({ req: request });
+    if (!token || (token.role !== "asesor" && token.role !== "admin")) {
+      return sendResponse(
+        403,
+        "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
+      );
+    }
 
     // 2. Await params dan validasi ID
     const { id } = await context.params;
@@ -71,6 +72,7 @@ export async function GET(request: NextRequest, context: Context) {
     const config = await konfigurasiService.getById(Number(id));
     return sendResponse(200, "Detail konfigurasi berhasil diambil", config);
   } catch (error) {
+    console.error("[GET /api/konfigurasipertanyaan/[id]] Error:", error);
     if (error instanceof RateLimitError) {
       return sendResponse(
         error.status,
@@ -99,15 +101,15 @@ export async function PUT(request: NextRequest, context: Context) {
     // }
     const { id } = await context.params;
     const body = await request.json();
-    const validatedData = UpdateKonfigurasiMainSchema.parse(body);
-    const result = await konfigurasiService.updateMain(
+    const validatedData = CreateKonfigurasiSchema.parse(body);
+    const result = await konfigurasiService.updateAll(
       Number(id),
       validatedData,
     );
 
     revalidatePath("/api/konfigurasipertanyaan");
 
-    return sendResponse(200, "Konfigurasi utama berhasil diperbarui", result);
+    return sendResponse(200, "Konfigurasi berhasil diperbarui", result);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(

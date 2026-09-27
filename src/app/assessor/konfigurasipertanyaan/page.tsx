@@ -57,8 +57,6 @@ export default function KonfigurasiPertanyaanList() {
                 skema: item.skema?.namaSkema || "",
                 tipeForm: item.tipe_form || "",
                 versi: item.versi || "",
-                penyusun: [{ value: "", label: "" }],
-                validator: [{ value: "", label: "" }],
                 status: (item.status === "Tidak Aktif" || item.status === "Draft") ? "Tidak Aktif" : "Aktif",
                 isDefault: false,
                 subPertanyaans: [],
@@ -238,20 +236,10 @@ export default function KonfigurasiPertanyaanList() {
                       </td>
 
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
-                        {item.penyusun
-                          ?.map((p) =>
-                            typeof p === "string" ? p : p.label || "",
-                          )
-                          .filter(Boolean)
-                          .join(", ") || "-"}
+                        <span className="text-gray-400 italic text-[10px]">Per Form</span>
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm text-slate-700 whitespace-nowrap">
-                        {item.validator
-                          ?.map((v) =>
-                            typeof v === "string" ? v : v.label || "",
-                          )
-                          .filter(Boolean)
-                          .join(", ") || "-"}
+                        <span className="text-gray-400 italic text-[10px]">Per Form</span>
                       </td>
                       <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-xs md:text-sm text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors">
                         <div className="flex items-center justify-center gap-1 sm:gap-2">

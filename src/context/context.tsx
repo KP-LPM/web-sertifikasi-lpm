@@ -362,6 +362,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showNotification("Berhasil keluar dari akun.", "success");
         setIsLoggingOut(true);
         await signOut({ redirect: false });
+        localStorage.clear();
         setTimeout(() => {
           window.location.href = "/login";
         }, 1500);

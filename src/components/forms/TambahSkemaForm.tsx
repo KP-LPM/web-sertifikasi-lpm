@@ -1401,15 +1401,13 @@ export function TambahSkemaForm({
               <p className="text-xs text-slate-500">
                 Penyusun:{" "}
                 <strong className="text-slate-800 font-bold">
-                  {selectedConfig.penyusun?.[0]?.label ||
-                    "Aditya Rahman Syach, M.Kom (Asesor Utama)"}
+                  &quot;Per Form (Lihat Konfigurasi)&quot;
                 </strong>
               </p>
               <p className="text-xs text-slate-500">
                 Validator:{" "}
                 <strong className="text-slate-800 font-bold">
-                  {selectedConfig.validator?.[0]?.label ||
-                    "I Made Jaya Artana, S.T., M.T. (Asesor)"}
+                  &quot;Per Form (Lihat Konfigurasi)&quot;
                 </strong>
               </p>
             </div>
