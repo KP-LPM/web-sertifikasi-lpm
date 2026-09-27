@@ -156,10 +156,6 @@ export default function Login() {
         mode === "asesor"
           ? String(formDataObj.get("pendidikan_terakhir") || "")
           : undefined,
-      alamat_wilayah:
-        mode === "asesor"
-          ? String(formDataObj.get("alamat_wilayah") || "")
-          : undefined,
       tanda_tangan: tandaTangan,
     };
 
@@ -347,9 +343,9 @@ export default function Login() {
           </div>
           <form className="space-y-5" onSubmit={handleForgotPassword}>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Email Terdaftar
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Email Terdaftar <span className="text-red-500">*</span>
+</label>
               <input
                 type="email"
                 className="text-black w-full px-4 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
@@ -483,21 +479,24 @@ export default function Login() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Nama Pengguna
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Nama Pengguna <span className="text-red-500">*</span>
+</label>
                     <input
                       type="text"
                       name="username"
                       className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
                       placeholder="Masukkan nama pengguna"
+                      pattern="^[a-z0-9_]+$"
+                      title="Username tidak boleh mengandung spasi atau huruf besar. Jika gagal mendaftar, username mungkin sudah digunakan."
                       required
                     />
+                    <p className="text-[10px] text-slate-500 mt-1 leading-tight">Tanpa spasi & huruf besar, ganti jika sudah digunakan.</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Email Aktif
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Email Aktif <span className="text-red-500">*</span>
+</label>
                     <input
                       type="email"
                       name="email"
@@ -507,9 +506,9 @@ export default function Login() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Password
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Password <span className="text-red-500">*</span>
+</label>
                     <div className="relative">
                       <Lock
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -537,9 +536,9 @@ export default function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Konfirmasi Password
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Konfirmasi Password <span className="text-red-500">*</span>
+</label>
                     <div className="relative">
                       <Lock
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -577,21 +576,26 @@ export default function Login() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      NIK
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  NIK <span className="text-red-500">*</span>
+</label>
                     <input
                       type="text"
                       name="nik"
                       className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
                       placeholder="Masukkan NIK"
+                      minLength={16}
+                      maxLength={16}
+                      pattern="\d{16}"
+                      title="NIK harus terdiri dari tepat 16 digit angka"
                       required
                     />
+                    <p className="text-[10px] text-slate-500 mt-1 leading-tight">Wajib 16 digit angka.</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Nama Lengkap
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Nama Lengkap <span className="text-red-500">*</span>
+</label>
                     <input
                       type="text"
                       name="nama_lengkap"
@@ -603,9 +607,9 @@ export default function Login() {
 
                   {mode === "asesor" && (
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Nomor Registrasi/MET
-                      </label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Nomor Registrasi/MET <span className="text-red-500">*</span>
+</label>
                       <input
                         type="text"
                         name="nomor_registrasi_met"
@@ -617,9 +621,9 @@ export default function Login() {
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Tempat Lahir
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Tempat Lahir <span className="text-red-500">*</span>
+</label>
                     <input
                       type="text"
                       name="tempat_lahir"
@@ -629,9 +633,9 @@ export default function Login() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Tanggal Lahir
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Tanggal Lahir <span className="text-red-500">*</span>
+</label>
                     <input
                       type="date"
                       name="tanggal_lahir"
@@ -642,9 +646,9 @@ export default function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-2">
-                      Jenis Kelamin
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-2 flex gap-1">
+  Jenis Kelamin <span className="text-red-500">*</span>
+</label>
                     <div className="flex gap-6 py-1">
                       <label className="text-black flex items-center text-xs font-bold">
                         <input
@@ -671,9 +675,9 @@ export default function Login() {
 
                   {mode === "asesi" && (
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Kewarganegaraan
-                      </label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Kewarganegaraan <span className="text-red-500">*</span>
+</label>
                       <select
                         name="kewarganegaraan"
                         className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
@@ -687,9 +691,9 @@ export default function Login() {
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Nomor HP
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Nomor HP <span className="text-red-500">*</span>
+</label>
                     <input
                       type="tel"
                       name="no_hp"
@@ -702,9 +706,9 @@ export default function Login() {
                   {mode === "asesor" && (
                     <>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                          Pendidikan Terakhir
-                        </label>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Pendidikan Terakhir <span className="text-red-500">*</span>
+</label>
                         <select
                           name="pendidikan_terakhir"
                           className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
@@ -716,25 +720,14 @@ export default function Login() {
                           <option value="S3">S3 (Doktor)</option>
                         </select>
                       </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                          Alamat / Wilayah
-                        </label>
-                        <input
-                          type="text"
-                          name="alamat_wilayah"
-                          className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
-                          placeholder="Masukkan alamat domisili / wilayah"
-                          required
-                        />
-                      </div>
+
                     </>
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Pekerjaan Utama
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Pekerjaan Utama <span className="text-red-500">*</span>
+</label>
                     <select
                       name="pekerjaan"
                       className="text-black w-full px-3 py-2 text-xs border rounded-lg outline-none focus:border-[#008BE3]"
@@ -751,9 +744,9 @@ export default function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Tanda Tangan
-                    </label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Tanda Tangan <span className="text-red-500">*</span>
+</label>
                     {tandaTangan && (
                       <div className="mb-2 border border-slate-200 rounded-lg p-2 flex justify-center">
                         <img
@@ -927,9 +920,9 @@ export default function Login() {
           </div>
           <form className="space-y-5" onSubmit={handleVerifyOtp}>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Kode OTP
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Kode OTP <span className="text-red-500">*</span>
+</label>
               <div className="flex gap-2 justify-between">
                 {otpDigits.map((digit, index) => (
                   <input
@@ -1025,9 +1018,9 @@ export default function Login() {
           </div>
           <form className="space-y-5" onSubmit={handleResetPassword}>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Password Baru
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Password Baru <span className="text-red-500">*</span>
+</label>
               <input
                 type="password"
                 name="newPassword"
@@ -1147,9 +1140,9 @@ export default function Login() {
             </div>
             <form className="space-y-4" onSubmit={handleLogin}>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nama Pengguna/E-Mail
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Nama Pengguna <span className="text-red-500">*</span>
+</label>
                 <div className="relative">
                   <Mail
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -1167,9 +1160,9 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Kata Sandi
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex gap-1">
+  Kata Sandi <span className="text-red-500">*</span>
+</label>
                 <div className="relative">
                   <Lock
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"

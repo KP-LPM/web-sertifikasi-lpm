@@ -26,6 +26,7 @@ interface FormKompetensiTableProps {
   kompetensiList: KompetensiItem[];
   eFormData: Record<string, unknown>;
   onAction: (doc: FormKompetensiDocAction) => void;
+  showErrors?: boolean;
 }
 
 export function FormKompetensiTable({
@@ -34,6 +35,7 @@ export function FormKompetensiTable({
   kompetensiList,
   eFormData,
   onAction,
+  showErrors = false,
 }: FormKompetensiTableProps) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 3;
@@ -98,11 +100,14 @@ export function FormKompetensiTable({
                 <React.Fragment key={code}>
                   {unit.elements.map((comp, eIdx) => {
                     const docName = comp.unitCode + " - " + comp.elemen;
-                    const isComplete = eFormData[docName] !== undefined;
+                    const rawVal = eFormData[docName];
+                    const isComplete = Array.isArray(rawVal) ? rawVal.length > 0 : rawVal !== undefined && rawVal !== null;
+                    const fileCount = Array.isArray(rawVal) ? rawVal.length : (rawVal ? 1 : 0);
                     return (
                       <tr
                         key={comp.id}
-                        className="group hover:bg-slate-50 transition-colors"
+                        id={`kuk-row-${comp.id}`}
+                        className={`group transition-colors ${!isComplete && showErrors ? 'bg-red-50/70 hover:bg-red-50 ring-1 ring-inset ring-red-300' : 'hover:bg-slate-50'}`}
                       >
                         {eIdx === 0 && (
                           <td
@@ -126,6 +131,12 @@ export function FormKompetensiTable({
                         </td>
                         <td className="px-4 py-4 md:px-6 md:py-5 align-top sticky right-0 bg-white z-10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover:bg-slate-50 transition-colors">
                           <div className="flex flex-col gap-2">
+                            {!isComplete && showErrors && (
+                              <p className="text-[10px] text-red-600 font-bold flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                                Bukti wajib dilampirkan
+                              </p>
+                            )}
                             <div className="flex items-center gap-2 w-full">
                               <button
                                 onClick={() =>
@@ -137,7 +148,7 @@ export function FormKompetensiTable({
                                     isBuktiKompetensi: true,
                                   })
                                 }
-                                className="flex-1 h-9 flex items-center gap-2 px-3 rounded-lg text-xs font-bold transition-all border bg-white text-slate-700 border-slate-300 hover:bg-slate-50 justify-center"
+                                className={`flex-1 h-9 flex items-center gap-2 px-3 rounded-lg text-xs font-bold transition-all border ${!isComplete && showErrors ? 'bg-red-50 text-red-600 border-red-300 hover:bg-red-100' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'} justify-center`}
                               >
                                 <Upload size={16} /> Upload
                               </button>
@@ -152,10 +163,15 @@ export function FormKompetensiTable({
                                       isPreview: true,
                                     })
                                   }
-                                  className="w-9 h-9 flex-none flex items-center justify-center rounded-lg bg-white text-[#008BE3] border border-[#008BE3]/30 hover:bg-[#008BE3]/5 transition-colors"
+                                  className="relative w-9 h-9 flex-none flex items-center justify-center rounded-lg bg-white text-[#008BE3] border border-[#008BE3]/30 hover:bg-[#008BE3]/5 transition-colors"
                                   title="Lihat Bukti"
                                 >
                                   <Eye size={16} />
+                                  {fileCount > 1 && (
+                                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 text-[9px] font-black bg-[#008BE3] text-white rounded-full flex items-center justify-center">
+                                      {fileCount}
+                                    </span>
+                                  )}
                                 </button>
                               )}
                             </div>

@@ -54,7 +54,7 @@ export class AuthService {
     }
 
     if (role === "asesor") {
-      if (!nomor_registrasi_met || !pendidikan_terakhir || !alamat_wilayah) {
+      if (!nomor_registrasi_met || !pendidikan_terakhir) {
         throw new ValidationError("Data khusus Asesor wajib diisi!");
       }
     } else if (role === "asesi") {
@@ -122,7 +122,7 @@ export class AuthService {
         kewarganegaraan: role === "asesi" ? kewarganegaraan : null,
         nomorRegistrasiMet: role === "asesor" ? nomor_registrasi_met : null,
         pendidikanTerakhir: role === "asesor" ? pendidikan_terakhir : null,
-        alamat: role === "asesor" ? alamat_wilayah : null,
+        alamat: role === "asesor" ? (alamat_wilayah || "-") : null,
         tandaTangan: finalSignatureUrl,
       },
     );
