@@ -10,13 +10,25 @@ import {
 
 export class KonfigurasiRepository {
   async getList(skemaId?: number, status?: string) {
-    return await db.konfigurasi_pertanyaan.findMany({
+    const list = await db.konfigurasi_pertanyaan.findMany({
       where: {
         ...(skemaId && { skema_id: skemaId }),
         ...(status && { status }),
       },
+      include: {
+        master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema: {
+          select: { namaSkema: true },
+        },
+      },
       orderBy: { created_at: "desc" },
     });
+
+    return list.map((item) => ({
+      ...item,
+      skema: {
+        namaSkema: item.master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema?.namaSkema,
+      },
+    }));
   }
 
   async getById(id: number) {
