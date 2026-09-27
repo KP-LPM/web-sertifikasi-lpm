@@ -554,11 +554,22 @@ export function FormFRAK07(props: FormFRAK07Props) {
           </span>
           <div className="mb-4">
             {asesorSignature ? (
-              <img
-                src={asesorSignature}
-                alt="Tanda Tangan Asesor"
-                className="h-20 object-contain"
-              />
+              asesorSignature.startsWith("data:") || asesorSignature.startsWith("http") || asesorSignature.startsWith("/") ? (
+                <img
+                  src={asesorSignature}
+                  alt="Tanda Tangan Asesor"
+                  className="h-20 object-contain"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center opacity-80 h-20 cursor-default">
+                  <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-110">
+                    {asesorSignature}
+                  </div>
+                  <div className="text-[9px] text-slate-500 mt-2">
+                    Ditandatangani secara elektronik
+                  </div>
+                </div>
+              )
             ) : (
               <div className="text-xs text-slate-400 italic py-4">
                 Tanda tangan belum tersedia
@@ -604,12 +615,23 @@ export function FormFRAK07(props: FormFRAK07Props) {
           </span>
           <div className="mb-4">
             {asesiSignature ? (
-              <img
-                id="signature-container"
-                src={asesiSignature}
-                alt="Tanda Tangan Asesi"
-                className="h-20 object-contain"
-              />
+              asesiSignature.startsWith("data:") || asesiSignature.startsWith("http") || asesiSignature.startsWith("/") ? (
+                <img
+                  id="signature-container"
+                  src={asesiSignature}
+                  alt="Tanda Tangan Asesi"
+                  className="h-20 object-contain"
+                />
+              ) : (
+                <div id="signature-container" className="flex flex-col items-center justify-center opacity-80 h-20 cursor-default">
+                  <div className="text-xl font-signature text-blue-800 rotate-[-5deg] scale-110">
+                    {asesiSignature}
+                  </div>
+                  <div className="text-[9px] text-slate-500 mt-2">
+                    Ditandatangani secara elektronik
+                  </div>
+                </div>
+              )
             ) : (
               <div id="signature-container" className="text-xs text-slate-400 italic py-4">
                 Tanda tangan belum tersedia

@@ -113,10 +113,10 @@ function VerifikasiBandingList({
               pengajuan?.skema?.namaSkema || "Skema Asesmen";
             const tgl = item.tanggal_pengajuan
               ? new Date(item.tanggal_pengajuan).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })
               : "-";
 
             return {
@@ -155,23 +155,23 @@ function VerifikasiBandingList({
     realBandingItems.length > 0
       ? realBandingItems
       : AssessmentItems.filter(
-          (item) => item.hasil === "Belum Kompeten" && item.isBanding,
-        );
+        (item) => item.hasil === "Belum Kompeten" && item.isBanding,
+      );
 
   const filteredAssessments = sourceAssessments.filter((item) => {
     const matchesSearch =
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.skema || "").toLowerCase().includes(searchTerm.toLowerCase());
-      
+
     const currentStatus = item.statusBanding || item.status || "Menunggu Verifikasi";
-    
+
     let matchesStatus = true;
     if (statusFilter === "Menunggu Verifikasi") {
-        matchesStatus = currentStatus === "Menunggu Verifikasi" || currentStatus === "Menunggu";
+      matchesStatus = currentStatus === "Menunggu Verifikasi" || currentStatus === "Menunggu";
     } else if (statusFilter === "Disetujui") {
-        matchesStatus = currentStatus === "Disetujui";
+      matchesStatus = currentStatus === "Disetujui";
     } else if (statusFilter === "Ditolak") {
-        matchesStatus = currentStatus === "Ditolak";
+      matchesStatus = currentStatus === "Ditolak";
     }
 
     return matchesSearch && matchesStatus;
@@ -276,13 +276,12 @@ function VerifikasiBandingList({
                   >
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
                       <div
-                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${
-                          idx % 3 === 0
+                        className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
                             ? "bg-[#008BE3]/10 text-[#008BE3]"
                             : idx % 3 === 1
                               ? "bg-[#84CC16]/10 text-[#73B412]"
                               : "bg-slate-100 text-slate-600"
-                        }`}
+                          }`}
                       >
                         {idx + 1}
                       </div>
@@ -292,13 +291,12 @@ function VerifikasiBandingList({
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${
-                          item.tipeTuk === "Sewaktu"
+                        className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk === "Sewaktu"
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : item.tipeTuk === "Tempat Kerja"
                               ? "bg-purple-50 text-purple-700 border-purple-200"
                               : "bg-orange-50 text-orange-700 border-orange-200"
-                        }`}
+                          }`}
                       >
                         {item.tipeTuk}
                       </span>
@@ -307,13 +305,12 @@ function VerifikasiBandingList({
                       {item.skema}
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                        item.statusBanding === 'Disetujui' || item.status === 'Disetujui'
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.statusBanding === 'Disetujui' || item.status === 'Disetujui'
                           ? 'bg-green-50 text-green-700 border-green-200'
                           : item.statusBanding === 'Ditolak' || item.status === 'Ditolak'
-                          ? 'bg-red-50 text-red-700 border-red-200'
-                          : 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                      }`}> {item.statusBanding || item.status || 'Menunggu'} </span>
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                        }`}> {item.statusBanding || item.status || 'Menunggu'} </span>
                     </td>
                     <td className="px-2.5 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
                       <div className="flex justify-center">
@@ -426,8 +423,8 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
       if (!selectedAsesmen) return;
       const targetId = Number(
         (selectedAsesmen as AssessmentItem & { pengajuanId?: number }).pengajuanId ||
-          (selectedAsesmen as AssessmentItem & { bandingId?: number }).bandingId ||
-          selectedAsesmen.id
+        (selectedAsesmen as AssessmentItem & { bandingId?: number }).bandingId ||
+        selectedAsesmen.id
       );
       if (!targetId) return;
       try {
@@ -453,7 +450,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
     try {
       const targetBandingId = Number(
         (selectedAsesmen as AssessmentItem & { bandingId?: number }).bandingId ||
-          selectedAsesmen.id,
+        selectedAsesmen.id,
       );
       if (targetBandingId) {
         await verifikasiBanding(targetBandingId, {
@@ -465,17 +462,17 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
       const updatedData =
         action === "approve"
           ? {
-              hasil: "Kompeten" as HasilAsesmen,
-              isBanding: false,
-              statusBanding: "Disetujui" as string,
-              catatanAsesor: catatanBaru.trim(),
-            }
+            hasil: "Kompeten" as HasilAsesmen,
+            isBanding: false,
+            statusBanding: "Disetujui" as string,
+            catatanAsesor: catatanBaru.trim(),
+          }
           : {
-              hasil: "Belum Kompeten" as HasilAsesmen,
-              isBanding: false,
-              statusBanding: "Ditolak" as string,
-              catatanAsesor: catatanBaru.trim(),
-            };
+            hasil: "Belum Kompeten" as HasilAsesmen,
+            isBanding: false,
+            statusBanding: "Ditolak" as string,
+            catatanAsesor: catatanBaru.trim(),
+          };
 
       updateAssessmentItem(selectedAsesmen.id, updatedData);
       setSelectedAsesmen({ ...selectedAsesmen, ...updatedData });
@@ -535,11 +532,10 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
 
             <div className="shrink-0">
               <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-2xs ${
-                  selectedAsesmen.hasil === "Kompeten"
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.hasil === "Kompeten"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                     : "bg-red-50 text-red-700 border-red-200"
-                }`}
+                  }`}
               >
                 {selectedAsesmen.hasil}
               </span>
@@ -771,7 +767,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
               <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
                 {previewForm === "FR.IA.04A" && (() => {
                   const riwayat = riwayatData.find(r => r.form_type === "FR.IA.04A");
-                  const dataForm = riwayat?.form_data || {} as RiwayatFormData;
+                  const dataForm = (typeof riwayat?.form_data === 'string' ? JSON.parse(riwayat.form_data) : riwayat?.form_data) || {} as RiwayatFormData;
                   return (
                     <FormFRIA04A
                       asesmenData={{
@@ -792,7 +788,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 })()}
                 {previewForm === "FR.IA.04B" && (() => {
                   const riwayat = riwayatData.find(r => r.form_type === "FR.IA.04B");
-                  const dataForm = riwayat?.form_data || {} as RiwayatFormData;
+                  const dataForm = (typeof riwayat?.form_data === 'string' ? JSON.parse(riwayat.form_data) : riwayat?.form_data) || {} as RiwayatFormData;
                   return (
                     <FormFRIA04B
                       asesmenData={{
@@ -814,7 +810,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                 })()}
                 {previewForm === "FR.IA.07" && (() => {
                   const riwayat = riwayatData.find(r => r.form_type === "FR.IA.07");
-                  const dataForm = riwayat?.form_data || {} as RiwayatFormData;
+                  const dataForm = (typeof riwayat?.form_data === 'string' ? JSON.parse(riwayat.form_data) : riwayat?.form_data) || {} as RiwayatFormData;
                   return (
                     <FormFRIA07
                       asesmenData={{

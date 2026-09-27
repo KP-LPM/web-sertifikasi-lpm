@@ -513,10 +513,48 @@ export default function RiwayatAsesmenAdmin() {
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
                 {(() => {
                   const activeDetail = riwayatDetails.find((d) => d.form_type === previewForm);
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const formData: any = activeDetail?.form_data || {};
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const penilaian: any = activeDetail?.penilaian || {};
+
+                  type FormPreviewData = {
+                    kompetensi?: Record<string, "K" | "BK">;
+                    rekomendasi?: "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | "";
+                    asesiSignature?: string;
+                    asesiDate?: string;
+                    asesorSignature?: string;
+                    asesorDate?: string;
+                    potensiAsesi?: string[];
+                    noAdjustment?: boolean;
+                    adjustments?: Record<string, { required: boolean | null; note: string; selectedOptions: string[] }>;
+                    acuanPembanding?: string;
+                    metodeAsesmen?: string;
+                    instrumenAsesmen?: string;
+                    umpanBalik?: string;
+                    umpanBalikStep2?: string;
+                    umpanBalikStep4?: string;
+                    supervisorName?: string;
+                    supervisorSignature?: string;
+                    questions?: Record<string, unknown>;
+                    answers?: Record<string, { answer: string; achievement: boolean | null; }>;
+                    step3Questions?: Record<string, unknown>;
+                    step3Answers?: Record<string, unknown>;
+                    step4Questions?: Record<string, unknown>;
+                    step4Answers?: Record<string, unknown>;
+                    [key: string]: unknown;
+                  };
+
+                  let formData: FormPreviewData = {};
+                  if (activeDetail?.form_data) {
+                    let parsedData = activeDetail.form_data;
+                    while (typeof parsedData === "string") {
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch {
+                        break;
+                      }
+                    }
+                    formData = (typeof parsedData === "object" && parsedData !== null ? parsedData : {}) as FormPreviewData;
+                  }
+
+
 
                   return (
                     <>
@@ -541,8 +579,8 @@ export default function RiwayatAsesmenAdmin() {
                           }}
                           skemaId={selectedAsesmen.skemaId}
                           pengajuanId={selectedAsesmen.id}
-                          answers={formData.kompetensi || penilaian}
-                          rekomendasi={formData.rekomendasi || "Dapat dilanjutkan"}
+                          answers={formData.kompetensi}
+                          rekomendasi={formData.rekomendasi}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
                           asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
@@ -609,7 +647,7 @@ export default function RiwayatAsesmenAdmin() {
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
                           skemaId={selectedAsesmen.skemaId}
-                          answers={formData.answers || penilaian}
+                          answers={formData.answers}
                           rekomendasi={formData.rekomendasi}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
@@ -633,7 +671,7 @@ export default function RiwayatAsesmenAdmin() {
                             asesorReg: selectedAsesmen.asesorReg || "-",
                           }}
                           skemaId={selectedAsesmen.skemaId}
-                          answers={formData.answers || penilaian}
+                          answers={formData.answers}
                           umpanBalik={formData.umpanBalik || formData.umpanBalikStep4 || ""}
                           asesiName={selectedAsesmen.nama}
                           asesiSignature={formData.asesiSignature || selectedAsesmen.nama}

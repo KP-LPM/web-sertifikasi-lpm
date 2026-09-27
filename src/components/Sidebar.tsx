@@ -104,11 +104,10 @@ export function Sidebar() {
                     if (window.innerWidth < 1024) setSidebarCollapsed(true);
                   }}
                   title={sidebarCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-0 h-11" : "px-3 py-3.5 gap-3"} rounded-lg transition-all group ${
-                    isActive
+                  className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-0 h-11" : "px-3 py-3.5 gap-3"} rounded-lg transition-all group ${isActive
                       ? "bg-[#008BE3] text-white font-black shadow-md"
                       : "text-white/60 hover:bg-white/5 hover:text-white border-l-2 border-transparent"
-                  }`}
+                    }`}
                 >
                   <item.icon
                     size={18}
@@ -270,7 +269,7 @@ function getNavItems(role: string | null | undefined) {
         },
         {
           id: "verifikasi-portofolio",
-          label: "Verifikasi Portofolio",
+          label: "Upload Portofolio",
           icon: FolderCheck,
           path: "/assessor/verifikasiportofolio",
         },

@@ -129,18 +129,18 @@ function TambahKonfigurasiPertanyaanContent() {
             skemaRes.map((s: Record<string, string | number | undefined>) => ({
               value: String(
                 s.id?.toString() ||
-                s.kodeSkema ||
-                s.namaSkema ||
-                s.name ||
-                s.id ||
-                "",
+                  s.kodeSkema ||
+                  s.namaSkema ||
+                  s.name ||
+                  s.id ||
+                  "",
               ),
               label: String(
                 `${s.kodeSkema || s.kode || s.code || ""} - ${s.namaSkema || s.nama || s.name || ""}`
                   .replace(/^- | -$/g, "")
                   .trim() ||
-                s.name ||
-                "",
+                  s.name ||
+                  "",
               ),
             })),
           );
@@ -149,9 +149,9 @@ function TambahKonfigurasiPertanyaanContent() {
         const usersList = Array.isArray(usersRes)
           ? usersRes
           : usersRes &&
-            typeof usersRes === "object" &&
-            "data" in usersRes &&
-            Array.isArray((usersRes as { data: unknown[] }).data)
+              typeof usersRes === "object" &&
+              "data" in usersRes &&
+              Array.isArray((usersRes as { data: unknown[] }).data)
             ? (usersRes as { data: unknown[] }).data
             : [];
 
@@ -239,9 +239,9 @@ function TambahKonfigurasiPertanyaanContent() {
                   value: String(item.user_id || item.nama || ""),
                   label: String(
                     item.users?.profil?.namaLengkap ||
-                    item.users?.username ||
-                    item.nama ||
-                    "",
+                      item.users?.username ||
+                      item.nama ||
+                      "",
                   ),
                   no_met: item.users?.profil?.nomorRegistrasiMet || "-",
                   tanda_tangan: item.users?.profil?.tandaTangan || undefined,
@@ -252,8 +252,8 @@ function TambahKonfigurasiPertanyaanContent() {
                 namaKonfigurasi: detail.nama || prev.metadata.namaKonfigurasi,
                 skemaSertifikasi: String(
                   detail.skema_id ||
-                  detail.skema ||
-                  prev.metadata.skemaSertifikasi,
+                    detail.skema ||
+                    prev.metadata.skemaSertifikasi,
                 ),
                 versi: detail.versi || "1.0",
                 // penyusun and validator loaded per step if available
@@ -264,90 +264,90 @@ function TambahKonfigurasiPertanyaanContent() {
               const step2Data = detail.konfigurasi_step2_skenario;
               const step2BlokA = step2Data
                 ? {
-                  skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
-                  informasiYangDiberikan:
-                    Array.isArray(step2Data.informasi_yang_diberikan) &&
+                    skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
+                    informasiYangDiberikan:
+                      Array.isArray(step2Data.informasi_yang_diberikan) &&
                       step2Data.informasi_yang_diberikan.length > 0
-                      ? step2Data.informasi_yang_diberikan
-                      : [""],
-                  lingkupBahasanStudiKasus:
-                    Array.isArray(step2Data.lingkup_bahasan_studi_kasus) &&
+                        ? step2Data.informasi_yang_diberikan
+                        : [""],
+                    lingkupBahasanStudiKasus:
+                      Array.isArray(step2Data.lingkup_bahasan_studi_kasus) &&
                       step2Data.lingkup_bahasan_studi_kasus.length > 0
-                      ? step2Data.lingkup_bahasan_studi_kasus
-                      : [""],
-                  perlengkapanDanBahan:
-                    step2Data.perlengkapan_dan_bahan || "",
-                }
+                        ? step2Data.lingkup_bahasan_studi_kasus
+                        : [""],
+                    perlengkapanDanBahan:
+                      step2Data.perlengkapan_dan_bahan || "",
+                  }
                 : prev.step2.blokA;
 
               const step2BlokB = step2Data
                 ? {
-                  fokusPresentasi:
-                    Array.isArray(step2Data.fokus_presentasi) &&
+                    fokusPresentasi:
+                      Array.isArray(step2Data.fokus_presentasi) &&
                       step2Data.fokus_presentasi.length > 0
-                      ? step2Data.fokus_presentasi
-                      : [""],
-                  ketentuanAlokasiWaktu:
-                    step2Data.ketentuan_alokasi_waktu || "",
-                  kriteriaEvaluasiAsesor:
-                    Array.isArray(step2Data.kriteria_evaluasi_asesor) &&
+                        ? step2Data.fokus_presentasi
+                        : [""],
+                    ketentuanAlokasiWaktu:
+                      step2Data.ketentuan_alokasi_waktu || "",
+                    kriteriaEvaluasiAsesor:
+                      Array.isArray(step2Data.kriteria_evaluasi_asesor) &&
                       step2Data.kriteria_evaluasi_asesor.length > 0
-                      ? step2Data.kriteria_evaluasi_asesor
-                      : [""],
-                }
+                        ? step2Data.kriteria_evaluasi_asesor
+                        : [""],
+                  }
                 : prev.step2.blokB;
 
               const step3Lingkups =
                 detail.konfigurasi_step3_lingkup?.length > 0
                   ? detail.konfigurasi_step3_lingkup.map(
-                    (l: {
-                      id?: string | number;
-                      nama_lingkup?: string;
-                      konfigurasi_step3_sub_pertanyaan?: {
+                      (l: {
                         id?: string | number;
-                        skenario_pertanyaan?: string;
-                        kode_kuk?: string[];
-                        ekspektasi_tanggapan?: string;
-                      }[];
-                    }) => ({
-                      id: `lingkup-${l.id || Math.random()}`,
-                      namaLingkup: l.nama_lingkup || "",
-                      subPertanyaans:
-                        l.konfigurasi_step3_sub_pertanyaan?.map(
-                          (sub: {
-                            id?: string | number;
-                            skenario_pertanyaan?: string;
-                            kode_kuk?: string[];
-                            ekspektasi_tanggapan?: string;
-                          }) => ({
-                            id: `sub-${sub.id || Math.random()}`,
-                            skenarioPertanyaan: sub.skenario_pertanyaan || "",
-                            kodeKUK: Array.isArray(sub.kode_kuk)
-                              ? sub.kode_kuk
-                              : [],
-                            ekspektasiTanggapan:
-                              sub.ekspektasi_tanggapan || "",
-                          }),
-                        ) || [],
-                    }),
-                  )
+                        nama_lingkup?: string;
+                        konfigurasi_step3_sub_pertanyaan?: {
+                          id?: string | number;
+                          skenario_pertanyaan?: string;
+                          kode_kuk?: string[];
+                          ekspektasi_tanggapan?: string;
+                        }[];
+                      }) => ({
+                        id: `lingkup-${l.id || Math.random()}`,
+                        namaLingkup: l.nama_lingkup || "",
+                        subPertanyaans:
+                          l.konfigurasi_step3_sub_pertanyaan?.map(
+                            (sub: {
+                              id?: string | number;
+                              skenario_pertanyaan?: string;
+                              kode_kuk?: string[];
+                              ekspektasi_tanggapan?: string;
+                            }) => ({
+                              id: `sub-${sub.id || Math.random()}`,
+                              skenarioPertanyaan: sub.skenario_pertanyaan || "",
+                              kodeKUK: Array.isArray(sub.kode_kuk)
+                                ? sub.kode_kuk
+                                : [],
+                              ekspektasiTanggapan:
+                                sub.ekspektasi_tanggapan || "",
+                            }),
+                          ) || [],
+                      }),
+                    )
                   : prev.step3.lingkups;
 
               const step4Questions =
                 detail.konfigurasi_step4_pertanyaan?.length > 0
                   ? detail.konfigurasi_step4_pertanyaan.map(
-                    (q: {
-                      id?: string | number;
-                      kode_kuk_ref?: string;
-                      pertanyaan_lisan?: string;
-                      kunci_jawaban?: string;
-                    }) => ({
-                      id: `q4-${q.id || Math.random()}`,
-                      kodeKUKRef: q.kode_kuk_ref || "",
-                      pertanyaanLisan: q.pertanyaan_lisan || "",
-                      kunciJawaban: q.kunci_jawaban || "",
-                    }),
-                  )
+                      (q: {
+                        id?: string | number;
+                        kode_kuk_ref?: string;
+                        pertanyaan_lisan?: string;
+                        kunci_jawaban?: string;
+                      }) => ({
+                        id: `q4-${q.id || Math.random()}`,
+                        kodeKUKRef: q.kode_kuk_ref || "",
+                        pertanyaanLisan: q.pertanyaan_lisan || "",
+                        kunciJawaban: q.kunci_jawaban || "",
+                      }),
+                    )
                   : prev.step4.questions;
 
               const getAsesors = (type: string, peran: string) => {
@@ -1222,16 +1222,18 @@ function TambahKonfigurasiPertanyaanContent() {
                       }
                     }
                   }}
-                  className={`flex flex-col items-center text-center group cursor-pointer relative z-10 transition-all ${isActive ? "scale-105" : "opacity-85 hover:opacity-100"
-                    }`}
+                  className={`flex flex-col items-center text-center group cursor-pointer relative z-10 transition-all ${
+                    isActive ? "scale-105" : "opacity-85 hover:opacity-100"
+                  }`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${isCompleted
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${
+                      isCompleted
                         ? "bg-emerald-600 text-white border-2 border-emerald-600"
                         : isActive
                           ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
                           : "bg-white text-slate-400 border-2 border-gray-300"
-                      }`}
+                    }`}
                   >
                     {isCompleted ? (
                       <Check size={18} strokeWidth={3} />
@@ -1242,18 +1244,20 @@ function TambahKonfigurasiPertanyaanContent() {
 
                   <div className="mt-2 space-y-0.5">
                     <span
-                      className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${isActive
+                      className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${
+                        isActive
                           ? "text-[#008BE3]"
                           : isCompleted
                             ? "text-emerald-700"
                             : "text-slate-400"
-                        }`}
+                      }`}
                     >
                       {st.code}
                     </span>
                     <span
-                      className={`text-xs font-black block leading-tight ${isActive ? "text-slate-900" : "text-slate-600"
-                        }`}
+                      className={`text-xs font-black block leading-tight ${
+                        isActive ? "text-slate-900" : "text-slate-600"
+                      }`}
                     >
                       {st.title}
                     </span>
@@ -1883,9 +1887,9 @@ function TambahKonfigurasiPertanyaanContent() {
                             onChange={(selected) => {
                               const selectedOptions = (selected ||
                                 []) as Array<{
-                                  value: string;
-                                  label: string;
-                                }>;
+                                value: string;
+                                label: string;
+                              }>;
                               updateStep3SubPertanyaan(
                                 lingkup.id,
                                 sub.id,
@@ -2338,10 +2342,11 @@ function TambahKonfigurasiPertanyaanContent() {
             type="button"
             onClick={handlePrevStep}
             disabled={activeStep === 1}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${activeStep === 1
+            className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${
+              activeStep === 1
                 ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
                 : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
-              }`}
+            }`}
           >
             <ChevronLeft size={18} /> Sebelumnya
           </button>
@@ -2377,7 +2382,7 @@ function TambahKonfigurasiPertanyaanContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-xs flex flex-col items-center justify-start p-2 sm:p-6 overflow-y-auto"
+            className="fixed inset-0 z-100 bg-slate-900/70 backdrop-blur-xs flex flex-col items-center justify-start p-2 sm:p-6 overflow-y-auto"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -2533,7 +2538,7 @@ export default function TambahKonfigurasiPertanyaan() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-[400px] flex items-center justify-center text-slate-500 font-medium">
+        <div className="min-h-100 flex items-center justify-center text-slate-500 font-medium">
           Memuat konfigurasi pertanyaan...
         </div>
       }

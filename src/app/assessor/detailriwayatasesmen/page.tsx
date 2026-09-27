@@ -49,7 +49,11 @@ export default function DetailRiwayatAsesmen() {
     if (selectedAsesmen?.id) {
       getRiwayatAsesmen(selectedAsesmen.id)
         .then((res) => {
-          if (res?.data) setRiwayatDetails(res.data);
+          if (Array.isArray(res)) {
+            setRiwayatDetails(res);
+          } else if (res?.data) {
+            setRiwayatDetails(res.data);
+          }
         })
         .catch((err) => console.error(err));
     }
@@ -408,52 +412,111 @@ export default function DetailRiwayatAsesmen() {
               <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
                 {(() => {
                   const activeDetail = riwayatDetails.find((d) => d.form_type === previewForm);
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const formData: any = activeDetail?.form_data || {};
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const penilaian: any = activeDetail?.penilaian || {};
+
+                  type FormPreviewData = {
+                    kompetensi?: Record<string, unknown>;
+                    rekomendasi?: string;
+                    asesiSignature?: string;
+                    asesiDate?: string;
+                    asesorSignature?: string;
+                    asesorDate?: string;
+                    potensiAsesi?: string[];
+                    noAdjustment?: boolean;
+                    adjustments?: Record<string, { required: boolean | null; note: string; selectedOptions: string[] }>;
+                    acuanPembanding?: string;
+                    metodeAsesmen?: string;
+                    instrumenAsesmen?: string;
+                    umpanBalik?: string;
+                    umpanBalikStep2?: string;
+                    umpanBalikStep4?: string;
+                    supervisorName?: string;
+                    supervisorSignature?: string;
+                    questions?: Record<string, unknown>;
+                    answers?: Record<string, unknown>;
+                    step3Questions?: Record<string, unknown>;
+                    step3Answers?: Record<string, unknown>;
+                    step4Questions?: Record<string, unknown>;
+                    step4Answers?: Record<string, unknown>;
+                    [key: string]: unknown;
+                  };
+
+                  let formData: FormPreviewData = {};
+                  if (activeDetail?.form_data) {
+                    let parsedData = activeDetail.form_data;
+                    while (typeof parsedData === "string") {
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch {
+                        break;
+                      }
+                    }
+                    formData = (typeof parsedData === "object" && parsedData !== null ? parsedData : {}) as FormPreviewData;
+                  }
+
+                  const asesiSig = (activeDetail?.ttd_asesi as string) || formData.asesiSignature || selectedAsesmen.nama;
+                  const asesorSig = (activeDetail?.ttd_asesor as string) || formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne";
+                  const asesiDt = activeDetail?.tanggal_ttd_asesi ? new Date(activeDetail.tanggal_ttd_asesi as string).toISOString().split('T')[0] : (formData.asesiDate || selectedAsesmen.tglAsesmen);
+                  const asesorDt = activeDetail?.tanggal_ttd_asesor ? new Date(activeDetail.tanggal_ttd_asesor as string).toISOString().split('T')[0] : (formData.asesorDate || selectedAsesmen.tglAsesmen);
+
+                  const mappedPenyusun = (formData.penyusun as any[])?.map((p: any) => {
+                    const isAsesor = p.nama === selectedAsesmen.asesor;
+                    return {
+                      ...p,
+                      noMet: p.noMet || (isAsesor ? selectedAsesmen.asesorReg : ""),
+                      tandaTangan: p.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: p.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
+                  const mappedValidator = (formData.validator as any[])?.map((v: any) => {
+                    const isAsesor = v.nama === selectedAsesmen.asesor;
+                    return {
+                      ...v,
+                      noMet: v.noMet || (isAsesor ? selectedAsesmen.asesorReg : ""),
+                      tandaTangan: v.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: v.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
 
                   return (
                     <>
                       {previewForm === "FR.APL.02" && (
                         <FormFRAPL02
-                          readOnly={true}
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
                             noSkema: selectedAsesmen.noSkema || "-",
-                            tuk: selectedAsesmen.tipeTuk || "",
-                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tipeTuk: selectedAsesmen.tipeTuk,
                             tanggal: selectedAsesmen.tglAsesmen,
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
-                          } as AsesmenData}
+                          }}
                           skemaId={selectedAsesmen.skemaId}
                           pengajuanId={selectedAsesmen.id}
-                          answers={formData.kompetensi || penilaian}
-                          rekomendasi={formData.rekomendasi || "Dapat dilanjutkan"}
+                          answers={formData.kompetensi as Record<string, "K" | "BK">}
+                          rekomendasi={formData.rekomendasi as "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""}
                           asesiName={selectedAsesmen.nama}
-                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
-                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesiSignature={asesiSig}
+                          asesiDate={asesiDt}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorReg={selectedAsesmen.asesorReg || "-"}
-                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                          asesorSignature={asesorSig}
+                          asesorDate={asesorDt}
+                          readOnly={true}
                         />
                       )}
                       {previewForm === "FR.AK.07" && (
                         <FormFRAK07
-                          readOnly={true}
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
                             noSkema: selectedAsesmen.noSkema || "-",
-                            tuk: selectedAsesmen.tipeTuk || "",
-                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tipeTuk: selectedAsesmen.tipeTuk,
                             tanggal: selectedAsesmen.tglAsesmen,
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
-                          } as AsesmenData}
+                          }}
                           potensiAsesi={formData.potensiAsesi}
                           noAdjustment={formData.noAdjustment}
                           adjustments={formData.adjustments}
@@ -461,79 +524,85 @@ export default function DetailRiwayatAsesmen() {
                           metodeAsesmen={formData.metodeAsesmen}
                           instrumenAsesmen={formData.instrumenAsesmen}
                           asesiName={selectedAsesmen.nama}
-                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
-                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesiSignature={asesiSig}
+                          asesiDate={asesiDt}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                          asesorSignature={asesorSig}
+                          asesorDate={asesorDt}
+                          readOnly={true}
                         />
                       )}
                       {previewForm === "FR.IA.04A" && (
                         <FormFRIA04A
-                          readOnly={true}
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
                             noSkema: selectedAsesmen.noSkema || "-",
-                            tuk: selectedAsesmen.tipeTuk || "",
-                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tipeTuk: selectedAsesmen.tipeTuk,
                             tanggal: selectedAsesmen.tglAsesmen,
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
-                          } as AsesmenData}
+                          }}
                           umpanBalik={formData.umpanBalik || formData.umpanBalikStep2 || ""}
-                          supervisorName={formData.supervisorName || ""}
-                          supervisorSignature={formData.supervisorSignature || ""}
-                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
-                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
+                          supervisorName={(formData.supervisorName as string) || ""}
+                          supervisorSignature={(formData.supervisorSignature as string) || ""}
+                          asesiSignature={asesiSig}
+                          asesorSignature={asesorSig}
+                          penyusun={mappedPenyusun}
+                          validator={mappedValidator}
+                          readOnly={true}
                         />
                       )}
                       {previewForm === "FR.IA.04B" && (
                         <FormFRIA04B
-                          readOnly={true}
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
                             noSkema: selectedAsesmen.noSkema || "-",
-                            tuk: selectedAsesmen.tipeTuk || "",
-                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tipeTuk: selectedAsesmen.tipeTuk,
                             tanggal: selectedAsesmen.tglAsesmen,
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
-                          } as AsesmenData}
-                          answers={formData.answers || penilaian}
+                          }}
+                          skemaId={selectedAsesmen.skemaId}
+                          answers={formData.answers as Record<string, { answer: string; achievement: boolean | null; }>}
                           rekomendasi={formData.rekomendasi}
                           asesiName={selectedAsesmen.nama}
-                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
-                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesiSignature={asesiSig}
+                          asesiDate={asesiDt}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorReg={selectedAsesmen.asesorReg || "-"}
-                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                          asesorSignature={asesorSig}
+                          asesorDate={asesorDt}
+                          penyusun={mappedPenyusun}
+                          validator={mappedValidator}
+                          readOnly={true}
                         />
                       )}
                       {previewForm === "FR.IA.07" && (
                         <FormFRIA07
-                          readOnly={true}
                           asesmenData={{
                             nama: selectedAsesmen.nama,
                             skema: selectedAsesmen.skema,
                             noSkema: selectedAsesmen.noSkema || "-",
-                            tuk: selectedAsesmen.tipeTuk || "",
-                            metodeAsesmen: selectedAsesmen.metode || "Offline",
+                            tipeTuk: selectedAsesmen.tipeTuk,
                             tanggal: selectedAsesmen.tglAsesmen,
                             asesor: selectedAsesmen.asesor || "Dr. Aris Thorne",
                             asesorReg: selectedAsesmen.asesorReg || "-",
-                          } as AsesmenData}
-                          answers={formData.answers || penilaian}
+                          }}
+                          skemaId={selectedAsesmen.skemaId}
+                          answers={formData.answers as Record<string, { answer: string; achievement: boolean | null; }>}
                           umpanBalik={formData.umpanBalik || formData.umpanBalikStep4 || ""}
                           asesiName={selectedAsesmen.nama}
-                          asesiSignature={formData.asesiSignature || selectedAsesmen.nama}
-                          asesiDate={formData.asesiDate || selectedAsesmen.tglAsesmen}
+                          asesiSignature={asesiSig}
+                          asesiDate={asesiDt}
                           asesorName={selectedAsesmen.asesor || "Dr. Aris Thorne"}
                           asesorReg={selectedAsesmen.asesorReg || "-"}
-                          asesorSignature={formData.asesorSignature || selectedAsesmen.asesor || "Dr. Aris Thorne"}
-                          asesorDate={formData.asesorDate || selectedAsesmen.tglAsesmen}
+                          asesorSignature={asesorSig}
+                          asesorDate={asesorDt}
+                          penyusun={mappedPenyusun}
+                          validator={mappedValidator}
+                          readOnly={true}
                         />
                       )}
                     </>

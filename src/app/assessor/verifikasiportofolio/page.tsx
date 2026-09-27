@@ -387,7 +387,7 @@ export default function VerifikasiPortofolio() {
           </div>
           <div className="min-w-0">
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              {isUploadModalOpen ? "Upload Portofolio" : "Verifikasi Portofolio"}
+              {isUploadModalOpen ? "Upload Portofolio" : "Upload Portofolio"}
             </h2>
             <p className="text-xs text-gray-400 font-bold tracking-wider uppercase leading-4">
               {isUploadModalOpen

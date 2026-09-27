@@ -152,7 +152,7 @@ export default function AssessmentSchedule() {
                   asesiDetail.user.profil.namaLengkap.trim() !== ""
                   ? asesiDetail.user.profil.namaLengkap
                   : asesiDetail.dataPribadi?.namaLengkap &&
-                    asesiDetail.dataPribadi.namaLengkap.trim() !== ""
+                      asesiDetail.dataPribadi.namaLengkap.trim() !== ""
                     ? asesiDetail.dataPribadi.namaLengkap
                     : asesiDetail.user?.username || asesiDetail.nama || asesiId;
               }
@@ -423,16 +423,19 @@ export default function AssessmentSchedule() {
         ? String(item.waktu_mulai).includes("T") &&
           !isNaN(Date.parse(String(item.waktu_mulai)))
           ? new Date(item.waktu_mulai).toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           : String(item.waktu_mulai).substring(0, 5)
         : "08:00",
       linkVideo: item.link_video || "",
       tipeTuk: item.tipe_tuk || "Sewaktu",
       tuk: item.master_tuk?.nama || item.alamat || "TUK Kantor LSP",
       // Ambil alamat dari master_tuk jika ada, jika tidak pakai alamat custom, jika kosong pakai Gedung PTIPD
-      alamat: item.master_tuk?.alamat || item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
+      alamat:
+        item.master_tuk?.alamat ||
+        item.alamat ||
+        "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       totalKandidat: item.jadwal_asesmen_peserta?.length || 0,
       namaAsesor: asesorName,
       inisialAsesor: initials,
@@ -520,7 +523,10 @@ export default function AssessmentSchedule() {
               nik: a.pengajuan_skema?.dataPribadi?.nik || `121705${a.id}`,
               nama: a.pengajuan_skema?.dataPribadi?.namaLengkap || "Asesi",
               skema: a.pengajuan_skema?.skema?.namaSkema || "Skema Sertifikasi",
-              asesor: a.users?.profil?.namaLengkap || a.users?.username || "Asesor LSP",
+              asesor:
+                a.users?.profil?.namaLengkap ||
+                a.users?.username ||
+                "Asesor LSP",
               statusPleno: a.status_pleno || "Belum Kompeten",
               rekomendasiAsesor: a.rekomendasi_asesor || "Belum Kompeten",
             })) || [];
@@ -536,9 +542,9 @@ export default function AssessmentSchedule() {
             waktu: p.waktu
               ? p.waktu.includes("T") && !isNaN(Date.parse(p.waktu))
                 ? new Date(p.waktu).toLocaleTimeString("id-ID", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                 : p.waktu
               : "",
             skema: Array.isArray(p.skema)
@@ -592,7 +598,7 @@ export default function AssessmentSchedule() {
             setIsPlenoModalOpen(true);
           }
         }
-      } catch { }
+      } catch {}
     }
   }, []);
 
@@ -608,7 +614,7 @@ export default function AssessmentSchedule() {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
         }
-      } catch { }
+      } catch {}
     }
     return {
       namaBatch: "",
@@ -632,7 +638,10 @@ export default function AssessmentSchedule() {
 
   useEffect(() => {
     if (!isEditMode && typeof window !== "undefined") {
-      sessionStorage.setItem("jadwalAsesmenFormDraft", JSON.stringify(formData));
+      sessionStorage.setItem(
+        "jadwalAsesmenFormDraft",
+        JSON.stringify(formData),
+      );
     }
   }, [formData, isEditMode]);
 
@@ -705,24 +714,24 @@ export default function AssessmentSchedule() {
           schedules.map((s) =>
             s.id === editId
               ? {
-                ...s,
-                ...formData,
-                waktu_mulai: formData.waktuMulai
-                  ? new Date(`1970-01-01T${formData.waktuMulai}:00.000Z`)
-                  : undefined,
-                link_video:
-                  formData.metode === "Online"
-                    ? formData.linkVideo || undefined
+                  ...s,
+                  ...formData,
+                  waktu_mulai: formData.waktuMulai
+                    ? new Date(`1970-01-01T${formData.waktuMulai}:00.000Z`)
                     : undefined,
-                inisialAsesor: formData.namaAsesor
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .substring(0, 2)
-                  .toUpperCase(),
-                totalKandidat: selectedAsesiForJadwal.length,
-                asesiList: selectedAsesiForJadwal,
-              }
+                  link_video:
+                    formData.metode === "Online"
+                      ? formData.linkVideo || undefined
+                      : undefined,
+                  inisialAsesor: formData.namaAsesor
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase(),
+                  totalKandidat: selectedAsesiForJadwal.length,
+                  asesiList: selectedAsesiForJadwal,
+                }
               : s,
           ),
         );
@@ -790,12 +799,12 @@ export default function AssessmentSchedule() {
     availableSkemas.length > 0
       ? availableSkemas.map((s) => s.namaSkema || s.nama_skema || s.nama || "")
       : [
-        "Auditor Halal",
-        "Jenjang 5 Bidang Kewirausahaan Industri",
-        "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
-        "Penerjemah Teks Umum",
-        "Penyelia Halal",
-      ];
+          "Auditor Halal",
+          "Jenjang 5 Bidang Kewirausahaan Industri",
+          "Melaksanakan Komunikasi Dengan Pemangku Kepentingan",
+          "Penerjemah Teks Umum",
+          "Penyelia Halal",
+        ];
 
   const [selectedPlenoRole, setSelectedPlenoRole] = useState<string>("Asesor");
   const [previewDocModal, setPreviewDocModal] = useState<{
@@ -811,7 +820,7 @@ export default function AssessmentSchedule() {
           const parsed = JSON.parse(draft);
           if (parsed && typeof parsed === "object") return parsed;
         }
-      } catch { }
+      } catch {}
     }
     return {
       id: undefined,
@@ -1008,7 +1017,7 @@ export default function AssessmentSchedule() {
           a.user?.profil?.namaLengkap && a.user.profil.namaLengkap.trim() !== ""
             ? a.user.profil.namaLengkap
             : a.dataPribadi?.namaLengkap &&
-              a.dataPribadi.namaLengkap.trim() !== ""
+                a.dataPribadi.namaLengkap.trim() !== ""
               ? a.dataPribadi.namaLengkap
               : a.user?.username || a.nama || "Asesi",
         skema:
@@ -1144,7 +1153,11 @@ export default function AssessmentSchedule() {
                   onChange={(e) => {
                     const newTipeTuk = e.target.value;
                     if (newTipeTuk !== formData.tipeTuk) {
-                      setFormData({ ...formData, tipeTuk: newTipeTuk, tuk: "" });
+                      setFormData({
+                        ...formData,
+                        tipeTuk: newTipeTuk,
+                        tuk: "",
+                      });
                     } else {
                       setFormData({ ...formData, tipeTuk: newTipeTuk });
                     }
@@ -1161,7 +1174,8 @@ export default function AssessmentSchedule() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   5. Alamat TUK
                 </label>
-                {formData.tipeTuk === "Mandiri" || formData.tipeTuk === "Sewaktu" ? (
+                {formData.tipeTuk === "Mandiri" ||
+                formData.tipeTuk === "Sewaktu" ? (
                   <select
                     value={formData.tuk}
                     disabled={isPreviewMode}
@@ -1395,7 +1409,7 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
                 {!formData.skema ? (
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Pilih skema sertifikasi terlebih dahulu.
@@ -1431,28 +1445,31 @@ export default function AssessmentSchedule() {
                           if (isDisabled || isPreviewMode) return;
                           const newIds = isSelected
                             ? selectedAsesiForJadwal.filter(
-                              (id) => String(id) !== String(asesi.id),
-                            )
+                                (id) => String(id) !== String(asesi.id),
+                              )
                             : [...selectedAsesiForJadwal, asesi.id];
                           setSelectedAsesiForJadwal(newIds);
                         }}
-                        className={`p-4 rounded-xl border transition-all flex items-center gap-4 ${isDisabled
-                          ? "opacity-50 cursor-not-allowed bg-slate-50 border-gray-200"
-                          : "cursor-pointer"
-                          } ${isSelected
+                        className={`p-4 rounded-xl border transition-all flex items-center gap-4 ${
+                          isDisabled
+                            ? "opacity-50 cursor-not-allowed bg-slate-50 border-gray-200"
+                            : "cursor-pointer"
+                        } ${
+                          isSelected
                             ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
                             : isDisabled
                               ? ""
                               : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
-                          }`}
+                        }`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${isSelected
-                            ? "bg-[#008BE3] border-[#008BE3] text-white"
-                            : isDisabled
-                              ? "bg-slate-200 border-slate-300"
-                              : "border-gray-300"
-                            }`}
+                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
+                            isSelected
+                              ? "bg-[#008BE3] border-[#008BE3] text-white"
+                              : isDisabled
+                                ? "bg-slate-200 border-slate-300"
+                                : "border-gray-300"
+                          }`}
                         >
                           {isSelected && (
                             <CheckSquare size={14} className="stroke-3" />
@@ -1464,10 +1481,11 @@ export default function AssessmentSchedule() {
                               {asesi.nama}
                             </h4>
                             <span
-                              className={`text-[10px] font-bold px-2.5 py-1 rounded-md border inline-flex items-center gap-1 ${asesiMethod === "Online"
-                                ? "bg-sky-50 text-[#008BE3] border-sky-200/80"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
-                                }`}
+                              className={`text-[10px] font-bold px-2.5 py-1 rounded-md border inline-flex items-center gap-1 ${
+                                asesiMethod === "Online"
+                                  ? "bg-sky-50 text-[#008BE3] border-sky-200/80"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                              }`}
                             >
                               {asesiMethod}
                             </span>
@@ -1634,45 +1652,48 @@ export default function AssessmentSchedule() {
 
                           const newItems: AsesiPlenoItem[] = isSelected
                             ? selectedAsesiForPleno.filter(
-                              (item) =>
-                                item.id !== asesi.id &&
-                                item.nama !== asesi.nama,
-                            )
+                                (item) =>
+                                  item.id !== asesi.id &&
+                                  item.nama !== asesi.nama,
+                              )
                             : [
-                              ...selectedAsesiForPleno,
-                              {
-                                id: asesi.id,
-                                nik:
-                                  (asesi as { nik?: string }).nik ||
-                                  asesi.nik ||
-                                  "-",
-                                nama: asesi.nama,
-                                skema: asesi.skema,
-                                asesor:
-                                  typeof asesi.asesor === "string"
-                                    ? asesi.asesor
-                                    : (
-                                      asesi.asesor as unknown as {
-                                        nama?: string;
-                                      }
-                                    )?.nama || "Asesor LSP",
-                                rekomendasiAsesor: asesi.rekomendasiAsesor || "K",
-                                statusPleno: asesi.statusPleno || "K",
-                              },
-                            ];
+                                ...selectedAsesiForPleno,
+                                {
+                                  id: asesi.id,
+                                  nik:
+                                    (asesi as { nik?: string }).nik ||
+                                    asesi.nik ||
+                                    "-",
+                                  nama: asesi.nama,
+                                  skema: asesi.skema,
+                                  asesor:
+                                    typeof asesi.asesor === "string"
+                                      ? asesi.asesor
+                                      : (
+                                          asesi.asesor as unknown as {
+                                            nama?: string;
+                                          }
+                                        )?.nama || "Asesor LSP",
+                                  rekomendasiAsesor:
+                                    asesi.rekomendasiAsesor || "K",
+                                  statusPleno: asesi.statusPleno || "K",
+                                },
+                              ];
 
                           setSelectedAsesiForPleno(newItems);
                         }}
-                        className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3.5 ${isSelected
-                          ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
-                          : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
-                          }`}
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3.5 ${
+                          isSelected
+                            ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
+                            : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
+                        }`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${isSelected
-                            ? "bg-[#008BE3] border-[#008BE3] text-white"
-                            : "border-gray-300"
-                            }`}
+                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
+                            isSelected
+                              ? "bg-[#008BE3] border-[#008BE3] text-white"
+                              : "border-gray-300"
+                          }`}
                         >
                           {isSelected && (
                             <CheckSquare size={14} className="stroke-3" />
@@ -1685,10 +1706,12 @@ export default function AssessmentSchedule() {
                             </h4>
                             {asesi.statusPleno && (
                               <span
-                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${asesi.statusPleno === "Kompeten" || asesi.statusPleno === "K"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-amber-100 text-amber-700"
-                                  }`}
+                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                  asesi.statusPleno === "Kompeten" ||
+                                  asesi.statusPleno === "K"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-amber-100 text-amber-700"
+                                }`}
                               >
                                 {asesi.statusPleno}
                               </span>
@@ -1750,60 +1773,60 @@ export default function AssessmentSchedule() {
 
               {plenoForm.plenoAttendees.filter((a) => a.nama.trim() !== "")
                 .length > 0 && (
-                  <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700">
-                        Peserta Terpilih (
-                        {
-                          plenoForm.plenoAttendees.filter(
-                            (a) => a.nama.trim() !== "",
-                          ).length
+                <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700">
+                      Peserta Terpilih (
+                      {
+                        plenoForm.plenoAttendees.filter(
+                          (a) => a.nama.trim() !== "",
+                        ).length
+                      }
+                      ):
+                    </span>
+                    {!isPreviewMode && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPlenoForm((prev) => ({
+                            ...prev,
+                            plenoAttendees: [],
+                          }))
                         }
-                        ):
-                      </span>
-                      {!isPreviewMode && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setPlenoForm((prev) => ({
-                              ...prev,
-                              plenoAttendees: [],
-                            }))
-                          }
-                          className="text-[11px] text-red-500 hover:underline font-semibold cursor-pointer"
-                        >
-                          Hapus Semua
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {plenoForm.plenoAttendees
-                        .filter((a) => a.nama.trim() !== "")
-                        .map((att, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-[#008BE3]/30 text-[#008BE3] rounded-lg text-xs font-bold shadow-2xs"
-                          >
-                            <span className="text-slate-500 font-normal">
-                              [{att.role}]
-                            </span>
-                            {att.nama}
-                            {!isPreviewMode && (
-                              <button
-                                type="button"
-                                onClick={() => toggleAttendeeSelection(att)}
-                                className="hover:text-red-500 ml-1 cursor-pointer"
-                              >
-                                <X size={12} />
-                              </button>
-                            )}
-                          </span>
-                        ))}
-                    </div>
+                        className="text-[11px] text-red-500 hover:underline font-semibold cursor-pointer"
+                      >
+                        Hapus Semua
+                      </button>
+                    )}
                   </div>
-                )}
+                  <div className="flex flex-wrap gap-2">
+                    {plenoForm.plenoAttendees
+                      .filter((a) => a.nama.trim() !== "")
+                      .map((att, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-[#008BE3]/30 text-[#008BE3] rounded-lg text-xs font-bold shadow-2xs"
+                        >
+                          <span className="text-slate-500 font-normal">
+                            [{att.role}]
+                          </span>
+                          {att.nama}
+                          {!isPreviewMode && (
+                            <button
+                              type="button"
+                              onClick={() => toggleAttendeeSelection(att)}
+                              className="hover:text-red-500 ml-1 cursor-pointer"
+                            >
+                              <X size={12} />
+                            </button>
+                          )}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[260px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
                 {(() => {
                   const mergedUsers = availableUsers.map((u) => {
                     let mappedRole = u.role;
@@ -1867,16 +1890,18 @@ export default function AssessmentSchedule() {
                       <div
                         key={usr.id}
                         onClick={() => toggleAttendeeSelection(usr)}
-                        className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${selected
-                          ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
-                          : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
-                          }`}
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
+                          selected
+                            ? "border-[#008BE3] bg-[#008BE3]/5 ring-1 ring-[#008BE3]/20"
+                            : "border-gray-200 hover:border-[#008BE3]/40 hover:bg-slate-50"
+                        }`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${selected
-                            ? "bg-[#008BE3] border-[#008BE3] text-white"
-                            : "border-gray-300"
-                            }`}
+                          className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
+                            selected
+                              ? "bg-[#008BE3] border-[#008BE3] text-white"
+                              : "border-gray-300"
+                          }`}
                         >
                           {selected && (
                             <CheckSquare size={14} className="stroke-3" />
@@ -2060,37 +2085,37 @@ export default function AssessmentSchedule() {
 
         <div className="overflow-x-auto relative">
           {activeTab === "asesmen" && (
-            <table className="w-full text-left border-collapse min-w-[1000px]">
+            <table className="w-full text-left border-collapse min-w-250">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[250px] max-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     Metode
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Uji
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Jam Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[200px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
                     Asesor Ditugaskan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Surat Penugasan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-[200px] top-0">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-50 top-0">
                     Aksi
                   </th>
                 </tr>
@@ -2134,10 +2159,11 @@ export default function AssessmentSchedule() {
 
                           <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                             <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${(item.metode || item.metode) === "Online"
-                                ? "bg-sky-50 text-[#008BE3] border-sky-200 shadow-2xs"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-2xs"
-                                }`}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${
+                                (item.metode || item.metode) === "Online"
+                                  ? "bg-sky-50 text-[#008BE3] border-sky-200 shadow-2xs"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-2xs"
+                              }`}
                             >
                               {item.metode || item.metode || "Offline"}
                             </span>
@@ -2164,10 +2190,10 @@ export default function AssessmentSchedule() {
                                   !item.alamat
                                     .toLowerCase()
                                     .includes("online")) && (
-                                    <span className="text-[11px] text-gray-500 font-medium block mt-0.5">
-                                      Jl. A.H. Nasution No. 105, Cipadung, Cibiru
-                                    </span>
-                                  )}
+                                  <span className="text-[11px] text-gray-500 font-medium block mt-0.5">
+                                    Jl. A.H. Nasution No. 105, Cipadung, Cibiru
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -2256,7 +2282,7 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[200px]">
+                          <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-50">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handlePreviewAsesmen(item)}
@@ -2293,15 +2319,15 @@ export default function AssessmentSchedule() {
                       (s) =>
                         s.status !== "Menunggu Pleno" && s.status !== "Selesai",
                     ).length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={10}
-                            className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
-                          >
-                            Tidak ada jadwal asesmen aktif.
-                          </td>
-                        </tr>
-                      )}
+                      <tr>
+                        <td
+                          colSpan={10}
+                          className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
+                        >
+                          Tidak ada jadwal asesmen aktif.
+                        </td>
+                      </tr>
+                    )}
                   </>
                 )}
               </tbody>
@@ -2309,28 +2335,28 @@ export default function AssessmentSchedule() {
           )}
 
           {activeTab === "pleno" && (
-            <table className="w-full text-left border-collapse min-w-[1200px]">
+            <table className="w-full text-left border-collapse min-w-300">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[250px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
                     Nama Sidang Pleno
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[180px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[350px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-[120px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-[150px] sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                     Status Sidang
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-[180px] top-0">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-45 top-0">
                     Aksi
                   </th>
                 </tr>
@@ -2348,7 +2374,7 @@ export default function AssessmentSchedule() {
                             `Sidang Pleno ${item.skema || item.id}`}
                         </div>
                         {item.skema && (
-                          <div className="text-[12px] font-bold text-[#008BE3] mt-0.5 truncate max-w-[250px]">
+                          <div className="text-[12px] font-bold text-[#008BE3] mt-0.5 truncate max-w-62.5">
                             {item.skema}
                           </div>
                         )}
@@ -2393,12 +2419,13 @@ export default function AssessmentSchedule() {
                       </td>
                       <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-2xs ${item.jenisTuk === "Sewaktu"
-                            ? "bg-amber-50 text-amber-700 border-amber-200"
-                            : item.jenisTuk === "Mandiri"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-sky-50 text-[#008BE3] border-sky-200"
-                            }`}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-2xs ${
+                            item.jenisTuk === "Sewaktu"
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : item.jenisTuk === "Mandiri"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-sky-50 text-[#008BE3] border-sky-200"
+                          }`}
                         >
                           {item.jenisTuk || "Sewaktu"}
                         </span>
@@ -2418,10 +2445,10 @@ export default function AssessmentSchedule() {
                               !item.alamat
                                 .toLowerCase()
                                 .includes("online")) && (
-                                <span className="text-[11px] text-gray-500 font-medium block mt-0.5">
-                                  Jl. A.H. Nasution No. 105, Cipadung, Cibiru
-                                </span>
-                              )}
+                              <span className="text-[11px] text-gray-500 font-medium block mt-0.5">
+                                Jl. A.H. Nasution No. 105, Cipadung, Cibiru
+                              </span>
+                            )}
                           </div>
                         </span>
                       </td>
@@ -2439,7 +2466,7 @@ export default function AssessmentSchedule() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-[180px]">
+                      <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-45">
                         <div className="flex items-center justify-center gap-2">
                           {!readOnly && (
                             <>
@@ -2566,9 +2593,9 @@ export default function AssessmentSchedule() {
               </div>
 
               {/* Body */}
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-[300px]">
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-100/80 flex justify-center items-center min-h-75">
                 {previewDocModal.url.startsWith("data:image") ||
-                  previewDocModal.url.startsWith("http") ? (
+                previewDocModal.url.startsWith("http") ? (
                   <img
                     src={previewDocModal.url}
                     alt={previewDocModal.name}
@@ -2585,7 +2612,7 @@ export default function AssessmentSchedule() {
 
               {/* Footer */}
               <div className="px-6 py-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
-                <span className="text-xs text-slate-500 font-medium truncate max-w-[250px]">
+                <span className="text-xs text-slate-500 font-medium truncate max-w-62.5">
                   {previewDocModal.name}
                 </span>
                 <div className="flex items-center gap-2">

@@ -68,7 +68,7 @@ const ROUTE_CRUMBS: Record<string, CrumbItem[]> = {
   ],
   "/assessor/verifikasiportofolio": [
     { label: "Dashboard", href: "/assessor/overview" },
-    { label: "Verifikasi Portofolio" },
+    { label: "Upload Portofolio" },
   ],
   "/assessor/verifikasibanding": [
     { label: "Dashboard", href: "/assessor/overview" },
@@ -225,7 +225,7 @@ export function Breadcrumb({ className = "" }: { className?: string }) {
               >
                 {crumb.label}
               </button>
-            )}  
+            )}
           </React.Fragment>
         );
       })}
