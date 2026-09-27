@@ -95,8 +95,8 @@ export default function AssessmentSchedule() {
       skema: item.skema || "",
       metode: item.metode || "Offline",
       tipeTuk: item.tipeTuk || "Sewaktu",
-      tuk: item.tuk || "TUK Sewaktu Kantor LSP",
-      alamat: item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
+      tuk: item.tuk || "",
+      alamat: item.alamat || "",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
       linkVideo: item.linkVideo || "",
@@ -181,8 +181,8 @@ export default function AssessmentSchedule() {
       skema: item.skema || "",
       metode: item.metode || "Offline",
       tipeTuk: item.tipeTuk || "Sewaktu",
-      tuk: item.tuk || "TUK Sewaktu Kantor LSP",
-      alamat: item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
+      tuk: item.tuk || "",
+      alamat: item.alamat || "",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
       linkVideo: item.linkVideo || "",
@@ -301,6 +301,7 @@ export default function AssessmentSchedule() {
     nama: string;
     alamat?: string;
     kapasitas?: number | null;
+    tipe?: string;
   }
 
   interface AvailableAsesorOption {
@@ -391,8 +392,8 @@ export default function AssessmentSchedule() {
       linkVideo: item.link_video || "",
       tipeTuk: item.tipe_tuk || "Sewaktu",
       tuk: item.master_tuk?.nama || item.alamat || "TUK Kantor LSP",
-      // Ambil alamat dari master_tuk jika ada, jika tidak pakai alamat custom, jika kosong pakai Gedung PTIPD
-      alamat: item.master_tuk?.alamat || item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
+      // Ambil alamat dari master_tuk jika ada, jika tidak pakai alamat custom, jika kosong pakai string kosong
+      alamat: item.master_tuk?.alamat || item.alamat || "",
       totalKandidat: item.jadwal_asesmen_peserta?.length || 0,
       namaAsesor: asesorName,
       inisialAsesor: initials,
@@ -552,7 +553,7 @@ export default function AssessmentSchedule() {
       skema: "",
       metode: "Offline",
       tipeTuk: "Sewaktu",
-      alamat: "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
+      alamat: "",
       tanggal: "",
       waktuMulai: "08:00",
       tuk: "",
@@ -1059,9 +1060,14 @@ export default function AssessmentSchedule() {
                 <select
                   value={formData.tipeTuk}
                   disabled={isPreviewMode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tipeTuk: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const newTipeTuk = e.target.value;
+                    if (newTipeTuk !== formData.tipeTuk) {
+                      setFormData({ ...formData, tipeTuk: newTipeTuk, tuk: "" });
+                    } else {
+                      setFormData({ ...formData, tipeTuk: newTipeTuk });
+                    }
+                  }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
                   <option value="">Pilih Jenis TUK</option>
@@ -1074,16 +1080,36 @@ export default function AssessmentSchedule() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   5. Alamat TUK
                 </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Gedung PTIPD UIN Sunan Gunung Djati Bandung"
-                  value={formData.alamat}
-                  onChange={(e) =>
-                    setFormData({ ...formData, alamat: e.target.value })
-                  }
-                  disabled={isPreviewMode}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
-                />
+                {formData.tipeTuk === "Mandiri" || formData.tipeTuk === "Sewaktu" ? (
+                  <select
+                    value={formData.tuk}
+                    disabled={isPreviewMode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tuk: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                  >
+                    <option value="">Pilih TUK</option>
+                    {availableTuks
+                      .filter((t) => t.tipe === formData.tipeTuk)
+                      .map((tuk) => (
+                        <option key={tuk.id} value={tuk.nama}>
+                          {tuk.nama}
+                        </option>
+                      ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Masukkan TUK"
+                    value={formData.tuk}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tuk: e.target.value })
+                    }
+                    disabled={isPreviewMode}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                  />
+                )}
               </div>
 
               <div className="min-w-0">
@@ -1123,21 +1149,16 @@ export default function AssessmentSchedule() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   8. Spesifikasi Ruang TUK
                 </label>
-                <select
-                  value={formData.tuk}
-                  disabled={isPreviewMode}
+                <input
+                  type="text"
+                  placeholder="Masukkan Spesifikasi Ruang TUK"
+                  value={formData.alamat}
                   onChange={(e) =>
-                    setFormData({ ...formData, tuk: e.target.value })
+                    setFormData({ ...formData, alamat: e.target.value })
                   }
+                  disabled={isPreviewMode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
-                >
-                  <option value="">Pilih Gedung / Spesifikasi Ruangan</option>
-                  {availableTuks.map((tuk) => (
-                    <option key={tuk.id} value={tuk.nama}>
-                      {tuk.nama}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
