@@ -96,7 +96,7 @@ export default function AssessmentSchedule() {
       metode: item.metode || "Offline",
       tipeTuk: item.tipeTuk || "Sewaktu",
       tuk: item.tuk || "TUK Sewaktu Kantor LSP",
-      alamat: item.alamat || "",
+      alamat: item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
       linkVideo: item.linkVideo || "",
@@ -182,7 +182,7 @@ export default function AssessmentSchedule() {
       metode: item.metode || "Offline",
       tipeTuk: item.tipeTuk || "Sewaktu",
       tuk: item.tuk || "TUK Sewaktu Kantor LSP",
-      alamat: item.alamat || "",
+      alamat: item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       tanggal: item.tanggal || "",
       waktuMulai: item.waktuMulai || "",
       linkVideo: item.linkVideo || "",
@@ -331,7 +331,6 @@ export default function AssessmentSchedule() {
     dataPribadi?: {
       namaLengkap?: string;
       nik?: string;
-      alamatInstitusi?: string;
     };
     statusPembayaran?: string;
     verifikasi_pengajuan?: {
@@ -392,8 +391,8 @@ export default function AssessmentSchedule() {
       linkVideo: item.link_video || "",
       tipeTuk: item.tipe_tuk || "Sewaktu",
       tuk: item.master_tuk?.nama || item.alamat || "TUK Kantor LSP",
-      // Ambil alamat dari master_tuk jika ada, jika tidak pakai alamat custom
-      alamat: item.master_tuk?.alamat || item.alamat || "",
+      // Ambil alamat dari master_tuk jika ada, jika tidak pakai alamat custom, jika kosong pakai Gedung PTIPD
+      alamat: item.master_tuk?.alamat || item.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       totalKandidat: item.jadwal_asesmen_peserta?.length || 0,
       namaAsesor: asesorName,
       inisialAsesor: initials,
@@ -490,7 +489,7 @@ export default function AssessmentSchedule() {
             waktu: p.waktu ? (p.waktu.includes("T") && !isNaN(Date.parse(p.waktu)) ? new Date(p.waktu).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : p.waktu) : "",
             skema: Array.isArray(p.skema) ? p.skema.join(", ") : p.skema || "Multi Skema",
             jenisTuk: p.jenisTuk || "Sewaktu",
-            alamat: p.alamat || "",
+            alamat: p.alamat || "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
             jumlahAsesi: p.pleno_asesi?.length || 0,
             status: p.status || "Terjadwal",
             deskripsi: p.deskripsi || "",
@@ -553,7 +552,7 @@ export default function AssessmentSchedule() {
       skema: "",
       metode: "Offline",
       tipeTuk: "Sewaktu",
-      alamat: "",
+      alamat: "Gedung PTIPD UIN Sunan Gunung Djati Bandung",
       tanggal: "",
       waktuMulai: "08:00",
       tuk: "",
@@ -743,7 +742,7 @@ export default function AssessmentSchedule() {
       tanggal: "",
       waktu: "",
       skema: "",
-      alamat: "",
+      alamat: "Gedung PTIPD (Offline)",
       detailAlamat: "",
       deskripsi: "",
       plenoAttendees: [],
@@ -938,7 +937,6 @@ export default function AssessmentSchedule() {
           typeof a.skema === "object" ? a.skema?.namaSkema || a.skema?.nama || "" : a.skema || "",
         metode: a.jenisMetode || a.metode || "Offline",
         nik: a.user?.profil?.nik || a.nik || "",
-        alamatInstitusi: a.dataPribadi?.alamatInstitusi || "",
       }))
       .sort((a, b) => a.nama.localeCompare(b.nama));
     const selectedTuk = availableTuks.find((t) => t.id === Number(formData.tuk) || t.nama === formData.tuk);
@@ -1061,18 +1059,9 @@ export default function AssessmentSchedule() {
                 <select
                   value={formData.tipeTuk}
                   disabled={isPreviewMode}
-                  onChange={(e) => {
-                    const tipeTuk = e.target.value;
-                    let newAlamat = formData.alamat || "";
-                    if (tipeTuk === "Mandiri") {
-                      newAlamat = "";
-                    } else if (tipeTuk === "Sewaktu") {
-                      newAlamat = "";
-                    } else if (tipeTuk === "Tempat Kerja") {
-                      newAlamat = "";
-                    }
-                    setFormData({ ...formData, tipeTuk, alamat: newAlamat });
-                  }}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tipeTuk: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
                 >
                   <option value="">Pilih Jenis TUK</option>
@@ -1085,30 +1074,16 @@ export default function AssessmentSchedule() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   5. Alamat TUK
                 </label>
-                {formData.tipeTuk === "Mandiri" ? (
-                  <select
-                    value={formData.alamat}
-                    onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-                    disabled={isPreviewMode}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
-                  >
-                    <option value="">Pilih Gedung / Alamat TUK</option>
-                    <option value="Gedung PTIPD">Gedung PTIPD</option>
-                    <option value="Gedung Language Center">Gedung Language Center</option>
-                    <option value="Gedung Fakultas Saintek">Gedung Fakultas Saintek</option>
-                    <option value="Gedung Perpustakaan Kampus 1">Gedung Perpustakaan Kampus 1</option>
-                    <option value="Gedung Pascasarjana Kampus 2">Gedung Pascasarjana Kampus 2</option>
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    placeholder="Contoh: Gedung C: Fak. Ilmu Sosial dan Ilmu Politik"
-                    value={formData.alamat}
-                    onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-                    disabled={isPreviewMode}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900 disabled:bg-slate-50"
-                  />
-                )}
+                <input
+                  type="text"
+                  placeholder="Contoh: Gedung PTIPD UIN Sunan Gunung Djati Bandung"
+                  value={formData.alamat}
+                  onChange={(e) =>
+                    setFormData({ ...formData, alamat: e.target.value })
+                  }
+                  disabled={isPreviewMode}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
+                />
               </div>
 
               <div className="min-w-0">
@@ -1148,16 +1123,21 @@ export default function AssessmentSchedule() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   8. Spesifikasi Ruang TUK
                 </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Lantai 1, Ruang 101"
+                <select
                   value={formData.tuk}
                   disabled={isPreviewMode}
                   onChange={(e) =>
                     setFormData({ ...formData, tuk: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 bg-white font-medium text-slate-900"
-                />
+                >
+                  <option value="">Pilih Gedung / Spesifikasi Ruangan</option>
+                  {availableTuks.map((tuk) => (
+                    <option key={tuk.id} value={tuk.nama}>
+                      {tuk.nama}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="min-w-0">
                 <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -1291,8 +1271,9 @@ export default function AssessmentSchedule() {
                           availableAsesi.length,
                           kapasitas,
                         );
-                        const newIds = availableAsesi.slice(0, maxAllowed).map((a) => a.id);
-                        setSelectedAsesiForJadwal(newIds);
+                        setSelectedAsesiForJadwal(
+                          availableAsesi.slice(0, maxAllowed).map((a) => a.id),
+                        );
                       }
                     }}
                     className="text-xs font-bold text-[#008BE3] hover:text-[#0076C2] transition-colors cursor-pointer"
