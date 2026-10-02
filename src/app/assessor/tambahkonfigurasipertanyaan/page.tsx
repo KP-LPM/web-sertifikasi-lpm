@@ -20,6 +20,7 @@ import {
   Eye,
   X,
   FileText,
+  Loader2,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { FormFRIA04A } from "@/components/forms/FormFRIA04A";
@@ -43,6 +44,9 @@ import {
   getAllUsers,
   getKonfigurasiPertanyaanDetail,
   updateKonfigurasiPertanyaanAPI,
+  updateKonfigurasiStep2API,
+  updateKonfigurasiStep3API,
+  updateKonfigurasiStep4API,
 } from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 // Dummy options removed. Skema options now loaded dynamically.
@@ -129,18 +133,18 @@ function TambahKonfigurasiPertanyaanContent() {
             skemaRes.map((s: Record<string, string | number | undefined>) => ({
               value: String(
                 s.id?.toString() ||
-                  s.kodeSkema ||
-                  s.namaSkema ||
-                  s.name ||
-                  s.id ||
-                  "",
+                s.kodeSkema ||
+                s.namaSkema ||
+                s.name ||
+                s.id ||
+                "",
               ),
               label: String(
                 `${s.kodeSkema || s.kode || s.code || ""} - ${s.namaSkema || s.nama || s.name || ""}`
                   .replace(/^- | -$/g, "")
                   .trim() ||
-                  s.name ||
-                  "",
+                s.name ||
+                "",
               ),
             })),
           );
@@ -149,9 +153,9 @@ function TambahKonfigurasiPertanyaanContent() {
         const usersList = Array.isArray(usersRes)
           ? usersRes
           : usersRes &&
-              typeof usersRes === "object" &&
-              "data" in usersRes &&
-              Array.isArray((usersRes as { data: unknown[] }).data)
+            typeof usersRes === "object" &&
+            "data" in usersRes &&
+            Array.isArray((usersRes as { data: unknown[] }).data)
             ? (usersRes as { data: unknown[] }).data
             : [];
 
@@ -182,9 +186,10 @@ function TambahKonfigurasiPertanyaanContent() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSuccessToast, setIsSuccessToast] = useState<string | null>(null);
   const konfigurasiId = searchParams.get("id");
-  const mode = searchParams.get("mode");
-  const isEdit = mode === "edit";
+  const mode = searchParams.get("mode")?.trim();
   const isReadOnly = mode === "view";
+  const isEdit = mode === "edit" || (!!konfigurasiId && !isReadOnly);
+  const [savingStep, setSavingStep] = useState<number | null>(null);
   // Central Wizard Form State
   const [formData, setFormData] = useState<WizardFormState>(initialWizardState);
 
@@ -239,9 +244,9 @@ function TambahKonfigurasiPertanyaanContent() {
                   value: String(item.user_id || item.nama || ""),
                   label: String(
                     item.users?.profil?.namaLengkap ||
-                      item.users?.username ||
-                      item.nama ||
-                      "",
+                    item.users?.username ||
+                    item.nama ||
+                    "",
                   ),
                   no_met: item.users?.profil?.nomorRegistrasiMet || "-",
                   tanda_tangan: item.users?.profil?.tandaTangan || undefined,
@@ -252,8 +257,8 @@ function TambahKonfigurasiPertanyaanContent() {
                 namaKonfigurasi: detail.nama || prev.metadata.namaKonfigurasi,
                 skemaSertifikasi: String(
                   detail.skema_id ||
-                    detail.skema ||
-                    prev.metadata.skemaSertifikasi,
+                  detail.skema ||
+                  prev.metadata.skemaSertifikasi,
                 ),
                 versi: detail.versi || "1.0",
                 // penyusun and validator loaded per step if available
@@ -264,90 +269,90 @@ function TambahKonfigurasiPertanyaanContent() {
               const step2Data = detail.konfigurasi_step2_skenario;
               const step2BlokA = step2Data
                 ? {
-                    skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
-                    informasiYangDiberikan:
-                      Array.isArray(step2Data.informasi_yang_diberikan) &&
+                  skenarioStudiKasus: step2Data.skenario_studi_kasus || "",
+                  informasiYangDiberikan:
+                    Array.isArray(step2Data.informasi_yang_diberikan) &&
                       step2Data.informasi_yang_diberikan.length > 0
-                        ? step2Data.informasi_yang_diberikan
-                        : [""],
-                    lingkupBahasanStudiKasus:
-                      Array.isArray(step2Data.lingkup_bahasan_studi_kasus) &&
+                      ? step2Data.informasi_yang_diberikan
+                      : [""],
+                  lingkupBahasanStudiKasus:
+                    Array.isArray(step2Data.lingkup_bahasan_studi_kasus) &&
                       step2Data.lingkup_bahasan_studi_kasus.length > 0
-                        ? step2Data.lingkup_bahasan_studi_kasus
-                        : [""],
-                    perlengkapanDanBahan:
-                      step2Data.perlengkapan_dan_bahan || "",
-                  }
+                      ? step2Data.lingkup_bahasan_studi_kasus
+                      : [""],
+                  perlengkapanDanBahan:
+                    step2Data.perlengkapan_dan_bahan || "",
+                }
                 : prev.step2.blokA;
 
               const step2BlokB = step2Data
                 ? {
-                    fokusPresentasi:
-                      Array.isArray(step2Data.fokus_presentasi) &&
+                  fokusPresentasi:
+                    Array.isArray(step2Data.fokus_presentasi) &&
                       step2Data.fokus_presentasi.length > 0
-                        ? step2Data.fokus_presentasi
-                        : [""],
-                    ketentuanAlokasiWaktu:
-                      step2Data.ketentuan_alokasi_waktu || "",
-                    kriteriaEvaluasiAsesor:
-                      Array.isArray(step2Data.kriteria_evaluasi_asesor) &&
+                      ? step2Data.fokus_presentasi
+                      : [""],
+                  ketentuanAlokasiWaktu:
+                    step2Data.ketentuan_alokasi_waktu || "",
+                  kriteriaEvaluasiAsesor:
+                    Array.isArray(step2Data.kriteria_evaluasi_asesor) &&
                       step2Data.kriteria_evaluasi_asesor.length > 0
-                        ? step2Data.kriteria_evaluasi_asesor
-                        : [""],
-                  }
+                      ? step2Data.kriteria_evaluasi_asesor
+                      : [""],
+                }
                 : prev.step2.blokB;
 
               const step3Lingkups =
                 detail.konfigurasi_step3_lingkup?.length > 0
                   ? detail.konfigurasi_step3_lingkup.map(
-                      (l: {
+                    (l: {
+                      id?: string | number;
+                      nama_lingkup?: string;
+                      konfigurasi_step3_sub_pertanyaan?: {
                         id?: string | number;
-                        nama_lingkup?: string;
-                        konfigurasi_step3_sub_pertanyaan?: {
-                          id?: string | number;
-                          skenario_pertanyaan?: string;
-                          kode_kuk?: string[];
-                          ekspektasi_tanggapan?: string;
-                        }[];
-                      }) => ({
-                        id: `lingkup-${l.id || Math.random()}`,
-                        namaLingkup: l.nama_lingkup || "",
-                        subPertanyaans:
-                          l.konfigurasi_step3_sub_pertanyaan?.map(
-                            (sub: {
-                              id?: string | number;
-                              skenario_pertanyaan?: string;
-                              kode_kuk?: string[];
-                              ekspektasi_tanggapan?: string;
-                            }) => ({
-                              id: `sub-${sub.id || Math.random()}`,
-                              skenarioPertanyaan: sub.skenario_pertanyaan || "",
-                              kodeKUK: Array.isArray(sub.kode_kuk)
-                                ? sub.kode_kuk
-                                : [],
-                              ekspektasiTanggapan:
-                                sub.ekspektasi_tanggapan || "",
-                            }),
-                          ) || [],
-                      }),
-                    )
+                        skenario_pertanyaan?: string;
+                        kode_kuk?: string[];
+                        ekspektasi_tanggapan?: string;
+                      }[];
+                    }) => ({
+                      id: `lingkup-${l.id || Math.random()}`,
+                      namaLingkup: l.nama_lingkup || "",
+                      subPertanyaans:
+                        l.konfigurasi_step3_sub_pertanyaan?.map(
+                          (sub: {
+                            id?: string | number;
+                            skenario_pertanyaan?: string;
+                            kode_kuk?: string[];
+                            ekspektasi_tanggapan?: string;
+                          }) => ({
+                            id: `sub-${sub.id || Math.random()}`,
+                            skenarioPertanyaan: sub.skenario_pertanyaan || "",
+                            kodeKUK: Array.isArray(sub.kode_kuk)
+                              ? sub.kode_kuk
+                              : [],
+                            ekspektasiTanggapan:
+                              sub.ekspektasi_tanggapan || "",
+                          }),
+                        ) || [],
+                    }),
+                  )
                   : prev.step3.lingkups;
 
               const step4Questions =
                 detail.konfigurasi_step4_pertanyaan?.length > 0
                   ? detail.konfigurasi_step4_pertanyaan.map(
-                      (q: {
-                        id?: string | number;
-                        kode_kuk_ref?: string;
-                        pertanyaan_lisan?: string;
-                        kunci_jawaban?: string;
-                      }) => ({
-                        id: `q4-${q.id || Math.random()}`,
-                        kodeKUKRef: q.kode_kuk_ref || "",
-                        pertanyaanLisan: q.pertanyaan_lisan || "",
-                        kunciJawaban: q.kunci_jawaban || "",
-                      }),
-                    )
+                    (q: {
+                      id?: string | number;
+                      kode_kuk_ref?: string;
+                      pertanyaan_lisan?: string;
+                      kunci_jawaban?: string;
+                    }) => ({
+                      id: `q4-${q.id || Math.random()}`,
+                      kodeKUKRef: q.kode_kuk_ref || "",
+                      pertanyaanLisan: q.pertanyaan_lisan || "",
+                      kunciJawaban: q.kunci_jawaban || "",
+                    }),
+                  )
                   : prev.step4.questions;
 
               const getAsesors = (type: string, peran: string) => {
@@ -860,6 +865,163 @@ function TambahKonfigurasiPertanyaanContent() {
     }
   };
 
+  const extractPenyusun = (
+    list: any[] | undefined,
+    peran: string,
+    type: string,
+  ) => {
+    if (!list) return [];
+    return list.map((item) => ({
+      peran: peran,
+      form_type: type,
+      user_id: !isNaN(Number(item.value)) ? Number(item.value) : undefined,
+    }));
+  };
+
+  const handleSaveSingleForm = async (stepNumber: number) => {
+    if (!validateCurrentStep(stepNumber)) {
+      return;
+    }
+
+    setSavingStep(stepNumber);
+    try {
+      const configName =
+        formData.metadata.namaKonfigurasi.trim() ||
+        "Draft Konfigurasi Pertanyaan";
+      const skemaId = Number(formData.metadata.skemaSertifikasi) || 1;
+
+      let currentId = konfigurasiId ? Number(konfigurasiId) : null;
+
+      // Jika form baru dan belum ada ID, buat data induk konfigurasi terlebih dahulu
+      if (!currentId) {
+        const initialCreatePayload = {
+          nama: configName,
+          skema_id: skemaId,
+          tipe_form: "Multi-Step Wizard",
+          versi: formData.metadata.versi || "1.0",
+          is_default: formData.metadata.isDefault,
+          status: "Draft",
+          penyusun: [],
+          step1: [],
+          step2: null,
+          step3: [],
+          step4: [],
+        };
+        const created = await createKonfigurasiPertanyaan(initialCreatePayload);
+        currentId = created?.id;
+
+        if (currentId) {
+          // Update URL query params agar halaman beralih ke mode edit dengan id
+          router.replace(
+            `/assessor/tambahkonfigurasipertanyaan?id=${currentId}&mode=edit`,
+          );
+        }
+      }
+
+      if (!currentId) {
+        throw new Error("Gagal memperoleh ID konfigurasi untuk menyimpan form.");
+      }
+
+      if (stepNumber === 1) {
+        // Simpan Form FR.IA.04A
+        const step2Penyusun = [
+          ...extractPenyusun(formData.step2.penyusun, "Penyusun", "step2"),
+          ...extractPenyusun(formData.step2.validator, "Validator", "step2"),
+          ...extractPenyusun(formData.step2.supervisor, "Supervisor", "step2"),
+        ];
+        await updateKonfigurasiStep2API(currentId, {
+          skenario_studi_kasus: formData.step2.blokA.skenarioStudiKasus,
+          informasi_yang_diberikan: formData.step2.blokA.informasiYangDiberikan,
+          lingkup_bahasan_studi_kasus:
+            formData.step2.blokA.lingkupBahasanStudiKasus,
+          perlengkapan_dan_bahan: formData.step2.blokA.perlengkapanDanBahan,
+          fokus_presentasi: formData.step2.blokB.fokusPresentasi,
+          ketentuan_alokasi_waktu: formData.step2.blokB.ketentuanAlokasiWaktu,
+          kriteria_evaluasi_asesor: formData.step2.blokB.kriteriaEvaluasiAsesor,
+          penyusun: step2Penyusun,
+        });
+        setIsSuccessToast("Form FR.IA.04A berhasil disimpan!");
+      } else if (stepNumber === 2) {
+        // Simpan Form FR.IA.04B
+        const step3Penyusun = [
+          ...extractPenyusun(formData.step3.penyusun, "Penyusun", "step3"),
+          ...extractPenyusun(formData.step3.validator, "Validator", "step3"),
+        ];
+        await updateKonfigurasiStep3API(currentId, {
+          lingkup: formData.step3.lingkups.map((l) => ({
+            nama_lingkup: l.namaLingkup,
+            sub_pertanyaan: l.subPertanyaans.map((sp) => ({
+              skenario_pertanyaan: sp.skenarioPertanyaan,
+              kode_kuk: sp.kodeKUK,
+              ekspektasi_tanggapan: sp.ekspektasiTanggapan,
+            })),
+          })),
+          penyusun: step3Penyusun,
+        });
+        setIsSuccessToast("Form FR.IA.04B berhasil disimpan!");
+      } else if (stepNumber === 3) {
+        // Simpan Form FR.IA.07
+        const step4Penyusun = [
+          ...extractPenyusun(formData.step4.penyusun, "Penyusun", "step4"),
+          ...extractPenyusun(formData.step4.validator, "Validator", "step4"),
+        ];
+        await updateKonfigurasiStep4API(currentId, {
+          pertanyaan_lisan: formData.step4.questions.map((q) => ({
+            pertanyaan_lisan: q.pertanyaanLisan,
+            kode_kuk_ref: q.kodeKUKRef,
+            kunci_jawaban: q.kunciJawaban,
+          })),
+          penyusun: step4Penyusun,
+        });
+        setIsSuccessToast("Form FR.IA.07 berhasil disimpan!");
+      }
+
+      // Update local context
+      const contextPayload = {
+        nama: configName,
+        skema:
+          skemaOptions.find((s) => s.value === formData.metadata.skemaSertifikasi)
+            ?.label ||
+          formData.metadata.skemaSertifikasi ||
+          "Skema Sertifikasi",
+        tipeForm: "Multi-Step Wizard",
+        versi: formData.metadata.versi,
+        isDefault: formData.metadata.isDefault,
+        status: "Tidak Aktif" as "Aktif" | "Tidak Aktif",
+        formData: formData,
+        subPertanyaans: [
+          {
+            id: "sp2",
+            nama: "Penjelasan Singkat Proyek",
+            tipePertanyaan: "skenario_fri4a",
+            blokA: formData.step2.blokA,
+            blokB: formData.step2.blokB,
+          },
+          {
+            id: "sp3",
+            nama: "Penilaian Proyek Singkat",
+            tipePertanyaan: "nested_essay_proyek",
+            lingkups: formData.step3.lingkups,
+          },
+          {
+            id: "sp4",
+            nama: "Pertanyaan Lisan",
+            tipePertanyaan: "esai_kunci",
+            questions: formData.step4.questions,
+          },
+        ],
+      };
+      updateKonfigurasiPertanyaan(currentId, contextPayload);
+    } catch (err: unknown) {
+      console.error("Gagal menyimpan form:", err);
+      setValidationError(
+        err instanceof Error ? err.message : "Gagal menyimpan form ke server.",
+      );
+    } finally {
+      setSavingStep(null);
+    }
+  };
+
   const handleSaveToContext = async (publishStatus: "draft" | "published") => {
     // Re-validate all steps if publishing
     if (publishStatus === "published") {
@@ -909,19 +1071,6 @@ function TambahKonfigurasiPertanyaanContent() {
           questions: formData.step4.questions,
         },
       ],
-    };
-
-    const extractPenyusun = (
-      list: any[] | undefined,
-      peran: string,
-      type: string,
-    ) => {
-      if (!list) return [];
-      return list.map((item) => ({
-        peran: peran,
-        form_type: type,
-        user_id: !isNaN(Number(item.value)) ? Number(item.value) : undefined,
-      }));
     };
 
     const apiPayload = {
@@ -1197,67 +1346,53 @@ function TambahKonfigurasiPertanyaanContent() {
         <div className="min-w-175">
           <div className="grid grid-cols-4 gap-2 relative">
             {/* Connecting Progress Line */}
-            <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-100 z-0">
-              <div
-                className="h-full bg-[#008BE3] transition-all duration-300"
-                style={{
-                  width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%`,
-                }}
-              />
-            </div>
+            {!isEdit && (
+              <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-100 z-0">
+                <div
+                  className="h-full bg-[#008BE3] transition-all duration-300"
+                  style={{
+                    width: `${((activeStep - 1) / (stepsInfo.length - 1)) * 100}%`,
+                  }}
+                />
+              </div>
+            )}
 
             {stepsInfo.map((st) => {
               const isActive = activeStep === st.number;
-              const isCompleted = activeStep > st.number;
+              const isCompleted = !isEdit && st.number < activeStep;
 
               return (
                 <button
                   key={st.number}
                   onClick={() => {
-                    if (st.number < activeStep) {
-                      setActiveStep(st.number);
-                    } else if (st.number === activeStep + 1) {
-                      if (validateCurrentStep(activeStep)) {
-                        setActiveStep(st.number);
-                      }
-                    }
+                    setActiveStep(st.number);
                   }}
-                  className={`flex flex-col items-center text-center group cursor-pointer relative z-10 transition-all ${
-                    isActive ? "scale-105" : "opacity-85 hover:opacity-100"
-                  }`}
+                  className={`flex flex-col items-center text-center group cursor-pointer relative z-10 transition-all ${isActive ? "scale-105" : "opacity-75 hover:opacity-100"
+                    }`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${
-                      isCompleted
-                        ? "bg-emerald-600 text-white border-2 border-emerald-600"
-                        : isActive
-                          ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
-                          : "bg-white text-slate-400 border-2 border-gray-300"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-sm ${isActive
+                      ? "bg-[#008BE3] text-white border-4 border-sky-100 shadow-md ring-2 ring-[#008BE3]"
+                      : isCompleted
+                        ? "bg-emerald-500 text-white border-2 border-emerald-500"
+                        : "bg-white text-slate-600 border-2 border-slate-300 hover:border-[#008BE3]"
+                      }`}
                   >
-                    {isCompleted ? (
-                      <Check size={18} strokeWidth={3} />
-                    ) : (
-                      st.number
-                    )}
+                    {isCompleted ? <Check size={18} strokeWidth={3} /> : st.number}
                   </div>
 
                   <div className="mt-2 space-y-0.5">
                     <span
-                      className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${
-                        isActive
-                          ? "text-[#008BE3]"
-                          : isCompleted
-                            ? "text-emerald-700"
-                            : "text-slate-400"
-                      }`}
+                      className={`text-[10px] font-mono tracking-wider uppercase block font-bold ${isActive
+                        ? "text-[#008BE3]"
+                        : "text-slate-400 group-hover:text-slate-600"
+                        }`}
                     >
                       {st.code}
                     </span>
                     <span
-                      className={`text-xs font-black block leading-tight ${
-                        isActive ? "text-slate-900" : "text-slate-600"
-                      }`}
+                      className={`text-xs font-black block leading-tight ${isActive ? "text-slate-900" : "text-slate-600"
+                        }`}
                     >
                       {st.title}
                     </span>
@@ -1887,9 +2022,9 @@ function TambahKonfigurasiPertanyaanContent() {
                             onChange={(selected) => {
                               const selectedOptions = (selected ||
                                 []) as Array<{
-                                value: string;
-                                label: string;
-                              }>;
+                                  value: string;
+                                  label: string;
+                                }>;
                               updateStep3SubPertanyaan(
                                 lingkup.id,
                                 sub.id,
@@ -2336,42 +2471,65 @@ function TambahKonfigurasiPertanyaanContent() {
           </div>
         )}
 
-        {/* STEPPER FOOTER BUTTONS (SEBELUMNYA / SELANJUTNYA) */}
-        <div className="p-4 md:p-6 bg-slate-50 border-t border-gray-200 flex items-center justify-between">
+        {/* STEPPER FOOTER BUTTONS (SEBELUMNYA / STATUS STEP / SELANJUTNYA ATAU SIMPAN) */}
+        <div className="p-4 md:p-6 bg-slate-50 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={handlePrevStep}
             disabled={activeStep === 1}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${
-              activeStep === 1
-                ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
-                : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
-            }`}
+            className={`px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all ${activeStep === 1
+              ? "opacity-40 cursor-not-allowed text-gray-400 bg-gray-100"
+              : "bg-white border border-gray-300 text-slate-700 hover:bg-gray-100 shadow-2xs"
+              }`}
           >
             <ChevronLeft size={18} /> Sebelumnya
           </button>
 
-          <div className="text-xs font-bold text-slate-400 font-mono hidden sm:block">
+          <div className="text-xs font-bold text-slate-400 font-mono hidden sm:block px-2">
             Step {activeStep} dari {stepsInfo.length}
           </div>
 
-          {activeStep < stepsInfo.length ? (
-            <button
-              type="button"
-              onClick={handleNextStep}
-              className="px-6 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all shadow-sm"
-            >
-              Selanjutnya <ChevronRight size={18} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => handleSaveToContext("published")}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all shadow-sm"
-            >
-              <Send size={16} /> Publish Konfigurasi
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {activeStep < stepsInfo.length ? (
+              isEdit ? (
+                <button
+                  type="button"
+                  onClick={() => handleSaveSingleForm(activeStep)}
+                  disabled={savingStep !== null || isReadOnly}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all shadow-sm"
+                >
+                  {savingStep === activeStep ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      <span>Simpan</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="px-6 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all shadow-sm"
+                >
+                  Selanjutnya <ChevronRight size={18} />
+                </button>
+              )
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSaveToContext("published")}
+                disabled={isReadOnly}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all shadow-sm"
+              >
+                <Send size={16} /> Publish Konfigurasi
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

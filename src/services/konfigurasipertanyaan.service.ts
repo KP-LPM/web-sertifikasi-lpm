@@ -85,32 +85,32 @@ export class KonfigurasiService {
     return config;
   }
 
-  async updateStep2(id: number, data: Step2Input) {
+  async updateStep2(id: number, data: Step2Input, penyusun?: { peran: string; user_id: number; form_type?: string | null }[]) {
     await this.getById(id);
 
-    const config = await this.repo.updateStep2(id, data);
+    const config = await this.repo.updateStep2(id, data, penyusun);
     if (!config) {
-      throw new InvariantError("Gagal memperbarui konfigurasi Step 2");
+      throw new InvariantError("Gagal memperbarui konfigurasi FR.IA.04A (Step 2)");
     }
     return config;
   }
 
-  async updateStep3(id: number, data: Step3Input[]) {
+  async updateStep3(id: number, data: Step3Input[], penyusun?: { peran: string; user_id: number; form_type?: string | null }[]) {
     await this.getById(id);
 
-    const config = await this.repo.updateStep3(id, data);
+    const config = await this.repo.updateStep3(id, data, penyusun);
     if (!config) {
-      throw new InvariantError("Gagal memperbarui konfigurasi Step 3");
+      throw new InvariantError("Gagal memperbarui konfigurasi FR.IA.04B (Step 3)");
     }
     return config;
   }
 
-  async updateStep4(id: number, data: Step4Input[]) {
+  async updateStep4(id: number, data: Step4Input[], penyusun?: { peran: string; user_id: number; form_type?: string | null }[]) {
     await this.getById(id);
 
-    const config = await this.repo.updateStep4(id, data);
+    const config = await this.repo.updateStep4(id, data, penyusun);
     if (!config) {
-      throw new InvariantError("Gagal memperbarui konfigurasi Step 4");
+      throw new InvariantError("Gagal memperbarui konfigurasi FR.IA.07 (Step 4)");
     }
     return config;
   }

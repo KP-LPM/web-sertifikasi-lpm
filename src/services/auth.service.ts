@@ -11,6 +11,7 @@ import type {
   ForgotPasswordInput,
   ResetPasswordInput,
   VerifyOtpInput,
+  ChangePasswordInput,
 } from "@/schemas/auth.schema";
 import { userRepository } from "@/repositories/user.repository";
 import { transporter } from "@/lib/nodemailer";
@@ -210,6 +211,31 @@ export class AuthService {
     await userRepository.updatePasswordAndClearToken(user.id, hashedPassword);
 
     return { message: "Password berhasil direset. Silakan login." };
+  }
+
+  async changePassword(userId: number, data: ChangePasswordInput) {
+    if (data.currentPassword !== data.confirmCurrentPassword) {
+      throw new InvariantError("Konfirmasi password saat ini tidak cocok.");
+    }
+
+    const user = await userRepository.getUserWithPasswordById(userId);
+    if (!user) {
+      throw new InvariantError("Pengguna tidak ditemukan.");
+    }
+
+    const isMatch = await bcrypt.compare(data.currentPassword, user.password);
+    if (!isMatch) {
+      throw new InvariantError("Password saat ini salah.");
+    }
+
+    if (data.currentPassword === data.newPassword) {
+      throw new InvariantError("Password baru tidak boleh sama dengan password saat ini.");
+    }
+
+    const hashedNewPassword = await bcrypt.hash(data.newPassword, 10);
+    await userRepository.updatePasswordAndClearToken(user.id, hashedNewPassword);
+
+    return { message: "Kata sandi berhasil diperbarui." };
   }
 }
 

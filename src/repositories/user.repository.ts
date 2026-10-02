@@ -42,6 +42,18 @@ export class UserRepository {
     });
   }
 
+  async getUserWithPasswordById(id: number) {
+    return await db.user.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        password: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
   async getUserByEmail(email: string) {
     return await db.user.findUnique({
       where: { email },

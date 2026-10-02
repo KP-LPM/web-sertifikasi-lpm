@@ -129,6 +129,26 @@ export async function resetPassword(
   return json;
 }
 
+export async function changePassword(payload: {
+  currentPassword: string;
+  confirmCurrentPassword: string;
+  newPassword: string;
+}): Promise<{ message: string }> {
+  const res = await fetch(`${BASE_URL}/auth/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal mengganti kata sandi");
+  }
+
+  return json;
+}
+
 // ============================================================
 // PENGAJUAN SKEMA API FUNCTIONS
 // ============================================================
@@ -673,6 +693,60 @@ export async function updateKonfigurasiPertanyaanAPI(
   const json = await res.json();
   if (!res.ok) {
     throw new Error(json.message || "Gagal memperbarui konfigurasi pertanyaan");
+  }
+  return json.data;
+}
+
+export async function updateKonfigurasiStep2API(
+  id: number,
+  data: Record<string, unknown>,
+) {
+  const res = await fetch(`${BASE_URL}/konfigurasipertanyaan/${id}/step2`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal memperbarui form FR.IA.04A");
+  }
+  return json.data;
+}
+
+export async function updateKonfigurasiStep3API(
+  id: number,
+  data: Record<string, unknown>,
+) {
+  const res = await fetch(`${BASE_URL}/konfigurasipertanyaan/${id}/step3`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal memperbarui form FR.IA.04B");
+  }
+  return json.data;
+}
+
+export async function updateKonfigurasiStep4API(
+  id: number,
+  data: Record<string, unknown>,
+) {
+  const res = await fetch(`${BASE_URL}/konfigurasipertanyaan/${id}/step4`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal memperbarui form FR.IA.07");
   }
   return json.data;
 }

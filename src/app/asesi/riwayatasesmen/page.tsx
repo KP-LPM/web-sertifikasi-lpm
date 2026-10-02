@@ -182,7 +182,7 @@ export default function AsesiHistoryPage() {
     didiskusikan: null as boolean | null,
     melibatkanOrangLain: null as boolean | null,
     alasan: "",
-    ttdAsesi: false,
+    ttdAsesi: "",
     namaAsesor: "",
   });
 
@@ -314,7 +314,7 @@ export default function AsesiHistoryPage() {
         dijelaskan: bandingForm.dijelaskan ?? false,
         didiskusikan: bandingForm.didiskusikan ?? false,
         melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
-        ttdAsesi: !!(registeredProfile?.tandaTangan || bandingForm.ttdAsesi),
+        ttdAsesi: (registeredProfile as Record<string, any>)?.tandaTangan || bandingForm.ttdAsesi || null,
       });
 
       showNotification("Banding berhasil diajukan!", "success");

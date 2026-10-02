@@ -66,16 +66,21 @@ export async function PATCH(request: NextRequest, context: Context) {
         status.toLowerCase() === "diterima" ||
         status.toLowerCase() === "kompeten";
 
-      if (isApproved && existingBanding.hasil_asesmen_id) {
+      if (existingBanding.hasil_asesmen_id) {
         await tx.hasil_asesmen.update({
           where: { id: existingBanding.hasil_asesmen_id },
           data: {
-            hasil: "Kompeten",
-            status: "Selesai",
+            ...(isApproved ? {
+              hasil: "Kompeten",
+              status: "Selesai",
+            } : {
+              hasil: "Belum Kompeten",
+            }),
+            ...(keputusanAdmin ? { catatan: String(keputusanAdmin) } : {}),
           },
         });
 
-        if (existingBanding.hasil_asesmen?.pengajuan_id) {
+        if (isApproved && existingBanding.hasil_asesmen?.pengajuan_id) {
           await tx.pengajuanSkema.update({
             where: { id: existingBanding.hasil_asesmen.pengajuan_id },
             data: {

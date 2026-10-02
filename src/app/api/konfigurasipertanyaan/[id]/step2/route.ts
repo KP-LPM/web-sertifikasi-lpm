@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 import { konfigurasiService } from "@/services/konfigurasipertanyaan.service";
-import { Step2SkenarioSchema } from "@/schemas/konfigurasipertanyaan.schema";
+import { UpdateStep2Schema } from "@/schemas/konfigurasipertanyaan.schema";
 import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
@@ -18,15 +18,18 @@ export async function PUT(request: NextRequest, context: Context) {
     });
     const { id } = await context.params;
     const body = await request.json();
-    const validatedData = Step2SkenarioSchema.parse(body);
+    const validatedData = UpdateStep2Schema.parse(body);
+    const { penyusun, ...skenarioData } = validatedData;
+
     const result = await konfigurasiService.updateStep2(
       Number(id),
-      validatedData,
+      skenarioData,
+      penyusun,
     );
 
     revalidatePath("/api/konfigurasipertanyaan");
 
-    return sendResponse(200, "Konfigurasi Step 2 berhasil diperbarui", result);
+    return sendResponse(200, "Konfigurasi FR.IA.04A berhasil diperbarui", result);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(

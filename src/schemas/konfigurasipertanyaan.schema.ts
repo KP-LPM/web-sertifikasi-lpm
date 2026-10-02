@@ -47,11 +47,16 @@ export const Step4PertanyaanSchema = z.object({
 export const UpdateStep1Schema = z.object({
   pertanyaan: z.array(Step1PertanyaanSchema),
 });
+export const UpdateStep2Schema = Step2SkenarioSchema.extend({
+  penyusun: z.array(PenyusunSchema).optional(),
+});
 export const UpdateStep3Schema = z.object({
   lingkup: z.array(Step3LingkupSchema),
+  penyusun: z.array(PenyusunSchema).optional(),
 });
 export const UpdateStep4Schema = z.object({
   pertanyaan_lisan: z.array(Step4PertanyaanSchema),
+  penyusun: z.array(PenyusunSchema).optional(),
 });
 
 // --- SCHEMAS MAIN & PAYLOADS ---
@@ -88,6 +93,7 @@ export type UpdateKonfigurasiMainInput = z.infer<
 export type Step1Input = z.infer<typeof Step1PertanyaanSchema>;
 export type UpdateStep1Input = z.infer<typeof UpdateStep1Schema>;
 export type Step2Input = z.infer<typeof Step2SkenarioSchema>;
+export type UpdateStep2Input = z.infer<typeof UpdateStep2Schema>;
 export type Step3Input = z.infer<typeof Step3LingkupSchema>;
 export type UpdateStep3Input = z.infer<typeof UpdateStep3Schema>;
 export type Step4Input = z.infer<typeof Step4PertanyaanSchema>;

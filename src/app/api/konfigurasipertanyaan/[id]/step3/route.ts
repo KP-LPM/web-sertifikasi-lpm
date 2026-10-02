@@ -22,11 +22,12 @@ export async function PUT(request: NextRequest, context: Context) {
     const result = await konfigurasiService.updateStep3(
       Number(id),
       validatedData.lingkup,
+      validatedData.penyusun,
     );
 
     revalidatePath("/api/konfigurasipertanyaan");
 
-    return sendResponse(200, "Konfigurasi Step 3 berhasil diperbarui", result);
+    return sendResponse(200, "Konfigurasi FR.IA.04B berhasil diperbarui", result);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return sendResponse(

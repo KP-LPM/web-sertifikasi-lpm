@@ -17,6 +17,7 @@ import {
   Scale,
   Video,
   Building2,
+  Check,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { AssessmentItem, HasilAsesmen } from "@/types/types";
@@ -37,6 +38,8 @@ interface BackendBandingRecord {
   dijelaskan?: boolean;
   didiskusikan?: boolean;
   melibatkanOrangLain?: boolean;
+  melibatkan_orang_lain?: boolean;
+  ttd_asesi?: string;
   hasil_asesmen?: {
     hasil?: string;
     pengajuan_id?: number;
@@ -62,6 +65,20 @@ interface BackendBandingRecord {
     };
   };
 }
+
+export type ExtendedAssessmentItem = AssessmentItem & {
+  bandingId?: number;
+  alasanBanding?: string;
+  pengajuanId?: number;
+  skemaId?: number;
+  noSkema?: string;
+  dijelaskan?: boolean;
+  didiskusikan?: boolean;
+  melibatkanOrangLain?: boolean;
+  ttdAsesi?: string;
+  tanggalPengajuan?: string;
+  namaAsesi?: string;
+};
 
 export default function VerifikasiBanding() {
   const [mode, setMode] = useState<"list" | "detail">("list");
@@ -124,6 +141,7 @@ function VerifikasiBandingList({
               nik: pengajuan?.dataPribadi?.nik || "",
               nama: asesiName,
               skema: skemaName,
+              noSkema: pengajuan?.skema?.kodeSkema || "-",
               hasil: (item.hasil_asesmen?.hasil || "Belum Kompeten") as HasilAsesmen,
               isBanding: true,
               statusBanding: item.status || "Menunggu Verifikasi",
@@ -134,10 +152,16 @@ function VerifikasiBandingList({
               alamat: jadwal?.alamat || "TUK Terdaftar",
               catatan: item.penjelasan || item.alasan || "",
               alasanBanding: item.alasan,
+              dijelaskan: item.dijelaskan ?? true,
+              didiskusikan: item.didiskusikan ?? true,
+              melibatkanOrangLain: item.melibatkan_orang_lain ?? false,
+              ttdAsesi: item.ttd_asesi || "",
+              tanggalPengajuan: tgl,
+              namaAsesi: asesiName,
               bandingId: item.id,
               pengajuanId: item.hasil_asesmen?.pengajuan_id || pengajuan?.id,
               skemaId: pengajuan?.skema?.id,
-            } as AssessmentItem & { bandingId?: number; alasanBanding?: string; pengajuanId?: number; skemaId?: number };
+            } as ExtendedAssessmentItem;
           });
           setRealBandingItems(mapped);
         }
@@ -277,10 +301,10 @@ function VerifikasiBandingList({
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-[11px] sm:text-sm font-medium text-slate-700 whitespace-nowrap">
                       <div
                         className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
-                            ? "bg-[#008BE3]/10 text-[#008BE3]"
-                            : idx % 3 === 1
-                              ? "bg-[#84CC16]/10 text-[#73B412]"
-                              : "bg-slate-100 text-slate-600"
+                          ? "bg-[#008BE3]/10 text-[#008BE3]"
+                          : idx % 3 === 1
+                            ? "bg-[#84CC16]/10 text-[#73B412]"
+                            : "bg-slate-100 text-slate-600"
                           }`}
                       >
                         {idx + 1}
@@ -292,10 +316,10 @@ function VerifikasiBandingList({
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border ${item.tipeTuk === "Sewaktu"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : item.tipeTuk === "Tempat Kerja"
-                              ? "bg-purple-50 text-purple-700 border-purple-200"
-                              : "bg-orange-50 text-orange-700 border-orange-200"
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : item.tipeTuk === "Tempat Kerja"
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
+                            : "bg-orange-50 text-orange-700 border-orange-200"
                           }`}
                       >
                         {item.tipeTuk}
@@ -306,10 +330,10 @@ function VerifikasiBandingList({
                     </td>
                     <td className="px-2.5 sm:px-6 py-2 sm:py-4 text-center whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.statusBanding === 'Disetujui' || item.status === 'Disetujui'
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : item.statusBanding === 'Ditolak' || item.status === 'Ditolak'
-                            ? 'bg-red-50 text-red-700 border-red-200'
-                            : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : item.statusBanding === 'Ditolak' || item.status === 'Ditolak'
+                          ? 'bg-red-50 text-red-700 border-red-200'
+                          : 'bg-yellow-50 text-yellow-700 border-yellow-200'
                         }`}> {item.statusBanding || item.status || 'Menunggu'} </span>
                     </td>
                     <td className="px-2.5 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-center bg-white group-hover/row:bg-[#F9FAFC] border-l border-gray-100 sticky right-0 z-10">
@@ -438,6 +462,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   }, [selectedAsesmen]);
 
   if (!selectedAsesmen) return null;
+  const asesmen = selectedAsesmen as ExtendedAssessmentItem;
 
   const handleSubmit = async (action: "approve" | "reject") => {
     if (!selectedAsesmen) return;
@@ -533,8 +558,8 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
             <div className="shrink-0">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-2xs ${selectedAsesmen.hasil === "Kompeten"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-red-50 text-red-700 border-red-200"
                   }`}
               >
                 {selectedAsesmen.hasil}
@@ -583,17 +608,174 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        {/* Alasan Banding Section */}
-        <div className="p-4 sm:p-6 border-b border-gray-100 bg-orange-50/50">
-          <h2 className="text-base sm:text-lg font-black text-orange-900 tracking-tight mb-4 flex items-center gap-2">
-            <AlertCircle size={20} className="text-orange-600 shrink-0" />{" "}
-            Pengajuan Banding Asesi
+        {/* Form Banding Asesmen Section */}
+        <div className="p-4 sm:p-6 border-b border-gray-100 bg-slate-50/50">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4 flex items-center gap-2">
+            <Scale size={20} className="text-[#008BE3] shrink-0" />{" "}
+            Form FR.AK.04 - Banding Asesmen
           </h2>
-          <div className="p-4 bg-white rounded-lg border border-orange-200 text-slate-700">
-            <p className="font-medium text-xs sm:text-sm leading-relaxed">
-              {selectedAsesmen.alasanBanding ||
-                "Saya merasa jawaban saya pada saat wawancara teknis sudah sesuai dengan KUK yang diujikan, namun asesor menyatakan belum kompeten."}
-            </p>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-8 text-slate-800 text-sm overflow-x-auto">
+            <table className="w-full border-collapse border border-slate-300 min-w-[600px]">
+              <tbody>
+                <tr>
+                  <td className="border border-slate-300 p-3 font-semibold bg-slate-50 w-48">
+                    Nama Asesi:
+                  </td>
+                  <td className="border border-slate-300 p-3" colSpan={2}>
+                    {selectedAsesmen.nama}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-3 font-semibold bg-slate-50">
+                    Nama Asesor:
+                  </td>
+                  <td className="border border-slate-300 p-3" colSpan={2}>
+                    {selectedAsesmen.asesor || "Asesor"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-3 font-semibold bg-slate-50">
+                    Tanggal Asesmen:
+                  </td>
+                  <td className="border border-slate-300 p-3" colSpan={2}>
+                    {selectedAsesmen.tglAsesmen}
+                  </td>
+                </tr>
+                <tr className="bg-slate-100 font-bold">
+                  <td className="border border-slate-300 p-3">
+                    Jawablah dengan Ya atau Tidak pertanyaan-pertanyaan
+                    berikut ini :
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center w-16">
+                    YA
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center w-16">
+                    TIDAK
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-3">
+                    Apakah Proses Banding telah dijelaskan kepada Anda?
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center align-middle">
+                    <div className="flex justify-center">
+                      {asesmen.dijelaskan ? <Check size={16} className="text-emerald-600" /> : null}
+                    </div>
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center align-middle">
+                    <div className="flex justify-center">
+                      {!asesmen.dijelaskan ? <Check size={16} className="text-emerald-600" /> : null}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-3">
+                    Apakah Anda telah mendiskusikan Banding dengan Asesor?
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center align-middle">
+                    <div className="flex justify-center">
+                      {asesmen.didiskusikan ? <Check size={16} className="text-emerald-600" /> : null}
+                    </div>
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center align-middle">
+                    <div className="flex justify-center">
+                      {!asesmen.didiskusikan ? <Check size={16} className="text-emerald-600" /> : null}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-3">
+                    Apakah Anda mau melibatkan &quot;orang lain&quot; membantu
+                    Anda dalam Proses Banding?
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center align-middle">
+                    <div className="flex justify-center">
+                      {asesmen.melibatkanOrangLain ? <Check size={16} className="text-emerald-600" /> : null}
+                    </div>
+                  </td>
+                  <td className="border border-slate-300 p-3 text-center align-middle">
+                    <div className="flex justify-center">
+                      {!asesmen.melibatkanOrangLain ? <Check size={16} className="text-emerald-600" /> : null}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-4" colSpan={3}>
+                    <div className="mb-2">
+                      Banding ini diajukan atas Keputusan Asesmen yang dibuat
+                      terhadap Skema Sertifikasi (Kualifikasi/Klaster/Okupasi)
+                      berikut :
+                    </div>
+                    <div className="flex mb-1">
+                      <div className="w-40 font-semibold">
+                        Skema Sertifikasi
+                      </div>
+                      <div className="min-w-0">
+                        : {selectedAsesmen.skema}
+                      </div>
+                    </div>
+                    <div className="flex">
+                      <div className="w-40 font-semibold">
+                        No. Skema Sertifikasi
+                      </div>
+                      <div className="min-w-0">
+                        : {asesmen.noSkema || "-"}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-4" colSpan={3}>
+                    <div className="font-semibold mb-2">
+                      Banding ini diajukan atas alasan sebagai berikut :
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                      {asesmen.alasanBanding || "-"}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-slate-300 p-4" colSpan={3}>
+                    <div className="font-semibold mb-2">
+                      Anda mempunyai hak melibatkan orang lain bila mana perlu
+                      dalam menyelesaikan banding ini.
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border-2 border-slate-300 p-4" colSpan={3}>
+                    <div className="flex flex-col sm:flex-row gap-8 mt-2 items-center">
+                      <div className="min-w-0">
+                        <span className="font-semibold mb-2 block">
+                          Tanda tangan Asesi :
+                        </span>
+                        <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col items-center justify-center min-h-[80px]">
+                          {asesmen.ttdAsesi ? (
+                            <img
+                              src={asesmen.ttdAsesi}
+                              alt="Tanda Tangan Asesi"
+                              className="max-h-16 object-contain"
+                            />
+                          ) : (
+                            <span className="text-slate-400 text-xs italic">
+                              Belum ditandatangani
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-semibold mb-2 block">
+                          Tanggal Pengajuan :
+                        </span>
+                        <div className="px-4 py-2 text-slate-900 font-medium border-b-2 border-slate-300">
+                          {asesmen.tanggalPengajuan || "-"}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

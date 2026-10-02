@@ -14,6 +14,18 @@ export const resetPasswordSchema = z.object({
   newPassword: z.string().min(8, "Password minimal 8 karakter"),
 });
 
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
+    confirmCurrentPassword: z.string().min(1, "Konfirmasi password saat ini wajib diisi"),
+    newPassword: z.string().min(8, "Password baru minimal 8 karakter"),
+  })
+  .refine((data) => data.currentPassword === data.confirmCurrentPassword, {
+    message: "Konfirmasi password saat ini tidak cocok",
+    path: ["confirmCurrentPassword"],
+  });
+
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

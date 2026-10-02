@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Save, User as UserIcon, Trash2, Upload, ArrowLeft, PenTool, X } from "lucide-react";
+import { Save, User as UserIcon, Trash2, Upload, ArrowLeft, PenTool, X, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { supabase } from "@/lib/supabase";
 import SignatureCanvas from "react-signature-canvas";
 import { useRouter } from "next/navigation";
-import { forgotPassword, getUsersProfile } from "@/lib/api";
+import { changePassword, getUsersProfile } from "@/lib/api";
 import { DATA_PROVINSI, DATA_KOTA, DATA_PENDIDIKAN } from "@/data/rujukan";
 
 type SessionUser = {
@@ -42,7 +42,6 @@ export default function Profile() {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const fileAvatarRef = useRef<HTMLInputElement>(null);
-  const [isSendingReset, setIsSendingReset] = useState(false);
 
   const [formData, setFormData] = useState({
     peran:
@@ -135,26 +134,81 @@ export default function Profile() {
     }
   };
 
-  const handleGantiPassword = async () => {
-    const email = (user as SessionUser)?.email;
+  // State untuk modal Ganti Password
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [confirmCurrentPassword, setConfirmCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showConfirmCurrentPassword, setShowConfirmCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-    if (!email) {
-      alert("Email tidak ditemukan, silakan login ulang.");
+  const resetPasswordForm = () => {
+    setCurrentPassword("");
+    setConfirmCurrentPassword("");
+    setNewPassword("");
+    setShowCurrentPassword(false);
+    setShowConfirmCurrentPassword(false);
+    setShowNewPassword(false);
+  };
+
+  const handleOpenPasswordModal = () => {
+    resetPasswordForm();
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleClosePasswordModal = () => {
+    resetPasswordForm();
+    setIsPasswordModalOpen(false);
+  };
+
+  const handleSubmitChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!currentPassword) {
+      showNotification("Password saat ini wajib diisi!", "error");
       return;
     }
 
-    setIsSendingReset(true);
+    if (!confirmCurrentPassword) {
+      showNotification("Konfirmasi password saat ini wajib diisi!", "error");
+      return;
+    }
+
+    if (currentPassword !== confirmCurrentPassword) {
+      showNotification("Password saat ini dan konfirmasinya tidak cocok!", "error");
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      showNotification("Password baru minimal 8 karakter!", "error");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      showNotification("Password baru tidak boleh sama dengan password saat ini!", "error");
+      return;
+    }
+
+    setIsChangingPassword(true);
     try {
-      const result = await forgotPassword(email);
-      alert(result.message); // ganti dengan showNotification kalau ada di halaman ini
+      const result = await changePassword({
+        currentPassword,
+        confirmCurrentPassword,
+        newPassword,
+      });
+
+      showNotification(result.message || "Kata sandi berhasil diperbarui!", "success");
+      handleClosePasswordModal();
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "Gagal mengirim tautan reset password.";
-      alert(message);
+          : "Gagal mengganti kata sandi.";
+      showNotification(message, "error");
     } finally {
-      setIsSendingReset(false);
+      setIsChangingPassword(false);
     }
   };
 
@@ -190,8 +244,8 @@ export default function Profile() {
         pekerjaan: data.pekerjaan || "",
         pendidikanTerakhir:
           (data.pendidikanTerakhir || data.pendidikan_terakhir) === "SMA" ? "SMA/Sederajat" :
-          (data.pendidikanTerakhir || data.pendidikan_terakhir) === "S1" ? "S1/D4" :
-          (data.pendidikanTerakhir || data.pendidikan_terakhir || ""),
+            (data.pendidikanTerakhir || data.pendidikan_terakhir) === "S1" ? "S1/D4" :
+              (data.pendidikanTerakhir || data.pendidikan_terakhir || ""),
         tandaTangan: data.tandaTangan || data.tanda_tangan || "",
       }));
     }
@@ -253,10 +307,10 @@ export default function Profile() {
           pekerjaan: (data.pekerjaan as string) || prev.pekerjaan,
           pendidikanTerakhir:
             (data.pendidikanTerakhir || data.pendidikan_terakhir) === "SMA" ? "SMA/Sederajat" :
-            (data.pendidikanTerakhir || data.pendidikan_terakhir) === "S1" ? "S1/D4" :
-            (data.pendidikanTerakhir as string) ||
-            (data.pendidikan_terakhir as string) ||
-            prev.pendidikanTerakhir,
+              (data.pendidikanTerakhir || data.pendidikan_terakhir) === "S1" ? "S1/D4" :
+                (data.pendidikanTerakhir as string) ||
+                (data.pendidikan_terakhir as string) ||
+                prev.pendidikanTerakhir,
           tandaTangan:
             (data.tandaTangan as string) ||
             (data.tanda_tangan as string) ||
@@ -693,12 +747,12 @@ export default function Profile() {
                     <option value="" disabled>
                       Pilih Pendidikan
                     </option>
-                      {DATA_PENDIDIKAN.map((pend) => (
-                        <option key={pend.id} value={pend.label}>
-                          {pend.label}
-                        </option>
-                      ))}
-                    </select>
+                    {DATA_PENDIDIKAN.map((pend) => (
+                      <option key={pend.id} value={pend.label}>
+                        {pend.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -767,14 +821,11 @@ export default function Profile() {
                   Ganti Kata Sandi
                 </p>
                 <button
-                  onClick={() => {
-                    handleGantiPassword();
-                    showNotification("Tautan reset password telah dikirim ke email Anda!", "success");
-                  }}
-                  disabled={isSendingReset}
-                  className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={handleOpenPasswordModal}
+                  className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors cursor-pointer"
                 >
-                  {isSendingReset ? "Mengirim..." : "Ganti Kata Sandi"}
+                  Ganti Kata Sandi
                 </button>
               </div>
             </section>
@@ -843,6 +894,147 @@ export default function Profile() {
           </div>
         )
       }
+
+      {/* Change Password Modal */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#008BE3]/10 text-[#008BE3] flex items-center justify-center">
+                  <KeyRound size={18} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base leading-tight">
+                    Ganti Kata Sandi
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Masukkan password saat ini dan password baru Anda
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleClosePasswordModal}
+                disabled={isChangingPassword}
+                className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitChangePassword} className="p-6 space-y-4">
+              {/* Password Saat Ini */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">
+                  Password Saat Ini <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Masukkan password saat ini"
+                    className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#008BE3] focus:bg-white transition-all text-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Konfirmasi Password Saat Ini */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">
+                  Ulangi Password Saat Ini <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type={showConfirmCurrentPassword ? "text" : "password"}
+                    required
+                    value={confirmCurrentPassword}
+                    onChange={(e) => setConfirmCurrentPassword(e.target.value)}
+                    placeholder="Masukkan ulang password saat ini"
+                    className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#008BE3] focus:bg-white transition-all text-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmCurrentPassword(!showConfirmCurrentPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showConfirmCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {confirmCurrentPassword && currentPassword !== confirmCurrentPassword && (
+                  <p className="text-[11px] text-red-500 font-medium">
+                    Password saat ini tidak cocok
+                  </p>
+                )}
+              </div>
+
+              {/* Password Baru */}
+              <div className="space-y-1.5 pt-1">
+                <label className="text-xs font-bold text-slate-700 block">
+                  Password Baru <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <KeyRound size={16} />
+                  </div>
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Minimal 8 karakter"
+                    className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#008BE3] focus:bg-white transition-all text-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-gray-400">
+                  Password baru harus terdiri dari minimal 8 karakter.
+                </p>
+              </div>
+
+              <div className="flex gap-2.5 pt-3">
+                <button
+                  type="button"
+                  onClick={handleClosePasswordModal}
+                  disabled={isChangingPassword}
+                  className="flex-1 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="flex-1 py-2.5 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-xl text-xs font-bold transition-colors flex justify-center items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                >
+                  {isChangingPassword ? "Menyimpan..." : "Simpan Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

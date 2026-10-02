@@ -174,17 +174,37 @@ export class KonfigurasiRepository {
     });
   }
 
-  async updateStep2(id: number, data: Step2Input) {
+  async updateStep2(id: number, data: Step2Input, penyusun?: { peran: string; user_id: number; form_type?: string | null }[]) {
     // Upsert digunakan karena relasinya 1-to-1
-    return await db.konfigurasi_step2_skenario.upsert({
+    const skenario = await db.konfigurasi_step2_skenario.upsert({
       where: { konfigurasi_id: id },
       update: data,
       create: { konfigurasi_id: id, ...data },
     });
+
+    if (penyusun !== undefined) {
+      await db.form_Asesor.deleteMany({
+        where: { konfigurasi_id: id, form_type: "step2" },
+      });
+      if (penyusun.length > 0) {
+        await db.form_Asesor.createMany({
+          data: penyusun.map((p, i) => ({
+            konfigurasi_id: id,
+            peran: p.peran,
+            user_id: p.user_id,
+            form_type: p.form_type || "step2",
+            urutan: i + 1,
+            ttd_tanggal: new Date(),
+          })),
+        });
+      }
+    }
+
+    return skenario;
   }
 
-  async updateStep3(id: number, data: Step3Input[]) {
-    return await db.konfigurasi_pertanyaan.update({
+  async updateStep3(id: number, data: Step3Input[], penyusun?: { peran: string; user_id: number; form_type?: string | null }[]) {
+    const updated = await db.konfigurasi_pertanyaan.update({
       where: { id },
       data: {
         konfigurasi_step3_lingkup: {
@@ -202,10 +222,30 @@ export class KonfigurasiRepository {
         },
       },
     });
+
+    if (penyusun !== undefined) {
+      await db.form_Asesor.deleteMany({
+        where: { konfigurasi_id: id, form_type: "step3" },
+      });
+      if (penyusun.length > 0) {
+        await db.form_Asesor.createMany({
+          data: penyusun.map((p, i) => ({
+            konfigurasi_id: id,
+            peran: p.peran,
+            user_id: p.user_id,
+            form_type: p.form_type || "step3",
+            urutan: i + 1,
+            ttd_tanggal: new Date(),
+          })),
+        });
+      }
+    }
+
+    return updated;
   }
 
-  async updateStep4(id: number, data: Step4Input[]) {
-    return await db.konfigurasi_pertanyaan.update({
+  async updateStep4(id: number, data: Step4Input[], penyusun?: { peran: string; user_id: number; form_type?: string | null }[]) {
+    const updated = await db.konfigurasi_pertanyaan.update({
       where: { id },
       data: {
         konfigurasi_step4_pertanyaan: {
@@ -214,6 +254,26 @@ export class KonfigurasiRepository {
         },
       },
     });
+
+    if (penyusun !== undefined) {
+      await db.form_Asesor.deleteMany({
+        where: { konfigurasi_id: id, form_type: "step4" },
+      });
+      if (penyusun.length > 0) {
+        await db.form_Asesor.createMany({
+          data: penyusun.map((p, i) => ({
+            konfigurasi_id: id,
+            peran: p.peran,
+            user_id: p.user_id,
+            form_type: p.form_type || "step4",
+            urutan: i + 1,
+            ttd_tanggal: new Date(),
+          })),
+        });
+      }
+    }
+
+    return updated;
   }
 }
 
