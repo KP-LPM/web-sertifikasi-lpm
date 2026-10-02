@@ -28,32 +28,31 @@ body {
   opacity: 0.15;
 }
 
-/* Global Custom Slim Dark Blue Scrollbar (Sidebar Color) */
+/* Global Custom Subtle Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #000 #fff;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 10px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #000;
+  background: rgba(156, 163, 175, 0.4);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #000;
+  background: rgba(156, 163, 175, 0.7);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
