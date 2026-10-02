@@ -440,7 +440,7 @@ export interface CreateBandingPayload {
   dijelaskan?: boolean;
   didiskusikan?: boolean;
   melibatkanOrangLain?: boolean;
-  ttdAsesi?: boolean;
+  ttdAsesi?: string | null;
 }
 
 export async function createBanding(data: CreateBandingPayload) {

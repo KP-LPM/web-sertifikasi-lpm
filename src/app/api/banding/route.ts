@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
         dijelaskan: Boolean(dijelaskan),
         didiskusikan: Boolean(didiskusikan),
         melibatkan_orang_lain: Boolean(melibatkanOrangLain),
-        ttd_asesi: Boolean(ttdAsesi),
+        ttd_asesi: ttdAsesi ? String(ttdAsesi) : "",
         status: "Menunggu Verifikasi",
       },
     });

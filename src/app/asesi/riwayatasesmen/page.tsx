@@ -314,7 +314,7 @@ export default function AsesiHistoryPage() {
         dijelaskan: bandingForm.dijelaskan ?? false,
         didiskusikan: bandingForm.didiskusikan ?? false,
         melibatkanOrangLain: bandingForm.melibatkanOrangLain ?? false,
-        ttdAsesi: (registeredProfile as Record<string, any>)?.tandaTangan || bandingForm.ttdAsesi || null,
+        ttdAsesi: (registeredProfile as { tandaTangan?: string })?.tandaTangan || bandingForm.ttdAsesi || null,
       });
 
       showNotification("Banding berhasil diajukan!", "success");

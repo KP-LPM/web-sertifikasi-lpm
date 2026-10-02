@@ -8,26 +8,26 @@ datasource db {
 }
 
 model User {
-  id                              Int                               @id @default(autoincrement())
-  username                        String                            @unique @db.VarChar(100)
-  email                           String                            @unique @db.VarChar(255)
-  password                        String                            @db.VarChar(255)
-  role                            Role
-  isVerified                      Boolean                           @default(false) @map("is_verified")
-  createdAt                       DateTime                          @default(now()) @map("created_at")
-  resetToken                      String?                           @map("reset_token") @db.VarChar(255)
-  resetTokenExpiry                DateTime?                         @map("reset_token_expiry")
-  isActive                        Boolean?                          @default(false) @map("is_active")
-  asalAsesor                      String?                           @map("asal_asesor") @db.VarChar(50)
-  jadwal_asesmen                  jadwal_asesmen[]
-  form_asesor                     Form_Asesor[]
-  pengajuanSkema                  PengajuanSkema[]
-  pleno_asesi                     pleno_asesi[]
-  pleno_attendee                  pleno_attendee[]
-  portfolio_asesor                portfolio_asesor[]
-  profil                          ProfilPengguna?
-  riwayat_asesmen_detail          riwayat_asesmen_detail[]
-  verifikasi_pengajuan            verifikasi_pengajuan[]
+  id                     Int                      @id @default(autoincrement())
+  username               String                   @unique @db.VarChar(100)
+  email                  String                   @unique @db.VarChar(255)
+  password               String                   @db.VarChar(255)
+  role                   Role
+  isVerified             Boolean                  @default(false) @map("is_verified")
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  resetToken             String?                  @map("reset_token") @db.VarChar(255)
+  resetTokenExpiry       DateTime?                @map("reset_token_expiry")
+  isActive               Boolean?                 @default(false) @map("is_active")
+  asalAsesor             String?                  @map("asal_asesor") @db.VarChar(50)
+  form_asesor            Form_Asesor[]
+  jadwal_asesmen         jadwal_asesmen[]
+  pengajuanSkema         PengajuanSkema[]
+  pleno_asesi            pleno_asesi[]
+  pleno_attendee         pleno_attendee[]
+  portfolio_asesor       portfolio_asesor[]
+  profil                 ProfilPengguna?
+  riwayat_asesmen_detail riwayat_asesmen_detail[]
+  verifikasi_pengajuan   verifikasi_pengajuan[]
 
   @@map("users")
 }
@@ -68,9 +68,6 @@ model MasterSkema {
   id                                                                              Int                        @id @default(autoincrement())
   kodeSkema                                                                       String                     @unique @map("kode_skema")
   namaSkema                                                                       String                     @map("nama_skema")
-  namaSkemaEn                                                                     String?                    @map("nama_skema_en")
-  bidangSkemaId                                                                   String?                    @map("bidang_skema_id")
-  bidangSkemaEn                                                                   String?                    @map("bidang_skema_en")
   statusAktif                                                                     Boolean                    @map("status_aktif")
   nomor_sertifikat                                                                String?                    @db.VarChar
   nomor_registrasi                                                                String?                    @db.VarChar
@@ -79,6 +76,9 @@ model MasterSkema {
   konfigurasi_soal_id                                                             Int?
   created_at                                                                      DateTime                   @default(now()) @db.Timestamp(6)
   updated_at                                                                      DateTime                   @default(now()) @db.Timestamp(6)
+  bidangSkemaEn                                                                   String?                    @map("bidang_skema_en")
+  bidangSkemaId                                                                   String?                    @map("bidang_skema_id")
+  namaSkemaEn                                                                     String?                    @map("nama_skema_en")
   jadwal_asesmen                                                                  jadwal_asesmen[]
   konfigurasi_pertanyaan_konfigurasi_pertanyaan_skema_idTomaster_skema            konfigurasi_pertanyaan[]   @relation("konfigurasi_pertanyaan_skema_idTomaster_skema")
   master_bukti_administratif                                                      MasterBuktiAdministratif[]
@@ -255,28 +255,28 @@ model DokumenPengajuan {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model apl02_penilaian {
-  id                       Int                        @id @default(autoincrement())
-  pengajuan_id             Int                        @unique
-  rekomendasi_apl02        String?                    @db.VarChar
-  ttd_asesor               String?
-  ttd_asesi                String?
-  nama_asesor              String?
-  asesor_reg               String?                    @db.VarChar
-  tanggal                  DateTime?                  @db.Date
-  created_at               DateTime                   @default(now()) @db.Timestamp(6)
-  updated_at               DateTime                   @default(now()) @db.Timestamp(6)
-  pengajuan_skema          PengajuanSkema             @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                Int            @id @default(autoincrement())
+  pengajuan_id      Int            @unique
+  rekomendasi_apl02 String?        @db.VarChar
+  ttd_asesor        String?
+  ttd_asesi         String?
+  nama_asesor       String?
+  asesor_reg        String?        @db.VarChar
+  tanggal           DateTime?      @db.Date
+  created_at        DateTime       @default(now()) @db.Timestamp(6)
+  updated_at        DateTime       @default(now()) @db.Timestamp(6)
+  pengajuan_skema   PengajuanSkema @relation(fields: [pengajuan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Form_Asesor {
   id                     Int                    @id @default(autoincrement())
   konfigurasi_id         Int
-  form_type              String                 @db.VarChar
   peran                  String                 @db.VarChar
-  user_id                Int?
   ttd_tanggal            DateTime?              @db.Date
+  form_type              String                 @db.VarChar
   urutan                 Int                    @default(1)
+  user_id                Int?
   konfigurasi_pertanyaan konfigurasi_pertanyaan @relation(fields: [konfigurasi_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                  User?                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -357,28 +357,26 @@ model jadwal_asesmen_peserta {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model konfigurasi_pertanyaan {
-  id                                                                    Int                               @id @default(autoincrement())
+  id                                                                    Int                            @id @default(autoincrement())
   nama                                                                  String
   skema_id                                                              Int?
-  tipe_form                                                             String?                           @db.VarChar
-  versi                                                                 String                            @default("1.0") @db.VarChar
-  is_default                                                            Boolean                           @default(false)
-  status                                                                String                            @default("Draft") @db.VarChar
-  created_at                                                            DateTime                          @default(now()) @db.Timestamp(6)
-  updated_at                                                            DateTime                          @default(now()) @db.Timestamp(6)
-  master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema            MasterSkema?                      @relation("konfigurasi_pertanyaan_skema_idTomaster_skema", fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipe_form                                                             String?                        @db.VarChar
+  versi                                                                 String                         @default("1.0") @db.VarChar
+  is_default                                                            Boolean                        @default(false)
+  status                                                                String                         @default("Draft") @db.VarChar
+  created_at                                                            DateTime                       @default(now()) @db.Timestamp(6)
+  updated_at                                                            DateTime                       @default(now()) @db.Timestamp(6)
+  form_asesor                                                           Form_Asesor[]
+  master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema            MasterSkema?                   @relation("konfigurasi_pertanyaan_skema_idTomaster_skema", fields: [skema_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   konfigurasi_step1_pertanyaan                                          konfigurasi_step1_pertanyaan[]
   konfigurasi_step2_skenario                                            konfigurasi_step2_skenario?
   konfigurasi_step3_lingkup                                             konfigurasi_step3_lingkup[]
   konfigurasi_step4_pertanyaan                                          konfigurasi_step4_pertanyaan[]
-  master_skema_master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan MasterSkema[]                     @relation("master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan")
-  form_asesor                                                           Form_Asesor[]
+  master_skema_master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan MasterSkema[]                  @relation("master_skema_konfigurasi_soal_idTokonfigurasi_pertanyaan")
 
   @@index([skema_id], map: "idx_konfigurasi_pertanyaan_published", where: raw("((status)::text = 'published'::text)"))
   @@index([skema_id], map: "idx_konfigurasi_pertanyaan_skema_id")
 }
-
-
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model konfigurasi_step1_opsi {
@@ -499,7 +497,7 @@ model pengajuan_banding {
   dijelaskan            Boolean       @default(false)
   didiskusikan          Boolean       @default(false)
   melibatkan_orang_lain Boolean       @default(false)
-  ttd_asesi             String?
+  ttd_asesi             String
   created_at            DateTime      @default(now()) @db.Timestamp(6)
   hasil_asesmen         hasil_asesmen @relation(fields: [hasil_asesmen_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
