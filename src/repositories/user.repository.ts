@@ -73,7 +73,6 @@ export class UserRepository {
         profil: namaLengkap ? {
           create: {
             namaLengkap,
-            nik: Math.random().toString().slice(2, 18).padEnd(16, "0"), // Exactly 16 digits
           }
         } : undefined
       },

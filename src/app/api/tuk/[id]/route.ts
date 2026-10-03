@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     });
 
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "admin") {
+    if (!session || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin yang dapat mengubah TUK.",
@@ -100,7 +100,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
     });
 
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "admin") {
+    if (!session || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin yang dapat menonaktifkan TUK.",

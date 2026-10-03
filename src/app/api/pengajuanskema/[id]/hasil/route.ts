@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, context: Context) {
     });
 
     const token = await getToken({ req });
-    if (!token || (token.role !== "asesor" && token.role !== "admin")) {
+    if (!token || (token.role !== "asesor" && !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role))) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya asesor atau admin yang diizinkan.",

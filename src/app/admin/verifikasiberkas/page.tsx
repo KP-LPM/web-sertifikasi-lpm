@@ -30,7 +30,7 @@ import {
 
 export default function UsersManagement() {
   const { user: userContext, registeredProfile, setExtraCrumbs } = useAppContext();
-  const readOnly = userContext?.role === "direktur" || userContext?.role === "manajer";
+  const readOnly = userContext?.role !== "admin";
 
   const [mainTab, setMainTab] = useState<"asesi" | "asesor" | "selesai">("asesi");
   const [selesaiTabFilter, setSelesaiTabFilter] = useState<"semua" | "asesi" | "asesor">("semua");

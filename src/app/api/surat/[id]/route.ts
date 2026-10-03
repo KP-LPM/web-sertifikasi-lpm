@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, context: Context) {
       key: "get-surat-detail",
     });
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "admin") {
+    if (!session || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin yang dapat melihat detail surat.",
@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     });
 
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "admin") {
+    if (!session || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin yang dapat mengubah surat.",
@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest, context: Context) {
     });
 
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "admin") {
+    if (!session || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin yang dapat mengarsipkan surat.",

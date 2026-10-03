@@ -10,8 +10,10 @@ const ROLE_HOME: Record<string, string> = {
   admin: "/admin/overview",
   asesor: "/assessor/overview",
   asesi: "/asesi/overview",
-  direktur: "/direktur/dashboard",
-  manajer: "/direktur/dashboard",
+  direktur: "/admin/overview",
+  manajer: "/admin/overview",
+  komite_skema: "/admin/overview",
+  dewan_pengarah: "/admin/overview",
 };
 
 export default function Page() {

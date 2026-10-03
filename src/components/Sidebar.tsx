@@ -150,34 +150,8 @@ function getNavItems(role: string | null | undefined) {
   switch (role) {
     case "direktur":
     case "manajer":
-      return [
-        {
-          id: "dashboard",
-          label: "Dashboard",
-          icon: LayoutDashboard,
-          path: "/dashboard",
-        },
-        { id: "users", label: "Daftar Pengguna", icon: Users, path: "/users" },
-        {
-          id: "schemes",
-          label: "Skema Sertifikasi",
-          icon: FolderTree,
-          path: "/schemes",
-        },
-        {
-          id: "schedules",
-          label: "Jadwal & Penugasan",
-          icon: CalendarDays,
-          path: "/schedules",
-        },
-        { id: "tuk", label: "Manajemen TUK", icon: Building2, path: "/tuk" },
-        {
-          id: "reports",
-          label: "Laporan",
-          icon: ClipboardList,
-          path: "/reports",
-        },
-      ];
+    case "komite_skema":
+    case "dewan_pengarah":
     case "admin":
       return [
         {

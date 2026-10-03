@@ -166,7 +166,7 @@ export default function AdminOverview() {
             </div>
           </div>
 
-          <div onClick={() => router.push("/admin/jadwal")} className="bg-[#F4FBF7] p-4 rounded-lg border border-[#A7F3D0] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
+          <div onClick={() => router.push("/admin/schedule")} className="bg-[#F4FBF7] p-4 rounded-lg border border-[#A7F3D0] flex items-center justify-between shadow-2xs group hover:scale-[1.01] transition-transform duration-200 cursor-pointer">
             <div className="space-y-0.5">
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">
                 Jadwal Berlangsung

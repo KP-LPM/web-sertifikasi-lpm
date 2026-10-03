@@ -35,7 +35,7 @@ model User {
 model ProfilPengguna {
   id                 Int           @id @default(autoincrement())
   userId             Int           @unique @map("user_id")
-  nik                String        @unique @db.VarChar(16)
+  nik                String?       @unique @db.VarChar(16)
   namaLengkap        String        @map("nama_lengkap") @db.VarChar(255)
   tempatLahir        String?       @map("tempat_lahir") @db.VarChar(100)
   tanggalLahir       DateTime?     @map("tanggal_lahir") @db.Date

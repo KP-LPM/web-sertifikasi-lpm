@@ -49,7 +49,7 @@ const ROLE_OPTIONS = [
 
 export default function KelolaPengguna() {
   const { user } = useAppContext();
-  const readOnly = user?.role === "direktur" || user?.role === "manajer";
+  const readOnly = user?.role !== "admin";
 
   const [users, setUsers] = useState<UserItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);

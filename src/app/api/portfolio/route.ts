@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       targetAsesorId = parseInt(session.user.id, 10);
     }
 
-    if (!targetAsesorId && session.user?.role !== "admin") {
+    if (!targetAsesorId && !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       targetAsesorId = parseInt(session.user.id, 10);
     }
 

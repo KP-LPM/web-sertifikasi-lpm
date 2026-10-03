@@ -74,7 +74,7 @@ export async function DELETE(request: NextRequest, context: Context) {
     }
 
     const role = session.user?.role;
-    if (role !== "asesor" && role !== "admin") {
+    if (role !== "asesor" && !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(role)) {
       return sendResponse(403, "Akses ditolak.");
     }
 

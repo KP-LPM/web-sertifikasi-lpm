@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     const role = session.user?.role;
-    if (role !== "admin" && role !== "asesor") {
+    if (!['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(role) && role !== "asesor") {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin atau asesor yang dapat melihat daftar kandidat.",

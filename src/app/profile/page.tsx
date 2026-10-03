@@ -44,12 +44,7 @@ export default function Profile() {
   const fileAvatarRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    peran:
-      (user as SessionUser)?.role === "asesor"
-        ? "asesor"
-        : (user as SessionUser)?.role === "admin"
-          ? "admin"
-          : "asesi",
+    peran: (user as SessionUser)?.role?.replace(/_/g, " ") || "asesi",
     username:
       (user as SessionUser)?.username ||
       (user?.email ? user.email.split("@")[0] : ""),

@@ -40,7 +40,7 @@ export async function GET(
     }
 
     const requesterId = Number(token.id || token.sub);
-    const isAdmin = token.role === "admin";
+    const isAdmin = ['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role);
     if (!isAdmin && requesterId !== targetId) {
       return sendResponse(403, "Tidak diizinkan mengakses profil ini");
     }

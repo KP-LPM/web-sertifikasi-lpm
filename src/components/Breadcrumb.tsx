@@ -15,9 +15,10 @@ function getDashboardPath(role: string | null | undefined): string {
     case "admin":
       return "/admin/overview";
     case "direktur":
-      return "/direktur/dashboard";
     case "manajer":
-      return "/manajer/dashboard";
+    case "komite_skema":
+    case "dewan_pengarah":
+      return "/admin/overview";
     default:
       return "/";
   }
@@ -113,7 +114,6 @@ const ROUTE_CRUMBS: Record<string, CrumbItem[]> = {
 
   // ---------------- ADMIN / DIREKTUR / MANAJER ----------------
   "/admin/overview": [{ label: "Dashboard" }],
-  "/direktur/dashboard": [{ label: "Dashboard" }],
   "/admin/kelolapengguna": [
     { label: "Dashboard", href: "/admin/overview" },
     { label: "Kelola Pengguna" },

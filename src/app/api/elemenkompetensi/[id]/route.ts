@@ -17,7 +17,7 @@ export async function PATCH(request: NextRequest, context: Context) {
     });
 
     const token = await getToken({ req: request });
-    if (!token || token.role !== "admin")
+    if (!token || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role))
       return sendResponse(403, "Akses ditolak");
 
     const { id } = await context.params;
@@ -47,7 +47,7 @@ export async function DELETE(request: NextRequest, context: Context) {
     });
 
     const token = await getToken({ req: request });
-    if (!token || token.role !== "admin")
+    if (!token || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role))
       return sendResponse(403, "Akses ditolak");
 
     const { id } = await context.params;

@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, context: Context) {
       return sendResponse(401, "Anda harus login terlebih dahulu");
     }
 
-    if (token.role !== "admin" && token.role !== "asesor") {
+    if (!['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role) && token.role !== "asesor") {
       return sendResponse(403, "Akses ditolak");
     }
 
@@ -79,7 +79,7 @@ export async function DELETE(request: NextRequest, context: Context) {
       return sendResponse(401, "Anda harus login terlebih dahulu");
     }
 
-    if (token.role !== "admin") {
+    if (!['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role)) {
       return sendResponse(403, "Hanya admin yang dapat menghapus data ini");
     }
 

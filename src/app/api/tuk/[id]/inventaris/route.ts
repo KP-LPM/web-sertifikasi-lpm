@@ -22,7 +22,7 @@ export async function POST(request: NextRequest, context: Context) {
     });
 
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "admin") {
+    if (!session || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string)) {
       return sendResponse(
         403,
         "Akses ditolak. Hanya admin yang dapat menambah inventaris.",

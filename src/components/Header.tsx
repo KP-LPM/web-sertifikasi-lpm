@@ -296,7 +296,7 @@ export function Header() {
                 {displayName}
               </span>
               <span className="text-[9px] text-slate-500 font-bold tracking-wider uppercase mt-0.5">
-                {user.role}
+                {user.role?.replace(/_/g, " ")}
               </span>
             </div>
             <div

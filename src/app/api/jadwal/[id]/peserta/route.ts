@@ -19,7 +19,7 @@ export async function POST(request: NextRequest, context: Context) {
     });
 
     const token = await getToken({ req: request });
-    if (!token || (token.role !== "admin" && token.role !== "asesor")) {
+    if (!token || (!['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role) && token.role !== "asesor")) {
       return sendResponse(403, "Akses ditolak");
     }
 

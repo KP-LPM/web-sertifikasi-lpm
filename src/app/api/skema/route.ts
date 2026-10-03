@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     });
 
     const token = await getToken({ req: request });
-    const isAdmin = token?.role === "admin";
+    const isAdmin = ['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token?.role as string);
 
     const skemaList = await skemaService.getSkema(isAdmin);
     return sendResponse(200, "Berhasil mengambil data skema", skemaList);
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     });
 
     const token = await getToken({ req: request });
-    if (!token || token.role !== "admin")
+    if (!token || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role))
       return sendResponse(403, "Akses ditolak");
 
     const body = await request.json();

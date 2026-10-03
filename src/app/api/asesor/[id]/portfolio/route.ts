@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (isNaN(asesorId)) return sendResponse(400, "ID asesor tidak valid.");
 
     // Hanya admin atau asesor yang bersangkutan yang boleh melihat portfolionya
-    if (session.user?.role !== "admin" && session.user?.id !== id) {
+    if (!['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(session.user?.role as string) && session.user?.id !== id) {
       return sendResponse(
         403,
         "Akses ditolak. Anda tidak dapat melihat portfolio asesor lain.",

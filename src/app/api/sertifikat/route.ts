@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     });
 
     const token = await getToken({ req: request });
-    if (!token || token.role !== "admin")
+    if (!token || !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role))
       return sendResponse(403, "Akses ditolak");
 
     const { searchParams } = new URL(request.url);
