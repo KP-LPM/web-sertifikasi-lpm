@@ -21,6 +21,7 @@ import {
   PersyaratanDasar,
   ElemenKompetensiItem,
   PersyaratanAdministrasi,
+  KonfigurasiPertanyaanItem,
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { createSkema, updateSkema, getKonfigurasiPertanyaanList } from "@/lib/api";
@@ -29,10 +30,23 @@ import { FormFRIA04A } from "../forms/FormFRIA04A";
 import { FormFRIA04B } from "../forms/FormFRIA04B";
 import { FormFRIA07 } from "../forms/FormFRIA07";
 
+type FormAsesorPreview = {
+  peran: string;
+  form_type?: string | null;
+  ttd_tanggal?: string | Date;
+  users?: {
+    profil?: {
+      namaLengkap?: string;
+      nomorRegistrasiMet?: string;
+      tandaTangan?: string;
+    };
+  };
+};
+
 interface TambahSkemaFormProps {
   onCancel: () => void;
   onSaveSuccess?: (payload: MasterSkemaPayload) => void;
-  initialData?: Partial<MasterSkemaFormState> & { id?: number };
+  initialData?: Partial<MasterSkemaFormState>;
 }
 
 const DRAFT_KEY = "tambahSkemaFormDraft";
@@ -70,6 +84,7 @@ export function TambahSkemaForm({
     }
 
     return {
+      id: initialData?.id,
       kodeSkema: initialData?.kodeSkema || "",
       namaSkema: initialData?.namaSkema || "",
       namaSkemaEn: initialData?.namaSkemaEn || "",
@@ -192,7 +207,8 @@ export function TambahSkemaForm({
           const mapped = res.map((item: Record<string, unknown>) => ({
             id: Number(item.id),
             nama: (item.nama as string) || "Konfigurasi Soal",
-            skema: ((item.skema as Record<string, unknown>)?.nama as string) || (item.skema as string) || "Semua Skema",
+            skema: ((item.skema as Record<string, unknown>)?.namaSkema as string) || ((item.skema as Record<string, unknown>)?.nama as string) || (typeof item.skema === "string" ? item.skema : "Semua Skema"),
+            skema_id: item.skema_id ? Number(item.skema_id) : undefined,
             versi: (item.versi as string) || "1.0",
             status: (item.status as string) || "Draft",
             penyusun: Array.isArray(item.penyusun) ? item.penyusun : [],
@@ -1358,13 +1374,21 @@ export function TambahSkemaForm({
             className="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold bg-white text-slate-800 outline-none focus:border-[#008BE3] focus:ring-2 focus:ring-[#008BE3]/20 transition-all cursor-pointer"
           >
             <option value="">-- Pilih Konfigurasi Soal Asesor --</option>
-            {availableConfigs.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.nama} ({item.skema || "Semua Skema"}) - Versi{" "}
-                {item.versi || "1.0"} [
-                {item.status === "Aktif" ? "Aktif" : "Tidak Aktif"}]
-              </option>
-            ))}
+            {availableConfigs
+              .filter((item: KonfigurasiPertanyaanItem) => {
+                const isActive = item.status === "Aktif";
+                const isSameSchema = formState.id 
+                  ? item.skema_id === formState.id
+                  : (!formState.namaSkema || (item.skema && item.skema.toLowerCase() === formState.namaSkema.trim().toLowerCase()));
+                return isActive && isSameSchema;
+              })
+              .map((item: KonfigurasiPertanyaanItem) => (
+                <option key={item.id} value={item.id}>
+                  {item.nama} ({item.skema || "Semua Skema"}) - Versi{" "}
+                  {item.versi || "1.0"} [
+                  {item.status === "Aktif"}]
+                </option>
+              ))}
           </select>
         </div>
 
@@ -1388,7 +1412,7 @@ export function TambahSkemaForm({
                     : "TIDAK AKTIF"}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <div className="text-xs text-slate-500 mb-2">
                 Skema:{" "}
                 <strong className="text-slate-800 font-bold">
                   {selectedConfig.skema}
@@ -1397,19 +1421,48 @@ export function TambahSkemaForm({
                 <strong className="text-slate-800 font-bold">
                   {selectedConfig.versi}
                 </strong>
-              </p>
-              <p className="text-xs text-slate-500">
-                Penyusun:{" "}
-                <strong className="text-slate-800 font-bold">
-                  &quot;Per Form (Lihat Konfigurasi)&quot;
-                </strong>
-              </p>
-              <p className="text-xs text-slate-500">
-                Validator:{" "}
-                <strong className="text-slate-800 font-bold">
-                  &quot;Per Form (Lihat Konfigurasi)&quot;
-                </strong>
-              </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-200/60 pt-3 mt-3">
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Penyusun</span>
+                  <div className="space-y-2">
+                    {selectedConfig.penyusun && (selectedConfig.penyusun as FormAsesorPreview[]).filter((p) => p.peran === 'Penyusun').length > 0
+                      ? Array.from(new Map((selectedConfig.penyusun as FormAsesorPreview[]).filter((p) => p.peran === 'Penyusun').map(p => [p.users?.profil?.namaLengkap, p])).values()).map((p, idx) => (
+                        <div key={idx} className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-800">{p.users?.profil?.namaLengkap || 'Unknown'}</span>
+                          <span className="text-[11px] text-slate-500">No. Reg: {p.users?.profil?.nomorRegistrasiMet || '-'}</span>
+                        </div>
+                      ))
+                      : <span className="text-xs font-bold text-slate-800">Belum ditentukan</span>}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Validator</span>
+                  <div className="space-y-2">
+                    {selectedConfig.penyusun && (selectedConfig.penyusun as FormAsesorPreview[]).filter((p) => p.peran === 'Validator').length > 0
+                      ? Array.from(new Map((selectedConfig.penyusun as FormAsesorPreview[]).filter((p) => p.peran === 'Validator').map(p => [p.users?.profil?.namaLengkap, p])).values()).map((p, idx) => (
+                        <div key={idx} className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-800">{p.users?.profil?.namaLengkap || 'Unknown'}</span>
+                          <span className="text-[11px] text-slate-500">No. Reg: {p.users?.profil?.nomorRegistrasiMet || '-'}</span>
+                        </div>
+                      ))
+                      : <span className="text-xs font-bold text-slate-800">Belum ditentukan</span>}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Supervisor</span>
+                  <div className="space-y-2">
+                    {selectedConfig.penyusun && (selectedConfig.penyusun as FormAsesorPreview[]).filter((p) => p.peran === 'Supervisor').length > 0
+                      ? Array.from(new Map((selectedConfig.penyusun as FormAsesorPreview[]).filter((p) => p.peran === 'Supervisor').map(p => [p.users?.profil?.namaLengkap, p])).values()).map((p, idx) => (
+                        <div key={idx} className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-800">{p.users?.profil?.namaLengkap || 'Unknown'}</span>
+                          <span className="text-[11px] text-slate-500">No. Reg: {p.users?.profil?.nomorRegistrasiMet || '-'}</span>
+                        </div>
+                      ))
+                      : <span className="text-xs font-bold text-slate-800">Belum ditentukan</span>}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Tabs / Selector for Form list */}
@@ -1523,18 +1576,57 @@ export function TambahSkemaForm({
                 </div>
 
                 <div className="p-4 sm:p-6 max-h-[600px] overflow-y-auto bg-[#F8F9FC]">
-                  {activeFormTab === "frak07" && (
-                    <FormFRAK07 readOnly={true} showHeader={false} />
-                  )}
-                  {activeFormTab === "fria04a" && (
-                    <FormFRIA04A readOnly={true} showHeader={false} />
-                  )}
-                  {activeFormTab === "fria04b" && (
-                    <FormFRIA04B readOnly={true} showHeader={false} />
-                  )}
-                  {activeFormTab === "fria07" && (
-                    <FormFRIA07 readOnly={true} showHeader={false} />
-                  )}
+                  {(() => {
+                    const getPenyusunData = (formTypeStr: string, peran: string) => {
+                      return (selectedConfig.penyusun as FormAsesorPreview[])
+                        ?.filter(p => p.peran === peran && (p.form_type === formTypeStr || !p.form_type))
+                        .map(p => ({
+                          nama: p.users?.profil?.namaLengkap || "",
+                          noReg: p.users?.profil?.nomorRegistrasiMet || "",
+                          ttdTanggal: p.ttd_tanggal ? new Date(p.ttd_tanggal).toLocaleDateString('id-ID') : "",
+                          tandaTangan: p.users?.profil?.tandaTangan || ""
+                        })) || [];
+                    };
+
+                    const getSupervisorName = (formTypeStr: string) => {
+                      return (selectedConfig.penyusun as FormAsesorPreview[])
+                        ?.find(p => p.peran === 'Supervisor' && (p.form_type === formTypeStr || !p.form_type))
+                        ?.users?.profil?.namaLengkap || "";
+                    };
+
+                    return (
+                      <>
+                        {activeFormTab === "frak07" && (
+                          <FormFRAK07 readOnly={true} showHeader={false} />
+                        )}
+                        {activeFormTab === "fria04a" && (
+                          <FormFRIA04A
+                            readOnly={true}
+                            showHeader={false}
+                            penyusun={getPenyusunData("step2", "Penyusun")}
+                            validator={getPenyusunData("step2", "Validator")}
+                            supervisorName={getSupervisorName("step2")}
+                          />
+                        )}
+                        {activeFormTab === "fria04b" && (
+                          <FormFRIA04B
+                            readOnly={true}
+                            showHeader={false}
+                            penyusun={getPenyusunData("step3", "Penyusun")}
+                            validator={getPenyusunData("step3", "Validator")}
+                          />
+                        )}
+                        {activeFormTab === "fria07" && (
+                          <FormFRIA07
+                            readOnly={true}
+                            showHeader={false}
+                            penyusun={getPenyusunData("step4", "Penyusun")}
+                            validator={getPenyusunData("step4", "Validator")}
+                          />
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

@@ -36,8 +36,9 @@ export class ProfileService {
       throw new NotFoundError("User tidak ditemukan");
     }
 
-    const { email, ...profilData } = data as UpdateProfileInput & {
+    const { email, username, ...profilData } = data as UpdateProfileInput & {
       email?: string;
+      username?: string;
     };
 
     if (email) {
@@ -47,9 +48,16 @@ export class ProfileService {
       }
     }
 
+    if (username) {
+      const isTaken = await this.userRepository.isUsernameTakenByOther(username, id);
+      if (isTaken) {
+        throw new InvariantError("Username sudah digunakan oleh akun lain.");
+      }
+    }
+
     return await db.$transaction(async (tx) => {
-      if (email) {
-        await this.userRepository.updateEmail(id, email, tx);
+      if (email || username) {
+        await this.userRepository.updateUserAuthData(id, { email, username }, tx);
       }
 
       let profil;

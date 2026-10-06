@@ -224,7 +224,7 @@ export default function PengajuanSkemaPage() {
             statusPembayaran?: string | boolean;
             skema?: { id?: number; namaSkema?: string; kodeSkema?: string };
             user?: { username?: string; email?: string };
-            master_tuk?: { nama?: string; alamat?: string; tipe?: string };
+            master_tuk?: { nama?: string; alamat?: string; tipe?: string; keterangan?: string };
             dataPribadi?: {
               namaLengkap?: string;
               tempatLahir?: string;
@@ -256,7 +256,7 @@ export default function PengajuanSkemaPage() {
                 alamat?: string;
                 link_video?: string;
                 users?: { profil?: { namaLengkap?: string } };
-                master_tuk?: { nama?: string; alamat?: string };
+                master_tuk?: { nama?: string; alamat?: string; keterangan?: string };
               };
             }>;
           }>
@@ -281,18 +281,19 @@ export default function PengajuanSkemaPage() {
             tipeTuk.toLowerCase().includes("online") ||
             tipeTuk.toLowerCase().includes("virtual");
 
+          const tukGedung = jadwal?.master_tuk?.nama || item.master_tuk?.nama || "";
+          const tukKeterangan = jadwal?.master_tuk?.keterangan || item.master_tuk?.keterangan || "";
+
           const tukName = isOnline
             ? "Online"
-            : jadwal?.master_tuk?.nama ||
-            item.master_tuk?.nama ||
-            "UIN Sunan Gunung Djati Bandung";
+            : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
 
           const alamatLengkap = isOnline
             ? ""
             : jadwal?.master_tuk?.alamat ||
             item.master_tuk?.alamat ||
             jadwal?.alamat ||
-            "Jl. A.H. Nasution No. 105, Cipadung, Cibiru";
+            "";
 
           return {
             id: item.id,
@@ -837,7 +838,7 @@ export default function PengajuanSkemaPage() {
         provinsi: provinsi === "",
         kota: kota === "",
         alamat: alamat.trim() === "",
-        nik: nik.trim() === "",
+        nik: nik.trim() === "" || nik.trim().length !== 16,
         kodePos: kodePos.trim() === "",
         noTelp: noTelp.trim() === "",
         pendidikanTerakhir: pendidikanTerakhir === "",
@@ -1186,7 +1187,7 @@ export default function PengajuanSkemaPage() {
   return (
     <>
       {/* VIEW 1: LIST SUBMISSIONS */}
-      {subView === "list" && !activeModalDoc && (
+      {subView === "list" && (
         <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
           {!selectedDetailSubmission && (
             <div className="space-y-6 animate-in fade-in duration-200">
@@ -1334,10 +1335,10 @@ export default function PengajuanSkemaPage() {
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                    : idx % 3 === 1
-                                      ? "bg-[#84CC16]/10 text-[#73B412]"
-                                      : "bg-slate-100 text-slate-600"
+                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                  : idx % 3 === 1
+                                    ? "bg-[#84CC16]/10 text-[#73B412]"
+                                    : "bg-slate-100 text-slate-600"
                                   }`}
                               >
                                 {idx + 1}
@@ -1358,19 +1359,19 @@ export default function PengajuanSkemaPage() {
                             <td className="px-6 py-4">
                               <span
                                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${(item.tipeTuk || "").includes("Sewaktu")
-                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : (item.tipeTuk || "").includes(
+                                    "Tempat Kerja",
+                                  )
+                                    ? "bg-purple-50 text-purple-700 border-purple-200"
                                     : (item.tipeTuk || "").includes(
-                                      "Tempat Kerja",
-                                    )
-                                      ? "bg-purple-50 text-purple-700 border-purple-200"
-                                      : (item.tipeTuk || "").includes(
-                                        "Virtual",
-                                      ) ||
-                                        (item.tipeTuk || "").includes(
-                                          "Online",
-                                        )
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                        : "bg-orange-50 text-orange-700 border-orange-200"
+                                      "Virtual",
+                                    ) ||
+                                      (item.tipeTuk || "").includes(
+                                        "Online",
+                                      )
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                      : "bg-orange-50 text-orange-700 border-orange-200"
                                   }`}
                               >
                                 {item.tipeTuk || "-"}
@@ -1664,8 +1665,8 @@ export default function PengajuanSkemaPage() {
                           key={page}
                           onClick={() => setSubPage(page)}
                           className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${subPage === page
-                              ? "bg-[#008BE3] text-white border border-[#008BE3]"
-                              : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
+                            ? "bg-[#008BE3] text-white border border-[#008BE3]"
+                            : "text-slate-700 bg-white border border-slate-200 hover:bg-slate-50"
                             }`}
                         >
                           {page}
@@ -2140,10 +2141,10 @@ export default function PengajuanSkemaPage() {
                             <td className="px-6 py-4 text-xs md:text-sm font-semibold text-slate-700 w-16">
                               <div
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm font-bold text-xs ${idx % 3 === 0
-                                    ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                    : idx % 3 === 1
-                                      ? "bg-[#84CC16]/10 text-[#73B412]"
-                                      : "bg-slate-100 text-slate-600"
+                                  ? "bg-[#008BE3]/10 text-[#008BE3]"
+                                  : idx % 3 === 1
+                                    ? "bg-[#84CC16]/10 text-[#73B412]"
+                                    : "bg-slate-100 text-slate-600"
                                   }`}
                               >
                                 {idx + 1}
@@ -2260,8 +2261,8 @@ export default function PengajuanSkemaPage() {
                     key={idx}
                     onClick={() => setSchemePage(idx + 1)}
                     className={`px-3.5 py-1.5 rounded-lg transition-all font-bold cursor-pointer ${schemePage === idx + 1
-                        ? "bg-[#008BE3] text-white"
-                        : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
+                      ? "bg-[#008BE3] text-white"
+                      : "border border-slate-200 hover:bg-slate-100 text-slate-700 bg-white"
                       }`}
                   >
                     {idx + 1}
@@ -2295,7 +2296,7 @@ export default function PengajuanSkemaPage() {
       )}
 
       {/* VIEW 3: MULTI-STEP FORM (APPLY FORM) */}
-      {subView === "apply-form" && !activeModalDoc && (
+      {subView === "apply-form" && !activeModalDoc?.isEForm && (
         <div className="w-full space-y-6 pb-12 text-sm text-gray-700">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -2486,8 +2487,8 @@ export default function PengajuanSkemaPage() {
                         }
                       }}
                       className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${isActive
-                          ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
-                          : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
+                        ? "border-[#008BE3] text-[#008BE3] bg-sky-50/40"
+                        : "border-transparent text-gray-400 hover:text-slate-800 hover:bg-slate-50/50"
                         }`}
                     >
                       {tabLabel}
@@ -2532,8 +2533,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, tempatLahir: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.tempatLahir
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3]"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3]"
                         }`}
                     />
                     {errors.tempatLahir ? (
@@ -2560,8 +2561,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, tanggalLahir: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none bg-white font-semibold text-slate-800 ${errors.tanggalLahir
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3]"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3]"
                         }`}
                     />
                     {errors.tanggalLahir && (
@@ -2576,8 +2577,8 @@ export default function PengajuanSkemaPage() {
                     </label>
                     <div
                       className={`flex items-center gap-6 py-2 px-3 rounded-lg border ${errors.jenisKelamin
-                          ? "border-red-400 bg-red-50/10"
-                          : "border-transparent"
+                        ? "border-red-400 bg-red-50/10"
+                        : "border-transparent"
                         }`}
                     >
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
@@ -2633,8 +2634,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, provinsi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.provinsi
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         } cursor-pointer`}
                     >
                       <option value="">Pilih Provinsi</option>
@@ -2662,8 +2663,8 @@ export default function PengajuanSkemaPage() {
                         if (errors.kota) setErrors({ ...errors, kota: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${!provinsi
-                          ? "bg-slate-100 cursor-not-allowed"
-                          : "bg-white cursor-pointer"
+                        ? "bg-slate-100 cursor-not-allowed"
+                        : "bg-white cursor-pointer"
                         } ${errors.kota
                           ? "border-red-400 bg-red-50/10 focus:border-red-500"
                           : "border-slate-300 focus:border-[#008BE3]"
@@ -2702,8 +2703,8 @@ export default function PengajuanSkemaPage() {
                     }}
                     placeholder="Masukkan alamat lengkap"
                     className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.alamat
-                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                        : "border-slate-300 focus:border-[#008BE3] bg-white"
+                      ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                      : "border-slate-300 focus:border-[#008BE3] bg-white"
                       }`}
                   />
                   {errors.alamat && (
@@ -2722,22 +2723,23 @@ export default function PengajuanSkemaPage() {
                       type="text"
                       value={nik}
                       disabled={lockedFields.nik}
+                      maxLength={16}
                       onChange={(e) => {
                         setNik(e.target.value.replace(/[^0-9]/g, ""));
                         if (errors.nik) setErrors({ ...errors, nik: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.nik
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3]"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3]"
                         }`}
                     />
                     {errors.nik ? (
                       <p className="text-[10px] text-red-500 mt-1 font-bold">
-                        Nik tidak boleh kosong
+                        NIK harus 16 digit
                       </p>
                     ) : (
                       <p className="text-[10px] text-slate-400 mt-1 font-medium">
-                        Masukkan NIK
+                        Masukkan NIK (16 digit)
                       </p>
                     )}
                   </div>
@@ -2768,8 +2770,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, kodePos: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.kodePos
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3]"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3]"
                         }`}
                     />
                     {errors.kodePos ? (
@@ -2796,8 +2798,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, noTelp: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.noTelp
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     />
                     {errors.noTelp && (
@@ -2831,8 +2833,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, pendidikanTerakhir: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pendidikanTerakhir
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     >
                       <option value="" disabled>
@@ -2873,8 +2875,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, pekerjaan: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.pekerjaan
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     >
                       <option value="" disabled>
@@ -2906,8 +2908,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, institusiPerusahaan: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.institusiPerusahaan
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     >
                       <option value="" disabled>
@@ -2939,8 +2941,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, jabatan: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.jabatan
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     />
                     {errors.jabatan && (
@@ -2964,8 +2966,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, emailInstitusi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.emailInstitusi
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     />
                     {errors.emailInstitusi && (
@@ -3005,8 +3007,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, telpInstitusi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 ${errors.telpInstitusi
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     />
                     {errors.telpInstitusi && (
@@ -3029,8 +3031,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, alamatInstitusi: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 h-9.5 resize-none ${errors.alamatInstitusi
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     />
                     {errors.alamatInstitusi && (
@@ -3076,8 +3078,8 @@ export default function PengajuanSkemaPage() {
                         if (errors.tuk) setErrors({ ...errors, tuk: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.tuk
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     >
                       <option value="" disabled>
@@ -3107,8 +3109,8 @@ export default function PengajuanSkemaPage() {
                           setErrors({ ...errors, metode: false });
                       }}
                       className={`w-full px-3 py-2 text-xs rounded-lg border outline-none font-semibold text-slate-800 cursor-pointer ${errors.metode
-                          ? "border-red-400 bg-red-50/10 focus:border-red-500"
-                          : "border-slate-300 focus:border-[#008BE3] bg-white"
+                        ? "border-red-400 bg-red-50/10 focus:border-red-500"
+                        : "border-slate-300 focus:border-[#008BE3] bg-white"
                         }`}
                     >
                       <option value="" disabled>
@@ -3292,10 +3294,10 @@ export default function PengajuanSkemaPage() {
                     !eFormData["02. FR.APL.02 Asesmen Mandiri"])
                 }
                 className={`px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs w-full justify-center sm:w-auto cursor-pointer ${step === 5 &&
-                    (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
-                      !eFormData["02. FR.APL.02 Asesmen Mandiri"])
-                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                    : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
+                  (!eFormData["01. FR.APL.01 Permohonan Sertifikasi"] ||
+                    !eFormData["02. FR.APL.02 Asesmen Mandiri"])
+                  ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                  : "bg-[#008BE3] hover:bg-[#0076C2] text-white"
                   }`}
               >
                 {step === 5 ? "Ajukan" : "Selanjutnya"}
@@ -3308,7 +3310,7 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 4: E-FORM MODAL */}
       {activeModalDoc?.isEForm && (
-        <div className="min-h-screen bg-slate-100 p-2 md:p-4 pb-24 w-full z-50">
+        <div className="min-h-screen bg-slate-100 p-2 md:p-4 pb-24 w-full">
           <div className="w-full max-w-[98%] mx-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="mb-4">
               <button
@@ -3367,6 +3369,8 @@ export default function PengajuanSkemaPage() {
                       selectedScheme?.kode ||
                       (tempEFormData?.nomorSkema as string) ||
                       "",
+                    tuk,
+                    metode,
                     schemeDetail: currentSchemeDetail,
                     signature:
                       (registeredProfile as Record<string, string>)
@@ -3572,8 +3576,8 @@ export default function PengajuanSkemaPage() {
                               key={i}
                               onClick={() => setPreviewIdx(i)}
                               className={`shrink-0 w-12 h-12 rounded-lg border-2 overflow-hidden transition-all cursor-pointer ${i === safeIdx
-                                  ? "border-[#008BE3] shadow-md"
-                                  : "border-slate-200 hover:border-slate-400"
+                                ? "border-[#008BE3] shadow-md"
+                                : "border-slate-200 hover:border-slate-400"
                                 }`}
                             >
                               {item.url.match(/\.(jpeg|jpg|gif|png)$/i) || item.fileObj?.type?.startsWith("image/") ? (

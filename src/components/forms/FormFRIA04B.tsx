@@ -205,15 +205,15 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
   const [localRekomendasi, setLocalRekomendasi] = useState<
     "Kompeten" | "Belum Kompeten" | ""
   >("");
-  const [localAsesiName, setLocalAsesiName] = useState(
-    props.asesmenData?.nama || "Ahmad Supriyadi",
+  const [localAsesiName] = useState(
+    props.asesmenData?.nama || "",
   );
   const [localAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState("");
-  const [localAsesorName, setLocalAsesorName] = useState(
-    props.asesmenData?.asesor || "Ichsan Taufik",
+  const [localAsesorName] = useState(
+    props.asesmenData?.asesor || "",
   );
-  const [localAsesorReg, setLocalAsesorReg] = useState("");
+  const [localAsesorReg] = useState("");
   const [localAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState("");
 
@@ -295,28 +295,10 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
     setLocalRekomendasi(val);
   };
 
-  const handleAsesiNameChange = (val: string) => {
-    if (props.onAsesiNameStep3Change) props.onAsesiNameStep3Change(val);
-    if (props.onAsesiNameChange) props.onAsesiNameChange(val);
-    setLocalAsesiName(val);
-  };
-
   const handleAsesiDateChange = (val: string) => {
     if (props.onAsesiDateStep3Change) props.onAsesiDateStep3Change(val);
     if (props.onAsesiDateChange) props.onAsesiDateChange(val);
     setLocalAsesiDate(val);
-  };
-
-  const handleAsesorNameChange = (val: string) => {
-    if (props.onAsesorNameStep3Change) props.onAsesorNameStep3Change(val);
-    if (props.onAsesorNameChange) props.onAsesorNameChange(val);
-    setLocalAsesorName(val);
-  };
-
-  const handleAsesorRegChange = (val: string) => {
-    if (props.onAsesorRegStep3Change) props.onAsesorRegStep3Change(val);
-    if (props.onAsesorRegChange) props.onAsesorRegChange(val);
-    setLocalAsesorReg(val);
   };
 
   const handleAsesorDateChange = (val: string) => {
@@ -542,13 +524,9 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
               <td className="border border-slate-300 p-2 w-1/3">Nama</td>
               <td className="border border-slate-300 p-2 w-8 text-center">:</td>
               <td className="border border-slate-300 p-2">
-                <input
-                  type="text"
-                  disabled={props.readOnly}
+                <span
                   className="w-full outline-none bg-transparent"
-                  value={asesiName as string}
-                  onChange={(e) => handleAsesiNameChange(e.target.value)}
-                />
+                >{asesiName as string}</span>
               </td>
             </tr>
             <tr>
@@ -600,26 +578,18 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
               <td className="border border-slate-300 p-2">Nama</td>
               <td className="border border-slate-300 p-2 text-center">:</td>
               <td className="border border-slate-300 p-2">
-                <input
-                  type="text"
-                  disabled={props.readOnly || props.isAsesi}
-                  className="w-full outline-none bg-transparent"
-                  value={String(asesorName || "")}
-                  onChange={(e) => handleAsesorNameChange(e.target.value)}
-                />
+                <span
+                  className="w-full bg-transparent"
+                >{asesorName as string}</span>
               </td>
             </tr>
             <tr>
               <td className="border border-slate-300 p-2">No. Reg</td>
               <td className="border border-slate-300 p-2 text-center">:</td>
               <td className="border border-slate-300 p-2">
-                <input
-                  type="text"
-                  disabled={props.readOnly || props.isAsesi}
+                <span
                   className="w-full outline-none bg-transparent"
-                  value={asesorReg}
-                  onChange={(e) => handleAsesorRegChange(e.target.value)}
-                />
+                >{asesorReg as string}</span>
               </td>
             </tr>
             <tr>
@@ -688,7 +658,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                   )}
                   <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">{(props.penyusunStep3 || props.penyusun)?.[idx]?.nama || ""}</td>
-                  <td className="border border-slate-300 p-2">{(props.penyusunStep3 || props.penyusun)?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">{(props.penyusunStep3 || props.penyusun)?.[idx]?.noMet || (props.penyusunStep3 || props.penyusun)?.[idx]?.noReg || ""}</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex flex-col items-center gap-1">
                       {!!(props.penyusunStep3 || props.penyusun)?.[idx]?.tandaTangan && (
@@ -712,7 +682,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                   )}
                   <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">{(props.validatorStep3 || props.validator)?.[idx]?.nama || ""}</td>
-                  <td className="border border-slate-300 p-2">{(props.validatorStep3 || props.validator)?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">{(props.validatorStep3 || props.validator)?.[idx]?.noMet || (props.validatorStep3 || props.validator)?.[idx]?.noReg || ""}</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex flex-col items-center gap-1">
                       {!!(props.validatorStep3 || props.validator)?.[idx]?.tandaTangan && (

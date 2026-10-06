@@ -187,12 +187,12 @@ export function FormFRIA07(props: FormFRIA07Props) {
   >({});
   const [localUmpanBalik, setLocalUmpanBalik] = useState("");
   const [localAsesiName, setLocalAsesiName] = useState(
-    props.asesmenData?.nama || "Ahmad Supriyadi",
+    props.asesmenData?.nama || "",
   );
   const [localAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState("");
   const [localAsesorName, setLocalAsesorName] = useState(
-    props.asesmenData?.asesor || "Ichsan Taufik",
+    props.asesmenData?.asesor || "",
   );
   const [localAsesorReg, setLocalAsesorReg] = useState("");
   const [localAsesorSig] = useState("");
@@ -699,7 +699,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   )}
                   <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">{(props.penyusunStep4 || props.penyusun)?.[idx]?.nama || ""}</td>
-                  <td className="border border-slate-300 p-2">{(props.penyusunStep4 || props.penyusun)?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">{(props.penyusunStep4 || props.penyusun)?.[idx]?.noMet || (props.penyusunStep4 || props.penyusun)?.[idx]?.noReg || ""}</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex flex-col items-center gap-1">
                       {!!(props.penyusunStep4 || props.penyusun)?.[idx]?.tandaTangan && (
@@ -723,7 +723,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                   )}
                   <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">{(props.validatorStep4 || props.validator)?.[idx]?.nama || ""}</td>
-                  <td className="border border-slate-300 p-2">{(props.validatorStep4 || props.validator)?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">{(props.validatorStep4 || props.validator)?.[idx]?.noMet || (props.validatorStep4 || props.validator)?.[idx]?.noReg || ""}</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex flex-col items-center gap-1">
                       {!!(props.validatorStep4 || props.validator)?.[idx]?.tandaTangan && (

@@ -10,6 +10,7 @@ import {
   Eye,
   Trash2,
   Calendar,
+  AlertCircle,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +18,8 @@ import {
   getKonfigurasiPertanyaanList,
   deleteKonfigurasiPertanyaan as deleteKonfigurasiAPI,
 } from "@/lib/api";
+
+import { KonfigurasiPertanyaanItem } from "@/types/types";
 
 interface BackendKonfigurasiPertanyaan {
   id: number;
@@ -35,11 +38,15 @@ export default function KonfigurasiPertanyaanList() {
     setSelectedKonfigurasiId,
     addKonfigurasiPertanyaan,
     updateKonfigurasiPertanyaan,
+    showNotification,
   } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"Aktif" | "Tidak Aktif">("Aktif");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [itemToChangeStatus, setItemToChangeStatus] = useState<KonfigurasiPertanyaanItem | null>(null);
+  const [newStatusToApply, setNewStatusToApply] = useState<"Aktif" | "Tidak Aktif" | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -278,7 +285,9 @@ export default function KonfigurasiPertanyaanList() {
                           <button
                             onClick={() => {
                               const newStatus = item.status === "Aktif" ? "Tidak Aktif" : "Aktif";
-                              updateKonfigurasiPertanyaan(item.id, { ...item, status: newStatus });
+                              setItemToChangeStatus(item);
+                              setNewStatusToApply(newStatus);
+                              setIsStatusModalOpen(true);
                             }}
                             className={`bg-white border border-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors inline-flex items-center gap-1 whitespace-nowrap shadow-xs cursor-pointer ${item.status === "Aktif" ? "hover:bg-amber-50 text-amber-600" : "hover:bg-emerald-50 text-emerald-600"
                               }`}
@@ -364,6 +373,85 @@ export default function KonfigurasiPertanyaanList() {
                   className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
                 >
                   Hapus
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Status Modal */}
+      <AnimatePresence>
+        {isStatusModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setIsStatusModalOpen(false);
+                setItemToChangeStatus(null);
+                setNewStatusToApply(null);
+              }}
+              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className={`w-12 h-12 rounded-full ${newStatusToApply === "Aktif" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"} flex items-center justify-center mx-auto mb-4`}>
+                  <AlertCircle size={24} />
+                </div>
+                <h3 className="font-bold text-slate-900 mb-2">
+                  Ubah Status Konfigurasi
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Apakah Anda yakin ingin mengubah status konfigurasi ini menjadi <strong>{newStatusToApply}</strong>?
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+                <button
+                  onClick={() => {
+                    setIsStatusModalOpen(false);
+                    setItemToChangeStatus(null);
+                    setNewStatusToApply(null);
+                  }}
+                  className="px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!itemToChangeStatus || !newStatusToApply) return;
+                    try {
+                      const res = await fetch(`/api/konfigurasipertanyaan/${itemToChangeStatus.id}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ status: newStatusToApply }),
+                      });
+                      if (!res.ok) {
+                        const errText = await res.text();
+                        throw new Error("Gagal mengubah status: " + errText);
+                      }
+
+                      updateKonfigurasiPertanyaan(itemToChangeStatus.id, { ...itemToChangeStatus, status: newStatusToApply });
+                      showNotification?.(`Status konfigurasi berhasil diubah menjadi ${newStatusToApply}`, "success");
+                      setIsStatusModalOpen(false);
+                      setItemToChangeStatus(null);
+                      setNewStatusToApply(null);
+                    } catch (error) {
+                      console.error(error);
+                      showNotification?.("Terjadi kesalahan saat mengubah status.", "error");
+                    }
+                  }}
+                  className={`px-4 py-2 text-sm font-bold text-white ${newStatusToApply === "Aktif" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-amber-500 hover:bg-amber-600"} rounded-lg transition-colors`}
+                >
+                  Ubah Status
                 </button>
               </div>
             </motion.div>

@@ -25,7 +25,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { getBandingList, verifikasiBanding, getRiwayatAsesmen } from "@/lib/api";
+import { getBandingList, verifikasiBanding, getRiwayatAsesmen, getKonfigurasiPertanyaanList, getKonfigurasiPertanyaanDetail } from "@/lib/api";
 
 interface BackendBandingRecord {
   id: number;
@@ -397,7 +397,11 @@ function VerifikasiBandingList({
 function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem, showNotification } =
     useAppContext();
-  const [catatanBaru, setCatatanBaru] = useState("");
+  const [catatanBaru, setCatatanBaru] = useState(
+    (selectedAsesmen as { catatanAsesor?: string })?.catatanAsesor || selectedAsesmen?.catatan || ""
+  );
+
+  const isReadOnly = selectedAsesmen?.statusBanding === "Disetujui" || selectedAsesmen?.statusBanding === "Ditolak" || selectedAsesmen?.status === "Disetujui" || selectedAsesmen?.status === "Ditolak";
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [previewForm, setPreviewForm] = useState<string | null>(null);
@@ -405,7 +409,6 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
     nama: string;
     noReg: string;
     tandaTangan?: string;
-    noMet: string;
     ttdTanggal: string;
   }
   interface QuestionItem {
@@ -421,15 +424,30 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   }
   interface RiwayatFormData {
     umpanBalik?: string;
+    umpanBalikStep2?: string;
+    umpanBalikStep4?: string;
     penyusun?: PenyusunValidatorItem[];
+    penyusunStep2?: PenyusunValidatorItem[];
+    penyusunStep3?: PenyusunValidatorItem[];
+    penyusunStep4?: PenyusunValidatorItem[];
     validator?: PenyusunValidatorItem[];
+    validatorStep2?: PenyusunValidatorItem[];
+    validatorStep3?: PenyusunValidatorItem[];
+    validatorStep4?: PenyusunValidatorItem[];
     questions?: QuestionItem[];
     step3Questions?: QuestionItem[];
     answers?: Record<string, AnswerItem>;
     step3Answers?: Record<string, AnswerItem>;
+    step2Answers?: Record<string, AnswerItem>;
     rekomendasi?: string;
     step4Questions?: QuestionItem[];
     step4Answers?: Record<string, AnswerItem>;
+    asesiSignature?: string;
+    asesorSignature?: string;
+    asesorDate?: string;
+    asesiDate?: string;
+    supervisorName?: string;
+    supervisorSignature?: string;
     [key: string]: unknown;
   }
 
@@ -439,7 +457,70 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
     [key: string]: unknown;
   }
 
+  interface FormAsesorItem {
+    form_type: string;
+    peran: string;
+    ttd_tanggal?: string | Date | null;
+    users?: {
+      profil?: {
+        namaLengkap?: string | null;
+        nomorRegistrasiMet?: string | null;
+        tandaTangan?: string | null;
+      } | null;
+    } | null;
+  }
+
+  interface KonfigurasiData {
+    form_asesor?: FormAsesorItem[];
+  }
+
   const [riwayatData, setRiwayatData] = useState<RiwayatItem[]>([]);
+  const [konfigurasiData, setKonfigurasiData] = useState<KonfigurasiData | null>(null);
+
+  useEffect(() => {
+    async function loadKonfigurasi() {
+      if (!selectedAsesmen) return;
+      const skemaId = (selectedAsesmen as { skemaId?: number }).skemaId;
+      if (!skemaId) return;
+      try {
+        const list = await getKonfigurasiPertanyaanList({ skemaId });
+        if (Array.isArray(list) && list.length > 0) {
+          const detail = await getKonfigurasiPertanyaanDetail(list[0].id);
+          setKonfigurasiData(detail);
+        }
+      } catch (err) {
+        console.error("Gagal memuat konfigurasi", err);
+      }
+    }
+    loadKonfigurasi();
+  }, [selectedAsesmen]);
+
+  const getPenyusunValidatorDariSkema = (formType: string) => {
+    if (!konfigurasiData?.form_asesor) return { penyusunSkema: [], validatorSkema: [] };
+    const filtered = konfigurasiData.form_asesor.filter((fa: FormAsesorItem) => fa.form_type === formType);
+    return {
+      penyusunSkema: filtered
+        .filter((fa: FormAsesorItem) => fa.peran === "Penyusun")
+        .map((fa: FormAsesorItem) => ({
+          nama: fa.users?.profil?.namaLengkap || "Asesor",
+          noReg: fa.users?.profil?.nomorRegistrasiMet || "-",
+          tandaTangan: fa.users?.profil?.tandaTangan || "",
+          ttdTanggal: fa.ttd_tanggal
+            ? new Date(fa.ttd_tanggal).toISOString().split("T")[0]
+            : "",
+        })),
+      validatorSkema: filtered
+        .filter((fa: FormAsesorItem) => fa.peran === "Validator")
+        .map((fa: FormAsesorItem) => ({
+          nama: fa.users?.profil?.namaLengkap || "Asesor",
+          noReg: fa.users?.profil?.nomorRegistrasiMet || "-",
+          tandaTangan: fa.users?.profil?.tandaTangan || "",
+          ttdTanggal: fa.ttd_tanggal
+            ? new Date(fa.ttd_tanggal).toISOString().split("T")[0]
+            : "",
+        })),
+    };
+  };
 
   useEffect(() => {
     async function loadRiwayat() {
@@ -890,29 +971,32 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                     rows={4}
                     value={catatanBaru}
                     onChange={(e) => setCatatanBaru(e.target.value)}
-                    placeholder="Tuliskan alasan persetujuan atau penolakan banding..."
-                    className="w-full p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all leading-relaxed"
+                    disabled={isReadOnly}
+                    placeholder={isReadOnly ? "Tidak ada catatan..." : "Tuliskan alasan persetujuan atau penolakan banding..."}
+                    className="w-full p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-[#008BE3]/20 focus:border-[#008BE3] transition-all leading-relaxed disabled:bg-gray-100 disabled:text-gray-500"
                   />
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t border-slate-100">
-                  <button
-                    onClick={() => handleSubmit("reject")}
-                    disabled={!catatanBaru.trim() || loadingSubmit}
-                    className="px-6 py-2.5 bg-white border-2 border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <XCircle size={18} />
-                    Tolak Banding
-                  </button>
-                  <button
-                    onClick={() => handleSubmit("approve")}
-                    disabled={!catatanBaru.trim() || loadingSubmit}
-                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <CheckCircle size={18} />
-                    Setujui Banding (Ubah ke Kompeten)
-                  </button>
-                </div>
+                {!isReadOnly && (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t border-slate-100">
+                    <button
+                      onClick={() => handleSubmit("reject")}
+                      disabled={!catatanBaru.trim() || loadingSubmit}
+                      className="px-6 py-2.5 bg-white border-2 border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <XCircle size={18} />
+                      Tolak Banding
+                    </button>
+                    <button
+                      onClick={() => handleSubmit("approve")}
+                      disabled={!catatanBaru.trim() || loadingSubmit}
+                      className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <CheckCircle size={18} />
+                      Setujui Banding (Ubah ke Kompeten)
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -948,7 +1032,50 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
               <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-xs">
                 {previewForm === "FR.IA.04A" && (() => {
                   const riwayat = riwayatData.find(r => r.form_type === "FR.IA.04A");
-                  const dataForm = (typeof riwayat?.form_data === 'string' ? JSON.parse(riwayat.form_data) : riwayat?.form_data) || {} as RiwayatFormData;
+                  let formData: RiwayatFormData = {};
+                  if (riwayat?.form_data) {
+                    let parsedData = riwayat.form_data;
+                    while (typeof parsedData === "string") {
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch {
+                        break;
+                      }
+                    }
+                    formData = (typeof parsedData === "object" && parsedData !== null ? parsedData : {}) as RiwayatFormData;
+                  }
+
+                  const asesiSig = (riwayat?.ttd_asesi as string) || (formData.asesiSignature as string) || selectedAsesmen.nama;
+                  const asesorSig = (riwayat?.ttd_asesor as string) || (formData.asesorSignature as string) || selectedAsesmen.asesor || "Asesor";
+                  const asesorDt = riwayat?.tanggal_ttd_asesor ? new Date(riwayat.tanggal_ttd_asesor as string).toISOString().split('T')[0] : ((formData.asesorDate as string) || selectedAsesmen.tglAsesmen);
+
+
+
+                  const { penyusunSkema, validatorSkema } = getPenyusunValidatorDariSkema("step2");
+                  const penyusunData = (formData.penyusun || formData.penyusunStep2 || formData.penyusunStep3 || formData.penyusunStep4) as PenyusunValidatorItem[] | undefined;
+                  const finalPenyusun = penyusunData && penyusunData.length > 0 ? penyusunData : penyusunSkema;
+                  const mappedPenyusun = finalPenyusun?.map((p: PenyusunValidatorItem) => {
+                    const isAsesor = p.nama === selectedAsesmen.asesor;
+                    return {
+                      ...p,
+                      noReg: p.noReg || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
+                      tandaTangan: p.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: p.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
+                  const validatorData = (formData.validator || formData.validatorStep2 || formData.validatorStep3 || formData.validatorStep4) as PenyusunValidatorItem[] | undefined;
+                  const finalValidator = validatorData && validatorData.length > 0 ? validatorData : validatorSkema;
+                  const mappedValidator = finalValidator?.map((v: PenyusunValidatorItem) => {
+                    const isAsesor = v.nama === selectedAsesmen.asesor;
+                    return {
+                      ...v,
+                      noReg: v.noReg || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
+                      tandaTangan: v.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: v.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
                   return (
                     <FormFRIA04A
                       asesmenData={{
@@ -960,38 +1087,137 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                         asesor: selectedAsesmen.asesor || "Asesor",
                         asesorReg: selectedAsesmen.asesorReg || "-",
                       }}
+                      umpanBalik={formData.umpanBalik || (formData.umpanBalikStep2 as string) || ""}
+                      supervisorName={(formData.supervisorName as string) || ""}
+                      supervisorSignature={(formData.supervisorSignature as string) || ""}
+                      asesiSignature={asesiSig}
+                      asesorSignature={asesorSig}
+                      penyusun={mappedPenyusun}
+                      validator={mappedValidator}
                       readOnly={true}
-                      umpanBalik={dataForm.umpanBalik}
-                      asesiSignature={selectedAsesmen.nama}
-                      asesorSignature={selectedAsesmen.asesor || "Asesor"}
                     />
                   );
                 })()}
                 {previewForm === "FR.IA.04B" && (() => {
                   const riwayat = riwayatData.find(r => r.form_type === "FR.IA.04B");
-                  const dataForm = (typeof riwayat?.form_data === 'string' ? JSON.parse(riwayat.form_data) : riwayat?.form_data) || {} as RiwayatFormData;
+                  let formData: RiwayatFormData = {};
+                  if (riwayat?.form_data) {
+                    let parsedData = riwayat.form_data;
+                    while (typeof parsedData === "string") {
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch {
+                        break;
+                      }
+                    }
+                    formData = (typeof parsedData === "object" && parsedData !== null ? parsedData : {}) as RiwayatFormData;
+                  }
+
+                  const asesiSig = (riwayat?.ttd_asesi as string) || (formData.asesiSignature as string) || selectedAsesmen.nama;
+                  const asesorSig = (riwayat?.ttd_asesor as string) || (formData.asesorSignature as string) || selectedAsesmen.asesor || "Asesor";
+                  const asesiDt = riwayat?.tanggal_ttd_asesi ? new Date(riwayat.tanggal_ttd_asesi as string).toISOString().split('T')[0] : ((formData.asesiDate as string) || selectedAsesmen.tglAsesmen);
+                  const asesorDt = riwayat?.tanggal_ttd_asesor ? new Date(riwayat.tanggal_ttd_asesor as string).toISOString().split('T')[0] : ((formData.asesorDate as string) || selectedAsesmen.tglAsesmen);
+
+
+
+                  const { penyusunSkema, validatorSkema } = getPenyusunValidatorDariSkema("step3");
+                  const penyusunData = (formData.penyusun || formData.penyusunStep2 || formData.penyusunStep3 || formData.penyusunStep4) as PenyusunValidatorItem[] | undefined;
+                  const finalPenyusun = penyusunData && penyusunData.length > 0 ? penyusunData : penyusunSkema;
+                  const mappedPenyusun = finalPenyusun?.map((p: PenyusunValidatorItem) => {
+                    const isAsesor = p.nama === selectedAsesmen.asesor;
+                    return {
+                      ...p,
+                      noReg: p.noReg || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
+                      tandaTangan: p.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: p.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
+                  const validatorData = (formData.validator || formData.validatorStep2 || formData.validatorStep3 || formData.validatorStep4) as PenyusunValidatorItem[] | undefined;
+                  const finalValidator = validatorData && validatorData.length > 0 ? validatorData : validatorSkema;
+                  const mappedValidator = finalValidator?.map((v: PenyusunValidatorItem) => {
+                    const isAsesor = v.nama === selectedAsesmen.asesor;
+                    return {
+                      ...v,
+                      noReg: v.noReg || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
+                      tandaTangan: v.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: v.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
                   return (
                     <FormFRIA04B
                       asesmenData={{
                         nama: selectedAsesmen.nama,
                         skema: selectedAsesmen.skema,
+                        noSkema: selectedAsesmen.noSkema || "-",
                         tipeTuk: selectedAsesmen.tipeTuk,
-                        t: selectedAsesmen.tglAsesmen,
+                        tanggal: selectedAsesmen.tglAsesmen,
                         asesor: selectedAsesmen.asesor || "Asesor",
                         asesorReg: selectedAsesmen.asesorReg || "-",
                       }}
+                      skemaId={(selectedAsesmen as { skemaId: number }).skemaId}
+                      answers={(formData.answers || formData.step3Answers || formData.step2Answers) as Record<string, { answer: string; achievement: boolean | null; }>}
+                      rekomendasi={formData.rekomendasi}
+                      asesiName={selectedAsesmen.nama}
+                      asesiSignature={asesiSig}
+                      asesiDate={asesiDt}
+                      asesorName={selectedAsesmen.asesor || "Asesor"}
+                      asesorReg={selectedAsesmen.asesorReg || "-"}
+                      asesorSignature={asesorSig}
+                      asesorDate={asesorDt}
+                      penyusun={mappedPenyusun}
+                      validator={mappedValidator}
                       readOnly={true}
-                      questions={dataForm.questions || dataForm.step3Questions}
-                      answers={dataForm.answers || dataForm.step3Answers}
-                      rekomendasi={dataForm.rekomendasi}
-                      asesiSignature={selectedAsesmen.nama}
-                      asesorSignature={selectedAsesmen.asesor || "Asesor"}
                     />
                   );
                 })()}
                 {previewForm === "FR.IA.07" && (() => {
                   const riwayat = riwayatData.find(r => r.form_type === "FR.IA.07");
-                  const dataForm = (typeof riwayat?.form_data === 'string' ? JSON.parse(riwayat.form_data) : riwayat?.form_data) || {} as RiwayatFormData;
+                  let formData: RiwayatFormData = {};
+                  if (riwayat?.form_data) {
+                    let parsedData = riwayat.form_data;
+                    while (typeof parsedData === "string") {
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch {
+                        break;
+                      }
+                    }
+                    formData = (typeof parsedData === "object" && parsedData !== null ? parsedData : {}) as RiwayatFormData;
+                  }
+
+                  const asesiSig = (riwayat?.ttd_asesi as string) || (formData.asesiSignature as string) || selectedAsesmen.nama;
+                  const asesorSig = (riwayat?.ttd_asesor as string) || (formData.asesorSignature as string) || selectedAsesmen.asesor || "Asesor";
+                  const asesiDt = riwayat?.tanggal_ttd_asesi ? new Date(riwayat.tanggal_ttd_asesi as string).toISOString().split('T')[0] : ((formData.asesiDate as string) || selectedAsesmen.tglAsesmen);
+                  const asesorDt = riwayat?.tanggal_ttd_asesor ? new Date(riwayat.tanggal_ttd_asesor as string).toISOString().split('T')[0] : ((formData.asesorDate as string) || selectedAsesmen.tglAsesmen);
+
+
+                  const { penyusunSkema, validatorSkema } = getPenyusunValidatorDariSkema("step4");
+                  const penyusunData = (formData.penyusun || formData.penyusunStep2 || formData.penyusunStep3 || formData.penyusunStep4) as PenyusunValidatorItem[] | undefined;
+                  const finalPenyusun = penyusunData && penyusunData.length > 0 ? penyusunData : penyusunSkema;
+                  const mappedPenyusun = finalPenyusun?.map((p: PenyusunValidatorItem) => {
+                    const isAsesor = p.nama === selectedAsesmen.asesor;
+                    return {
+                      ...p,
+                      noReg: p.noReg || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
+                      tandaTangan: p.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: p.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
+                  const validatorData = (formData.validator || formData.validatorStep2 || formData.validatorStep3 || formData.validatorStep4) as PenyusunValidatorItem[] | undefined;
+                  const finalValidator = validatorData && validatorData.length > 0 ? validatorData : validatorSkema;
+                  const mappedValidator = finalValidator?.map((v: PenyusunValidatorItem) => {
+                    const isAsesor = v.nama === selectedAsesmen.asesor;
+                    return {
+                      ...v,
+                      noReg: v.noReg || (isAsesor ? (selectedAsesmen.asesorReg || "") : ""),
+                      tandaTangan: v.tandaTangan || (isAsesor ? asesorSig : ""),
+                      ttdTanggal: v.ttdTanggal || (isAsesor ? asesorDt : "")
+                    };
+                  }) || [];
+
                   return (
                     <FormFRIA07
                       asesmenData={{
@@ -1003,12 +1229,19 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                         asesor: selectedAsesmen.asesor || "Asesor",
                         asesorReg: selectedAsesmen.asesorReg || "-",
                       }}
+                      skemaId={(selectedAsesmen as { skemaId: number }).skemaId}
+                      answers={(formData.answers || formData.step4Answers || formData.step3Answers) as Record<string, { answer: string; achievement: boolean | null; }>}
+                      umpanBalik={formData.umpanBalik || (formData.umpanBalikStep4 as string) || ""}
+                      asesiName={selectedAsesmen.nama}
+                      asesiSignature={asesiSig}
+                      asesiDate={asesiDt}
+                      asesorName={selectedAsesmen.asesor || "Asesor"}
+                      asesorReg={selectedAsesmen.asesorReg || "-"}
+                      asesorSignature={asesorSig}
+                      asesorDate={asesorDt}
+                      penyusun={mappedPenyusun}
+                      validator={mappedValidator}
                       readOnly={true}
-                      questions={dataForm.questions || dataForm.step4Questions}
-                      answers={dataForm.answers || dataForm.step4Answers}
-                      umpanBalik={dataForm.umpanBalik}
-                      asesiSignature={selectedAsesmen.nama}
-                      asesorSignature={selectedAsesmen.asesor || "Asesor"}
                     />
                   );
                 })()}

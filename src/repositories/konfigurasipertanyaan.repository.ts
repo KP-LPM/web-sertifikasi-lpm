@@ -19,6 +19,22 @@ export class KonfigurasiRepository {
         master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema: {
           select: { namaSkema: true },
         },
+        form_asesor: {
+          include: {
+            users: {
+              select: {
+                id: true,
+                profil: {
+                  select: {
+                    namaLengkap: true,
+                    nomorRegistrasiMet: true,
+                    tandaTangan: true,
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       orderBy: { created_at: "desc" },
     });
@@ -28,6 +44,7 @@ export class KonfigurasiRepository {
       skema: {
         namaSkema: item.master_skema_konfigurasi_pertanyaan_skema_idTomaster_skema?.namaSkema,
       },
+      penyusun: item.form_asesor,
     }));
   }
 

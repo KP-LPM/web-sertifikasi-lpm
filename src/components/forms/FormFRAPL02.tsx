@@ -218,7 +218,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
   >("Dapat dilanjutkan");
   const [localAsesiName, setLocalAsesiName] = useState(
-    props.asesmenData?.nama || "AHMAD FAUZI",
+    props.asesmenData?.nama || "",
   );
 
   // 3. Ambil tanda tangan profil sebagai nilai awal tanda tangan asesi
@@ -248,11 +248,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
     }
   }, [registeredProfile, user, localAsesiSig, localAsesorSig, props.isAsesi]);
 
-  const [localAsesiDate, setLocalAsesiDate] = useState(
-    (props.asesmenData?.tglAsesmen && String(props.asesmenData.tglAsesmen).includes("-"))
-      ? String(props.asesmenData.tglAsesmen).split("T")[0]
-      : new Date().toISOString().split("T")[0]
-  );
+  const [localAsesiDate, setLocalAsesiDate] = useState("");
 
   const [localAsesorName, setLocalAsesorName] = useState(
     props.asesmenData?.asesor || "",
@@ -260,11 +256,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const [localAsesorReg, setLocalAsesorReg] = useState(
     props.asesmenData?.asesorReg || "",
   );
-  const [localAsesorDate, setLocalAsesorDate] = useState(
-    (props.asesmenData?.tglAsesmen && String(props.asesmenData.tglAsesmen).includes("-"))
-      ? String(props.asesmenData.tglAsesmen).split("T")[0]
-      : new Date().toISOString().split("T")[0]
-  );
+  const [localAsesorDate, setLocalAsesorDate] = useState("");
   const answers = props.answers || localAnswers;
   const rekomendasi =
     props.rekomendasi !== undefined ? props.rekomendasi : localRekomendasi;
@@ -312,7 +304,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
   const handleAnswerChangeInternal = (key: string, val: "K" | "BK") => {
     if (props.readOnly || props.isAsesi) return;
     const newAnswers = { ...answers, [key]: val };
-    
+
     if (props.onAnswerChange) {
       props.onAnswerChange(key, val);
     } else {
@@ -572,7 +564,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
               <input
                 type="text"
                 value={String(asesorName)}
-                disabled={props.readOnly || props.isAsesi}
+                disabled={true}
                 onChange={(e) =>
                   props.onAsesorNameChange
                     ? props.onAsesorNameChange(e.target.value)
@@ -588,7 +580,7 @@ export function FormFRAPL02(props: FormFRAPL02Props) {
                 <input
                   type="text"
                   value={String(asesorReg)}
-                  disabled={props.readOnly || props.isAsesi}
+                  disabled={true}
                   onChange={(e) =>
                     props.onAsesorRegChange
                       ? props.onAsesorRegChange(e.target.value)

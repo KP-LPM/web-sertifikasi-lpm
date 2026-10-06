@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-empty-pattern */
 import React from "react";
 
 export interface SignatureModalProps {
@@ -10,7 +9,7 @@ export interface SignatureModalProps {
   initialSignature?: string;
 }
 
-export function SignatureModal({}: SignatureModalProps) {
+export function SignatureModal({ }: SignatureModalProps) {
   // Canvas has been removed per user request.
   // Signatures are now automatically populated from profiles.
   return null;

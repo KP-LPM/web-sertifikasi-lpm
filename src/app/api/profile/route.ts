@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const userId = Number(token.id || token.sub);
     const body = await request.json();
 
-    const dataProfil: UpdateProfileInput & { email?: string } = {
+    const dataProfil: UpdateProfileInput & { email?: string; username?: string } = {
       namaLengkap: body.nama_lengkap || undefined,
       tempatLahir: body.tempat_lahir || undefined,
       tanggalLahir: body.tanggal_lahir
@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
       kodeKota: body.kota || undefined,
       kewarganegaraan: body.kewarganegaraan || undefined,
       kodePos: body.kodePos || body.kode_pos || undefined,
+      nik: body.nik || undefined,
       noHp: body.noTelp || body.no_telp || undefined,
       nomorRegistrasiMet: body.no_registrasi || undefined,
       pekerjaan: body.pekerjaan || undefined,
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
       tandaTangan: body.tanda_tangan || undefined,
       avatar: body.avatar || undefined,
       email: body.email || undefined,
+      username: body.username || undefined,
     };
 
     const result = await profileService.updateProfileUsers(userId, dataProfil);

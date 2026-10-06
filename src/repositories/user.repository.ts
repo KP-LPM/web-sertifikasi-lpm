@@ -128,6 +128,14 @@ export class UserRepository {
     return !!existing && existing.id !== excludeUserId;
   }
 
+  async isUsernameTakenByOther(username: string, excludeUserId: number) {
+    const existing = await db.user.findUnique({
+      where: { username },
+      select: { id: true },
+    });
+    return !!existing && existing.id !== excludeUserId;
+  }
+
   async setResetToken(userId: number, hashedToken: string, expiry: Date) {
     return await db.user.update({
       where: { id: userId },
@@ -159,14 +167,14 @@ export class UserRepository {
     });
   }
 
-  async updateEmail(
+  async updateUserAuthData(
     userId: number,
-    email: string,
+    data: { email?: string; username?: string },
     tx: Prisma.TransactionClient | typeof db = db,
   ) {
     return await tx.user.update({
       where: { id: userId },
-      data: { email },
+      data,
     });
   }
 

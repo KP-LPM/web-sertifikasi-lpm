@@ -153,12 +153,12 @@ export function FormFRAK07(props: FormFRAK07Props) {
   const [localMetode, setLocalMetode] = useState("");
   const [localInstrumen, setLocalInstrumen] = useState("");
   const [localAsesorName, setLocalAsesorName] = useState(
-    props.asesmenData?.asesor || "Ichsan Taufik",
+    props.asesmenData?.asesor || "",
   );
   const [localAsesorSig] = useState("");
   const [localAsesorDate, setLocalAsesorDate] = useState("");
   const [localAsesiName, setLocalAsesiName] = useState(
-    props.asesmenData?.nama || "Ahmad Supriyadi",
+    props.asesmenData?.nama || "",
   );
   const [localAsesiSig] = useState("");
   const [localAsesiDate, setLocalAsesiDate] = useState("");

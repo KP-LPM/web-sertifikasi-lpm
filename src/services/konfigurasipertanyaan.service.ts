@@ -65,12 +65,12 @@ export class KonfigurasiService {
     return config;
   }
 
-  async publish(id: number) {
+  async updateStatus(id: number, status: string) {
     await this.getById(id);
 
-    const config = await this.repo.updateStatus(id, "published");
+    const config = await this.repo.updateStatus(id, status);
     if (!config) {
-      throw new InvariantError("Gagal mempublikasikan konfigurasi soal");
+      throw new InvariantError("Gagal memperbarui status konfigurasi soal");
     }
     return config;
   }

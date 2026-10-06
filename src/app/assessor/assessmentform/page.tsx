@@ -21,7 +21,7 @@ import {
   FormFRIA04B,
   FormFRIA07,
 } from "@/components/forms";
-import { AssessmentItem } from "@/types/types";
+import { AssessmentItem, PenyusunValidatorItem } from "@/types/types";
 
 type AsesmenData = {
   nama: string;
@@ -62,9 +62,9 @@ function AssessmentFormContent() {
             nama: data?.dataPribadi?.namaLengkap || "-",
             skema: data?.skema?.namaSkema || "-",
             noSkema: data?.skema?.kodeSkema || "-",
-            tuk: data?.master_tuk?.nama_tuk || "-",
-            metodeAsesmen: data?.metode_asesmen || "Observasi Langsung",
-            tanggal: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal_mulai ? new Date(data.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal_mulai).toISOString().split("T")[0] : "-",
+            tuk: (data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tipe_tuk || data?.master_tuk?.tipe || "Sewaktu") + " - " + (data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.master_tuk?.nama || data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.alamat || data?.master_tuk?.alamat || "-"),
+            metode: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.metode || data?.metode || "Observasi Langsung",
+            tglAsesmen: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal ? new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(data.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal)) : "-",
             asesor: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.namaLengkap || "-",
             asesorReg: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.nomorRegistrasiMet || "-",
             skemaId: data?.skemaId || data?.skema_id,
@@ -147,7 +147,8 @@ function AssessmentFormContent() {
                 const getSupervisor = (formType: string) => formAsesors.filter((a: any) => (a.peran || "").toLowerCase() === 'supervisor' && a.form_type === formType).map((a: any) => ({
                   nama: a.users?.profil?.namaLengkap || "",
                   noMet: a.users?.profil?.nomorRegistrasiMet || "",
-                  ttdTanggal: a.ttd_tanggal ? new Date(a.ttd_tanggal).toISOString().split('T')[0] : ""
+                  ttdTanggal: a.ttd_tanggal ? new Date(a.ttd_tanggal).toISOString().split('T')[0] : "",
+                  tandaTangan: a.users?.profil?.tanda_tangan || a.users?.profil?.tandaTangan || ""
                 }));
 
                 const p2 = getPenyusun('step2');
@@ -155,7 +156,10 @@ function AssessmentFormContent() {
                 const s2 = getSupervisor('step2');
                 if (p2.length > 0) setPenyusun(p2);
                 if (v2.length > 0) setValidator(v2);
-                if (s2.length > 0) setSupervisorNameStep2(s2[0].nama);
+                if (s2.length > 0) {
+                  setSupervisorNameStep2(s2[0].nama);
+                  if (s2[0].tandaTangan) setSupervisorSignatureStep2(s2[0].tandaTangan);
+                }
 
                 const p3 = getPenyusun('step3');
                 const v3 = getValidator('step3');
@@ -174,16 +178,24 @@ function AssessmentFormContent() {
     }
   }, [selectedAsesmen?.id, pengajuanIdParam, user]);
 
-  // Sync asesor signature from registeredProfile whenever it loads
+  // Sync asesor signature and No Reg from registeredProfile whenever it loads
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const asesorSig = (registeredProfile as any)?.tanda_tangan || (registeredProfile as any)?.tandaTangan || "";
+    const reg = (registeredProfile as any);
+    const asesorSig = reg?.tanda_tangan || reg?.tandaTangan || "";
+    const asesorReg = reg?.nomorRegistrasiMet || reg?.no_registrasi || "";
+
     if (asesorSig) {
       setAsesorSignatureApl02(asesorSig);
       setAsesorSignature(asesorSig);
       setAsesorSignatureStep2(asesorSig);
       setAsesorSignatureStep3(asesorSig);
       setAsesorSignatureStep4(asesorSig);
+    }
+    if (asesorReg) {
+      setAsesorRegApl02(asesorReg);
+      setAsesorRegStep3(asesorReg);
+      setAsesorRegStep4(asesorReg);
     }
   }, [registeredProfile]);
 
@@ -201,22 +213,52 @@ function AssessmentFormContent() {
     return () => setExtraCrumbs([]);
   }, [selectedAsesmen?.nama, selectedAsesmen?.namaBatch, setExtraCrumbs]);
 
-  // Data Asesmen
   const asesmenData = {
     nama: selectedAsesmen?.nama ? String(selectedAsesmen.nama) : "-",
     skema: selectedAsesmen?.skema ? String(selectedAsesmen.skema) : "-",
     noSkema: selectedAsesmen?.noSkema ? String(selectedAsesmen.noSkema) : "-",
-    tuk: selectedAsesmen?.alamat ? String(selectedAsesmen.alamat) : selectedAsesmen?.tipeTuk ? String(selectedAsesmen.tipeTuk) : "-",
+    tuk: selectedAsesmen?.tuk ? String(selectedAsesmen.tuk) : (selectedAsesmen?.tipeTuk && selectedAsesmen?.alamat) ? `${selectedAsesmen.tipeTuk} - ${selectedAsesmen.alamat}` : selectedAsesmen?.alamat ? String(selectedAsesmen.alamat) : selectedAsesmen?.tipeTuk ? String(selectedAsesmen.tipeTuk) : "-",
     metodeAsesmen: selectedAsesmen?.metode ? String(selectedAsesmen.metode) : "-",
     tanggal: selectedAsesmen?.tglAsesmen ? String(selectedAsesmen.tglAsesmen) : "-",
-    asesor: selectedAsesmen?.asesor || "-",
-    asesorReg: selectedAsesmen?.asesorReg || "-",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    asesor: selectedAsesmen?.asesor || (registeredProfile as any)?.namaLengkap || (user as any)?.profil?.namaLengkap || "-",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    asesorReg: selectedAsesmen?.asesorReg || (registeredProfile as any)?.nomorRegistrasiMet || (user as any)?.profil?.nomorRegistrasiMet || "-",
   } as AsesmenData;
+
+  // Sync state values that were initialized with "-"
+  useEffect(() => {
+    if (asesmenData.nama && asesmenData.nama !== "-") {
+      setAsesiName(asesmenData.nama);
+      setAsesiNameStep3(asesmenData.nama);
+      setAsesiNameStep4(asesmenData.nama);
+    }
+    if (asesmenData.asesor && asesmenData.asesor !== "-") {
+      setAsesorName(asesmenData.asesor);
+      setAsesorNameApl02(asesmenData.asesor);
+      setAsesorNameStep3(asesmenData.asesor);
+      setAsesorNameStep4(asesmenData.asesor);
+
+      setPenyusunStep3(prev => {
+        const newP = [...prev];
+        if (newP[0] && (!newP[0].nama || newP[0].nama === "-")) newP[0].nama = asesmenData.asesor;
+        return newP;
+      });
+      setPenyusunStep4(prev => {
+        const newP = [...prev];
+        if (newP[0] && (!newP[0].nama || newP[0].nama === "-")) newP[0].nama = asesmenData.asesor;
+        return newP;
+      });
+    }
+  }, [asesmenData.nama, asesmenData.asesor]);
+
   // Step 1: Form FR.APL.02 State
   const [rekomendasiApl02, setRekomendasiApl02] = useState<
     "Dapat dilanjutkan" | "Tidak dapat dilanjutkan" | ""
   >("Dapat dilanjutkan");
   const [asesorSignatureApl02, setAsesorSignatureApl02] = useState("");
+  const [asesorNameApl02, setAsesorNameApl02] = useState(asesmenData.asesor);
+  const [asesorRegApl02, setAsesorRegApl02] = useState(asesmenData.asesorReg || "");
   const [answersApl02, setAnswersApl02] = useState<Record<string, "K" | "BK">>({});
 
   // AK.07 Form State
@@ -240,11 +282,11 @@ function AssessmentFormContent() {
   const [supervisorNameStep2, setSupervisorNameStep2] = useState("");
   const [supervisorSignatureStep2, setSupervisorSignatureStep2] = useState("");
 
-  const [penyusun, setPenyusun] = useState([
+  const [penyusun, setPenyusun] = useState<PenyusunValidatorItem[]>([
     { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
-  const [validator, setValidator] = useState([
+  const [validator, setValidator] = useState<PenyusunValidatorItem[]>([
     { nama: "", noMet: "", ttdTanggal: "" },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
@@ -259,15 +301,15 @@ function AssessmentFormContent() {
   const [asesiDateStep3, setAsesiDateStep3] = useState("");
 
   const [asesorNameStep3, setAsesorNameStep3] = useState(asesmenData.asesor);
-  const [asesorRegStep3, setAsesorRegStep3] = useState("");
+  const [asesorRegStep3, setAsesorRegStep3] = useState(asesmenData.asesorReg || "");
   const [asesorSignatureStep3, setAsesorSignatureStep3] = useState("");
   const [asesorDateStep3, setAsesorDateStep3] = useState("");
 
-  const [penyusunStep3, setPenyusunStep3] = useState([
+  const [penyusunStep3, setPenyusunStep3] = useState<PenyusunValidatorItem[]>([
     { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
-  const [validatorStep3, setValidatorStep3] = useState([
+  const [validatorStep3, setValidatorStep3] = useState<PenyusunValidatorItem[]>([
     { nama: "", noMet: "", ttdTanggal: "" },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
@@ -336,11 +378,11 @@ function AssessmentFormContent() {
 
 
 
-  const [penyusunStep4, setPenyusunStep4] = useState([
+  const [penyusunStep4, setPenyusunStep4] = useState<PenyusunValidatorItem[]>([
     { nama: asesmenData.asesor, noMet: "", ttdTanggal: asesmenData.tglAsesmen },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
-  const [validatorStep4, setValidatorStep4] = useState([
+  const [validatorStep4, setValidatorStep4] = useState<PenyusunValidatorItem[]>([
     { nama: "", noMet: "", ttdTanggal: "" },
     { nama: "", noMet: "", ttdTanggal: "" },
   ]);
@@ -412,16 +454,16 @@ function AssessmentFormContent() {
     step3Answers, step4Answers, umpanBalikStep4, finalDecision, catatanAsesor
   ]);
 
-  // Validation
   const isStep1Valid =
-    noAdjustment ||
-    DEFAULT_ADJUSTMENT_OPTIONS.every((opt) => {
-      const adj = adjustments[opt.id];
-      if (!adj || adj.required === undefined || adj.required === null)
-        return false;
-      if (adj.required === true && !adj.note?.trim()) return false;
-      return true;
-    });
+    potensiAsesi.length > 0 &&
+    (noAdjustment ||
+      DEFAULT_ADJUSTMENT_OPTIONS.every((opt) => {
+        const adj = adjustments[opt.id];
+        if (!adj || adj.required === undefined || adj.required === null)
+          return false;
+        if (adj.required === true && !adj.note?.trim()) return false;
+        return true;
+      }));
   const isStep2Valid =
     !!umpanBalikStep2?.trim();
   const isStep3Valid =
@@ -440,7 +482,7 @@ function AssessmentFormContent() {
         step4Answers[q.id]?.answer?.trim() &&
         step4Answers[q.id]?.achievement !== undefined &&
         step4Answers[q.id]?.achievement !== null,
-    );
+    ) && !!umpanBalikStep4?.trim();
 
 
   const handleSubmit = async () => {
@@ -449,85 +491,87 @@ function AssessmentFormContent() {
     try {
       const targetId = Number(pengajuanIdParam || selectedAsesmen?.id);
       if (targetId) {
-        await saveHasilAsesmen(targetId, {
-          hasil: finalDecision,
-          catatan: catatanAsesor || "Penilaian asesmen telah diselesaikan oleh asesor.",
-        });
+        await Promise.all([
+          saveHasilAsesmen(targetId, {
+            hasil: finalDecision,
+            catatan: catatanAsesor || "Penilaian asesmen telah diselesaikan oleh asesor.",
+          }),
 
-        // 1. Upsert APL-02
-        await upsertRiwayatAsesmen(targetId, {
-          form_type: "FR.APL.02",
-          penilaian: { rekomendasi: rekomendasiApl02 },
-          ttd_asesor: asesorSignatureApl02,
-          ttd_asesi: asesiSignatureApl02,
-          tanggal_ttd_asesor: asesorDate,
-          tanggal_ttd_asesi: asesiDateApl02,
-        }).catch(e => console.error("Gagal upsert APL-02:", e));
+          // 1. Upsert APL-02
+          upsertRiwayatAsesmen(targetId, {
+            form_type: "FR.APL.02",
+            penilaian: { rekomendasi: rekomendasiApl02 },
+            ttd_asesor: asesorSignatureApl02,
+            ttd_asesi: asesiSignatureApl02,
+            tanggal_ttd_asesor: asesorDate,
+            tanggal_ttd_asesi: asesiDateApl02,
+          }).catch(e => console.error("Gagal upsert APL-02:", e)),
 
-        // 2. Create AK-07
-        await createRiwayatAsesmen(targetId, {
-          form_type: "FR.AK.07",
-          form_data: {
-            potensiAsesi,
-            noAdjustment,
-            adjustments,
-            acuanPembanding,
-            metodeAsesmen,
-            instrumenAsesmen
-          },
-          ttd_asesor: asesorSignature,
-          ttd_asesi: asesiSignature,
-          tanggal_ttd_asesor: asesorDate,
-          tanggal_ttd_asesi: asesiDate,
-        }).catch(e => console.error("Gagal create AK-07:", e));
+          // 2. Create AK-07
+          createRiwayatAsesmen(targetId, {
+            form_type: "FR.AK.07",
+            form_data: {
+              potensiAsesi,
+              noAdjustment,
+              adjustments,
+              acuanPembanding,
+              metodeAsesmen,
+              instrumenAsesmen
+            },
+            ttd_asesor: asesorSignature,
+            ttd_asesi: asesiSignature,
+            tanggal_ttd_asesor: asesorDate,
+            tanggal_ttd_asesi: asesiDate,
+          }).catch(e => console.error("Gagal create AK-07:", e)),
 
-        // 3. Create IA-04A (Step 3)
-        await createRiwayatAsesmen(targetId, {
-          form_type: "FR.IA.04A",
-          form_data: {
-            umpanBalik: umpanBalikStep2,
-            supervisorName: supervisorNameStep2,
-            supervisorSignature: supervisorSignatureStep2,
-            penyusun,
-            validator
-          },
-          ttd_asesor: asesorSignatureStep2,
-          ttd_asesi: asesiSignatureStep2,
-          tanggal_ttd_asesor: asesorDate,
-          tanggal_ttd_asesi: asesiDate,
-        }).catch(e => console.error("Gagal create IA-04A:", e));
+          // 3. Create IA-04A (Step 3)
+          createRiwayatAsesmen(targetId, {
+            form_type: "FR.IA.04A",
+            form_data: {
+              umpanBalik: umpanBalikStep2,
+              supervisorName: supervisorNameStep2,
+              supervisorSignature: supervisorSignatureStep2,
+              penyusun,
+              validator
+            },
+            ttd_asesor: asesorSignatureStep2,
+            ttd_asesi: asesiSignatureStep2,
+            tanggal_ttd_asesor: asesorDate,
+            tanggal_ttd_asesi: asesiDate,
+          }).catch(e => console.error("Gagal create IA-04A:", e)),
 
-        // 4. Create IA-04B (Step 4)
-        await createRiwayatAsesmen(targetId, {
-          form_type: "FR.IA.04B",
-          form_data: {
-            questions: step3Questions,
-            answers: step3Answers,
-            rekomendasi: rekomendasiStep3,
-            penyusun: penyusunStep3,
-            validator: validatorStep3
-          },
-          ttd_asesor: asesorSignatureStep3,
-          ttd_asesi: asesiSignatureStep3,
-          tanggal_ttd_asesor: asesorDateStep3,
-          tanggal_ttd_asesi: asesiDateStep3,
-        }).catch(e => console.error("Gagal create IA-04B:", e));
+          // 4. Create IA-04B (Step 4)
+          createRiwayatAsesmen(targetId, {
+            form_type: "FR.IA.04B",
+            form_data: {
+              questions: step3Questions,
+              answers: step3Answers,
+              rekomendasi: rekomendasiStep3,
+              penyusun: penyusunStep3,
+              validator: validatorStep3
+            },
+            ttd_asesor: asesorSignatureStep3,
+            ttd_asesi: asesiSignatureStep3,
+            tanggal_ttd_asesor: asesorDateStep3,
+            tanggal_ttd_asesi: asesiDateStep3,
+          }).catch(e => console.error("Gagal create IA-04B:", e)),
 
-        // 5. Create IA-07 (Step 5)
-        await createRiwayatAsesmen(targetId, {
-          form_type: "FR.IA.07",
-          form_data: {
-            questions: step4Questions,
-            answers: step4Answers,
-            umpanBalik: umpanBalikStep4,
-            penyusun: penyusunStep4,
-            validator: validatorStep4
-          },
-          ttd_asesor: asesorSignatureStep4,
-          ttd_asesi: asesiSignatureStep4,
-          tanggal_ttd_asesor: asesorDateStep4,
-          tanggal_ttd_asesi: asesiDateStep4,
-        }).catch(e => console.error("Gagal create IA-07:", e));
+          // 5. Create IA-07 (Step 5)
+          createRiwayatAsesmen(targetId, {
+            form_type: "FR.IA.07",
+            form_data: {
+              questions: step4Questions,
+              answers: step4Answers,
+              umpanBalik: umpanBalikStep4,
+              penyusun: penyusunStep4,
+              validator: validatorStep4
+            },
+            ttd_asesor: asesorSignatureStep4,
+            ttd_asesi: asesiSignatureStep4,
+            tanggal_ttd_asesor: asesorDateStep4,
+            tanggal_ttd_asesi: asesiDateStep4,
+          }).catch(e => console.error("Gagal create IA-07:", e))
+        ]);
       }
 
       if (selectedAsesmen) {
@@ -646,10 +690,14 @@ function AssessmentFormContent() {
           onAsesiSignatureChange={setAsesiSignatureApl02}
           asesiDate={asesiDateApl02} // Hubungkan ke state
           onAsesiDateChange={setAsesiDateApl02} // Tambahkan fungsi handler
-          asesorName={String(asesmenData.asesor || "")}
-          asesorReg={asesmenData.asesorReg}
+          asesorName={String(asesorNameApl02 || "")}
+          onAsesorNameChange={setAsesorNameApl02}
+          asesorReg={String(asesorRegApl02 || "")}
+          onAsesorRegChange={setAsesorRegApl02}
           asesorSignature={asesorSignatureApl02}
           onAsesorSignatureChange={setAsesorSignatureApl02}
+          asesorDate={asesorDate}
+          onAsesorDateChange={setAsesorDate}
           onFormStatusChange={(total, filled, isAllFilled) => {
             setFormApl02Status((prev) => {
               if (
@@ -752,9 +800,7 @@ function AssessmentFormContent() {
       onSupervisorNameChange={setSupervisorNameStep2}
       supervisorSignature={supervisorSignatureStep2}
       onSupervisorSignatureChange={setSupervisorSignatureStep2}
-      penyusun={
-        penyusun as Array<{ nama: string; noMet: string; ttdTanggal: string }>
-      }
+      penyusun={penyusun}
       onPenyusunChange={setPenyusun}
       validator={validator}
       onValidatorChange={setValidator}
@@ -787,13 +833,7 @@ function AssessmentFormContent() {
       onAsesorSignatureStep3Change={setAsesorSignatureStep3}
       asesorDateStep3={asesorDateStep3}
       onAsesorDateStep3Change={setAsesorDateStep3}
-      penyusunStep3={
-        penyusunStep3 as Array<{
-          nama: string;
-          noMet: string;
-          ttdTanggal: string;
-        }>
-      }
+      penyusunStep3={penyusunStep3}
       onPenyusunStep3Change={setPenyusunStep3}
       validatorStep3={validatorStep3}
       onValidatorStep3Change={setValidatorStep3}
@@ -827,13 +867,7 @@ function AssessmentFormContent() {
       onAsesorSignatureStep4Change={setAsesorSignatureStep4}
       asesorDateStep4={asesorDateStep4}
       onAsesorDateStep4Change={setAsesorDateStep4}
-      penyusunStep4={
-        penyusunStep4 as Array<{
-          nama: string;
-          noMet: string;
-          ttdTanggal: string;
-        }>
-      }
+      penyusunStep4={penyusunStep4}
       onPenyusunStep4Change={setPenyusunStep4}
       validatorStep4={validatorStep4}
       onValidatorStep4Change={setValidatorStep4}
@@ -1005,11 +1039,11 @@ function AssessmentFormContent() {
   );
 
   const steps = [
-    { num: 1, label: "Step 1" },
-    { num: 2, label: "Step 2" },
-    { num: 3, label: "Step 3" },
-    { num: 4, label: "Step 4" },
-    { num: 5, label: "Step 5" },
+    { num: 1, label: "APL 02" },
+    { num: 2, label: "Penyesuaian Wajar" },
+    { num: 3, label: "Penjelasan Singkat Proyek" },
+    { num: 4, label: "Penilaian Proyek Singkat" },
+    { num: 5, label: "Pertanyaan lisan" },
     { num: 6, label: "Finalisasi" },
   ];
 
@@ -1019,7 +1053,13 @@ function AssessmentFormContent() {
       <div className="w-full max-w-full mx-auto px-4 md:px-8 mb-4">
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center gap-3">
           <button
-            onClick={() => router.push('/assessor/candidates')}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                if (selectedAsesmen?.id) sessionStorage.removeItem(`assessmentDraft_${selectedAsesmen.id}`);
+                if (pengajuanIdParam) sessionStorage.removeItem(`assessmentDraft_${pengajuanIdParam}`);
+              }
+              router.push('/assessor/candidates');
+            }}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-[#008BE3] bg-[#008BE3]/10 hover:bg-[#008BE3]/20 transition-colors cursor-pointer shrink-0"
             title="Kembali ke Daftar Asesi"
           >
@@ -1040,10 +1080,29 @@ function AssessmentFormContent() {
       <div className="w-full max-w-full mx-auto px-4 md:px-8 mb-6 flex items-center justify-center">
         <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
           {steps.map((s, i) => {
-            const isDone = completedSteps.has(s.num);
+            const isStep1Completed = formApl02Status.isAllFilled;
+            const isStep2Completed = isStep1Valid;
+            const isStep3Completed = isStep2Valid;
+            const isStep4Completed = isStep3Valid;
+            const isStep5Completed = isStep4Valid;
+
+            const canAccessStep = (stepNum: number) => {
+              if (stepNum === 1) return true;
+              if (rekomendasiApl02 === "Tidak dapat dilanjutkan") {
+                return stepNum === 6;
+              }
+              if (stepNum === 2) return isStep1Completed;
+              if (stepNum === 3) return isStep1Completed && isStep2Completed;
+              if (stepNum === 4) return isStep1Completed && isStep2Completed && isStep3Completed;
+              if (stepNum === 5) return isStep1Completed && isStep2Completed && isStep3Completed && isStep4Completed;
+              if (stepNum === 6) return isStep1Completed && isStep2Completed && isStep3Completed && isStep4Completed && isStep5Completed;
+              return false;
+            };
+
+            const isDone = completedSteps.has(s.num) || (s.num < currentStep && canAccessStep(s.num + 1));
             const isCurrent = currentStep === s.num;
-            const maxReached = Math.max(...Array.from(completedSteps), currentStep);
-            const isClickable = s.num <= maxReached + 1;
+            const isClickable = canAccessStep(s.num);
+
             return (
               <React.Fragment key={s.num}>
                 <button
@@ -1052,7 +1111,7 @@ function AssessmentFormContent() {
                   onClick={() => isClickable && setCurrentStep(s.num)}
                   className={[
                     'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold',
-                    isCurrent ? 'bg-[#008BE3] text-white shadow-sm' : isDone ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer' : isClickable ? 'hover:bg-slate-100 text-slate-500 cursor-pointer' : 'text-slate-300 cursor-not-allowed',
+                    isCurrent ? 'bg-[#008BE3] text-white shadow-sm' : isDone ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer' : isClickable ? 'hover:bg-slate-100 text-slate-500 cursor-pointer' : 'text-slate-300 cursor-not-allowed opacity-50',
                   ].join(' ')}
                 >
                   <span className={[

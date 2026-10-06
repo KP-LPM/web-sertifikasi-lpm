@@ -36,7 +36,7 @@ interface BackendJadwal {
   metode?: string;
   tipe_tuk?: string;
   alamat?: string;
-  master_tuk?: { nama_tuk?: string };
+  master_tuk?: { nama?: string; nama_tuk?: string; alamat?: string; keterangan?: string };
   tanggal?: string;
   waktu_mulai?: string;
   link_video?: string;
@@ -111,6 +111,17 @@ export default function RiwayatAsesmen() {
           const activeJadwals = jadwals.filter((j) => j.status === "Selesai");
           const mapped: BatchDetail[] = activeJadwals.map((j) => {
             const batchCand = candidates.filter((c) => c.jadwalId === j.id);
+            const isOnline = j.tipe_tuk?.toLowerCase().includes("online") || j.tipe_tuk?.toLowerCase().includes("virtual");
+            const tukGedung = j.master_tuk?.nama || j.alamat || "UIN Sunan Gunung Djati Bandung";
+            const tukKeterangan = j.master_tuk?.keterangan || "";
+            const tukName = isOnline ? "Online" : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
+
+            const alamat = isOnline
+              ? ""
+              : j.master_tuk?.alamat ||
+              j.alamat ||
+              "Jl. A.H. Nasution No. 105, Cipadung, Cibiru";
+
             return {
               id: j.id,
               status: j.status || "Terjadwal",
@@ -121,19 +132,20 @@ export default function RiwayatAsesmen() {
                   ? "Online"
                   : "Offline")) as JenisMetode,
               tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
-              alamat: j.alamat || j.master_tuk?.nama_tuk || "TUK Terdaftar",
+              tuk: tukName,
+              alamat: alamat,
               tanggal: j.tanggal
-                ? new Date(j.tanggal).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })
+                ? (() => {
+                    const d = new Date(j.tanggal);
+                    const m = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                    return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                  })()
                 : "-",
               waktuMulai: j.waktu_mulai
-                ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                ? (() => {
+                    const d = new Date(j.waktu_mulai);
+                    return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
+                  })()
                 : "09:00 WIB",
               linkVideo: j.link_video || "-",
               suratTugasName: j.surat_tugas_name || "",
@@ -152,19 +164,19 @@ export default function RiwayatAsesmen() {
                 asesorReg:
                   j.users?.profil?.nomorRegistrasiMet || "-",
                 tglAsesmen: j.tanggal
-                  ? new Date(j.tanggal).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
+                  ? (() => {
+                      const d = new Date(j.tanggal);
+                      const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                      return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                    })()
                   : "-",
                 waktu: j.waktu_mulai
-                  ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  ? (() => {
+                      const d = new Date(j.waktu_mulai);
+                      return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
+                    })()
                   : "09:00 WIB",
-                alamat: j.alamat || j.master_tuk?.nama_tuk || "-",
+                alamat: alamat || "-",
                 tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
                 metode: (j.metode ||
                   (j.tipe_tuk === "Online"
@@ -478,7 +490,7 @@ export default function RiwayatAsesmen() {
                                 className="text-purple-500 shrink-0 mt-0.5"
                               />
                               <span className="text-purple-700 font-semibold wrap-break-word leading-snug">
-                                {batch.alamat}
+                                {batch.tuk || "Online"}
                               </span>
                             </>
                           ) : (
@@ -487,9 +499,16 @@ export default function RiwayatAsesmen() {
                                 size={14}
                                 className="text-[#008BE3] shrink-0 mt-0.5"
                               />
-                              <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
-                                {batch.alamat}
-                              </span>
+                              <div className="flex flex-col">
+                                <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
+                                  {batch.tuk}
+                                </span>
+                                {batch.alamat && (
+                                  <span className="text-[11px] text-slate-500 wrap-break-word leading-snug mt-0.5">
+                                    {batch.alamat}
+                                  </span>
+                                )}
+                              </div>
                             </>
                           )}
                         </div>
@@ -642,8 +661,7 @@ export default function RiwayatAsesmen() {
                       Alamat & TUK
                     </span>
                     <span className="font-bold text-slate-900 wrap-break-word leading-snug block">
-                      {currentSelectedBatch.alamat} (
-                      {currentSelectedBatch.tipeTuk})
+                      {currentSelectedBatch.tuk}  ({currentSelectedBatch.tipeTuk})
                     </span>
                   </div>
                 </div>
@@ -853,6 +871,7 @@ export default function RiwayatAsesmen() {
                                 tipeTuk: candidate.tipeTuk ?? "",
                                 metode: "Offline",
                                 hasil: candidate.statusAsesmen ?? "Selesai",
+                                catatan: (candidate as { catatan?: string }).catatan,
                               });
                               router.push(`/assessor/detailriwayatasesmen`);
                             }}

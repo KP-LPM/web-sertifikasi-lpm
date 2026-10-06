@@ -36,13 +36,18 @@ export async function POST(request: NextRequest, context: Context) {
       return sendResponse(400, "ID konfigurasi tidak valid.");
     }
 
-    const result = await konfigurasiService.publish(konfigurasiId);
+    const body = await request.json().catch(() => ({}));
+    // Map status dari UI (Aktif/Tidak Aktif) ke constraint Database (published/Draft)
+    const newStatusUi = body.status === "Tidak Aktif" ? "Tidak Aktif" : "Aktif";
+    const dbStatus = newStatusUi === "Aktif" ? "published" : "Draft";
+
+    const result = await konfigurasiService.updateStatus(konfigurasiId, dbStatus);
 
     revalidatePath("/api/konfigurasipertanyaan");
 
     return sendResponse(
       200,
-      "Konfigurasi berhasil diterbitkan (Published)",
+      `Status konfigurasi berhasil diperbarui menjadi ${newStatusUi}`,
       result,
     );
   } catch (error) {
@@ -57,7 +62,7 @@ export async function POST(request: NextRequest, context: Context) {
     }
 
     console.error("[POST /api/konfigurasipertanyaan/[id]/publish]", error);
-    return sendResponse(500, "Internal server error");
+    return sendResponse(500, (error as Error).message || "Internal server error");
   }
 }
 

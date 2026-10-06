@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -148,10 +147,10 @@ export default function TukManagement() {
   const [formData, setFormData] = useState<TukItem>(loadTukDraft);
 
   useEffect(() => {
-    if (!isEditModalOpen && typeof window !== "undefined") {
+    if (isModalOpen && !isEditModalOpen && typeof window !== "undefined") {
       sessionStorage.setItem("tukFormDraft", JSON.stringify(formData));
     }
-  }, [formData, isEditModalOpen]);
+  }, [formData, isModalOpen, isEditModalOpen]);
 
   // ==========================================
   // PENGATURAN BREADCRUMB EXTRA DARI CONTEXT
@@ -230,27 +229,6 @@ export default function TukManagement() {
 
   useEffect(() => {
     fetchTukData();
-    if (typeof window !== "undefined") {
-      try {
-        const tukDraft = sessionStorage.getItem("tukFormDraft");
-        if (tukDraft) {
-          const parsed = JSON.parse(tukDraft);
-          if (
-            parsed &&
-            typeof parsed === "object" &&
-            (parsed.nama ||
-              parsed.keterangan ||
-              parsed.tipe ||
-              parsed.alamat ||
-              parsed.kapasitas ||
-              parsed.penanggung_jawab ||
-              parsed.status)
-          ) {
-            setIsModalOpen(true);
-          }
-        }
-      } catch { }
-    }
   }, []);
 
   // loadTukDraft moved to earlier declaration
@@ -300,6 +278,7 @@ export default function TukManagement() {
         kapasitas: Number(formData.kapasitas),
         penanggung_jawab: formData.penanggungJawab,
         status: formData.status,
+        inventaris: formData.inventaris?.filter((i) => i.nama.trim() !== ""),
       });
       await fetchTukData();
       setIsEditModalOpen(false);
@@ -325,6 +304,7 @@ export default function TukManagement() {
         kapasitas: Number(formData.kapasitas),
         penanggung_jawab: formData.penanggungJawab,
         status: formData.status,
+        inventaris: formData.inventaris?.filter((i) => i.nama.trim() !== ""),
       });
       await fetchTukData();
       if (!isEditModalOpen && typeof window !== "undefined") {

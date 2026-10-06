@@ -831,6 +831,7 @@ export default function UsersManagement() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSaveVerifyDraft = () => {
     if (!userToVerify) return;
 
@@ -1064,14 +1065,6 @@ export default function UsersManagement() {
 
               {userToVerify.status !== "Terverifikasi" && userToVerify.status !== "Selesai" && (
                 <>
-                  {userToVerify.role !== "asesor" && (
-                    <button
-                      onClick={handleSaveVerifyDraft}
-                      className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-bold transition-colors shadow-xs cursor-pointer"
-                    >
-                      Simpan Draft
-                    </button>
-                  )}
 
                   {userToVerify.role === "asesi" ? (
                     <>

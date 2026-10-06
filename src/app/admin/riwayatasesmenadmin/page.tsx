@@ -67,6 +67,7 @@ interface CandidateCandidateItem {
   alamat?: string;
   namaTuk?: string;
   skemaId?: number;
+  master_tuk?: { nama?: string; keterangan?: string; alamat?: string; };
 }
 
 export default function RiwayatAsesmenAdmin() {
@@ -160,31 +161,41 @@ export default function RiwayatAsesmenAdmin() {
             c.statusPengajuan === "Selesai" ||
             c.statusPengajuan === "Menunggu Pleno",
         );
-        const mapped: AssessmentItem[] = completed.map((c) => ({
-          id: c.pengajuanId,
-          nik: c.nik || "-",
-          nama: c.namaLengkap || c.nik || "Asesi",
-          skema: c.namaSkema || "Skema Sertifikasi",
-          tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
-          metode: (c.metode || "Online") as JenisMetode,
-          skemaId: c.skemaId,
-          waktu: c.waktuMulai || "",
-          tglAsesmen: c.tanggalJadwal
-            ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
-            : "-",
-          hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
-          status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
-          alamat: c.alamat || "UIN Sunan Gunung Djati Bandung",
-          noSkema: c.kodeSkema || "-",
-          tuk: c.namaTuk || "Lab Komputer Terpadu",
-          metodeAsesmen: (c.metode as JenisMetode) || "Online",
-          asesor: c.namaAsesor || "Asesor Penguji",
-          asesorReg: c.asesorReg || "",
-        }));
+        const mapped: AssessmentItem[] = completed.map((c) => {
+          const isOnline = String(c.tipeTuk || "").toLowerCase().includes("online") || String(c.tipeTuk || "").toLowerCase().includes("virtual") || String(c.metode || "").toLowerCase() === "online";
+
+          const tukGedung = c.master_tuk?.nama || c.namaTuk || "UIN Sunan Gunung Djati Bandung";
+          const tukKeterangan = c.master_tuk?.keterangan || "";
+          const tukName = isOnline ? "Online" : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
+
+          const alamatLengkap = isOnline ? "" : (c.master_tuk?.alamat || c.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru");
+
+          return {
+            id: c.pengajuanId,
+            nik: c.nik || "-",
+            nama: c.namaLengkap || c.nik || "Asesi",
+            skema: c.namaSkema || "Skema Sertifikasi",
+            tipeTuk: (c.tipeTuk || "Sewaktu") as TipeTuk,
+            metode: (c.metode || "Online") as JenisMetode,
+            skemaId: c.skemaId,
+            waktu: c.waktuMulai || "",
+            tglAsesmen: c.tanggalJadwal
+              ? new Date(c.tanggalJadwal).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })
+              : "-",
+            hasil: c.hasilAsesmen === "Kompeten" ? "Kompeten" : "Belum Kompeten",
+            status: c.statusPengajuan === "Menunggu Pleno" ? "Menunggu Pleno" : "Selesai",
+            alamat: alamatLengkap,
+            noSkema: c.kodeSkema || "-",
+            tuk: tukName,
+            metodeAsesmen: (c.metode as JenisMetode) || "Online",
+            asesor: c.namaAsesor || "Asesor Penguji",
+            asesorReg: c.asesorReg || "",
+          };
+        });
         setAssessmentList(mapped);
       } else {
         setAssessmentList([]);
@@ -193,7 +204,21 @@ export default function RiwayatAsesmenAdmin() {
       const batchList = Array.isArray(batchData) ? batchData : (batchData?.data && Array.isArray(batchData.data) ? batchData.data : []);
       const plenoList = Array.isArray(plenoData) ? plenoData : (plenoData?.data && Array.isArray(plenoData.data) ? plenoData.data : []);
 
-      setCompletedBatches(batchList);
+      const mappedBatchList = batchList.map((b: CompletedBatchItem) => {
+        const isOnline = String(b.tipeTuk || "").toLowerCase().includes("online") || String(b.tipeTuk || "").toLowerCase().includes("virtual") || String(b.metode || "").toLowerCase() === "online";
+        const tukGedung = b.master_tuk?.nama || b.alamat || "UIN Sunan Gunung Djati Bandung";
+        const tukKeterangan = b.master_tuk?.keterangan || "";
+        const tukName = isOnline ? "Online" : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
+        const alamatLengkap = isOnline ? "" : (b.master_tuk?.alamat || b.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru");
+
+        return {
+          ...b,
+          tuk: tukName,
+          alamat: alamatLengkap,
+        };
+      });
+
+      setCompletedBatches(mappedBatchList);
       setCompletedPleno(plenoList);
     } catch (error) {
       console.error("Error fetching history data:", error);
@@ -825,6 +850,9 @@ export default function RiwayatAsesmenAdmin() {
                       TUK
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
+                      Alamat
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
                       Metode
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap">
@@ -882,6 +910,18 @@ export default function RiwayatAsesmenAdmin() {
                           >
                             {item.tipeTuk}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="text-[13px] text-slate-800 font-bold leading-snug">
+                              {item.tuk}
+                            </span>
+                            {item.alamat && (
+                              <span className="text-[11px] text-slate-500 font-medium leading-snug mt-0.5 truncate max-w-[200px]" title={item.alamat}>
+                                {item.alamat}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-[11px] text-slate-500 font-medium bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
@@ -1031,15 +1071,17 @@ export default function RiwayatAsesmenAdmin() {
 
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Lokasi / tipeTuk
+                      Alamat & TUK
                     </span>
-                    <div className="flex items-center gap-1.5 text-slate-800 font-bold">
+                    <div className="flex items-start gap-1.5 text-slate-800 font-bold">
                       {selectedBatch.metode === "Online" ? (
-                        <Globe size={14} className="text-purple-500 shrink-0" />
+                        <Globe size={14} className="text-purple-500 shrink-0 mt-0.5" />
                       ) : (
-                        <MapPin size={14} className="text-[#008BE3] shrink-0" />
+                        <MapPin size={14} className="text-[#008BE3] shrink-0 mt-0.5" />
                       )}
-                      <span className="truncate">{selectedBatch.tipeTuk}</span>
+                      <span className="break-words leading-snug flex-1">
+                        {selectedBatch.tuk} ({selectedBatch.tipeTuk})
+                      </span>
                     </div>
                   </div>
 
@@ -1503,11 +1545,6 @@ export default function RiwayatAsesmenAdmin() {
                             <div className="text-[14px] font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors leading-snug">
                               {item.title || `Sidang Pleno ${item.skema}`}
                             </div>
-                            {item.skema && (
-                              <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-62.5">
-                                {item.skema}
-                              </div>
-                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-[14px] font-bold text-slate-800">
@@ -1523,10 +1560,10 @@ export default function RiwayatAsesmenAdmin() {
                               />
                               <div>
                                 <span className="truncate max-w-50 block">
-                                  {item.alamat}
+                                  {item.tuk}
                                 </span>
-                                {item.alamat && item.alamat !== "-" && !item.alamat.toLowerCase().includes("online") && (
-                                  <span className="text-[10px] text-gray-400 block mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</span>
+                                {item.alamat && item.alamat !== "-" && !item.jenisTuk?.toLowerCase().includes("online") && (
+                                  <span className="text-[10px] text-gray-400 block mt-0.5">{item.alamat}</span>
                                 )}
                               </div>
                             </div>
@@ -1685,7 +1722,7 @@ export default function RiwayatAsesmenAdmin() {
                           className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs shadow-sm hover:border-[#008BE3]/30 transition-colors"
                         >
                           <span className="text-[#008BE3] font-bold uppercase tracking-wider text-[10px] bg-blue-50 px-1.5 py-0.5 rounded-md">
-                            {att.role}
+                            {att.role.replace(/_/g, " ")}
                           </span>
                           <span className="font-bold text-[12px]">{att.nama}</span>
                         </span>

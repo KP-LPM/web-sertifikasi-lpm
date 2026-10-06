@@ -198,7 +198,7 @@ export class PengajuanRepository {
                     id: true,
                     username: true,
                     email: true,
-                    profil: { select: { namaLengkap: true } },
+                    profil: { select: { namaLengkap: true, nomorRegistrasiMet: true, tandaTangan: true } },
                   },
                 },
                 master_tuk: true,

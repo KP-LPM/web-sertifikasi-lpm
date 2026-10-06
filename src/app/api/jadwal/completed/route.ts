@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
           },
         },
         master_skema: { select: { namaSkema: true, kodeSkema: true } },
+        master_tuk: { select: { nama: true, keterangan: true, alamat: true } },
         jadwal_asesmen_peserta: {
           include: {
             pengajuan_skema: {
@@ -81,6 +82,8 @@ export async function GET(request: NextRequest) {
         asesorReg: batch.users?.profil?.nomorRegistrasiMet || "-",
         tipeTuk: batch.tipe_tuk,
         metode: batch.metode,
+        alamat: batch.alamat || "",
+        master_tuk: batch.master_tuk || null,
         tanggal: batch.tanggal,
         waktu: batch.waktu_mulai
           ? new Date(batch.waktu_mulai).toLocaleTimeString([], {

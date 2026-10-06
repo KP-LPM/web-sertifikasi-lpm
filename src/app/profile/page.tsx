@@ -71,6 +71,17 @@ export default function Profile() {
     >,
   ) => {
     const { name, value, type } = e.target;
+    
+    // Only allow numeric values for NIK
+    if (name === "nik") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "radio" ? value : value,
@@ -326,6 +337,12 @@ export default function Profile() {
   // 3. Fungsi Utama Simpan Perubahan (Termasuk Upload Foto)
 
   const handleSave = async () => {
+    // Validate NIK length
+    if (formData.nik && formData.nik.trim().length !== 16) {
+      showNotification("NIK harus 16 digit.", "error");
+      return;
+    }
+    
     setIsSaving(true);
     try {
       // --- 1. PROSES UPLOAD AVATAR ---
@@ -373,6 +390,7 @@ export default function Profile() {
       // --- 3. PAYLOAD KE DATABASE ---
       const payload = {
         name: formData.namaLengkap,
+        username: formData.username,
         email: formData.email,
         nama_lengkap: formData.namaLengkap,
         tempat_lahir: formData.tempatLahir,
@@ -667,6 +685,7 @@ export default function Profile() {
                     type="text"
                     name="nik"
                     value={formData.nik}
+                    maxLength={16}
                     onChange={handleChange}
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40 transition-all"
                   />

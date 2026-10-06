@@ -152,6 +152,7 @@ export default function SidangPleno() {
           minute: "2-digit",
         })
         : "",
+      tuk: "",
       alamat: p.alamat || "Ruang Rapat Utama (Offline)",
       detailAlamat: p.detail_alamat || "",
       linkSuratBeritaPleno: p.link_surat_berita_pleno || "",
@@ -482,8 +483,6 @@ export default function SidangPleno() {
       if (!prev) return null;
       return { ...prev, [field]: value };
     });
-    setIsDirty(true);
-    setHasSavedAtLeastOnce(false);
   };
 
   // Handle Changing Candidate Status (K / BK)
@@ -774,11 +773,6 @@ export default function SidangPleno() {
                           <div className="text-[14px] font-bold text-slate-900 group-hover/row:text-[#008BE3] transition-colors leading-snug">
                             {item.title || `Sidang Pleno ${item.skema}`}
                           </div>
-                          {item.skema && (
-                            <div className="text-xs text-slate-500 font-medium mt-0.5 truncate max-w-62.5">
-                              {item.skema}
-                            </div>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-slate-600">
                           <div className="flex items-center gap-1.5">
@@ -816,7 +810,7 @@ export default function SidangPleno() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
-                          <span>{item.asesiList?.length || 0} Asesi</span>
+                          <span>{item.asesiList?.length || 0}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {item.status === "Selesai" ? (
@@ -1003,7 +997,7 @@ export default function SidangPleno() {
                       className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs shadow-sm hover:border-[#008BE3]/30 transition-colors"
                     >
                       <span className="text-[#008BE3] font-bold uppercase tracking-wider text-[10px] bg-blue-50 px-1.5 py-0.5 rounded-md">
-                        {att.role}
+                        {att.role.replace(/_/g, " ")}
                       </span>
                       <span className="font-bold text-[12px]">{att.nama}</span>
                     </span>

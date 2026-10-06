@@ -36,7 +36,7 @@ interface BackendJadwal {
   metode?: string;
   tipe_tuk?: string;
   alamat?: string;
-  master_tuk?: { nama_tuk?: string };
+  master_tuk?: { nama?: string; nama_tuk?: string; alamat?: string; keterangan?: string };
   tanggal?: string;
   waktu_mulai?: string;
   link_video?: string;
@@ -111,6 +111,17 @@ export default function AsesiList() {
           const activeJadwals = jadwals.filter((j) => j.status !== "Selesai");
           const mapped: BatchDetail[] = activeJadwals.map((j) => {
             const batchCand = candidates.filter((c) => c.jadwalId === j.id);
+            const isOnline = j.tipe_tuk?.toLowerCase().includes("online") || j.tipe_tuk?.toLowerCase().includes("virtual");
+            const tukGedung = j.master_tuk?.nama || j.alamat || "UIN Sunan Gunung Djati Bandung";
+            const tukKeterangan = j.master_tuk?.keterangan || "";
+            const tukName = isOnline ? "Online" : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
+
+            const alamat = isOnline
+              ? ""
+              : j.master_tuk?.alamat ||
+              j.alamat ||
+              "Jl. A.H. Nasution No. 105, Cipadung, Cibiru";
+
             return {
               id: j.id,
               status: j.status || "Terjadwal",
@@ -121,19 +132,20 @@ export default function AsesiList() {
                   ? "Online"
                   : "Offline")) as JenisMetode,
               tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
-              alamat: j.alamat || j.master_tuk?.nama_tuk || "TUK Terdaftar",
+              tuk: tukName,
+              alamat: alamat,
               tanggal: j.tanggal
-                ? new Date(j.tanggal).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })
+                ? (() => {
+                  const d = new Date(j.tanggal);
+                  const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                  return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                })()
                 : "-",
               waktuMulai: j.waktu_mulai
-                ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                ? (() => {
+                  const d = new Date(j.waktu_mulai);
+                  return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
+                })()
                 : "09:00 WIB",
               linkVideo: j.link_video || "-",
               suratTugasName: j.surat_tugas_name || "",
@@ -152,19 +164,19 @@ export default function AsesiList() {
                 asesorReg:
                   j.users?.profil?.nomorRegistrasiMet || "-",
                 tglAsesmen: j.tanggal
-                  ? new Date(j.tanggal).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
+                  ? (() => {
+                    const d = new Date(j.tanggal);
+                    const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                    return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                  })()
                   : "-",
                 waktu: j.waktu_mulai
-                  ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  ? (() => {
+                    const d = new Date(j.waktu_mulai);
+                    return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
+                  })()
                   : "09:00 WIB",
-                alamat: j.alamat || j.master_tuk?.nama_tuk || "-",
+                alamat: alamat || "-",
                 tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
                 metode: (j.metode ||
                   (j.tipe_tuk === "Online"
@@ -429,8 +441,8 @@ export default function AsesiList() {
                         {/* AssessmentItem Type Badge */}
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${isOnline
-                              ? "bg-purple-50 text-purple-700 border-purple-200"
-                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
+                            : "bg-emerald-50 text-emerald-700 border-emerald-200"
                             }`}
                         >
                           {isOnline ? "Online" : "Offline"}
@@ -489,8 +501,13 @@ export default function AsesiList() {
                                 className="text-[#008BE3] shrink-0 mt-0.5"
                               />
                               <span className="text-slate-700 font-semibold wrap-break-word leading-snug">
-                                {batch.alamat}
+                                {batch.tuk}
                               </span>
+                              {batch.alamat && (
+                                <span className="text-[11px] text-slate-500 wrap-break-word leading-snug mt-0.5">
+                                  {batch.alamat}
+                                </span>
+                              )}
                             </>
                           )}
                         </div>
@@ -514,8 +531,8 @@ export default function AsesiList() {
                         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                           <div
                             className={`h-full transition-all duration-500 ${progressPercent === 100
-                                ? "bg-emerald-500"
-                                : "bg-[#008BE3]"
+                              ? "bg-emerald-500"
+                              : "bg-[#008BE3]"
                               }`}
                             style={{ width: `${progressPercent}%` }}
                           />
@@ -643,8 +660,7 @@ export default function AsesiList() {
                       Alamat & TUK
                     </span>
                     <span className="font-bold text-slate-900 wrap-break-word leading-snug block">
-                      {currentSelectedBatch.alamat} (
-                      {currentSelectedBatch.tipeTuk})
+                      {currentSelectedBatch.tuk} ({currentSelectedBatch.tipeTuk})
                     </span>
                   </div>
                 </div>
@@ -656,7 +672,7 @@ export default function AsesiList() {
                       Jumlah Peserta
                     </span>
                     <span className="font-bold text-slate-900">
-                      {currentSelectedBatch.candidates.length} Candidate Asesi
+                      {currentSelectedBatch.candidates.length} Asesi
                     </span>
                   </div>
                 </div>
@@ -689,15 +705,15 @@ export default function AsesiList() {
           {currentSelectedBatch && (
             <div
               className={`rounded-2xl border p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs ${isAllCandidatesFinished
-                  ? "bg-linear-to-r from-emerald-50 via-white to-emerald-50/60 border-emerald-300"
-                  : "bg-white border-slate-200"
+                ? "bg-linear-to-r from-emerald-50 via-white to-emerald-50/60 border-emerald-300"
+                : "bg-white border-slate-200"
                 }`}
             >
               <div className="flex items-start md:items-center gap-4">
                 <div
                   className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-colors ${isAllCandidatesFinished
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-100 text-slate-400 border border-slate-200"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-slate-100 text-slate-400 border border-slate-200"
                     }`}
                 >
                   <ShieldCheck size={26} className="stroke-[2.2]" />
@@ -736,8 +752,8 @@ export default function AsesiList() {
                   disabled={!isAllCandidatesFinished}
                   onClick={() => setShowCompleteModal(true)}
                   className={`w-full md:w-auto px-5 py-3 rounded-xl font-black text-xs md:text-sm flex items-center justify-center gap-2.5 transition-all shadow-xs ${isAllCandidatesFinished
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-emerald-600/20 hover:shadow-md"
-                      : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-emerald-600/20 hover:shadow-md"
+                    : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
                     }`}
                 >
                   <ShieldCheck size={18} />
@@ -787,6 +803,9 @@ export default function AsesiList() {
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
                       Status Asesmen
                     </th>
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider">
+                      Status Kompeten
+                    </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center">
                       Aksi
                     </th>
@@ -803,10 +822,10 @@ export default function AsesiList() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div
                             className={`mx-auto w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs font-bold text-xs ${idx % 3 === 0
-                                ? "bg-[#008BE3]/10 text-[#008BE3]"
-                                : idx % 3 === 1
-                                  ? "bg-[#84CC16]/10 text-[#73B412]"
-                                  : "bg-slate-100 text-slate-600"
+                              ? "bg-[#008BE3]/10 text-[#008BE3]"
+                              : idx % 3 === 1
+                                ? "bg-[#84CC16]/10 text-[#73B412]"
+                                : "bg-slate-100 text-slate-600"
                               }`}
                           >
                             {idx + 1}
@@ -822,8 +841,8 @@ export default function AsesiList() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${candidate.status === "Selesai"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-amber-50 text-amber-700 border-amber-200"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
                               }`}
                           >
                             {candidate.status === "Selesai" ? (
@@ -834,6 +853,22 @@ export default function AsesiList() {
                             {candidate.status === "Selesai"
                               ? "Selesai"
                               : "Belum Selesai"}
+                          </span>
+                        </td>
+
+                        {/* Status Kompeten */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${(candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).rekomendasi_asesor === "Kompeten" || (candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).status_kompeten === "Kompeten"
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : (candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).rekomendasi_asesor === "Belum Kompeten" || (candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).status_kompeten === "Belum Kompeten"
+                                ? "bg-rose-50 text-rose-700 border-rose-200"
+                                : (candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).status_kompeten === "Perlu Perbaikan"
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : "bg-slate-50 text-slate-500 border-slate-200"
+                              }`}
+                          >
+                            {(candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).rekomendasi_asesor || (candidate as { rekomendasi_asesor?: string, status_kompeten?: string }).status_kompeten || "-"}
                           </span>
                         </td>
 
@@ -863,6 +898,7 @@ export default function AsesiList() {
                                   metode: "Offline",
                                   hasil:
                                     candidate.statusAsesmen ?? "Belum Dinilai",
+                                  catatan: (candidate as { catatan?: string }).catatan,
                                 });
                                 router.push(
                                   `/assessor/assessmentform?pengajuanId=${candidate.id}`,

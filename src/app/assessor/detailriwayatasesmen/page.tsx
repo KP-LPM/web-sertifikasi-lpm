@@ -129,7 +129,7 @@ export default function DetailRiwayatAsesmen() {
               </p>
               <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-xs sm:text-sm">
                 <Building size={14} className="text-[#008BE3] shrink-0" />
-                {selectedAsesmen.tipeTuk}
+                {selectedAsesmen.tuk} ({selectedAsesmen.tipeTuk})
               </div>
             </div>
             <div className="min-w-0">
@@ -354,7 +354,7 @@ export default function DetailRiwayatAsesmen() {
                     {(() => {
                       const ia04bDetail = riwayatDetails.find((d) => d.form_type === "FR.IA.04B");
                       const ia07Detail = riwayatDetails.find((d) => d.form_type === "FR.IA.07");
-                      const catatan = ia07Detail?.form_data?.umpanBalikStep4 || ia04bDetail?.form_data?.rekomendasi;
+                      const catatan = selectedAsesmen.catatan || ia07Detail?.form_data?.umpanBalikStep4 || ia04bDetail?.form_data?.rekomendasi;
                       return catatan || "Tidak ada catatan observasi khusus.";
                     })()}
                   </div>

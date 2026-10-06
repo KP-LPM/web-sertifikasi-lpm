@@ -56,7 +56,7 @@ export default function AsesiHistoryPage() {
           createdAt?: string | Date;
           tglPengajuan?: string | Date;
           skema?: { namaSkema?: string; kodeSkema?: string; kode_skema?: string; };
-          master_tuk?: { nama?: string; alamat?: string; tipe?: string };
+          master_tuk?: { nama?: string; alamat?: string; tipe?: string; keterangan?: string };
           hasil_asesmen?: { id?: number; hasil?: string; link_video?: string; created_at?: string | Date };
           sertifikat?: {
             nomor_sertifikat?: string;
@@ -75,7 +75,7 @@ export default function AsesiHistoryPage() {
               alamat?: string;
               link_video?: string;
               users?: { username?: string; profil?: { namaLengkap?: string } };
-              master_tuk?: { nama?: string; alamat?: string };
+              master_tuk?: { nama?: string; alamat?: string; keterangan?: string };
             };
           }>;
         }
@@ -102,11 +102,16 @@ export default function AsesiHistoryPage() {
               String(tipeTuk).toLowerCase().includes("online") ||
               String(tipeTuk).toLowerCase().includes("virtual");
             const metodePelaksanaan = isOnline ? "Online" : "Offline";
-            const alamat =
-              jadwal?.alamat ||
-              jadwal?.master_tuk?.alamat ||
+            const tukGedung = jadwal?.master_tuk?.nama || item.master_tuk?.nama || "UIN Sunan Gunung Djati Bandung";
+            const tukKeterangan = jadwal?.master_tuk?.keterangan || item.master_tuk?.keterangan || "";
+            const tukName = isOnline ? "Online" : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
+
+            const alamat = isOnline
+              ? ""
+              : jadwal?.master_tuk?.alamat ||
               item.master_tuk?.alamat ||
-              (isOnline ? "Online" : "-");
+              jadwal?.alamat ||
+              "Jl. A.H. Nasution No. 105, Cipadung, Cibiru";
             const linkMeeting =
               jadwal?.link_video || item.hasil_asesmen?.link_video || "-";
 
@@ -139,6 +144,7 @@ export default function AsesiHistoryPage() {
               skemaSertifikasi: item.skema?.namaSkema || "Skema Sertifikasi",
               kodeSkema: item.skema?.kodeSkema || item.skema?.kode_skema || "-",
               tipeTuk,
+              tukName,
               alamat,
               tanggalAsesmen: formattedDate,
               linkVirtualMeeting: linkMeeting,
@@ -932,9 +938,9 @@ export default function AsesiHistoryPage() {
 
                     {/* Column 4: Alamat */}
                     <td className="px-6 py-4 text-xs md:text-sm">
-                      <div className="font-medium text-slate-700">{item.alamat || "-"}</div>
-                      {item.alamat && item.alamat !== "-" && !item.alamat.toLowerCase().includes("online") && (
-                        <div className="text-[10px] text-gray-400 mt-0.5">Gedung Rektorat Lt. 1, Jl. AH. Nasution No.105</div>
+                      <div className="font-medium text-slate-700">{item.tukName || "-"}</div>
+                      {item.alamat && item.alamat !== "-" && !item.tipeTuk?.toLowerCase().includes("online") && (
+                        <div className="text-[10px] text-gray-400 mt-0.5">{item.alamat}</div>
                       )}
                     </td>
 
@@ -1289,6 +1295,7 @@ export default function AsesiHistoryPage() {
                   )}
               </div>
               {String(selectedAssessment.rekomendasi).toLowerCase() === "belum kompeten" &&
+                String(selectedAssessment.statusAsesmen).toLowerCase() !== "selesai" &&
                 (() => {
                   let diffDays = 0;
                   if (

@@ -157,6 +157,10 @@ export default function ManageSchemes() {
     unitKompetensi?: BackendUnitKompetensi[];
     persyaratanDasar?: PersyaratanDasar[];
     master_bukti_administratif?: BackendBuktiAdministratif[];
+    namaSkemaEn?: string;
+    bidangSkemaId?: string;
+    bidangSkemaEn?: string;
+    konfigurasi_soal_id?: number | null;
   }
 
   const fetchSchemes = async () => {
@@ -173,6 +177,10 @@ export default function ManageSchemes() {
           status: s.statusAktif ? "Active" : s.status || "Archived",
           nomorSertifikat: s.nomor_sertifikat || s.nomorSertifikat || "",
           nomorRegistrasi: s.nomor_registrasi || s.nomorRegistrasi || "",
+          namaSkemaEn: s.namaSkemaEn || "",
+          bidangSkemaId: s.bidangSkemaId || "",
+          bidangSkemaEn: s.bidangSkemaEn || "",
+          konfigurasiSoalId: s.konfigurasi_soal_id,
           unitKompetensi: s.unitKompetensi?.map((u, idx: number) => ({
             kodeUnit: u.kodeUnit,
             judulUnit: u.judulUnit,
@@ -277,6 +285,9 @@ export default function ManageSchemes() {
     kode: "KKNI",
     nomorSertifikat: "",
     nomorRegistrasi: "",
+    namaSkemaEn: "",
+    bidangSkemaId: "",
+    bidangSkemaEn: "",
     kategori: "IT & Software",
     status: "Active",
   });
@@ -313,6 +324,9 @@ export default function ManageSchemes() {
       kode: scheme.kode,
       nomorSertifikat: scheme.nomorSertifikat || "",
       nomorRegistrasi: scheme.nomorRegistrasi || "",
+      namaSkemaEn: scheme.namaSkemaEn || "",
+      bidangSkemaId: scheme.bidangSkemaId || "",
+      bidangSkemaEn: scheme.bidangSkemaEn || "",
       kategori: scheme.kategori,
       status: scheme.status,
     });
@@ -343,6 +357,9 @@ export default function ManageSchemes() {
       kode: scheme.kode,
       nomorSertifikat: scheme.nomorSertifikat || "",
       nomorRegistrasi: scheme.nomorRegistrasi || "",
+      namaSkemaEn: scheme.namaSkemaEn || "",
+      bidangSkemaId: scheme.bidangSkemaId || "",
+      bidangSkemaEn: scheme.bidangSkemaEn || "",
       kategori: scheme.kategori,
       status: scheme.status,
     });
@@ -518,12 +535,16 @@ export default function ManageSchemes() {
   }
 
   if (isEditModalOpen && selectedScheme) {
-    const initialData: Partial<MasterSkemaFormState> & { id?: number } = {
+    const initialData: Partial<MasterSkemaFormState> = {
       id: selectedScheme.id,
       kodeSkema: selectedScheme.kode || "",
       namaSkema: selectedScheme.nama || "",
       nomorSertifikat: selectedScheme.nomorSertifikat || "",
       nomorRegistrasi: selectedScheme.nomorRegistrasi || "",
+      namaSkemaEn: selectedScheme.namaSkemaEn || "",
+      bidangSkemaId: selectedScheme.bidangSkemaId || "",
+      bidangSkemaEn: selectedScheme.bidangSkemaEn || "",
+      konfigurasiSoalId: selectedScheme.konfigurasiSoalId ? Number(selectedScheme.konfigurasiSoalId) : undefined,
       statusAktif: selectedScheme.status === "Active",
       persyaratanDasar: selectedScheme.persyaratanDasar?.map((p, idx) => ({
         namaDokumen: p.namaDokumen || "",
@@ -647,6 +668,43 @@ export default function ManageSchemes() {
                   type="text"
                   disabled
                   value={formData.nama}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Nama Skema (Bahasa Inggris)
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.namaSkemaEn || "-"}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Bidang Skema (Bahasa Indonesia)
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.bidangSkemaId || "-"}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Bidang Skema (Bahasa Inggris)
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.bidangSkemaEn || "-"}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
                 />
               </div>
@@ -806,6 +864,9 @@ export default function ManageSchemes() {
               setFormData({
                 nama: "",
                 kode: "KKNI",
+                namaSkemaEn: "",
+                bidangSkemaId: "",
+                bidangSkemaEn: "",
                 nomorSertifikat: "",
                 nomorRegistrasi: "",
                 kategori: "IT & Software",

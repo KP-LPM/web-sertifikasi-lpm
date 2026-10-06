@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
                 alamat: true,
                 noRegMet: true,
                 asesor_id: true,
-                master_tuk: { select: { nama: true } },
+                master_tuk: { select: { nama: true, alamat: true, keterangan: true } },
                 users: {
                   select: {
                     profil: {
@@ -99,20 +99,30 @@ export async function GET(request: NextRequest) {
     // Format output (menyerupai v_candidate_list)
     const formattedCandidates = candidates.map((c) => {
       const jadwal = c.jadwal_asesmen_peserta[0]?.jadwal_asesmen;
-      let formattedWaktu = "09:00 - 12:00 WIB";
+      let formattedWaktu = "09:00 WIB";
       if (jadwal?.waktu_mulai) {
         try {
           const w = new Date(jadwal.waktu_mulai);
           if (!isNaN(w.getTime())) {
             const startHour = w.getUTCHours();
             const startMin = String(w.getUTCMinutes()).padStart(2, "0");
-            const endHour = (startHour + 3) % 24;
-            formattedWaktu = `${String(startHour).padStart(2, "0")}:${startMin} - ${String(endHour).padStart(2, "0")}:${startMin} WIB`;
+            formattedWaktu = `${String(startHour).padStart(2, "0")}:${startMin} WIB`;
           }
         } catch {
           // fallback
         }
       }
+
+      const isOnline = jadwal?.tipe_tuk?.toLowerCase().includes("online") || jadwal?.tipe_tuk?.toLowerCase().includes("virtual");
+      const tukGedung = jadwal?.master_tuk?.nama || jadwal?.alamat || "UIN Sunan Gunung Djati Bandung";
+      const tukKeterangan = jadwal?.master_tuk?.keterangan || "";
+      const tukName = isOnline ? "Online" : tukKeterangan ? `${tukGedung} - ${tukKeterangan}` : tukGedung;
+      
+      const alamatLengkap = isOnline 
+        ? "" 
+        : jadwal?.master_tuk?.alamat ||
+          jadwal?.alamat ||
+          "Jl. A.H. Nasution No. 105, Cipadung, Cibiru";
 
       return {
         pengajuanId: c.id,
@@ -126,13 +136,14 @@ export async function GET(request: NextRequest) {
         kodeSkema: c.skema?.kodeSkema,
         namaSkema: c.skema?.namaSkema,
         hasilAsesmen: c.hasil_asesmen?.hasil || "Belum Dinilai",
+        catatan: c.hasil_asesmen?.catatan || undefined,
         jadwalId: jadwal?.id,
         tanggalJadwal: jadwal?.tanggal,
         waktuMulai: formattedWaktu,
         tipeTuk: jadwal?.tipe_tuk,
         metode: jadwal?.metode,
-        alamat: jadwal?.alamat,
-        namaTuk: jadwal?.master_tuk?.nama,
+        alamat: alamatLengkap,
+        namaTuk: tukName,
         asesorId: jadwal?.asesor_id,
         namaAsesor: jadwal?.users?.profil?.namaLengkap,
         asesorReg:

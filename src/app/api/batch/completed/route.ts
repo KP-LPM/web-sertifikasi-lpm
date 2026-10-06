@@ -75,10 +75,6 @@ export async function GET(request: NextRequest) {
         }
       });
       const asesiList = batch.pleno_asesi
-        .filter((a) => {
-          const finalStatus = a.status_pleno || a.rekomendasi_asesor || a.pengajuan_skema?.hasil_asesmen?.hasil;
-          return finalStatus === "Kompeten" || finalStatus === "K" || finalStatus === "KOMPETEN" || !finalStatus; // Termasuk jika null untuk jaga-jaga apabila belum dinilai secara eksplisit
-        })
         .map((a) => {
           const cert = a.pengajuan_skema?.sertifikat;
           // In Prisma, if it's one-to-one it's an object. If one-to-many, it's an array.

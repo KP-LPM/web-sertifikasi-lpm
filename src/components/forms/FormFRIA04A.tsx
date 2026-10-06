@@ -568,7 +568,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                   )}
                   <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">{props.penyusun?.[idx]?.nama || ""}</td>
-                  <td className="border border-slate-300 p-2">{props.penyusun?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">{props.penyusun?.[idx]?.noMet || props.penyusun?.[idx]?.noReg || ""}</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex flex-col items-center gap-1">
                       {!!props.penyusun?.[idx]?.tandaTangan && (
@@ -592,7 +592,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                   )}
                   <td className="border border-slate-300 p-2 text-center">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">{props.validator?.[idx]?.nama || ""}</td>
-                  <td className="border border-slate-300 p-2">{props.validator?.[idx]?.noMet || ""}</td>
+                  <td className="border border-slate-300 p-2">{props.validator?.[idx]?.noMet || props.validator?.[idx]?.noReg || ""}</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex flex-col items-center gap-1">
                       {!!props.validator?.[idx]?.tandaTangan && (

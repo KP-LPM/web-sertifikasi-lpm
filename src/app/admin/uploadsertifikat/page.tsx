@@ -158,7 +158,7 @@ export default function UploadSertifikat() {
             alamat: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
             isOnline: !!p.isOnline,
             status: p.status === "Selesai" ? "Selesai" : "Terjadwal",
-            asesiList: p.asesiList || [],
+            asesiList: (p.asesiList || []).filter((a: { statusPleno?: string }) => a.statusPleno === 'K'),
           };
         });
 

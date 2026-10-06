@@ -87,6 +87,7 @@ export async function PATCH(request: NextRequest, context: Context) {
       return sendResponse(error.status, "Terlalu banyak permintaan.");
     }
     if (error instanceof z.ZodError) {
+      console.error(error)
       return sendResponse(400, "Validasi data edit gagal", error.flatten());
     }
     if (error instanceof ClientError) {

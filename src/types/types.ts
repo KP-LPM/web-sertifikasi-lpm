@@ -62,8 +62,10 @@ export interface KonfigurasiPertanyaanItem {
   id: number; // konfigurasi_pertanyaan.id
   nama: string;
   skema: string;
+  skema_id?: number;
   tipeForm: string;
   versi: string;
+  penyusun?: unknown[];
 
   isDefault: boolean;
   status: "Aktif" | "Tidak Aktif";
@@ -105,7 +107,7 @@ export interface SuratItem {
   pimpinanSidang?: string;
   notulis?: string;
   namaAsesor?: string;
-  noMetAsesor?: string;
+  noRegAsesor?: string;
   lokasi?: string;
   detailPayload?: Record<string, unknown>;
 
@@ -150,7 +152,8 @@ export interface UserItem {
 
 export interface PenyusunValidatorItem {
   nama: string;
-  noMet: string;
+  noReg?: string;
+  noMet?: string;
   ttdTanggal: string;
   [key: string]: unknown;
 }
@@ -234,6 +237,7 @@ export interface PlenoDetailData {
   tanggal: string;
   waktu: string;
   jenisTuk?: TipeTuk;
+  tuk: string;
   alamat: string;
   detailAlamat?: string;
   suratPlenoUrl?: string;
@@ -300,6 +304,7 @@ export interface UnitKompetensiItem {
 }
 
 export interface MasterSkemaFormState {
+  id?: number;
   kodeSkema: string;
   namaSkema: string;
   namaSkemaEn?: string;
@@ -402,6 +407,10 @@ export interface SchemeItem {
   unitKompetensi?: UnitKompetensiItem[];
   persyaratanDasar?: PersyaratanDasar[];
   persyaratanAdministrasi?: PersyaratanAdministrasi[];
+  namaSkemaEn?: string;
+  bidangSkemaId?: string;
+  bidangSkemaEn?: string;
+  konfigurasiSoalId?: number | string | null;
 }
 
 export interface RequirementItem {
@@ -557,6 +566,9 @@ export interface CompletedBatchItem {
   suratPenugasan: string;
   suratTugasUrl?: string;
   asesiList: CompletedBatchAsesi[];
+  tuk?: string;
+  alamat?: string;
+  master_tuk?: { nama?: string; keterangan?: string; alamat?: string; };
 }
 
 export interface StatCardProps {
@@ -828,6 +840,7 @@ export interface AssessmentItem {
   status?: string;
   statusApl?: string;
   alamat?: string;
+  tuk?: string;
   asesor?: string;
   asesorReg?: string;
   metode?: JenisMetode;
@@ -868,6 +881,7 @@ export interface AssessmentHistory {
   skemaSertifikasi: string;
   kodeSkema?: string;
   tipeTuk: TipeTuk;
+  tukName?: string;
   alamat: string;
   tanggalAsesmen: string;
   linkVirtualMeeting: string;
