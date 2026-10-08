@@ -2059,7 +2059,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         onClick={() => addStep3SubPertanyaan(lingkup.id)}
                         className="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-emerald-300 bg-white hover:bg-emerald-50 transition-colors shadow-2xs"
                       >
-                        <Plus size={15} /> + Tambah Pertanyaan pada Lingkup Ini
+                        <Plus size={15} /> Tambah Pertanyaan pada Lingkup Ini
                       </button>
                     )}
                   </div>
@@ -2071,7 +2071,7 @@ function TambahKonfigurasiPertanyaanContent() {
                   onClick={addStep3Lingkup}
                   className="w-full py-3.5 border-2 border-dashed border-emerald-600/40 text-emerald-700 hover:bg-emerald-50/60 rounded-2xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition-colors shadow-2xs"
                 >
-                  <Plus size={18} /> + Tambah Lingkup Penyajian Baru
+                  <Plus size={18} /> Tambah Lingkup Penyajian Baru
                 </button>
               )}
             </div>
