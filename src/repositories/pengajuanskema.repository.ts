@@ -64,13 +64,9 @@ export class PengajuanRepository {
               }
               : undefined,
         },
-        include: {
-          dataPribadi: true,
-          dokumen: true,
-          asesmenMandiri: true,
-          skema: {
-            select: { id: true, namaSkema: true, kodeSkema: true },
-          },
+        select: {
+          id: true,
+          nomorPengajuan: true,
         },
       });
 
@@ -113,34 +109,42 @@ export class PengajuanRepository {
         dataPribadi: true,
         skema: { select: { id: true, namaSkema: true, kodeSkema: true } },
         master_tuk: true,
-        hasil_asesmen: true,
-        sertifikat: true,
-        apl02_penilaian: true,
         jadwal_asesmen_peserta: {
-          include: {
-            jadwal_asesmen: {
-              include: {
-                users: {
-                  select: { username: true, profil: true },
-                },
-                master_tuk: true,
-              },
-            },
-          },
-        },
-        _count: {
           select: {
-            dokumen: true,
-            asesmenMandiri: true,
-          },
+            jadwal_asesmen: {
+              select: {
+                id: true,
+                tanggal: true,
+                waktu_mulai: true,
+                tipe_tuk: true,
+                alamat: true,
+                link_video: true,
+                users: {
+                  select: { username: true, profil: { select: { namaLengkap: true } } }
+                },
+                master_tuk: {
+                  select: { nama: true, alamat: true, keterangan: true }
+                }
+              }
+            }
+          }
         },
         dokumen: true,
+        verifikasi_pengajuan: true,
+        sertifikat: true,
       },
       orderBy: { createdAt: "desc" },
     });
   }
 
   // 3. Ambil Detail Pengajuan Lengkap
+  async getBasicInfo(id: number) {
+    return await db.pengajuanSkema.findUnique({
+      where: { id },
+      select: { id: true, userId: true, status: true },
+    });
+  }
+
   async getById(id: number) {
     return await db.pengajuanSkema.findUnique({
       where: { id },

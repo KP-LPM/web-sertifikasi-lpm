@@ -15,9 +15,14 @@ export class PlenoRepository {
           include: { master_skema: { select: { namaSkema: true } } },
         },
         pleno_asesi: {
-          include: {
+          select: {
+            id: true,
+            rekomendasi_asesor: true,
+            status_pleno: true,
+            catatan: true,
             pengajuan_skema: {
-              include: {
+              select: {
+                id: true,
                 skema: { select: { namaSkema: true } },
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
                 user: { select: { username: true, profil: { select: { namaLengkap: true } } } }

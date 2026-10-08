@@ -37,9 +37,8 @@ export async function POST(request: NextRequest, context: Context) {
     }
 
     const body = await request.json().catch(() => ({}));
-    // Map status dari UI (Aktif/Tidak Aktif) ke constraint Database (published/Draft)
     const newStatusUi = body.status === "Tidak Aktif" ? "Tidak Aktif" : "Aktif";
-    const dbStatus = newStatusUi === "Aktif" ? "published" : "Draft";
+    const dbStatus = newStatusUi;
 
     const result = await konfigurasiService.updateStatus(konfigurasiId, dbStatus);
 

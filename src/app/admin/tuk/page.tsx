@@ -438,7 +438,7 @@ export default function TukManagement() {
                 >
                   <option>Semua Status</option>
                   <option>Aktif</option>
-                  <option>Tidak Aktif</option>
+                  <option>Nonaktif</option>
                 </select>
               </div>
             </div>
@@ -530,7 +530,7 @@ export default function TukManagement() {
                             </span>
                           ) : (
                             <span className="text-red-500 flex items-center gap-1">
-                              <XCircle size={14} /> Tidak Aktif
+                              <XCircle size={14} /> Nonaktif
                             </span>
                           )}
                         </div>
@@ -678,7 +678,7 @@ export default function TukManagement() {
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#008BE3] focus:ring-1 focus:ring-[#008BE3]/40"
                   >
                     <option>Aktif</option>
-                    <option>Tidak Aktif</option>
+                    <option>Nonaktif</option>
                   </select>
                 </div>
 

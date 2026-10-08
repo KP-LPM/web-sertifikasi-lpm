@@ -49,19 +49,7 @@ import {
   updateKonfigurasiStep4API,
 } from "@/lib/api";
 const Select = dynamic(() => import("react-select"), { ssr: false });
-// Dummy options removed. Skema options now loaded dynamically.
-
-const availableKUKOptions = [
-  "M.692000.001.01 E1/KUK 1.1",
-  "M.692000.001.01 E1/KUK 1.2",
-  "M.692000.001.01 E1/KUK 1.3",
-  "M.692000.002.01 E2/KUK 2.1",
-  "M.692000.002.01 E2/KUK 2.2",
-  "J.611000.001.01 E1/KUK 1.1",
-  "J.611000.001.01 E1/KUK 1.3",
-  "J.611000.002.01 E2/KUK 2.1",
-  "J.611000.002.01 E2/KUK 2.3",
-];
+const CreatableSelect = dynamic(() => import("react-select/creatable"), { ssr: false });
 
 const initialWizardState: WizardFormState = {
   metadata: {
@@ -901,7 +889,7 @@ function TambahKonfigurasiPertanyaanContent() {
           tipe_form: "Multi-Step Wizard",
           versi: formData.metadata.versi || "1.0",
           is_default: formData.metadata.isDefault,
-          status: "Draft",
+          status: "Tidak Aktif",
           penyusun: [],
           step1: [],
           step2: null,
@@ -1080,7 +1068,7 @@ function TambahKonfigurasiPertanyaanContent() {
       tipe_form: "Multi-Step Wizard",
       versi: formData.metadata.versi || "1.0",
       is_default: formData.metadata.isDefault,
-      status: publishStatus === "published" ? "published" : "Draft",
+      status: publishStatus === "published" ? "Aktif" : "Tidak Aktif",
       penyusun: [
         ...extractPenyusun(formData.step2.penyusun, "Penyusun", "step2"),
         ...extractPenyusun(formData.step2.validator, "Validator", "step2"),
@@ -1127,8 +1115,8 @@ function TambahKonfigurasiPertanyaanContent() {
 
       setIsSuccessToast(
         publishStatus === "published"
-          ? "Konfigurasi Pertanyaan berhasil diterbitkan!"
-          : "Draft Konfigurasi Pertanyaan berhasil disimpan.",
+          ? "Konfigurasi Pertanyaan berhasil diaktifkan!"
+          : "Konfigurasi Pertanyaan berhasil disimpan namun belum aktif."
       );
       setTimeout(() => {
         router.push("/assessor/konfigurasipertanyaan");
@@ -1263,14 +1251,14 @@ function TambahKonfigurasiPertanyaanContent() {
             onClick={() => handleSaveToContext("draft")}
             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-xs md:text-sm font-bold transition-all shadow-xs flex items-center gap-2"
           >
-            <Save size={16} /> Simpan Draft
+            <Save size={16} /> Simpan Tidak Aktif
           </button>
           {activeStep === 4 && (
             <button
               onClick={() => handleSaveToContext("published")}
               className="px-5 py-2 bg-[#008BE3] hover:bg-[#0076C2] text-white rounded-lg text-xs md:text-sm font-bold transition-all shadow-sm flex items-center gap-2"
             >
-              <Send size={16} /> Terbitkan Konfigurasi
+              <Send size={16} /> Simpan Aktif
             </button>
           )}
         </div>
@@ -2009,13 +1997,9 @@ function TambahKonfigurasiPertanyaanContent() {
                           <label className="font-bold text-slate-800 text-xs block">
                             Standar Kompetensi / Kode KUK Terkait
                           </label>
-                          <Select
+                          <CreatableSelect
                             isDisabled={isReadOnly}
                             isMulti
-                            options={availableKUKOptions.map((k) => ({
-                              value: k,
-                              label: k,
-                            }))}
                             value={sub.kodeKUK.map((k) => ({
                               value: k,
                               label: k,
@@ -2527,7 +2511,7 @@ function TambahKonfigurasiPertanyaanContent() {
                 disabled={isReadOnly}
                 className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all shadow-sm"
               >
-                <Send size={16} /> Publish Konfigurasi
+                <Send size={16} /> Simpan Aktif
               </button>
             )}
           </div>

@@ -1377,7 +1377,7 @@ export function TambahSkemaForm({
             {availableConfigs
               .filter((item: KonfigurasiPertanyaanItem) => {
                 const isActive = item.status === "Aktif";
-                const isSameSchema = formState.id 
+                const isSameSchema = formState.id
                   ? item.skema_id === formState.id
                   : (!formState.namaSkema || (item.skema && item.skema.toLowerCase() === formState.namaSkema.trim().toLowerCase()));
                 return isActive && isSameSchema;

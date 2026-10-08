@@ -18,7 +18,7 @@ export class JadwalRepository {
       include: {
         master_skema: { select: { namaSkema: true, kodeSkema: true } },
         users: { select: { username: true, email: true, profil: { select: { namaLengkap: true, nomorRegistrasiMet: true } } } },
-        jadwal_asesmen_peserta: true,
+        jadwal_asesmen_peserta: { select: { pengajuan_id: true } },
         master_tuk: true,
       },
       orderBy: { tanggal: "desc" },

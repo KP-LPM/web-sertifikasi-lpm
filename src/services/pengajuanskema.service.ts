@@ -48,7 +48,7 @@ export class PengajuanService {
       const aktifKonfig = await db.konfigurasi_pertanyaan.findFirst({
         where: {
           skema_id: data.skemaId,
-          OR: [{ status: "Terbit" }, { status: "published" }, { is_default: true }]
+          OR: [{ status: "Terbit" }, { status: "published" }, { status: "Aktif" }, { is_default: true }]
         },
         orderBy: { created_at: "desc" }
       });
@@ -101,6 +101,19 @@ export class PengajuanService {
 
     return pengajuan;
   }
+  async checkAccess(id: number, user?: { id: number; role: string }) {
+    const pengajuan = await this.repo.getBasicInfo(id);
+    if (!pengajuan) {
+      throw new NotFoundError("Pengajuan skema tidak ditemukan");
+    }
+
+    if (user && user.role === "asesi" && pengajuan.userId !== user.id) {
+      throw new AuthorizationError(
+        "Akses ditolak. Anda tidak memiliki izin untuk melihat/mengubah pengajuan ini"
+      );
+    }
+    return pengajuan;
+  }
 
   // 4. Edit Pengajuan (selama belum diverifikasi)
   async update(
@@ -108,7 +121,7 @@ export class PengajuanService {
     data: UpdatePengajuanDTO,
     user: { id: number; role: string }
   ) {
-    const pengajuan = await this.getById(id, user);
+    const pengajuan = await this.checkAccess(id, user);
 
     // Cek apakah status masih bisa diedit
     const editableStatuses = ["Menunggu Verifikasi", "Draf", "Ditolak / Revisi", "Perlu Perbaikan"];
@@ -128,7 +141,7 @@ export class PengajuanService {
 
   // 5. Batalkan / Hapus Pengajuan (Asesi / Admin)
   async delete(id: number, user: { id: number; role: string }) {
-    const pengajuan = await this.getById(id, user);
+    const pengajuan = await this.checkAccess(id, user);
 
     if (user.role === "asesi" && pengajuan.status === "Selesai") {
       throw new InvariantError(
@@ -152,7 +165,7 @@ export class PengajuanService {
       );
     }
 
-    await this.getById(id, user);
+    await this.checkAccess(id, user);
     return await this.repo.updateStatus(id, status);
   }
 
@@ -162,7 +175,7 @@ export class PengajuanService {
     rawData: UploadDokumenDTO,
     user: { id: number; role: string }
   ) {
-    await this.getById(id, user);
+    await this.checkAccess(id, user);
 
     const dokumenList = Array.isArray(rawData) ? rawData : [rawData];
     const result = await this.repo.addDokumen(id, dokumenList);
@@ -179,7 +192,7 @@ export class PengajuanService {
     dokId: number,
     user: { id: number; role: string }
   ) {
-    await this.getById(id, user);
+    await this.checkAccess(id, user);
     await this.repo.deleteDokumen(id, dokId);
     return { dokId, message: "Dokumen berhasil dihapus" };
   }
@@ -190,7 +203,7 @@ export class PengajuanService {
     rawData: SubmitAsesmenMandiriDTO,
     user: { id: number; role: string }
   ) {
-    await this.getById(id, user);
+    await this.checkAccess(id, user);
 
     const items = Array.isArray(rawData) ? rawData : rawData.asesmenMandiri;
     if (!items || items.length === 0) {
@@ -213,7 +226,7 @@ export class PengajuanService {
       );
     }
 
-    await this.getById(id, user);
+    await this.checkAccess(id, user);
     return await this.repo.updatePenilaianAsesorMandiri(id, unitId, data);
   }
 }

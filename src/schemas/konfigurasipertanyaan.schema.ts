@@ -67,7 +67,7 @@ export const CreateKonfigurasiSchema = z.object({
   tipe_form: z.string().optional().nullable(),
   versi: z.string().default("1.0"),
   is_default: z.boolean().default(false),
-  status: z.string().default("Draft"),
+  status: z.string().default("Tidak Aktif"),
 
   penyusun: z.array(PenyusunSchema).default([]),
   step1: z.array(Step1PertanyaanSchema).default([]),
