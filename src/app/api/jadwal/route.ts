@@ -18,6 +18,11 @@ export async function GET(request: NextRequest) {
       key: "get-all-jadwal",
     });
 
+    const token = await getToken({ req: request });
+    if (!token) {
+      return sendResponse(401, "Anda harus login");
+    }
+
     const { searchParams } = new URL(request.url);
     const filters = {
       asesorId: searchParams.get("asesor_id")
@@ -31,6 +36,10 @@ export async function GET(request: NextRequest) {
         ? new Date(searchParams.get("tanggal") as string)
         : undefined,
     };
+
+    if (token.role === "asesor") {
+      filters.asesorId = parseInt(token.id as string, 10);
+    }
 
     const jadwalList = await jadwalService.getList(filters);
     return sendResponse(200, "Berhasil mengambil data jadwal", jadwalList);

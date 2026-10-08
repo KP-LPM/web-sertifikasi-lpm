@@ -1181,9 +1181,6 @@ export default function RiwayatAsesmenAdmin() {
                               <div className="text-[14px] font-bold text-slate-900">
                                 {asesi.nama}
                               </div>
-                              <div className="text-[12px] text-slate-500 font-mono font-medium">
-                                NIK: {asesi.nik}
-                              </div>
                             </td>
                             <td className="px-6 py-4">
                               <span

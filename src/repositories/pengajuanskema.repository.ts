@@ -132,6 +132,8 @@ export class PengajuanRepository {
         dokumen: true,
         verifikasi_pengajuan: true,
         sertifikat: true,
+        hasil_asesmen: true,
+        apl02_penilaian: true,
       },
       orderBy: { createdAt: "desc" },
     });

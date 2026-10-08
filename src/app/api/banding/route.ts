@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
                 skema: { select: { id: true, namaSkema: true, kodeSkema: true } },
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
                 user: { select: { id: true, username: true, email: true } },
+                apl02_penilaian: { select: { nama_asesor: true } },
               },
             },
             jadwal_asesmen: {

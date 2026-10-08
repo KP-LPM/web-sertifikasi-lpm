@@ -325,6 +325,7 @@ export default function AssessmentSchedule() {
     id: number;
     jenisMetode?: string;
     metode?: string;
+    tuk?: string;
     nama?: string;
     nik?: string;
     skema?: AssessmentItem & { id?: number; namaSkema?: string };
@@ -1042,7 +1043,8 @@ export default function AssessmentSchedule() {
             ? a.skema?.namaSkema || a.skema?.nama || ""
             : a.skema || "";
         const matchskema = !formData.skema || namaSkema === formData.skema;
-        return matchskema;
+        const matchTuk = !formData.tipeTuk || a.tuk?.toLowerCase() === formData.tipeTuk.toLowerCase();
+        return matchskema && matchTuk;
       })
       .map((a) => ({
         id: a.id,

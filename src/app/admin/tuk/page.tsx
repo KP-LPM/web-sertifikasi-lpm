@@ -22,15 +22,18 @@ import { TukItem, TukInventarisItem } from "@/types/types";
 import { getTukList, createTuk, updateTuk, deleteTuk } from "@/lib/api";
 
 const UIN_BUILDINGS = [
+  "Gedung A: Gedung O. Djauharuddin Ar (Rektorat)",
+  "Gedung B: Gedung Al-Jamiah",
   "Gedung C: Gedung Fak. Ilmu Sosial dan Ilmu Politik",
   "Gedung D: Gedung Abjan Soelaiman (Auditorium)",
-  "Gedung E: Gedung Fak. Ekonomi dan Bisnis Islam Lama",
-  "Gedung F: Gedung Fak. Ushuluddin Lama",
+  "Gedung E: Gedung Fak. Ekonomi dan Bisnis Islam",
+  "Gedung F: Gedung Fak. Ushuluddin",
+  "Gedung G: Gedung Rachmat Djatnika (Perpustakaan)",
   "Gedung H: Gedung Solahuddin Sanusi (Lab. Terpadu)",
   "Gedung I: Gedung Anwar Musaddad (Aula Multipurpose)",
   "Gedung J: Gedung Fak. Sains dan Teknologi",
   "Gedung K: Gedung Language Centre",
-  "Gedung L: Gedung PTIPD",
+  "Gedung L: Gedung Lecture Hall (PTIPD)",
   "Gedung M: Gedung Fakultas Psikologi",
   "Gedung N: Gedung Fak. Adab dan Humaniora",
   "Gedung O: Gedung Fak. Dakwah dan Komunikasi",
@@ -41,6 +44,13 @@ const UIN_BUILDINGS = [
   "Gedung T: Gedung Perkuliahan Fak. Ushuluddin",
   "Gedung U: Gedung Perkuliahan Fak. Dakwah dan Komunikasi",
   "Gedung V: Gedung Perkuliahan Fak. Adab dan Humaniora",
+  "Gedung W: Gedung Olahraga",
+  "Gedung X: Gedung Pujasera/Pusat Bisnis",
+  "Gedung Y: Gedung Student Centre",
+  "Gedung Z: Gedung Asrama Putra",
+  "Gedung ZA: Gedung Asrama Putri",
+  "Gedung ZB: Gedung Asrama Putri",
+  "Gedung ZC: Gedung Poliklinik",
   "Online Meeting",
 ];
 

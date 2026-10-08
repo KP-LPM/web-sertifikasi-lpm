@@ -1004,8 +1004,13 @@ export default function AsesiList() {
                     setSelectedAsesmen(null);
                     setShowCompleteModal(false);
                     setSuccessNotification(
-                      `Batch "${name}" telah berhasil diselesaikan dan dihapus dari daftar asesmen Anda.`,
+                      `Batch "${name}" telah berhasil diselesaikan dan dihapus dari daftar asesmen Anda. Halaman akan segera dimuat ulang...`,
                     );
+
+                    // Merefresh halaman untuk mendapatkan data list asesmen terbaru
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
                   } catch (error) {
                     console.error("Gagal menyelesaikan batch:", error);
                     alert(

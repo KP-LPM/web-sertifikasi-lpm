@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { sendResponse } from "@/lib/response";
 import { authOptions } from "@/lib/auth-options";
@@ -25,8 +26,13 @@ export async function GET(request: NextRequest) {
       return sendResponse(403, "Akses ditolak.");
     }
 
+    const whereClause: Prisma.jadwal_asesmenWhereInput = { status: "Selesai" };
+    if (role === "asesor") {
+      whereClause.asesor_id = parseInt(session.user.id as string, 10);
+    }
+
     const completedBatches = await db.jadwal_asesmen.findMany({
-      where: { status: "Selesai" },
+      where: whereClause,
       include: {
         users: {
           select: {
@@ -87,9 +93,9 @@ export async function GET(request: NextRequest) {
         tanggal: batch.tanggal,
         waktu: batch.waktu_mulai
           ? new Date(batch.waktu_mulai).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
+            hour: "2-digit",
+            minute: "2-digit",
+          })
           : "-",
         totalAsesi: asesiList.length,
         kompetenCount,

@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
     const skemaId = searchParams.get("skema_id");
 
     const whereClause: Prisma.PengajuanSkemaWhereInput = {};
+    const jadwalAsesmenPesertaFilter: Prisma.jadwal_asesmen_pesertaWhereInput = {};
+
     if (jadwalId) {
-      whereClause.jadwal_asesmen_peserta = {
-        some: { jadwal_id: parseInt(jadwalId, 10) },
-      };
+      jadwalAsesmenPesertaFilter.jadwal_id = parseInt(jadwalId, 10);
     }
     if (skemaId) {
       whereClause.skemaId = parseInt(skemaId, 10);
@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
     // Jika asesor, hanya tampilkan kandidat yang dijadwalkan pada asesor tersebut
     if (role === "asesor") {
       const asesorId = parseInt(session.user.id, 10);
-      whereClause.jadwal_asesmen_peserta = {
-        some: {
-          jadwal_asesmen: { asesor_id: asesorId },
-        },
-      };
+      jadwalAsesmenPesertaFilter.jadwal_asesmen = { asesor_id: asesorId };
+    }
+
+    if (Object.keys(jadwalAsesmenPesertaFilter).length > 0) {
+      whereClause.jadwal_asesmen_peserta = { some: jadwalAsesmenPesertaFilter };
     }
 
     const candidates = await db.pengajuanSkema.findMany({
@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
         skema: { select: { kodeSkema: true, namaSkema: true } },
         hasil_asesmen: { select: { hasil: true, catatan: true } },
         jadwal_asesmen_peserta: {
+          where: Object.keys(jadwalAsesmenPesertaFilter).length > 0 ? jadwalAsesmenPesertaFilter : undefined,
           select: {
             jadwal_asesmen: {
               select: {

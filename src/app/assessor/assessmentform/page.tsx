@@ -315,7 +315,7 @@ function AssessmentFormContent() {
   ]);
   // State Step 1
   const [potensiAsesi, setPotensiAsesi] = useState<string[]>([
-    "Hasil pelatihan dan / atau pendidikan, dimana Kurikulum dan fasilitas praktek mampu telusur terhadap standar kompetensi",
+    "",
   ]);
   const [noAdjustment, setNoAdjustment] = useState(false);
 

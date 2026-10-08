@@ -56,11 +56,20 @@ interface BackendBandingRecord {
         namaSkema?: string;
         kodeSkema?: string;
       };
+      apl02_penilaian?: {
+        nama_asesor?: string;
+      };
     };
     jadwal_asesmen?: {
       tipe_tuk?: string;
       metode?: string;
       alamat?: string;
+      users?: {
+        username?: string;
+        profil?: {
+          namaLengkap?: string;
+        };
+      };
     };
   };
 }
@@ -149,8 +158,13 @@ function VerifikasiBandingList({
               metode: jadwal?.tipe_tuk === "Online" ? "Online" : "Offline",
               tipeTuk: jadwal?.tipe_tuk || "Sewaktu",
               alamat: jadwal?.alamat || "TUK Terdaftar",
-              catatan: item.penjelasan || item.alasan || "",
+              catatan: item.penjelasan || "",
               alasanBanding: item.alasan,
+              asesor: 
+                jadwal?.users?.profil?.namaLengkap ||
+                jadwal?.users?.username ||
+                pengajuan?.apl02_penilaian?.nama_asesor ||
+                "-",
               dijelaskan: item.dijelaskan ?? true,
               didiskusikan: item.didiskusikan ?? true,
               melibatkanOrangLain: item.melibatkan_orang_lain ?? false,

@@ -1055,7 +1055,7 @@ export default function AsesiHistoryPage() {
                           )}
 
                         {/* TOMBOL BANDING */}
-                        {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(String(item.statusAsesmen).toLowerCase()) &&
+                        {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten", "menunggu pleno"].includes(String(item.statusAsesmen).toLowerCase()) &&
                           (String(item.rekomendasi).toLowerCase() === "belum kompeten" || String(item.statusAsesmen).toLowerCase() === "belum kompeten") && (
                             <button
                               onClick={() => {
