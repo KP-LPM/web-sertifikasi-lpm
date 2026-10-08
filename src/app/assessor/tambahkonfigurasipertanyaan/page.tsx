@@ -114,7 +114,7 @@ function TambahKonfigurasiPertanyaanContent() {
     konfigurasiPertanyaan,
   } = useAppContext();
   const [skemaOptions, setSkemaOptions] = useState<
-    { value: string; label: string }[]
+    { value: string; label: string; kode?: string }[]
   >([]);
   const [assessorOptions, setAssessorOptions] = useState<
     { value: string; label: string }[]
@@ -124,7 +124,7 @@ function TambahKonfigurasiPertanyaanContent() {
     async function fetchData() {
       try {
         const [skemaRes, usersRes] = await Promise.all([
-          getSkemaList().catch(() => []),
+          getSkemaList(true).catch(() => []),
           getAllUsers().catch(() => []),
         ]);
 
@@ -146,6 +146,7 @@ function TambahKonfigurasiPertanyaanContent() {
                 s.name ||
                 "",
               ),
+              kode: String(s.kodeSkema || s.kode || s.code || ""),
             })),
           );
         }
@@ -2582,21 +2583,32 @@ function TambahKonfigurasiPertanyaanContent() {
                       readOnly={true}
                       asesmenData={
                         {
-                          nama: "Nama Asesi (Contoh)",
+                          nama: "Nama Asesi",
                           skema:
                             skemaOptions.find(
                               (s) =>
                                 s.value ===
                                 String(formData.metadata.skemaSertifikasi),
                             )?.label || "Skema Sertifikasi",
-                          noSkema: "00/LSP/0000",
+                          noSkema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.kode || "00/LSP/0000",
                           tuk: "Sewaktu",
                           metodeAsesmen: "Offline",
-                          tanggal: new Date().toISOString(),
+                          tanggal: new Date().toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }),
                           asesor: formData.step2.penyusun[0]?.label || "Asesor",
-                          asesorReg: "-",
+                          asesorReg: formData.step2.penyusun[0]?.no_met || "-",
                         } as any
                       }
+                      supervisorName="Nama Supervisor"
+                      supervisorSignature="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='50'><text x='10' y='30' font-family='cursive' font-size='20'>TTD Supervisor</text></svg>"
                       previewData={currentPreviewData}
                       penyusun={formData.step2.penyusun.map((p) => ({
                         nama: p.label,
@@ -2617,19 +2629,28 @@ function TambahKonfigurasiPertanyaanContent() {
                       readOnly={true}
                       asesmenData={
                         {
-                          nama: "Nama Asesi (Contoh)",
+                          nama: "Nama Asesi",
                           skema:
                             skemaOptions.find(
                               (s) =>
                                 s.value ===
                                 String(formData.metadata.skemaSertifikasi),
                             )?.label || "Skema Sertifikasi",
-                          noSkema: "00/LSP/0000",
+                          noSkema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.kode || "00/LSP/0000",
                           tuk: "Sewaktu",
                           metodeAsesmen: "Offline",
-                          tanggal: new Date().toISOString(),
+                          tanggal: new Date().toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }),
                           asesor: formData.step2.penyusun[0]?.label || "Asesor",
-                          asesorReg: "-",
+                          asesorReg: formData.step2.penyusun[0]?.no_met || "-",
                         } as any
                       }
                       previewData={currentPreviewData}
@@ -2652,19 +2673,28 @@ function TambahKonfigurasiPertanyaanContent() {
                       readOnly={true}
                       asesmenData={
                         {
-                          nama: "Nama Asesi (Contoh)",
+                          nama: "Nama Asesi",
                           skema:
                             skemaOptions.find(
                               (s) =>
                                 s.value ===
                                 String(formData.metadata.skemaSertifikasi),
                             )?.label || "Skema Sertifikasi",
-                          noSkema: "00/LSP/0000",
+                          noSkema:
+                            skemaOptions.find(
+                              (s) =>
+                                s.value ===
+                                String(formData.metadata.skemaSertifikasi),
+                            )?.kode || "00/LSP/0000",
                           tuk: "Sewaktu",
                           metodeAsesmen: "Offline",
-                          tanggal: new Date().toISOString(),
+                          tanggal: new Date().toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }),
                           asesor: formData.step3.penyusun[0]?.label || "Asesor",
-                          asesorReg: "-",
+                          asesorReg: formData.step3.penyusun[0]?.no_met || "-",
                         } as any
                       }
                       previewData={currentPreviewData}

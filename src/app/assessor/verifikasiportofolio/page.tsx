@@ -87,7 +87,7 @@ export default function VerifikasiPortofolio() {
 
     const fetchSchemes = async () => {
       try {
-        const list = await getSkemaList();
+        const list = await getSkemaList(true);
         if (list && Array.isArray(list)) {
           const schemes = list
             .filter((s: { id?: number | string; namaSkema?: string; kodeSkema?: string }) => s.id !== undefined && (s.namaSkema || s.kodeSkema))

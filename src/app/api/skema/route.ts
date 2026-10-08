@@ -19,7 +19,10 @@ export async function GET(request: NextRequest) {
     const token = await getToken({ req: request });
     const isAdmin = ['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token?.role as string);
 
-    const skemaList = await skemaService.getSkema(isAdmin);
+    const { searchParams } = new URL(request.url);
+    const dropdown = searchParams.get("dropdown") === "true";
+
+    const skemaList = await skemaService.getSkema(isAdmin, dropdown);
     return sendResponse(200, "Berhasil mengambil data skema", skemaList);
   } catch (error) {
     if (error instanceof RateLimitError) {

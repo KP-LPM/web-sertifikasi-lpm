@@ -38,7 +38,7 @@ interface OverviewPendingItem {
   };
   // Menambahkan dataPribadi karena form APL biasanya menyimpan nama di sini
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataPribadi?: any; 
+  dataPribadi?: any;
   skema?: {
     nama_skema?: string;
     namaSkema?: string;
@@ -49,7 +49,7 @@ export default function AdminOverview() {
   const router = useRouter();
   const { user } = useAppContext();
 
-  const adminName = user?.namaLengkap || user?.username || "Administrator LSP";
+  const adminName = user?.namaLengkap || "";
 
   const [dashboardData, setDashboardData] = React.useState<OverviewDashboardData | null>(null);
   const [pendingVerificationList, setPendingVerificationList] = React.useState<OverviewPendingItem[]>([]);
@@ -267,19 +267,19 @@ export default function AdminOverview() {
                 </tr>
               ) : pendingVerificationList.length > 0 ? (
                 pendingVerificationList.map((item, index) => {
-                  
+
                   // Mengambil Nama Asli (Data Pribadi > Profil > Username)
                   const dp = Array.isArray(item.dataPribadi) ? item.dataPribadi[0] : item.dataPribadi;
                   const namaLengkap = dp?.namaLengkap || dp?.nama_lengkap || item.user?.profil?.nama_lengkap || item.user?.profil?.namaLengkap || item.user?.username || "Asesi";
-                  
+
                   // Format Tanggal
                   const rawDate = item.createdAt || item.created_at;
-                  const formattedDate = rawDate 
+                  const formattedDate = rawDate
                     ? new Date(rawDate).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                      })
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric"
+                    })
                     : "-";
 
                   return (

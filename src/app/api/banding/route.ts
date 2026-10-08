@@ -34,18 +34,33 @@ export async function GET(request: NextRequest) {
 
     const list = await db.pengajuan_banding.findMany({
       where: whereClause,
-      include: {
+      select: {
+        id: true,
+        tanggal_pengajuan: true,
+        status: true,
+        alasan: true,
+        penjelasan: true,
+        dijelaskan: true,
+        didiskusikan: true,
+        melibatkan_orang_lain: true,
+        ttd_asesi: true,
         hasil_asesmen: {
-          include: {
+          select: {
+            pengajuan_id: true,
+            hasil: true,
             pengajuan_skema: {
-              include: {
+              select: {
+                id: true,
                 skema: { select: { id: true, namaSkema: true, kodeSkema: true } },
-                dataPribadi: { select: { namaLengkap: true } },
+                dataPribadi: { select: { namaLengkap: true, nik: true } },
                 user: { select: { id: true, username: true, email: true } },
               },
             },
             jadwal_asesmen: {
-              include: {
+              select: {
+                tipe_tuk: true,
+                metode: true,
+                alamat: true,
                 users: {
                   select: {
                     id: true,

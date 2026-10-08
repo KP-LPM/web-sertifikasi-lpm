@@ -55,7 +55,11 @@ export async function GET(request: NextRequest) {
 
     const candidates = await db.pengajuanSkema.findMany({
       where: whereClause,
-      include: {
+      select: {
+        id: true,
+        nomorPengajuan: true,
+        status: true,
+        skemaId: true,
         user: { 
           select: { 
             username: true, 
@@ -67,9 +71,9 @@ export async function GET(request: NextRequest) {
           select: { nik: true, namaLengkap: true, noHp: true },
         },
         skema: { select: { kodeSkema: true, namaSkema: true } },
-        hasil_asesmen: true,
+        hasil_asesmen: { select: { hasil: true, catatan: true } },
         jadwal_asesmen_peserta: {
-          include: {
+          select: {
             jadwal_asesmen: {
               select: {
                 id: true,

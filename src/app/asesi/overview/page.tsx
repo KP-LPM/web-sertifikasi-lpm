@@ -40,8 +40,7 @@ export default function AsesiOverviewPage() {
   const router = useRouter();
 
   // 1. Siapkan state untuk menampung nama dan ID
-  const [namaLengkap, setNamaLengkap] = useState<string>("Asesi");
-  const [asesiId, setAsesiId] = useState<string>("ASESI-0000");
+  const [namaLengkap, setNamaLengkap] = useState<string>("");
   const [assessments, setAssessments] = useState<ExtendedAssessment[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -60,19 +59,11 @@ export default function AsesiOverviewPage() {
           }
 
           if (data.id && data.userId) {
-            setAsesiId(`ASESI-${String(data.userId).padStart(4, "0")}`);
-          } else if (user?.id) {
-            const numericId = String(user.id).replace(/[^0-9]/g, "");
-            setAsesiId(`ASESI-${numericId.padStart(4, "0")}`);
           }
         }
       } catch {
         if (user?.username) setNamaLengkap(user.username);
         else if (user?.email) setNamaLengkap(user.email);
-        if (user?.id) {
-          const numericId = String(user.id).replace(/[^0-9]/g, "");
-          setAsesiId(`ASESI-${numericId.padStart(4, "0")}`);
-        }
       }
     };
 
@@ -224,10 +215,10 @@ export default function AsesiOverviewPage() {
     return (
       <span
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${rek === "Kompeten"
-            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-            : rek === "Belum Kompeten"
-              ? "bg-red-50 text-red-700 border-red-200"
-              : "bg-slate-100 text-slate-600 border-slate-200"
+          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+          : rek === "Belum Kompeten"
+            ? "bg-red-50 text-red-700 border-red-200"
+            : "bg-slate-100 text-slate-600 border-slate-200"
           }`}
       >
         {rek === "Kompeten" ? (
@@ -355,11 +346,6 @@ export default function AsesiOverviewPage() {
             Sudah siap untuk melangkah lebih dekat menuju kompetensi
             bersertifikasi? Pantau status ujian mandiri Anda di bawah ini.
           </p>
-          <div className="pt-0.5">
-            <span className="inline-flex items-center gap-1.5 bg-[#008BE3] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-xs">
-              ID Asesi: {asesiId}
-            </span>
-          </div>
         </div>
 
         <div className="hidden md:flex shrink-0 self-center">

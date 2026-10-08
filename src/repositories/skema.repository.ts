@@ -9,7 +9,15 @@ import {
 } from "@/schemas/skema.schema";
 
 export class SkemaRepository {
-  async getSkemaList(isAdmin: boolean = false) {
+  async getSkemaList(isAdmin: boolean = false, dropdown: boolean = false) {
+    if (dropdown) {
+      return await db.masterSkema.findMany({
+        where: isAdmin ? undefined : { statusAktif: true },
+        select: { id: true, namaSkema: true, kodeSkema: true },
+        orderBy: { created_at: "desc" },
+      });
+    }
+
     return await db.masterSkema.findMany({
       where: isAdmin ? undefined : { statusAktif: true },
       include: {

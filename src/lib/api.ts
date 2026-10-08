@@ -769,8 +769,9 @@ export async function deleteKonfigurasiPertanyaan(id: number) {
 // SKEMA API FUNCTIONS
 // ============================================================
 
-export async function getSkemaList() {
-  const res = await cachedFetch(`${BASE_URL}/skema`, {
+export async function getSkemaList(dropdown: boolean = false) {
+  const url = dropdown ? `${BASE_URL}/skema?dropdown=true` : `${BASE_URL}/skema`;
+  const res = await cachedFetch(url, {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });

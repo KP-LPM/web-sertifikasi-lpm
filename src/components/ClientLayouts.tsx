@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import { Headset, AlertTriangle } from "lucide-react";
 import { useAppContext } from "../context/context";
+import { useSession } from "next-auth/react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { Breadcrumb } from "./Breadcrumb";
@@ -26,12 +27,24 @@ export default function ClientLayout({
     isLoggingOut,
   } = useAppContext();
   const router = useRouter();
+  const { status } = useSession();
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname?.startsWith(route));
 
   if (isLoggingOut) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]">
         <p className="text-sm text-slate-500 font-bold">Keluar dari akun...</p>
+      </div>
+    );
+  }
+
+  if (status === "loading" || (status === "authenticated" && !user)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 border-2 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-slate-500 font-bold">Memuat...</p>
+        </div>
       </div>
     );
   }

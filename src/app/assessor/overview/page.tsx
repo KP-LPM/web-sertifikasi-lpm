@@ -77,7 +77,7 @@ export default function AssessorOverview() {
   const { AssessmentItems, setSelectedAsesmen, user } = useAppContext();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [profileName, setProfileName] = useState("Asesor");
+  const [profileName, setProfileName] = useState("");
   const [dashboardMetrics, setDashboardMetrics] = useState({
     jadwalMendatang: 0,
     kandidatSiapDinilai: 0,
@@ -102,8 +102,8 @@ export default function AssessorOverview() {
         if (profileRes.status === "fulfilled" && profileRes.value) {
           setProfileName(
             profileRes.value.namaLengkap ||
-              user?.username ||
-              "Asesor",
+            user?.username ||
+            "Asesor",
           );
         } else if (user?.username) {
           setProfileName(user.username);
@@ -164,7 +164,7 @@ export default function AssessorOverview() {
     }
 
     loadData();
-  }, [user]);
+  }, [user?.id, user?.username]);
 
   // Fallback ke local context jika belum ada data backend
   const displayBatches = realBatches.length > 0 ? realBatches : [];
@@ -198,11 +198,6 @@ export default function AssessorOverview() {
             Kelola daftar batch asesmen aktif yang siap dinilai dan pantau
             pengajuan banding dari asesi di bawah ini.
           </p>
-          <div className="pt-0.5">
-            <span className="inline-flex items-center gap-1.5 bg-[#008BE3] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-xs">
-              Peran: Asesor Sertifikasi
-            </span>
-          </div>
         </div>
 
         <div className="absolute right-0 top-0 w-64 h-64 bg-linear-to-bl from-sky-200/50 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 opacity-70"></div>
@@ -282,11 +277,10 @@ export default function AssessorOverview() {
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${
-                            batch.metode?.toLowerCase() === "online"
-                              ? "bg-purple-50 text-purple-700 border-purple-200"
-                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          }`}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${batch.metode?.toLowerCase() === "online"
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
+                            : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            }`}
                         >
                           {batch.metode}
                         </span>
@@ -363,10 +357,10 @@ export default function AssessorOverview() {
                   "Skema Asesmen";
                 const tgl = item.tanggal_pengajuan
                   ? new Date(item.tanggal_pengajuan).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "-";
                 return (
                   <div
@@ -407,43 +401,43 @@ export default function AssessorOverview() {
               AssessmentItems.filter((i) => i.hasil === "Belum Kompeten")
                 .slice(0, 2)
                 .map((item: AssessmentItem) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    setSelectedAsesmen(item);
-                    router.push("/assessor/verifikasibanding");
-                  }}
-                  className="p-3.5 border border-gray-100 rounded-lg hover:border-amber-200 hover:bg-amber-50/30 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                >
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md uppercase flex items-center gap-1">
-                        <AlertCircle size={10} /> Banding Diajukan
-                      </span>
-                      <span className="text-xs text-gray-400 font-medium">
-                        • {item.tglAsesmen}
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      setSelectedAsesmen(item);
+                      router.push("/assessor/verifikasibanding");
+                    }}
+                    className="p-3.5 border border-gray-100 rounded-lg hover:border-amber-200 hover:bg-amber-50/30 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md uppercase flex items-center gap-1">
+                          <AlertCircle size={10} /> Banding Diajukan
+                        </span>
+                        <span className="text-xs text-gray-400 font-medium">
+                          • {item.tglAsesmen}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-amber-700 transition-colors truncate">
+                        {item.nama}
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium truncate">
+                        {item.skema}
+                      </p>
+                      <p className="text-[11px] text-gray-400">
+                        TUK:{" "}
+                        <span className="font-semibold text-slate-700">
+                          {item.tipeTuk}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="shrink-0 flex items-center justify-end sm:justify-center">
+                      <span className="text-xs font-bold text-amber-700 group-hover:translate-x-1 transition-transform flex items-center gap-1 bg-white border border-amber-200 px-3 py-1.5 rounded-lg shadow-2xs">
+                        Verifikasi <ChevronRight size={14} />
                       </span>
                     </div>
-                    <h4 className="font-bold text-slate-900 text-sm group-hover:text-amber-700 transition-colors truncate">
-                      {item.nama}
-                    </h4>
-                    <p className="text-xs text-slate-500 font-medium truncate">
-                      {item.skema}
-                    </p>
-                    <p className="text-[11px] text-gray-400">
-                      TUK:{" "}
-                      <span className="font-semibold text-slate-700">
-                        {item.tipeTuk}
-                      </span>
-                    </p>
                   </div>
-                  <div className="shrink-0 flex items-center justify-end sm:justify-center">
-                    <span className="text-xs font-bold text-amber-700 group-hover:translate-x-1 transition-transform flex items-center gap-1 bg-white border border-amber-200 px-3 py-1.5 rounded-lg shadow-2xs">
-                      Verifikasi <ChevronRight size={14} />
-                    </span>
-                  </div>
-                </div>
-              ))
+                ))
             ) : (
               <div className="p-8 flex items-center justify-center">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">

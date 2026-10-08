@@ -13,8 +13,8 @@ import { MasterPersyaratanDasar, MasterUnitKompetensi } from "@prisma/client";
 export class SkemaService {
   private skemaRepository = new SkemaRepository();
 
-  async getSkema(isAdmin: boolean = false) {
-    return await this.skemaRepository.getSkemaList(isAdmin);
+  async getSkema(isAdmin: boolean = false, dropdown: boolean = false) {
+    return await this.skemaRepository.getSkemaList(isAdmin, dropdown);
   }
 
   async getSkemaById(id: number) {
