@@ -9,12 +9,10 @@ import {
   CheckSquare,
   ArrowLeft,
   Eye,
-  Briefcase,
-  ClipboardCheck,
-  HelpCircle,
+  X,
   Loader2,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   MasterSkemaFormState,
   MasterSkemaPayload,
@@ -24,7 +22,7 @@ import {
   KonfigurasiPertanyaanItem,
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
-import { createSkema, updateSkema, getKonfigurasiPertanyaanList } from "@/lib/api";
+import { createSkema, updateSkema, getKonfigurasiPertanyaanList, getKonfigurasiPertanyaanDetail } from "@/lib/api";
 import { FormFRAK07 } from "../forms/FormFRAK07";
 import { FormFRIA04A } from "../forms/FormFRIA04A";
 import { FormFRIA04B } from "../forms/FormFRIA04B";
@@ -62,6 +60,7 @@ export function TambahSkemaForm({
     setExtraCrumbs([
       { label: initialData?.kodeSkema ? "EDIT SKEMA" : "TAMBAH SKEMA BARU" },
     ]);
+
     return () => {
       setExtraCrumbs([]);
     };
@@ -190,9 +189,8 @@ export function TambahSkemaForm({
     onCancel();
   };
 
-  const [activeFormTab, setActiveFormTab] = useState<
-    "frak07" | "fria04a" | "fria04b" | "fria07"
-  >("frak07");
+  const [isPreviewFRAK07ModalOpen, setIsPreviewFRAK07ModalOpen] = useState(false);
+  const [activeFormTab, setActiveFormTab] = useState<"fria04a" | "frak07" | "fria04b" | "fria07" | "">("");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -232,6 +230,31 @@ export function TambahSkemaForm({
   const selectedConfig = availableConfigs.find(
     (k) => k.id === formState.konfigurasiSoalId,
   );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedConfigDetail, setSelectedConfigDetail] = useState<any>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDetail() {
+      if (!formState.konfigurasiSoalId) {
+        setSelectedConfigDetail(null);
+        return;
+      }
+      try {
+        const detail = await getKonfigurasiPertanyaanDetail(formState.konfigurasiSoalId);
+        if (isMounted) {
+          setSelectedConfigDetail(detail);
+        }
+      } catch (error) {
+        console.error("Gagal memuat detail konfigurasi:", error);
+      }
+    }
+    loadDetail();
+    return () => {
+      isMounted = false;
+    };
+  }, [formState.konfigurasiSoalId]);
 
   // --- Handlers: Card 1 (Informasi Utama) ---
   const handleMainInfoChange = (
@@ -1472,163 +1495,249 @@ export function TambahSkemaForm({
                   DAFTAR FORM ASESMEN TERHUBUNG (
                   {selectedConfig.nama.toUpperCase()})
                 </label>
-                <span className="text-xs font-semibold text-slate-400">
-                  4 Form Tersedia
-                </span>
               </div>
 
               {/* Tab Buttons */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveFormTab("frak07")}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "frak07"
-                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                    }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700">
-                      FR.AK.07
-                    </span>
-                    <FileText size={16} />
-                  </div>
-                  <span className="text-xs font-bold line-clamp-1">
-                    Penyesuaian Wajar
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveFormTab("fria04a")}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "fria04a"
-                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                <div
+                  className={`p-3 rounded-xl border flex flex-col justify-between ${activeFormTab === "fria04a"
+                    ? "bg-sky-50/80 border-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200"
                     }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
                       FR.IA.04A
                     </span>
-                    <Briefcase size={16} />
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab(activeFormTab === "fria04a" ? "" : "fria04a")}
+                      className={`p-1 rounded-md transition-colors ${activeFormTab === "fria04a" ? "bg-blue-100 text-blue-600" : "hover:bg-slate-100 text-slate-500 hover:text-blue-500"}`}
+                      title="Pratinjau Form FR.IA.04A"
+                    >
+                      <Eye size={16} />
+                    </button>
                   </div>
                   <span className="text-xs font-bold line-clamp-1">
                     Penjelasan Singkat Proyek
                   </span>
-                </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveFormTab("fria04b")}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "fria04b"
-                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                <div
+                  className={`p-3 rounded-xl border flex flex-col justify-between ${activeFormTab === "fria04b"
+                    ? "bg-sky-50/80 border-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200"
                     }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-700">
                       FR.IA.04B
                     </span>
-                    <ClipboardCheck size={16} />
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab(activeFormTab === "fria04b" ? "" : "fria04b")}
+                      className={`p-1 rounded-md transition-colors ${activeFormTab === "fria04b" ? "bg-blue-100 text-blue-600" : "hover:bg-slate-100 text-slate-500 hover:text-blue-500"}`}
+                      title="Pratinjau Form FR.IA.04B"
+                    >
+                      <Eye size={16} />
+                    </button>
                   </div>
                   <span className="text-xs font-bold line-clamp-1">
                     Penilaian Singkat Proyek
                   </span>
-                </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveFormTab("fria07")}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${activeFormTab === "fria07"
-                    ? "bg-sky-50/80 border-[#008BE3] text-[#008BE3] ring-1 ring-[#008BE3]/30"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                <div
+                  className={`p-3 rounded-xl border flex flex-col justify-between ${activeFormTab === "fria07"
+                    ? "bg-sky-50/80 border-[#008BE3] ring-1 ring-[#008BE3]/30"
+                    : "bg-white border-slate-200"
                     }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-700">
                       FR.IA.07
                     </span>
-                    <HelpCircle size={16} />
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab(activeFormTab === "fria07" ? "" : "fria07")}
+                      className={`p-1 rounded-md transition-colors ${activeFormTab === "fria07" ? "bg-blue-100 text-blue-600" : "hover:bg-slate-100 text-slate-500 hover:text-blue-500"}`}
+                      title="Pratinjau Form FR.IA.07"
+                    >
+                      <Eye size={16} />
+                    </button>
                   </div>
                   <span className="text-xs font-bold line-clamp-1">
                     Pertanyaan Lisan
                   </span>
-                </button>
-              </div>
-
-              {/* Active Form Preview Box */}
-              <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
-                <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold">
-                    <Eye size={15} className="text-[#008BE3]" />
-                    <span>
-                      Pratinjau Tampilan Form:{" "}
-                      {activeFormTab === "frak07" &&
-                        "FR.AK.07 - Penyesuaian yang Wajar dan Beralasan"}
-                      {activeFormTab === "fria04a" &&
-                        "FR.IA.04A - Penjelasan Singkat Proyek"}
-                      {activeFormTab === "fria04b" &&
-                        "FR.IA.04B - Penilaian Singkat Proyek"}
-                      {activeFormTab === "fria07" &&
-                        "FR.IA.07 - Pertanyaan Lisan"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4 sm:p-6 max-h-[600px] overflow-y-auto bg-[#F8F9FC]">
-                  {(() => {
-                    const getPenyusunData = (formTypeStr: string, peran: string) => {
-                      return (selectedConfig.penyusun as FormAsesorPreview[])
-                        ?.filter(p => p.peran === peran && (p.form_type === formTypeStr || !p.form_type))
-                        .map(p => ({
-                          nama: p.users?.profil?.namaLengkap || "",
-                          noReg: p.users?.profil?.nomorRegistrasiMet || "",
-                          ttdTanggal: p.ttd_tanggal ? new Date(p.ttd_tanggal).toLocaleDateString('id-ID') : "",
-                          tandaTangan: p.users?.profil?.tandaTangan || ""
-                        })) || [];
-                    };
-
-                    const getSupervisorName = (formTypeStr: string) => {
-                      return (selectedConfig.penyusun as FormAsesorPreview[])
-                        ?.find(p => p.peran === 'Supervisor' && (p.form_type === formTypeStr || !p.form_type))
-                        ?.users?.profil?.namaLengkap || "";
-                    };
-
-                    return (
-                      <>
-                        {activeFormTab === "frak07" && (
-                          <FormFRAK07 readOnly={true} showHeader={false} />
-                        )}
-                        {activeFormTab === "fria04a" && (
-                          <FormFRIA04A
-                            readOnly={true}
-                            showHeader={false}
-                            penyusun={getPenyusunData("step2", "Penyusun")}
-                            validator={getPenyusunData("step2", "Validator")}
-                            supervisorName={getSupervisorName("step2")}
-                          />
-                        )}
-                        {activeFormTab === "fria04b" && (
-                          <FormFRIA04B
-                            readOnly={true}
-                            showHeader={false}
-                            penyusun={getPenyusunData("step3", "Penyusun")}
-                            validator={getPenyusunData("step3", "Validator")}
-                          />
-                        )}
-                        {activeFormTab === "fria07" && (
-                          <FormFRIA07
-                            readOnly={true}
-                            showHeader={false}
-                            penyusun={getPenyusunData("step4", "Penyusun")}
-                            validator={getPenyusunData("step4", "Validator")}
-                          />
-                        )}
-                      </>
-                    );
-                  })()}
                 </div>
               </div>
+
+              {/* Active Form Preview Modal Overlay */}
+              <AnimatePresence>
+                {activeFormTab && activeFormTab !== "frak07" && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex flex-col items-center justify-start p-2 sm:p-6 overflow-y-auto"
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.95, opacity: 0 }}
+                      className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-auto overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]"
+                    >
+                      <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0 border-b border-slate-800">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-lg bg-[#008BE3] flex items-center justify-center text-white font-black text-sm">
+                            <FileText size={18} />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="font-extrabold text-base leading-tight text-white flex items-center gap-2">
+                              Pratinjau Form:{" "}
+                              <span className="text-[#008BE3]">
+                                {activeFormTab === "fria04a" && "FR.IA.04A"}
+                                {activeFormTab === "fria04b" && "FR.IA.04B"}
+                                {activeFormTab === "fria07" && "FR.IA.07"}
+                              </span>
+                            </h3>
+                            <p className="text-xs text-slate-300 font-medium">
+                              Preview Data Konfigurasi Saat Ini
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => setActiveFormTab("")}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer"
+                          >
+                            <X size={16} />{" "}
+                            <span className="hidden sm:inline">Tutup</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-4 sm:p-8 overflow-y-auto bg-slate-50/50 flex-1">
+                        <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-200 shadow-sm">
+                          {(() => {
+                            /* eslint-disable @typescript-eslint/no-explicit-any */
+                            const getPenyusunData = (formTypeStr: string, peran: string) => {
+                              const configToUse = selectedConfigDetail || selectedConfig;
+                              const list = configToUse?.form_asesor || configToUse?.penyusun || [];
+                              return list
+                                ?.filter((p: any) => p.peran === peran && (p.form_type === formTypeStr || !p.form_type))
+                                .map((p: any) => ({
+                                  nama: p.users?.profil?.namaLengkap || p.nama || "",
+                                  noReg: p.users?.profil?.nomorRegistrasiMet || p.no_met || "-",
+                                  ttdTanggal: p.ttd_tanggal ? new Date(p.ttd_tanggal).toLocaleDateString('id-ID') : "",
+                                  tandaTangan: p.users?.profil?.tandaTangan || p.tanda_tangan || ""
+                                })) || [];
+                            };
+
+                            const getSupervisorName = (formTypeStr: string) => {
+                              const configToUse = selectedConfigDetail || selectedConfig;
+                              const list = configToUse?.form_asesor || configToUse?.penyusun || [];
+                              return list
+                                ?.find((p: any) => p.peran === 'Supervisor' && (p.form_type === formTypeStr || !p.form_type))
+                                ?.users?.profil?.namaLengkap || "";
+                            };
+
+                            const configData = selectedConfigDetail || selectedConfig;
+
+                            const step2Data = configData?.konfigurasi_step2_skenario || configData?.step2;
+                            const step3Data = configData?.konfigurasi_step3_lingkup || configData?.step3;
+                            const step4Data = configData?.konfigurasi_step4_pertanyaan || configData?.step4;
+
+                            const currentPreviewData = {
+                              step2: {
+                                skenario_studi_kasus: step2Data?.skenario_studi_kasus || step2Data?.blokA?.skenarioStudiKasus || "",
+                                informasi_yang_diberikan: Array.isArray(step2Data?.informasi_yang_diberikan) ? step2Data.informasi_yang_diberikan : (step2Data?.blokA?.informasiYangDiberikan || []),
+                                lingkup_bahasan_studi_kasus: Array.isArray(step2Data?.lingkup_bahasan_studi_kasus) ? step2Data.lingkup_bahasan_studi_kasus : (step2Data?.blokA?.lingkupBahasanStudiKasus || []),
+                                perlengkapan_dan_bahan: step2Data?.perlengkapan_dan_bahan || step2Data?.blokA?.perlengkapanDanBahan || "",
+                                fokus_presentasi: Array.isArray(step2Data?.fokus_presentasi) ? step2Data.fokus_presentasi : (step2Data?.blokB?.fokusPresentasi || []),
+                                ketentuan_alokasi_waktu: step2Data?.ketentuan_alokasi_waktu || step2Data?.blokB?.ketentuanAlokasiWaktu || "",
+                              },
+                              step3: Array.isArray(step3Data) ? step3Data.map((l: any) => ({
+                                nama_lingkup: l.nama_lingkup || l.namaLingkup || "",
+                                tugas_praktik: l.tugas_praktik || l.tugasPraktik || "",
+                                kriteria_evaluasi: l.kriteria_evaluasi || l.kriteriaEvaluasi || [],
+                                sub_pertanyaan: (l.konfigurasi_step3_sub_pertanyaan || l.sub_pertanyaan || l.subPertanyaan || []).map((sq: any) => ({
+                                  id: sq.id || "",
+                                  pertanyaan: sq.skenario_pertanyaan || sq.pertanyaan || "",
+                                  kunci_jawaban: sq.ekspektasi_tanggapan || sq.kunci_jawaban || sq.kunciJawaban || ""
+                                }))
+                              })) : [],
+                              step4: Array.isArray(step4Data) ? step4Data.map((q: any) => ({
+                                id: q.id || "",
+                                pertanyaan_lisan: q.pertanyaan_lisan || q.pertanyaan || "",
+                                kunci_jawaban: q.kunci_jawaban || q.kunciJawaban || "",
+                                kode_kuk_ref: q.kode_kuk_ref || q.elemenKompetensi || "-",
+                              })) : [],
+                            };
+
+                            const getAsesmenData = (stepPenyusun: any) => {
+                              const asesor = Array.isArray(stepPenyusun) && stepPenyusun.length > 0 ? stepPenyusun[0] : null;
+                              return {
+                                nama: "Nama Asesi",
+                                skema: formState.namaSkema || selectedConfig?.skema || "Skema Sertifikasi",
+                                noSkema: formState.kodeSkema || "00/LSP/0000",
+                                tuk: "Sewaktu",
+                                metodeAsesmen: "Offline",
+                                tanggal: new Date().toLocaleDateString("id-ID", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                }),
+                                asesor: asesor?.nama || "Nama Asesor",
+                                asesorReg: asesor?.noReg || "-",
+                              } as any;
+                            };
+
+                            /* eslint-enable @typescript-eslint/no-explicit-any */
+                            return (
+                              <>
+                                {activeFormTab === "fria04a" && (
+                                  <FormFRIA04A
+                                    previewData={currentPreviewData}
+                                    readOnly={true}
+                                    showHeader={true}
+                                    asesmenData={getAsesmenData(getPenyusunData("step2", "Penyusun"))}
+                                    penyusun={getPenyusunData("step2", "Penyusun")}
+                                    validator={getPenyusunData("step2", "Validator")}
+                                    supervisorName={getSupervisorName("step2")}
+                                  />
+                                )}
+                                {activeFormTab === "fria04b" && (
+                                  <FormFRIA04B
+                                    previewData={currentPreviewData}
+                                    readOnly={true}
+                                    showHeader={true}
+                                    asesmenData={getAsesmenData(getPenyusunData("step3", "Penyusun"))}
+                                    penyusun={getPenyusunData("step3", "Penyusun")}
+                                    validator={getPenyusunData("step3", "Validator")}
+                                  />
+                                )}
+                                {activeFormTab === "fria07" && (
+                                  <FormFRIA07
+                                    previewData={currentPreviewData}
+                                    readOnly={true}
+                                    showHeader={true}
+                                    asesmenData={getAsesmenData(getPenyusunData("step4", "Penyusun"))}
+                                    penyusun={getPenyusunData("step4", "Penyusun")}
+                                    validator={getPenyusunData("step4", "Validator")}
+                                  />
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         ) : (
@@ -1677,7 +1786,33 @@ export function TambahSkemaForm({
         </button>
       </div>
 
-
+      {/* Modal Preview FR.AK.07 */}
+      {
+        isPreviewFRAK07ModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">
+                    Pratinjau Tampilan Form: FR.AK.07 - Penyesuaian yang Wajar dan Beralasan
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIsPreviewFRAK07ModalOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+                <div className="max-w-4xl mx-auto bg-white shadow-sm border border-slate-200 p-8 rounded-xl">
+                  <FormFRAK07 readOnly={true} showHeader={false} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
     </motion.div>
   );
 }

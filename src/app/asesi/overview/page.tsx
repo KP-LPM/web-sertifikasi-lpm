@@ -14,6 +14,7 @@ import {
   Eye,
   FileEdit,
   AlertTriangle,
+  MapPin,
 } from "lucide-react";
 import { useAppContext } from "@/context/context";
 
@@ -94,6 +95,7 @@ export default function AsesiOverviewPage() {
           jadwal_asesmen_peserta?: Array<{
             jadwal_asesmen?: {
               tanggal?: string | Date;
+              waktu_mulai?: string | Date;
               tipe_tuk?: string;
               alamat?: string;
               link_video?: string;
@@ -140,6 +142,16 @@ export default function AsesiOverviewPage() {
               item.apl02_penilaian?.rekomendasi_apl02 ||
               "-";
 
+            let jamAsesmen = "-";
+            if (jadwal?.waktu_mulai) {
+              const dt = new Date(jadwal.waktu_mulai);
+              if (!isNaN(dt.getTime())) {
+                jamAsesmen = dt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+              } else if (typeof jadwal.waktu_mulai === "string") {
+                jamAsesmen = jadwal.waktu_mulai.substring(11, 16) + " WIB";
+              }
+            }
+
             return {
               id: item.id,
               asesmen: item.jenisMetode || "Offline",
@@ -149,6 +161,7 @@ export default function AsesiOverviewPage() {
               alamat: tukName,
               alamatLengkap,
               tanggalAsesmen: formattedDate,
+              jamAsesmen,
               linkVirtualMeeting: linkMeeting,
               asesor: asesorName,
               jenisBukti: "Portofolio & Praktik",
@@ -538,7 +551,7 @@ export default function AsesiOverviewPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto relative ">
+        <div className="hidden md:block overflow-x-auto relative ">
           <table className="w-full text-left border-collapse min-w-[1600px]">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -556,6 +569,9 @@ export default function AsesiOverviewPage() {
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                   Tanggal Asesmen
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-35 sticky top-0 z-20 bg-[#0F172A]">
+                  Jam Asesmen
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
                   Asesor
@@ -651,6 +667,12 @@ export default function AsesiOverviewPage() {
                           {item.tanggalAsesmen}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-xs md:text-sm font-semibold text-gray-600">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock size={14} className="text-gray-400" />
+                          {item.jamAsesmen || "-"}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold">
                         <span className="inline-flex items-center gap-1.5">
                           <User size={14} className="text-gray-400" />
@@ -724,15 +746,15 @@ export default function AsesiOverviewPage() {
                             {item.statusAsesmen === "Terjadwal" &&
                               item.asesmen === "Online" ? (
                               <>
-                                <FileEdit size={14} /> Mulai Ujian
+                                <FileEdit size={14} /> <span className="hidden md:inline">Mulai Ujian</span>
                               </>
                             ) : item.statusAsesmen === "Perlu Perbaikan" ? (
                               <>
-                                <FileEdit size={14} /> Edit Revisi
+                                <FileEdit size={14} /> <span className="hidden md:inline">Edit Revisi</span>
                               </>
                             ) : (
                               <>
-                                <Eye size={14} /> Detail
+                                <Eye size={14} /> <span className="hidden md:inline">Detail</span>
                               </>
                             )}
                           </button>
@@ -755,6 +777,86 @@ export default function AsesiOverviewPage() {
             </tbody>
           </table>
         </div>
+
+        <div className="md:hidden flex flex-col gap-4">
+          {currentRecords.length > 0 ? (
+            currentRecords.map((item) => (
+              <div key={item.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-3 relative">
+                <div className="flex items-start justify-between gap-2">
+                   <div className="flex items-start gap-2">
+                     <FileText size={18} className="text-[#008BE3] shrink-0 mt-0.5" />
+                     <div>
+                       <h3 className="font-bold text-sm text-gray-900 leading-tight">{item.skemaSertifikasi}</h3>
+                     </div>
+                   </div>
+                   <div className="shrink-0">
+                     {getStatusBadge(item.statusAsesmen)}
+                   </div>
+                </div>
+                <hr className="border-gray-100" />
+                <div className="flex flex-col gap-2.5 text-xs text-gray-600">
+                   <div className="flex items-center gap-2">
+                     <Calendar size={14} className="text-gray-400 shrink-0" />
+                     <span>{item.tanggalAsesmen} • {item.jamAsesmen || "-"}</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <User size={14} className="text-gray-400 shrink-0" />
+                     <span className="truncate">{item.asesor}</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <MapPin size={14} className="text-gray-400 shrink-0" />
+                     <span className="truncate">{item.alamat || "-"}</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <CheckCircle size={14} className="text-gray-400 shrink-0" />
+                     {getRekomendasiBadge(item.rekomendasi)}
+                   </div>
+                </div>
+                
+                <div className="flex items-center justify-end gap-2 mt-1 pt-3 border-t border-gray-50">
+                   <button onClick={() => {
+                        if (
+                          item.statusAsesmen === "Terjadwal" &&
+                          item.asesmen === "Online"
+                        ) {
+                          router.push(
+                            `/asesi/ujian?pengajuanId=${item.id}`,
+                          );
+                        } else if (item.statusAsesmen === "Perlu Perbaikan") {
+                          router.push(`/asesi/pengajuanskema/${item.id}/edit`);
+                        } else {
+                          setSelectedAssessment(item);
+                        }
+                   }} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border ${item.statusAsesmen === "Terjadwal" &&
+                        item.asesmen === "Online"
+                        ? "bg-[#008BE3] text-white border-transparent hover:bg-[#0076C2]"
+                        : item.statusAsesmen === "Perlu Perbaikan"
+                          ? "bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100 hover:border-orange-300"
+                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30"
+                        }`}>
+                       {item.statusAsesmen === "Terjadwal" &&
+                        item.asesmen === "Online" ? (
+                        <>
+                          <FileEdit size={14} /> Mulai Ujian
+                        </>
+                      ) : item.statusAsesmen === "Perlu Perbaikan" ? (
+                        <>
+                          <FileEdit size={14} /> Edit Revisi
+                        </>
+                      ) : (
+                        <>
+                          <Eye size={14} /> Detail
+                        </>
+                      )}
+                   </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500 text-sm">Tidak ada kegiatan asesmen yang cocok dengan pencarian atau filter Anda.</div>
+          )}
+        </div>
+
 
         {totalPages >= 1 && (
           <div className="p-4 px-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50 rounded-b-xl">
@@ -854,9 +956,6 @@ export default function AsesiOverviewPage() {
                 <span className="text-slate-500 font-semibold">Alamat</span>
                 <span className="col-span-2 text-slate-900">
                   <span className="block font-bold">{selectedAssessment.alamat}</span>
-                  {selectedAssessment.alamatLengkap && (
-                    <span className="block text-xs text-slate-500 mt-0.5">{selectedAssessment.alamatLengkap}</span>
-                  )}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -865,6 +964,14 @@ export default function AsesiOverviewPage() {
                 </span>
                 <span className="col-span-2 text-slate-900">
                   {selectedAssessment.tanggalAsesmen}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <span className="text-slate-500 font-semibold">
+                  Jam Asesmen
+                </span>
+                <span className="col-span-2 text-slate-900">
+                  {selectedAssessment.jamAsesmen || "-"}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">

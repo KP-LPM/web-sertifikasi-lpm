@@ -867,6 +867,7 @@ export interface RegisteredAssessment {
   tipeTuk: TipeTuk;
   alamat: string;
   tanggalAsesmen: string;
+  jamAsesmen?: string;
   linkVirtualMeeting: string;
   asesor: string;
   jenisBukti: string;
@@ -884,6 +885,7 @@ export interface AssessmentHistory {
   tukName?: string;
   alamat: string;
   tanggalAsesmen: string;
+  jamAsesmen?: string;
   linkVirtualMeeting: string;
   asesor: string;
   jenisBukti: string;
@@ -898,6 +900,7 @@ export interface AssessmentHistory {
 export interface AppealRecord {
   id: number; // pengajuan_banding.id
   tanggalPengajuan: string;
+  tanggalAsesmen?: string;
   namaAsesi: string;
   asesmen: string;
   skemaSertifikasi: string;

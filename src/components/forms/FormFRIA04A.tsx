@@ -1,3 +1,4 @@
+import TextareaAutosize from "react-textarea-autosize";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
@@ -419,7 +420,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                     <span className="mb-2 font-bold">
                       Umpan Balik Untuk Asesi:
                     </span>
-                    <textarea
+                    <TextareaAutosize
                       disabled={props.readOnly || props.isAsesi}
                       className="w-full border border-slate-300 outline-none focus:border-slate-800 p-2 text-sm bg-transparent flex-1 min-h-20"
                       placeholder="Masukkan umpan balik..."
@@ -506,8 +507,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
                             <div className="font-bold mb-2">
                               Nama & Tanda Tangan Supervisor
                             </div>
-                            <input
-                              type="text"
+                            <TextareaAutosize
                               disabled={true}
                               className="w-full border-b border-slate-300 outline-none focus:border-slate-800 text-sm mb-2 bg-transparent py-1 disabled:opacity-70 disabled:cursor-not-allowed"
                               placeholder="Nama Supervisor..."

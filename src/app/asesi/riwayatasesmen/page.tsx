@@ -15,7 +15,9 @@ import {
   ArrowLeft,
   Calendar,
   User,
-  ExternalLink, // TAMBAHAN: Ikon ExternalLink untuk GDrive
+  ExternalLink,
+  MapPin,
+  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/context";
@@ -71,6 +73,7 @@ export default function AsesiHistoryPage() {
           jadwal_asesmen_peserta?: Array<{
             jadwal_asesmen?: {
               tanggal?: string | Date;
+              waktu_mulai?: string | Date;
               tipe_tuk?: string;
               alamat?: string;
               link_video?: string;
@@ -83,7 +86,7 @@ export default function AsesiHistoryPage() {
         const mapped: AssessmentHistory[] = (data as RawPengajuan[])
           .filter(item => {
             const s = (item.status || "").toLowerCase();
-            return ["menunggu pleno", "selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(s);
+            return ["menunggu pleno", "menunggu banding", "selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten"].includes(s);
           })
           .map((item) => {
             const jadwal = item.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
@@ -135,6 +138,16 @@ export default function AsesiHistoryPage() {
             const rawPenilaian = item.hasil_asesmen?.created_at || jadwal?.tanggal || item.createdAt;
             const tanggalPenilaian = formatDateID(rawPenilaian);
 
+            let jamAsesmen = "-";
+            if (jadwal?.waktu_mulai) {
+              const dt = new Date(jadwal.waktu_mulai);
+              if (!isNaN(dt.getTime())) {
+                jamAsesmen = dt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+              } else if (typeof jadwal.waktu_mulai === "string") {
+                jamAsesmen = jadwal.waktu_mulai.substring(11, 16) + " WIB";
+              }
+            }
+
             // Ambil link GDrive dari backend, atau file URL sebagai cadangan
             const linkSertifikat = item.sertifikat?.gdrive_url || item.sertifikat?.file_url;
 
@@ -147,6 +160,7 @@ export default function AsesiHistoryPage() {
               tukName,
               alamat,
               tanggalAsesmen: formattedDate,
+              jamAsesmen,
               linkVirtualMeeting: linkMeeting,
               asesor: asesorName,
               metodePelaksanaan,
@@ -258,6 +272,28 @@ export default function AsesiHistoryPage() {
     currentPage * itemsPerPage,
   );
 
+  const getRekomendasiBadge = (rek: string) => {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${rek === "Kompeten"
+          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+          : rek === "Belum Kompeten"
+            ? "bg-red-50 text-red-700 border-red-200"
+            : "bg-slate-100 text-slate-600 border-slate-200"
+          }`}
+      >
+        {rek === "Kompeten" ? (
+          <CheckCircle size={12} />
+        ) : rek === "Belum Kompeten" ? (
+          <AlertTriangle size={12} />
+        ) : (
+          <Clock size={12} />
+        )}
+        {rek || "-"}
+      </span>
+    );
+  };
+
   const getStatusBadge = (status: string) => {
     const normalizedStatus = status.toLowerCase();
     if (normalizedStatus === "selesai") {
@@ -288,6 +324,14 @@ export default function AsesiHistoryPage() {
         <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
           <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
           Menunggu Verifikasi
+        </span>
+      );
+    }
+    if (normalizedStatus === "menunggu banding") {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+          Menunggu Banding
         </span>
       );
     }
@@ -459,18 +503,9 @@ export default function AsesiHistoryPage() {
                       Nama Asesor:
                     </td>
                     <td className="border border-slate-300 p-2" colSpan={2}>
-                      <input
-                        type="text"
-                        className="w-full bg-transparent outline-none focus:bg-slate-50 p-1 border border-transparent focus:border-slate-300 rounded"
-                        placeholder="Ketik nama asesor jika tahu, atau biarkan kosong"
-                        value={bandingForm.namaAsesor || ""}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setBandingForm({
-                            ...bandingForm,
-                            namaAsesor: e.target.value,
-                          })
-                        }
-                      />
+                      {selectedAssessment.asesor && selectedAssessment.asesor !== "Belum Ditugaskan"
+                        ? selectedAssessment.asesor
+                        : "-"}
                     </td>
                   </tr>
                   <tr>
@@ -629,7 +664,7 @@ export default function AsesiHistoryPage() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border-2 border-slate-800 p-4" colSpan={3}>
+                    <td className="border-2 border-slate-300 p-4" colSpan={3}>
                       <div className="flex flex-col sm:flex-row gap-8 mt-2 items-center">
                         <div className="min-w-0">
                           <span className="font-semibold mb-2 block">
@@ -653,7 +688,7 @@ export default function AsesiHistoryPage() {
                           <span className="font-semibold mb-2 block">
                             Tanggal :
                           </span>
-                          <div className="px-4 py-2 text-slate-900 font-medium border-b-2 border-slate-800">
+                          <div className="px-4 py-2 text-slate-500 font-medium border-b-2 border-slate-300">
                             {new Date().toLocaleDateString("en-GB")}
                           </div>
                         </div>
@@ -838,7 +873,7 @@ export default function AsesiHistoryPage() {
         </div>
 
         {/* Table representation matching exact overview layout */}
-        <div className="overflow-x-auto relative ">
+        <div className="hidden md:block overflow-x-auto relative ">
           <table className="w-full text-left border-collapse min-w-[1600px]">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -856,6 +891,9 @@ export default function AsesiHistoryPage() {
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                   Tanggal Asesmen
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-35 sticky top-0 z-20 bg-[#0F172A]">
+                  Jam Asesmen
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
                   Asesor
@@ -952,6 +990,14 @@ export default function AsesiHistoryPage() {
                       </span>
                     </td>
 
+                    {/* Column 5.5: Jam Asesmen */}
+                    <td className="px-6 py-4 text-xs md:text-sm whitespace-nowrap text-gray-600 font-medium">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock size={14} className="text-gray-400" />
+                        {item.jamAsesmen || "-"}
+                      </span>
+                    </td>
+
                     {/* Column 6: Asesor */}
                     <td className="px-6 py-4 text-xs md:text-sm text-gray-800 font-semibold">
                       <span className="inline-flex items-center gap-1.5">
@@ -1016,7 +1062,7 @@ export default function AsesiHistoryPage() {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30 transition-all shadow-2xs"
                         >
                           <Eye size={14} />
-                          Detail
+                          <span className="hidden md:inline">Detail</span>
                         </button>
 
                         {/* TOMBOL LIHAT/UNDUH SERTIFIKAT */}
@@ -1049,7 +1095,7 @@ export default function AsesiHistoryPage() {
                             >
                               <>
                                 <ExternalLink size={14} />
-                                Link Sertifikat
+                                <span className="hidden md:inline">Link Sertifikat</span>
                               </>
                             </button>
                           )}
@@ -1065,7 +1111,7 @@ export default function AsesiHistoryPage() {
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs font-bold hover:bg-rose-100 hover:text-rose-700 transition-all shadow-2xs"
                             >
                               <Scale size={14} />
-                              Ajukan Banding
+                              <span className="hidden md:inline">Ajukan Banding</span>
                             </button>
                           )}
                       </div>
@@ -1085,6 +1131,88 @@ export default function AsesiHistoryPage() {
             </tbody>
           </table >
         </div >
+
+        <div className="md:hidden flex flex-col gap-4 mb-4">
+          {currentRecords.length > 0 ? (
+            currentRecords.map((item) => (
+              <div key={item.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-3 relative">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2">
+                    <FileText size={18} className="text-[#008BE3] shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-bold text-sm text-gray-900 leading-tight">{item.skemaSertifikasi}</h3>
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {getStatusBadge(item.statusAsesmen)}
+                  </div>
+                </div>
+                <hr className="border-gray-100" />
+                <div className="flex flex-col gap-2.5 text-xs text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={14} className="text-gray-400 shrink-0" />
+                    <span>{item.tanggalAsesmen} • {item.jamAsesmen || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User size={14} className="text-gray-400 shrink-0" />
+                    <span className="truncate">{item.asesor}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} className="text-gray-400 shrink-0" />
+                    <span className="truncate">{item.alamat || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={14} className="text-gray-400 shrink-0" />
+                    {getRekomendasiBadge(item.rekomendasi)}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 mt-1 pt-3 border-t border-gray-50 flex-wrap">
+                  {["selesai", "lulus", "tidak lulus", "kompeten", "belum kompeten", "menunggu pleno"].includes(String(item.statusAsesmen).toLowerCase()) &&
+                    (String(item.rekomendasi).toLowerCase() === "belum kompeten" || String(item.statusAsesmen).toLowerCase() === "belum kompeten") && (
+                      <button onClick={() => { setSelectedAssessment(item); setIsBandingFormOpen(true); }} className="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition-colors">
+                        Banding
+                      </button>
+                    )}
+
+                  {String(item.statusAsesmen).toLowerCase() === "selesai" &&
+                    String(item.rekomendasi).toLowerCase() === "kompeten" &&
+                    item.noSertifikat !== "-" &&
+                    String(item.noSertifikat).toLowerCase() !== "menunggu terbit" && (
+                      <button onClick={async (e) => {
+                        e.preventDefault();
+                        try {
+                          const res = await fetch(`/api/pengajuanskema/${item.id}/sertifikat`);
+                          const json = await res.json();
+                          if (res.ok && json.data && json.data.gdrive_url) {
+                            window.open(json.data.gdrive_url, '_blank', 'noopener,noreferrer');
+                          } else if (item.linkSertifikat) {
+                            window.open(item.linkSertifikat, '_blank', 'noopener,noreferrer');
+                          } else {
+                            setCertificatePreview(item);
+                          }
+                        } catch {
+                          if (item.linkSertifikat) {
+                            window.open(item.linkSertifikat, '_blank', 'noopener,noreferrer');
+                          } else {
+                            setCertificatePreview(item);
+                          }
+                        }
+                      }} className="px-3 py-1.5 rounded-lg bg-[#008BE3] text-white hover:bg-[#007AC9] text-xs font-bold transition-colors border border-[#008BE3]">
+                        Link Sertifikat
+                      </button>
+                    )}
+
+                  <button onClick={() => setSelectedAssessment(item)} className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-slate-50 text-xs font-bold transition-colors">
+                    Detail
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500 text-sm">Tidak ada riwayat asesmen yang cocok.</div>
+          )}
+        </div>
 
         {/* Pagination Controls */}
         {
@@ -1184,7 +1312,7 @@ export default function AsesiHistoryPage() {
                 <div className="grid grid-cols-3 gap-2">
                   <span className="text-slate-500 font-semibold">Alamat</span>
                   <span className="col-span-2 text-slate-900">
-                    {selectedAssessment.alamat}
+                    <span className="block font-bold">{selectedAssessment.tukName}</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
@@ -1193,6 +1321,14 @@ export default function AsesiHistoryPage() {
                   </span>
                   <span className="col-span-2 text-slate-900">
                     {selectedAssessment.tanggalAsesmen}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500 font-semibold">
+                    Jam Asesmen
+                  </span>
+                  <span className="col-span-2 text-slate-900">
+                    {selectedAssessment.jamAsesmen || "-"}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
@@ -1296,6 +1432,7 @@ export default function AsesiHistoryPage() {
               </div>
               {String(selectedAssessment.rekomendasi).toLowerCase() === "belum kompeten" &&
                 String(selectedAssessment.statusAsesmen).toLowerCase() !== "selesai" &&
+                String(selectedAssessment.statusAsesmen).toLowerCase() !== "menunggu banding" &&
                 (() => {
                   let diffDays = 0;
                   if (

@@ -1,3 +1,4 @@
+import TextareaAutosize from "react-textarea-autosize";
 
 import React, { useState } from "react";
 import { ChevronRight, ArrowLeft } from "lucide-react";
@@ -449,8 +450,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
                       </label>
                     ))}
                   </div>
-                  <input
-                    type="text"
+                  <TextareaAutosize
                     className="w-full border-b border-slate-300 outline-none focus:border-slate-800 bg-transparent text-xs py-1"
                     placeholder="Catatan tambahan..."
                     value={adjustments[opt.id]?.note || ""}
@@ -478,8 +478,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
               Acuan Pembanding Asesmen
             </span>
             <span className="font-bold">:</span>
-            <input
-              type="text"
+            <TextareaAutosize
               value={acuanPembanding}
               disabled={props.readOnly || props.isAsesi}
               onChange={(e) =>
@@ -495,8 +494,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
             <span className="w-6 font-bold text-sm">2)</span>
             <span className="w-56 font-bold text-sm">Metode Asesmen</span>
             <span className="font-bold">:</span>
-            <input
-              type="text"
+            <TextareaAutosize
               value={metodeAsesmen}
               disabled={props.readOnly || props.isAsesi}
               onChange={(e) =>
@@ -512,8 +510,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
             <span className="w-6 font-bold text-sm">3)</span>
             <span className="w-56 font-bold text-sm">Instrumen Asesmen</span>
             <span className="font-bold">:</span>
-            <input
-              type="text"
+            <TextareaAutosize
               value={instrumenAsesmen}
               disabled={props.readOnly || props.isAsesi}
               onChange={(e) =>
@@ -534,8 +531,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
           <div>
             <div className="flex gap-2">
               <span className="font-bold text-sm">Nama Asesor:</span>
-              <input
-                type="text"
+              <TextareaAutosize
                 value={String(asesorName || "")}
                 disabled={props.readOnly || props.isAsesi}
                 onChange={(e) =>
@@ -595,8 +591,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
           <div>
             <div className="flex gap-2">
               <span className="font-bold text-sm">Nama Asesi:</span>
-              <input
-                type="text"
+              <TextareaAutosize
                 value={asesiName}
                 disabled={props.readOnly}
                 onChange={(e) =>

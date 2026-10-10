@@ -59,6 +59,19 @@ interface BackendBandingRecord {
       apl02_penilaian?: {
         nama_asesor?: string;
       };
+      jadwal_asesmen_peserta?: Array<{
+        jadwal_asesmen?: {
+          tipe_tuk?: string;
+          metode?: string;
+          alamat?: string;
+          users?: {
+            username?: string;
+            profil?: {
+              namaLengkap?: string;
+            };
+          };
+        };
+      }>;
     };
     jadwal_asesmen?: {
       tipe_tuk?: string;
@@ -129,7 +142,7 @@ function VerifikasiBandingList({
         if (Array.isArray(res) && res.length > 0) {
           const mapped: AssessmentItem[] = (res as unknown as BackendBandingRecord[]).map((item) => {
             const pengajuan = item.hasil_asesmen?.pengajuan_skema;
-            const jadwal = item.hasil_asesmen?.jadwal_asesmen;
+            const jadwal = item.hasil_asesmen?.jadwal_asesmen || pengajuan?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
             const asesiName =
               pengajuan?.dataPribadi?.namaLengkap ||
               pengajuan?.user?.username ||
@@ -160,7 +173,8 @@ function VerifikasiBandingList({
               alamat: jadwal?.alamat || "TUK Terdaftar",
               catatan: item.penjelasan || "",
               alasanBanding: item.alasan,
-              asesor: 
+              catatanAsesor: (item as { keputusan_admin?: string }).keputusan_admin || "",
+              asesor:
                 jadwal?.users?.profil?.namaLengkap ||
                 jadwal?.users?.username ||
                 pengajuan?.apl02_penilaian?.nama_asesor ||

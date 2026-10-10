@@ -70,17 +70,13 @@ export async function PATCH(request: NextRequest, context: Context) {
         await tx.hasil_asesmen.update({
           where: { id: existingBanding.hasil_asesmen_id },
           data: {
-            ...(isApproved ? {
-              hasil: "Kompeten",
-              status: "Selesai",
-            } : {
-              hasil: "Belum Kompeten",
-            }),
+            hasil: isApproved ? "Kompeten" : "Belum Kompeten",
+            status: "Selesai",
             ...(keputusanAdmin ? { catatan: String(keputusanAdmin) } : {}),
           },
         });
 
-        if (isApproved && existingBanding.hasil_asesmen?.pengajuan_id) {
+        if (existingBanding.hasil_asesmen?.pengajuan_id) {
           await tx.pengajuanSkema.update({
             where: { id: existingBanding.hasil_asesmen.pengajuan_id },
             data: {

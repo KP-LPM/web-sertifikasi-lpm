@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import TextareaAutosize from "react-textarea-autosize";
+
 import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
@@ -1282,8 +1284,7 @@ function TambahKonfigurasiPertanyaanContent() {
               <span className="text-rose-500">*</span> Nama Konfigurasi
               Pertanyaan
             </label>
-            <input
-              type="text"
+            <TextareaAutosize
               value={formData.metadata.namaKonfigurasi}
               onChange={(e) =>
                 updateMetadata("namaKonfigurasi", e.target.value)
@@ -1319,8 +1320,7 @@ function TambahKonfigurasiPertanyaanContent() {
             <label className="font-bold text-slate-700 block">
               Versi Dokumen
             </label>
-            <input
-              type="text"
+            <TextareaAutosize
               value={formData.metadata.versi}
               onChange={(e) => updateMetadata("versi", e.target.value)}
               disabled={isReadOnly}
@@ -1510,7 +1510,7 @@ function TambahKonfigurasiPertanyaanContent() {
                   <span className="text-rose-500">*</span> 1. Skenario Studi
                   Kasus (Latar Belakang Perusahaan)
                 </label>
-                <textarea
+                <TextareaAutosize
                   value={formData.step2.blokA.skenarioStudiKasus}
                   onChange={(e) =>
                     updateStep2BlokAField("skenarioStudiKasus", e.target.value)
@@ -1540,8 +1540,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         <span className="w-6 text-center font-mono font-bold text-xs text-blue-600">
                           {String.fromCharCode(97 + idx)}.
                         </span>
-                        <input
-                          type="text"
+                        <TextareaAutosize
                           value={infoItem}
                           onChange={(e) =>
                             updateStep2BlokAArrayItem(
@@ -1603,8 +1602,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded font-mono font-bold text-[10px] shrink-0">
                           Topic {idx + 1}
                         </span>
-                        <input
-                          type="text"
+                        <TextareaAutosize
                           value={topicItem}
                           onChange={(e) =>
                             updateStep2BlokAArrayItem(
@@ -1654,7 +1652,7 @@ function TambahKonfigurasiPertanyaanContent() {
                   <span className="text-rose-500">*</span> 4. Perlengkapan &
                   Bahan (Peralatan, HVS, Format PPT)
                 </label>
-                <textarea
+                <TextareaAutosize
                   value={formData.step2.blokA.perlengkapanDanBahan}
                   onChange={(e) =>
                     updateStep2BlokAField(
@@ -1699,8 +1697,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         <span className="w-6 text-center font-mono font-bold text-xs text-purple-700">
                           {String.fromCharCode(97 + idx)}.
                         </span>
-                        <input
-                          type="text"
+                        <TextareaAutosize
                           value={fokusItem}
                           onChange={(e) =>
                             updateStep2BlokBArrayItem(
@@ -1747,7 +1744,7 @@ function TambahKonfigurasiPertanyaanContent() {
                   <span className="text-rose-500">*</span> 2. Ketentuan Alokasi
                   Waktu (e.g. Total 60m: 30m penyajian + 30m tanya jawab)
                 </label>
-                <textarea
+                <TextareaAutosize
                   value={formData.step2.blokB.ketentuanAlokasiWaktu}
                   onChange={(e) =>
                     updateStep2BlokBField(
@@ -1781,8 +1778,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         <span className="w-6 text-center font-mono font-bold text-xs text-purple-700">
                           #{idx + 1}
                         </span>
-                        <input
-                          type="text"
+                        <TextareaAutosize
                           value={kriteriaItem}
                           onChange={(e) =>
                             updateStep2BlokBArrayItem(
@@ -1913,8 +1909,7 @@ function TambahKonfigurasiPertanyaanContent() {
                       <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-mono text-xs">
                         Lingkup #{lIdx + 1}
                       </span>
-                      <input
-                        type="text"
+                      <TextareaAutosize
                         value={lingkup.namaLingkup}
                         onChange={(e) =>
                           updateStep3LingkupNama(lingkup.id, e.target.value)
@@ -1975,7 +1970,7 @@ function TambahKonfigurasiPertanyaanContent() {
                             <span className="text-rose-500">*</span> Skenario &
                             Teks Pertanyaan
                           </label>
-                          <textarea
+                          <TextareaAutosize
                             value={sub.skenarioPertanyaan}
                             onChange={(e) =>
                               updateStep3SubPertanyaan(
@@ -2035,7 +2030,7 @@ function TambahKonfigurasiPertanyaanContent() {
                           <label className="font-bold text-slate-800 text-xs block">
                             Ekspektasi Tanggapan / Jawaban Asesi
                           </label>
-                          <textarea
+                          <TextareaAutosize
                             value={sub.ekspektasiTanggapan}
                             onChange={(e) =>
                               updateStep3SubPertanyaan(
@@ -2177,8 +2172,7 @@ function TambahKonfigurasiPertanyaanContent() {
                       <label className="font-bold text-slate-700 block text-xs">
                         Kode Reference KUK
                       </label>
-                      <input
-                        type="text"
+                      <TextareaAutosize
                         value={q.kodeKUKRef}
                         onChange={(e) =>
                           updateStep4Question(
@@ -2198,7 +2192,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         <span className="text-rose-500">*</span> Pertanyaan
                         Lisan
                       </label>
-                      <textarea
+                      <TextareaAutosize
                         value={q.pertanyaanLisan}
                         onChange={(e) =>
                           updateStep4Question(
@@ -2221,7 +2215,7 @@ function TambahKonfigurasiPertanyaanContent() {
                         <span className="text-rose-500">*</span> KUNCI JAWABAN
                         (Wajib Diisi oleh Asesor)
                       </label>
-                      <textarea
+                      <TextareaAutosize
                         value={q.kunciJawaban}
                         onChange={(e) =>
                           updateStep4Question(

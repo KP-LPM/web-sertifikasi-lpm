@@ -17,6 +17,10 @@ import {
   X,
   Eye,
   User,
+  Wallet,
+  Info,
+  Headset,
+  MapPin,
 } from "lucide-react";
 
 import { FormDocumentTable } from "@/components/forms/asesi/FormDocumentTable";
@@ -104,6 +108,7 @@ export default function PengajuanSkemaPage() {
 
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [cancelItemId, setCancelItemId] = useState<number | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [exitDestination, setExitDestination] = useState<
     "list" | "choose-scheme" | null
@@ -1275,7 +1280,7 @@ export default function PengajuanSkemaPage() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto relative ">
+                <div className="hidden md:block overflow-x-auto relative ">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -1621,6 +1626,19 @@ export default function PengajuanSkemaPage() {
                                       Edit Dokumen
                                     </button>
                                   )}
+
+                                {item.statusPembayaran?.toLowerCase() === "belum" && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowPaymentModal(true);
+                                    }}
+                                    className="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 rounded-md flex items-center justify-center transition-colors cursor-pointer shadow-sm shrink-0"
+                                    title="Informasi Pembayaran"
+                                  >
+                                    <Wallet size={14} />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -1637,6 +1655,119 @@ export default function PengajuanSkemaPage() {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                <div className="md:hidden flex flex-col gap-4 p-4 bg-gray-50/30">
+                  {isLoadingSubmissions ? (
+                    <div className="flex flex-col items-center justify-center gap-3 text-slate-500 py-8">
+                      <div className="w-6 h-6 rounded-full border-2 border-[#008BE3] border-t-transparent animate-spin"></div>
+                      <span className="font-bold text-sm">Memuat...</span>
+                    </div>
+                  ) : paginatedSubmissions.length > 0 ? (
+                    paginatedSubmissions.map((item) => (
+                      <div key={item.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2">
+                            <FileText size={18} className="text-[#008BE3] shrink-0 mt-0.5" />
+                            <div>
+                              <h3 className="font-bold text-sm text-gray-900 leading-tight">{item.name}</h3>
+                            </div>
+                          </div>
+                          <div className="shrink-0">
+                            {item.status?.toLowerCase() === "menunggu verifikasi" ? (
+                              <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                Menunggu
+                              </span>
+                            ) : item.status?.toLowerCase() === "terverifikasi" ? (
+                              <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                Terverifikasi
+                              </span>
+                            ) : item.status?.toLowerCase() === "terjadwal" ? (
+                              <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                Terjadwal
+                              </span>
+                            ) : item.status?.toLowerCase() === "revisi" ? (
+                              <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                Revisi
+                              </span>
+                            ) : item.status?.toLowerCase() === "perlu perbaikan" ? (
+                              <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                Perbaikan
+                              </span>
+                            ) : item.status?.toLowerCase() === "selesai" ? (
+                              <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 border border-teal-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                Selesai
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 bg-gray-50 text-gray-700 border border-gray-200 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap">
+                                {item.status || "-"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <hr className="border-gray-100" />
+                        <div className="flex flex-col gap-2.5 text-xs text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} className="text-gray-400 shrink-0" />
+                            <span>{item.asesmenDate ? formatTanggal(item.asesmenDate) : "Belum Ada"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <User size={14} className="text-gray-400 shrink-0" />
+                            <span className="truncate">{item.asesorName || "Belum Ada"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin size={14} className="text-gray-400 shrink-0" />
+                            <span className="truncate">{item.tukName || "Belum Ada"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Wallet size={14} className="text-gray-400 shrink-0" />
+                            {item.statusPembayaran === "Sudah" ? (
+                              <span className="text-green-600 font-semibold">Sudah Bayar</span>
+                            ) : (
+                              <span className="text-rose-600 font-semibold">Belum Bayar</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 mt-1 pt-3 border-t border-gray-50">
+                          {item.statusPembayaran?.toLowerCase() === "belum" && (
+                            <button onClick={(e) => { e.stopPropagation(); setShowPaymentModal(true); }} className="w-8 h-8 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center transition-colors border border-indigo-200 shadow-sm shrink-0">
+                              <Wallet size={14} />
+                            </button>
+                          )}
+
+                          {item.status?.toLowerCase().includes("menunggu") && (
+                            <button onClick={() => setCancelItemId(item.id)} className="px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 text-xs font-bold transition-colors">Batal</button>
+                          )}
+
+                          {item.status?.toLowerCase().includes("revisi") && (
+                            <button onClick={() => window.location.href = `/asesi/pengajuanskema/${item.id}/edit`} className="px-3 py-1.5 rounded-lg border border-[#008BE3] bg-white text-[#008BE3] hover:bg-blue-50 text-xs font-bold transition-colors">Edit</button>
+                          )}
+
+                          {item.status?.toUpperCase() === "TERJADWAL" && item.tipeTuk === "Mandiri (Online)" && (
+                            <button onClick={() => showNotification("Fitur Ujian Online belum tersedia", "error")} className="px-3 py-1.5 rounded-lg bg-[#008BE3] text-white hover:bg-[#0076C2] text-xs font-bold transition-colors">Ujian</button>
+                          )}
+
+                          <button onClick={async () => {
+                            setSelectedDetailSubmission(item);
+                            setIsLoadingDetail(true);
+                            try {
+                              const detail = await getPengajuanDetail(item.id);
+                              if (detail) {
+                                setSelectedDetailSubmission({ ...item, dokumenList: detail.dokumen });
+                              }
+                            } catch (err) {
+                              console.error("Gagal memuat detail pengajuan:", err);
+                            } finally {
+                              setIsLoadingDetail(false);
+                            }
+                          }} className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-slate-50 text-xs font-bold transition-colors">Detail</button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 text-sm">Belum ada permohonan sertifikasi.</div>
+                  )}
                 </div>
 
                 <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-medium bg-gray-50/50">
@@ -3920,6 +4051,43 @@ export default function PengajuanSkemaPage() {
               >
                 Ya, Batalkan
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+            onClick={() => setShowPaymentModal(false)}
+          ></div>
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <Wallet className="text-[#008BE3]" size={18} />
+                Informasi Pembayaran
+              </h3>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-6 flex flex-col items-center justify-center text-center bg-white">
+              <Info size={48} className="text-[#008BE3] mb-4" />
+              <p className="text-slate-600 font-medium mb-6">
+                Untuk melakukan pembayaran, silakan hubungi admin melalui kontak WhatsApp yang tersedia.
+              </p>
+              <a
+                href="https://wa.me/628123456789"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white bg-[#007A55] hover:bg-[#006044] rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer w-full"
+              >
+                <Headset size={18} />
+                Hubungi Admin
+              </a>
             </div>
           </div>
         </div>

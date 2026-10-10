@@ -30,6 +30,27 @@ export async function GET(request: NextRequest) {
           userId: userId,
         },
       };
+    } else if (role === "asesor") {
+      whereClause.hasil_asesmen = {
+        OR: [
+          {
+            jadwal_asesmen: {
+              asesor_id: userId,
+            },
+          },
+          {
+            pengajuan_skema: {
+              jadwal_asesmen_peserta: {
+                some: {
+                  jadwal_asesmen: {
+                    asesor_id: userId,
+                  },
+                },
+              },
+            },
+          },
+        ],
+      };
     }
 
     const list = await db.pengajuan_banding.findMany({
@@ -44,6 +65,7 @@ export async function GET(request: NextRequest) {
         didiskusikan: true,
         melibatkan_orang_lain: true,
         ttd_asesi: true,
+        keputusan_admin: true,
         hasil_asesmen: {
           select: {
             pengajuan_id: true,
@@ -55,6 +77,25 @@ export async function GET(request: NextRequest) {
                 dataPribadi: { select: { namaLengkap: true, nik: true } },
                 user: { select: { id: true, username: true, email: true } },
                 apl02_penilaian: { select: { nama_asesor: true } },
+                jadwal_asesmen_peserta: {
+                  select: {
+                    jadwal_asesmen: {
+                      select: {
+                        tipe_tuk: true,
+                        metode: true,
+                        alamat: true,
+                        tanggal: true,
+                        users: {
+                          select: {
+                            id: true,
+                            username: true,
+                            profil: { select: { namaLengkap: true } },
+                          },
+                        },
+                      }
+                    }
+                  }
+                },
               },
             },
             jadwal_asesmen: {
@@ -62,6 +103,7 @@ export async function GET(request: NextRequest) {
                 tipe_tuk: true,
                 metode: true,
                 alamat: true,
+                tanggal: true,
                 users: {
                   select: {
                     id: true,
@@ -159,6 +201,13 @@ export async function POST(request: NextRequest) {
         status: "Menunggu Verifikasi",
       },
     });
+
+    if (pengajuanId) {
+      await db.pengajuanSkema.update({
+        where: { id: Number(pengajuanId) },
+        data: { status: "Menunggu Banding" },
+      });
+    }
 
     return sendResponse(201, "Pengajuan banding berhasil dikirim", newBanding);
   } catch (error) {

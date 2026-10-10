@@ -457,10 +457,16 @@ export default function UsersManagement() {
 
   const asesiUsers = users.filter((user) => {
     if (user.role !== "asesi") return false;
-    const isVerifiedOrSelesai = user.status === "Selesai" || user.status === "Terverifikasi";
-    const isPaid = user.verificationData?.statusPembayaran === "Sudah";
-    // Pindah ke tab selesai hanya jika statusnya Selesai/Terverifikasi DAN sudah bayar
-    return !(isVerifiedOrSelesai && isPaid);
+    
+    if (user.status === "Menunggu Verifikasi" || user.status === "Revisi") {
+      return true;
+    }
+    
+    if (user.status === "Terverifikasi" && user.verificationData?.statusPembayaran !== "Sudah") {
+      return true;
+    }
+    
+    return false;
   });
 
   const asesorUsers = users.filter((user) => user.role === "asesor" && user.status !== "Terverifikasi");

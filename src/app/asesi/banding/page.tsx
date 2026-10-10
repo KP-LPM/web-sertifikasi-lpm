@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Search, Scale, AlertTriangle, Eye, ArrowLeft, CheckCircle, XCircle, Clock
+  Search, Scale, AlertTriangle, Eye, ArrowLeft, CheckCircle, XCircle, Clock, FileText, Calendar, MessageSquare
 } from 'lucide-react';
 
 // IMPORT DARI types.ts
@@ -37,9 +37,11 @@ export default function AsesiAppeals() {
             dijelaskan?: boolean;
             didiskusikan?: boolean;
             melibatkanOrangLain?: boolean;
+            melibatkan_orang_lain?: boolean;
             hasil_asesmen?: {
               jadwal_asesmen?: {
                 metode?: string;
+                tanggal?: string | Date;
                 users?: {
                   username?: string;
                   profil?: { namaLengkap?: string };
@@ -59,34 +61,51 @@ export default function AsesiAppeals() {
                 apl02_penilaian?: {
                   nama_asesor?: string;
                 };
+                jadwal_asesmen_peserta?: Array<{
+                  jadwal_asesmen?: {
+                    metode?: string;
+                    tanggal?: string | Date;
+                    users?: {
+                      username?: string;
+                      profil?: { namaLengkap?: string };
+                    };
+                  };
+                }>;
               };
             };
           }
 
           // Map backend data to AppealRecord shape
-          const mapped: AppealRecord[] = data.map((item: BandingApiResponse) => ({
-            id: item.id,
-            tanggalPengajuan: item.tanggal_pengajuan
-              ? new Date(item.tanggal_pengajuan).toLocaleDateString('en-GB')
-              : '-',
-            namaAsesi: item.hasil_asesmen?.pengajuan_skema?.dataPribadi?.namaLengkap || '-',
-            asesmen: item.hasil_asesmen?.jadwal_asesmen?.metode || 'Uji Kompetensi',
-            skemaSertifikasi: item.hasil_asesmen?.pengajuan_skema?.skema?.namaSkema || '-',
-            kodeSkema: item.hasil_asesmen?.pengajuan_skema?.skema?.kodeSkema || '-',
-            status: item.status_banding || item.status || 'Dalam Penyelidikan',
-            alasan: item.alasan || item.penjelasan || '-',
-            penjelasan: item.penjelasan || '-',
-            keputusanAdmin: item.keputusan_admin || item.keputusanAdmin || undefined,
-            dijelaskan: item.dijelaskan ?? true,
-            didiskusikan: item.didiskusikan ?? true,
-            melibatkanOrangLain: item.melibatkanOrangLain ?? false,
-            ttdAsesi: true,
-            namaAsesor:
-              item.hasil_asesmen?.jadwal_asesmen?.users?.profil?.namaLengkap ||
-              item.hasil_asesmen?.jadwal_asesmen?.users?.username ||
-              item.hasil_asesmen?.pengajuan_skema?.apl02_penilaian?.nama_asesor ||
-              '-',
-          }));
+          const mapped: AppealRecord[] = data.map((item: BandingApiResponse) => {
+            const jadwal = item.hasil_asesmen?.jadwal_asesmen || item.hasil_asesmen?.pengajuan_skema?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen;
+            
+            return {
+              id: item.id,
+              tanggalPengajuan: item.tanggal_pengajuan
+                ? new Date(item.tanggal_pengajuan).toLocaleDateString('en-GB')
+                : '-',
+              tanggalAsesmen: jadwal?.tanggal
+                ? new Date(jadwal.tanggal).toLocaleDateString('en-GB')
+                : '-',
+              namaAsesi: item.hasil_asesmen?.pengajuan_skema?.dataPribadi?.namaLengkap || '-',
+              asesmen: jadwal?.metode || 'Uji Kompetensi',
+              skemaSertifikasi: item.hasil_asesmen?.pengajuan_skema?.skema?.namaSkema || '-',
+              kodeSkema: item.hasil_asesmen?.pengajuan_skema?.skema?.kodeSkema || '-',
+              status: item.status_banding || item.status || 'Dalam Penyelidikan',
+              alasan: item.alasan || item.penjelasan || '-',
+              penjelasan: item.penjelasan || '-',
+              keputusanAdmin: item.keputusan_admin || item.keputusanAdmin || undefined,
+              dijelaskan: item.dijelaskan ?? true,
+              didiskusikan: item.didiskusikan ?? true,
+              melibatkanOrangLain: item.melibatkan_orang_lain ?? false,
+              ttdAsesi: true,
+              namaAsesor:
+                jadwal?.users?.profil?.namaLengkap ||
+                jadwal?.users?.username ||
+                item.hasil_asesmen?.pengajuan_skema?.apl02_penilaian?.nama_asesor ||
+                '-',
+            };
+          });
           setAppeals(mapped);
         } else {
           setAppeals([]);
@@ -187,7 +206,7 @@ export default function AsesiAppeals() {
                   </tr>
                   <tr>
                     <td className="border border-slate-300 p-2 font-semibold bg-white">Tanggal Asesmen:</td>
-                    <td className="border border-slate-300 p-2" colSpan={2}>{formatTanggal(selectedAppeal.tanggalPengajuan)}</td>
+                    <td className="border border-slate-300 p-2" colSpan={2}>{selectedAppeal.tanggalAsesmen || '-'}</td>
                   </tr>
                   <tr className="bg-slate-50 font-bold">
                     <td className="border border-slate-300 p-2">Jawablah dengan Ya atau Tidak pertanyaan-pertanyaan berikut ini :</td>
@@ -376,7 +395,7 @@ export default function AsesiAppeals() {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto ">
+        <div className="hidden md:block overflow-x-auto ">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -430,7 +449,7 @@ export default function AsesiAppeals() {
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-[#008BE3] hover:border-[#008BE3]/30 transition-all shadow-2xs"
                       >
                         <Eye size={14} />
-                        Detail
+                        <span className="hidden md:inline">Detail</span>
                       </button>
                     </td>
                   </tr>
@@ -444,6 +463,50 @@ export default function AsesiAppeals() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="md:hidden flex flex-col gap-4 mb-4">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-3 text-slate-500 py-8">
+              <div className="w-5 h-5 border-2 border-slate-300 border-t-[#008BE3] rounded-full animate-spin" />
+              <span className="text-sm font-medium">Memuat data banding...</span>
+            </div>
+          ) : currentRecords.length > 0 ? (
+            currentRecords.map((rec) => (
+              <div key={rec.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-3 relative">
+                <div className="flex items-start justify-between gap-2">
+                   <div className="flex items-start gap-2">
+                     <FileText size={18} className="text-[#008BE3] shrink-0 mt-0.5" />
+                     <div>
+                       <h3 className="font-bold text-sm text-gray-900 leading-tight">{rec.skemaSertifikasi}</h3>
+                     </div>
+                   </div>
+                   <div className="shrink-0">
+                     {getStatusBadge(rec.status)}
+                   </div>
+                </div>
+                <hr className="border-gray-100" />
+                <div className="flex flex-col gap-2.5 text-xs text-gray-600">
+                   <div className="flex items-center gap-2">
+                     <Calendar size={14} className="text-gray-400 shrink-0" />
+                     <span>{formatTanggal(rec.tanggalPengajuan)}</span>
+                   </div>
+                   <div className="flex items-start gap-2">
+                     <MessageSquare size={14} className="text-gray-400 shrink-0 mt-0.5" />
+                     <span className="line-clamp-2">{rec.alasan}</span>
+                   </div>
+                </div>
+                
+                <div className="flex items-center justify-end gap-2 mt-1 pt-3 border-t border-gray-50 flex-wrap">
+                   <button onClick={() => setSelectedAppeal(rec)} className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-slate-50 text-xs font-bold transition-colors">
+                     Detail
+                   </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500 text-sm">Tidak ada pengajuan banding yang cocok.</div>
+          )}
         </div>
 
         {/* Pagination Controls */}

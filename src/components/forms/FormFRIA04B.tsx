@@ -1,3 +1,4 @@
+import TextareaAutosize from "react-textarea-autosize";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
@@ -421,7 +422,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
                       <div>Pertanyaan: {q.pertanyaan}</div>
                       <div className="mt-4">
                         <div className="font-bold mb-1">Tanggapan:</div>
-                        <textarea
+                        <TextareaAutosize
                           disabled={props.readOnly || props.isAsesi}
                           className="w-full border border-slate-300 outline-none focus:border-slate-800 p-2 bg-transparent min-h-25"
                           placeholder="Tanggapan..."

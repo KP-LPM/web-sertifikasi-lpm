@@ -1,3 +1,4 @@
+import TextareaAutosize from "react-textarea-autosize";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { FormHeader } from "./FormHeader";
@@ -490,7 +491,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                       <tr>
                         <td className="border border-slate-300 p-3 align-top">
                           <div className="font-bold mb-2">Jawaban Asesi:</div>
-                          <textarea
+                          <TextareaAutosize
                             disabled={props.readOnly || props.isAsesi}
                             className="w-full outline-none bg-transparent min-h-20 resize-y"
                             placeholder="Ketik jawaban asesi..."
@@ -529,7 +530,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
                 </div>
                 <div className="flex gap-2">
                   <span>:</span>
-                  <textarea
+                  <TextareaAutosize
                     disabled={props.readOnly || props.isAsesi}
                     className="w-full outline-none bg-transparent min-h-15"
                     placeholder="Tuliskan unit kompetensi /elemen/KUK jika belum tercapai: ...."
@@ -553,8 +554,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
               <td className="border border-slate-300 p-2 w-1/3">Nama</td>
               <td className="border border-slate-300 p-2 w-8 text-center">:</td>
               <td className="border border-slate-300 p-2">
-                <input
-                  type="text"
+                <TextareaAutosize
                   disabled={props.readOnly}
                   className="w-full outline-none bg-transparent"
                   value={asesiName as string}
@@ -611,8 +611,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
               <td className="border border-slate-300 p-2">Nama</td>
               <td className="border border-slate-300 p-2 text-center">:</td>
               <td className="border border-slate-300 p-2">
-                <input
-                  type="text"
+                <TextareaAutosize
                   disabled={props.readOnly || props.isAsesi}
                   className="w-full outline-none bg-transparent"
                   value={String(asesorName || "")}
@@ -624,8 +623,7 @@ export function FormFRIA07(props: FormFRIA07Props) {
               <td className="border border-slate-300 p-2">No. Reg</td>
               <td className="border border-slate-300 p-2 text-center">:</td>
               <td className="border border-slate-300 p-2">
-                <input
-                  type="text"
+                <TextareaAutosize
                   disabled={props.readOnly || props.isAsesi}
                   className="w-full outline-none bg-transparent"
                   value={asesorReg}
