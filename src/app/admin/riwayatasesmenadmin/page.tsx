@@ -312,6 +312,68 @@ export default function RiwayatAsesmenAdmin() {
           }
           if (pengajuanDetail) {
             const dp = pengajuanDetail.dataPribadi as Record<string, unknown> | undefined;
+
+            const pdRecord = pengajuanDetail as unknown as Record<string, unknown>;
+            let extractedTujuan: string | undefined =
+              (pdRecord?.tujuanAsesmen as string | undefined) ||
+              (pdRecord?.tujuan as string | undefined);
+            const riwayatList = (riwayatRes?.data ||
+              pdRecord?.riwayat_asesmen_detail ||
+              pdRecord?.riwayat_asesmen_peserta) as Array<Record<string, unknown>> | undefined;
+            if (Array.isArray(riwayatList)) {
+              const apl01 = riwayatList.find(
+                (r) => r.form_type === "FR.APL.01" || r.formType === "FR.APL.01",
+              );
+              if (apl01 && apl01.form_data) {
+                let fd = apl01.form_data as Record<string, unknown>;
+                if (typeof fd === "string") {
+                  try {
+                    fd = JSON.parse(fd);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+                if (fd && typeof fd === "object") {
+                  const nestedApl01 = fd["01. FR.APL.01 Permohonan Sertifikasi"] as
+                    | Record<string, unknown>
+                    | undefined;
+                  extractedTujuan =
+                    (fd.tujuan as string | undefined) ||
+                    (fd.tujuanAsesmen as string | undefined) ||
+                    (nestedApl01?.tujuan as string | undefined) ||
+                    extractedTujuan;
+                }
+              }
+              if (!extractedTujuan) {
+                for (const r of riwayatList) {
+                  if (r.form_data) {
+                    let fd = r.form_data as Record<string, unknown>;
+                    if (typeof fd === "string") {
+                      try {
+                        fd = JSON.parse(fd);
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }
+                    if (fd && typeof fd === "object") {
+                      const nestedApl01 = fd["01. FR.APL.01 Permohonan Sertifikasi"] as
+                        | Record<string, unknown>
+                        | undefined;
+                      const possible =
+                        (fd.tujuan as string | undefined) ||
+                        (fd.tujuanAsesmen as string | undefined) ||
+                        (nestedApl01?.tujuan as string | undefined) ||
+                        (nestedApl01?.tujuanAsesmen as string | undefined);
+                      if (possible) {
+                        extractedTujuan = possible;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             setApl01FormData({
               isAdmin: true,
               hidePaymentFields: true,
@@ -324,7 +386,7 @@ export default function RiwayatAsesmenAdmin() {
               namaSkema: pengajuanDetail.skema?.namaSkema || "",
               kodeSkema: pengajuanDetail.skema?.kodeSkema || "",
               tuk: pengajuanDetail.tuk || "",
-              tujuan: pengajuanDetail.tujuanAsesmen || "Sertifikasi",
+              tujuan: extractedTujuan || "Sertifikasi",
               ...dp,
               schemeDetail: {
                 ...pengajuanDetail.skema,

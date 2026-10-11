@@ -28,6 +28,20 @@ export const authOptions: NextAuthOptions = {
               { email: credentials.username },
             ],
           },
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            password: true,
+            role: true,
+            isVerified: true,
+            asalAsesor: true,
+            profil: {
+              select: {
+                namaLengkap: true,
+              },
+            },
+          },
         });
 
         if (!user) {
@@ -50,6 +64,9 @@ export const authOptions: NextAuthOptions = {
           username: user.username,
           email: user.email,
           role: user.role,
+          namaLengkap: user.profil?.namaLengkap,
+          isVerified: user.isVerified,
+          asalAsesor: user.asalAsesor,
         };
       },
     }),
@@ -61,6 +78,31 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.username = user.username;
         token.email = user.email;
+        token.namaLengkap = user.namaLengkap;
+        token.isVerified = user.isVerified;
+        token.asalAsesor = user.asalAsesor;
+      } else if (token.id) {
+        try {
+          const dbUser = await db.user.findUnique({
+            where: { id: Number(token.id) },
+            select: {
+              isVerified: true,
+              role: true,
+              asalAsesor: true,
+              profil: { select: { namaLengkap: true } },
+            },
+          });
+          if (dbUser) {
+            token.isVerified = dbUser.isVerified;
+            token.role = dbUser.role;
+            token.asalAsesor = dbUser.asalAsesor;
+            if (dbUser.profil?.namaLengkap) {
+              token.namaLengkap = dbUser.profil.namaLengkap;
+            }
+          }
+        } catch {
+          // Keep previous token values if DB query fails
+        }
       }
       return token;
     },
@@ -70,6 +112,9 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.username = token.username as string;
         session.user.email = token.email as string;
+        session.user.namaLengkap = token.namaLengkap as string;
+        session.user.isVerified = Boolean(token.isVerified);
+        session.user.asalAsesor = (token.asalAsesor as string | null) || null;
       }
       return session;
     },

@@ -25,11 +25,38 @@ export async function GET(req: NextRequest) {
         },
         dataPribadi: true,
         dokumen: true,
+        riwayat_asesmen_detail: true,
       },
     });
 
     if (!pengajuan) {
       return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
+    }
+
+    let tujuanAsesmen = "Sertifikasi";
+    if (pengajuan.riwayat_asesmen_detail && Array.isArray(pengajuan.riwayat_asesmen_detail)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const apl01 = pengajuan.riwayat_asesmen_detail.find((r: any) => r.form_type === "FR.APL.01");
+      if (apl01 && apl01.form_data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let fd: any = apl01.form_data;
+        if (typeof fd === "string") { try { fd = JSON.parse(fd); } catch (e) { console.error(e); } }
+        if (fd?.tujuan || fd?.tujuanAsesmen || fd?.["01. FR.APL.01 Permohonan Sertifikasi"]?.tujuan) {
+          tujuanAsesmen = fd.tujuan || fd.tujuanAsesmen || fd["01. FR.APL.01 Permohonan Sertifikasi"]?.tujuan;
+        }
+      }
+      if (tujuanAsesmen === "Sertifikasi") {
+        for (const r of pengajuan.riwayat_asesmen_detail) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let fd: any = r.form_data;
+          if (typeof fd === "string") { try { fd = JSON.parse(fd); } catch (e) { console.error(e); } }
+          const found = fd?.tujuan || fd?.tujuanAsesmen || fd?.["01. FR.APL.01 Permohonan Sertifikasi"]?.tujuan;
+          if (found) {
+            tujuanAsesmen = found;
+            break;
+          }
+        }
+      }
     }
 
     const data = pengajuan.dataPribadi;
@@ -101,7 +128,7 @@ const htmlContent = `
 
         <div class="title">Data Permohonan Sertifikasi</div>
         <table class="table">
-          <tr><td width="30%">Tujuan Asesmen</td><td width="5%">:</td><td>${pengajuan.jenisMetode || ''}</td></tr>
+          <tr><td width="30%">Tujuan Asesmen</td><td width="5%">:</td><td>${tujuanAsesmen}</td></tr>
           <tr><td rowspan="2">Skema Sertifikasi</td><td>Judul</td><td>${pengajuan.skema?.namaSkema || ''}</td></tr>
           <tr><td>Nomor</td><td>${pengajuan.skema?.kodeSkema || ''}</td></tr>
         </table>

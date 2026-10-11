@@ -99,6 +99,7 @@ function TambahKonfigurasiPertanyaanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
+    user,
     addKonfigurasiPertanyaan,
     updateKonfigurasiPertanyaan,
     konfigurasiPertanyaan,
@@ -109,6 +110,12 @@ function TambahKonfigurasiPertanyaanContent() {
   const [assessorOptions, setAssessorOptions] = useState<
     { value: string; label: string }[]
   >([]);
+
+  useEffect(() => {
+    if (user && user.role === "asesor" && user.isVerified === false) {
+      router.replace("/assessor/konfigurasipertanyaan");
+    }
+  }, [user, router]);
 
   useEffect(() => {
     async function fetchData() {
@@ -155,9 +162,13 @@ function TambahKonfigurasiPertanyaanContent() {
           id?: string | number;
           username?: string;
           profil?: { namaLengkap?: string };
+          isVerified?: boolean;
+          is_verified?: boolean;
         };
         const assessors = (usersList as UserItem[]).filter(
-          (u) => u.role?.toLowerCase() === "asesor",
+          (u) =>
+            u.role?.toLowerCase() === "asesor" &&
+            Boolean(u.isVerified ?? u.is_verified),
         );
         setAssessorOptions(
           assessors.map((a) => ({

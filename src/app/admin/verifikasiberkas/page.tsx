@@ -196,6 +196,7 @@ export default function UsersManagement() {
       link_surat_peminjaman?: string;
       link_surat_jawaban?: string;
       status_asesor?: string;
+      status?: string;
       master_skema?: { namaSkema: string };
     }[];
   }
@@ -271,10 +272,13 @@ export default function UsersManagement() {
         };
       });
 
-      const asesorUsersRaw = rawUsers.filter((u) => u.role === "asesor" && Array.isArray(u.portfolio_asesor) && u.portfolio_asesor.length > 0);
+      const asesorUsersRaw = rawUsers.filter(
+        (u) => u.role?.toLowerCase() === "asesor",
+      );
       const mappedAsesor: UserItem[] = asesorUsersRaw.map((u) => {
         const profil = Array.isArray(u.profil) ? u.profil[0] : u.profil;
         const namaLengkap = profil?.namaLengkap || u.username;
+        const noReg = (profil as Record<string, unknown>)?.nomorRegistrasiMet as string || u.nomor_registrasi_met || "MET.000.12345.2024";
 
         const dokumen = u.portfolio_asesor?.flatMap((port) => {
           const docs = [];
@@ -317,20 +321,25 @@ export default function UsersManagement() {
         const listSkema = u.portfolio_asesor?.map(p => p.master_skema?.namaSkema).filter(Boolean);
         const skemaText = listSkema && listSkema.length > 0 ? Array.from(new Set(listSkema)).join(", ") : "Belum Ada";
 
+        const hasUnverifiedDocs = u.portfolio_asesor && u.portfolio_asesor.length > 0
+          ? u.portfolio_asesor.some((p) => p.status === "Menunggu Verifikasi" || !p.status)
+          : !u.isVerified;
+        const isAsesorVerified = Boolean(u.isVerified) && !hasUnverifiedDocs;
+
         return {
           id: u.id,
           username: u.username,
           namaLengkap,
           email: u.email || "-",
           role: "asesor",
-          status: u.isVerified ? "Terverifikasi" : "Menunggu Verifikasi",
+          status: isAsesorVerified ? "Terverifikasi" : "Menunggu Verifikasi",
           verificationData: {
             rekomendasi: "Diterima",
             catatan: "",
             asalAsesor: asalAsesor,
             instansi: profil?.namaInstitusi || "LSP UIN SGD",
             skema: skemaText,
-            noReg: u.nomor_registrasi_met || "MET.000.12345.2024",
+            noReg: noReg,
             dokumen: dokumen,
           },
         };
@@ -427,23 +436,15 @@ export default function UsersManagement() {
       console.error("Gagal menyimpan pembayaran ke backend:", err);
     }
 
-    setUsers(
-      users.map((u) =>
+    setUsers((prevUsers) =>
+      prevUsers.map((u) =>
         u.id === userToEditPayment.id
           ? {
             ...u,
             verificationData: {
+              ...u.verificationData,
               rekomendasi: u.verificationData?.rekomendasi || "Diterima",
               catatan: u.verificationData?.catatan || "",
-              adminSignatureUrl: u.verificationData?.adminSignatureUrl,
-              lspSignatureUrl: u.verificationData?.lspSignatureUrl,
-              rekomendasiApl02: u.verificationData?.rekomendasiApl02,
-              ttdAsesor: u.verificationData?.ttdAsesor,
-              asesorName: u.verificationData?.asesorName,
-              asesorReg: u.verificationData?.asesorReg,
-              penyusun: u.verificationData?.penyusun,
-              validator: u.verificationData?.validator,
-              assignedAsesorId: u.verificationData?.assignedAsesorId,
               statusPembayaran: paymentFormData.statusPembayaran,
               sumberAnggaran: paymentFormData.sumberAnggaran,
             },
@@ -457,15 +458,15 @@ export default function UsersManagement() {
 
   const asesiUsers = users.filter((user) => {
     if (user.role !== "asesi") return false;
-    
+
     if (user.status === "Menunggu Verifikasi" || user.status === "Revisi") {
       return true;
     }
-    
+
     if (user.status === "Terverifikasi" && user.verificationData?.statusPembayaran !== "Sudah") {
       return true;
     }
-    
+
     return false;
   });
 
@@ -504,6 +505,27 @@ export default function UsersManagement() {
 
   const confirmRevisi = async () => {
     if (userToVerify) {
+      if (userToVerify.role === "asesor") {
+        try {
+          await verifyUserAdmin(userToVerify.id!, "Tolak");
+        } catch (err) {
+          console.error("Gagal menolak user asesor:", err);
+        }
+        setUsers(
+          users.map((u) =>
+            u.id === userToVerify.id
+              ? ({
+                ...u,
+                status: "Ditolak",
+              } as UserItem)
+              : u,
+          ),
+        );
+        setIsVerifyModalOpen(false);
+        setUserToVerify(null);
+        return;
+      }
+
       if (userToVerify.role === "asesi") {
         const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -582,34 +604,19 @@ export default function UsersManagement() {
         } catch (err) {
           console.error("Gagal memverifikasi user asesor:", err);
         }
-      } else {
-        const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const currentAdminUrl = typeof rawAdminUrl === "object" && rawAdminUrl !== null ? (rawAdminUrl as any).url || (rawAdminUrl as any).fileUrl || null : rawAdminUrl;
-        const currentLspUrl =
-          userToVerify.verificationData?.lspSignatureUrl || null;
-
-        try {
-          // Hapus checklist: apl01FormData.checklist di sini
-          await verifyPengajuanApl01(userToVerify.id!, {
-            rekomendasi: (apl01FormData.rekomendasi || "Diterima") as "Diterima" | "Ditolak",
-            catatan: apl01FormData.catatan || "",
-            statusPembayaran: (apl01FormData.statusPembayaran ||
-              userToVerify.verificationData?.statusPembayaran ||
-              "Sudah") as "Sudah" | "Belum",
-            sumberAnggaran:
-              apl01FormData.sumberAnggaran ||
-              userToVerify.verificationData?.sumberAnggaran ||
-              "Sumber Anggaran Biaya Mandiri",
-            adminSignatureUrl: currentAdminUrl || undefined,
-            lspSignatureUrl: currentLspUrl || undefined,
-            assignedAsesorId: selectedAsesorId
-              ? Number(selectedAsesorId)
-              : undefined,
-          });
-        } catch (err) {
-          console.error("Gagal memverifikasi pengajuan asesi:", err);
-        }
+        setUsers(
+          users.map((u) =>
+            u.id === userToVerify.id
+              ? ({
+                ...u,
+                status: "Terverifikasi",
+              } as UserItem)
+              : u,
+          ),
+        );
+        setIsVerifyModalOpen(false);
+        setUserToVerify(null);
+        return;
       }
 
       const rawAdminUrl = apl01FormData.ttdAdmin || userToVerify.verificationData?.adminSignatureUrl || null;
@@ -617,6 +624,28 @@ export default function UsersManagement() {
       const currentAdminUrl = typeof rawAdminUrl === "object" && rawAdminUrl !== null ? (rawAdminUrl as any).url || (rawAdminUrl as any).fileUrl || null : rawAdminUrl;
       const currentLspUrl =
         userToVerify.verificationData?.lspSignatureUrl || null;
+
+      try {
+        // Hapus checklist: apl01FormData.checklist di sini
+        await verifyPengajuanApl01(userToVerify.id!, {
+          rekomendasi: (apl01FormData.rekomendasi || "Diterima") as "Diterima" | "Ditolak",
+          catatan: apl01FormData.catatan || "",
+          statusPembayaran: (apl01FormData.statusPembayaran ||
+            userToVerify.verificationData?.statusPembayaran ||
+            "Sudah") as "Sudah" | "Belum",
+          sumberAnggaran:
+            apl01FormData.sumberAnggaran ||
+            userToVerify.verificationData?.sumberAnggaran ||
+            "Sumber Anggaran Biaya Mandiri",
+          adminSignatureUrl: currentAdminUrl || undefined,
+          lspSignatureUrl: currentLspUrl || undefined,
+          assignedAsesorId: selectedAsesorId
+            ? Number(selectedAsesorId)
+            : undefined,
+        });
+      } catch (err) {
+        console.error("Gagal memverifikasi pengajuan asesi:", err);
+      }
 
       const newVerificationData = {
         ...userToVerify.verificationData,
@@ -746,18 +775,70 @@ export default function UsersManagement() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let rawChecklist = detail.checklist || (detail.dataPribadi as any)?.checklist;
 
-        // Jika tidak ada di root, cari di dalam riwayat_asesmen_peserta
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const riwayatList = (detail as any).riwayat_asesmen_peserta || (detail as any).riwayatAsesmen;
-        if (!rawChecklist && Array.isArray(riwayatList)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const apl01 = riwayatList.find((r: any) => r.form_type === "FR.APL.01" || r.formType === "FR.APL.01");
+        // Pengecekan riwayat asesmen (FR.APL.01 / FR.APL.02) untuk checklist & tujuan asesmen
+        const detailRecord = detail as unknown as Record<string, unknown>;
+        const riwayatList = (detailRecord?.riwayat_asesmen_detail ||
+          detailRecord?.riwayat_asesmen_peserta ||
+          detailRecord?.riwayatAsesmen) as Array<Record<string, unknown>> | undefined;
+        let extractedTujuan: string | undefined =
+          (detailRecord?.tujuanAsesmen as string | undefined) ||
+          (detailRecord?.tujuan as string | undefined);
+
+        if (Array.isArray(riwayatList)) {
+          // Cari di FR.APL.01 terlebih dahulu
+          const apl01 = riwayatList.find(
+            (r) => r.form_type === "FR.APL.01" || r.formType === "FR.APL.01",
+          );
           if (apl01 && apl01.form_data) {
-            let fd = apl01.form_data;
+            let fd = apl01.form_data as Record<string, unknown>;
             if (typeof fd === "string") {
-              try { fd = JSON.parse(fd); } catch (e) { console.error(e); }
+              try {
+                fd = JSON.parse(fd);
+              } catch (e) {
+                console.error(e);
+              }
             }
-            rawChecklist = fd?.checklist;
+            if (fd && typeof fd === "object") {
+              if (!rawChecklist && fd.checklist) rawChecklist = fd.checklist;
+              const nestedApl01 = fd["01. FR.APL.01 Permohonan Sertifikasi"] as
+                | Record<string, unknown>
+                | undefined;
+              extractedTujuan =
+                (fd.tujuan as string | undefined) ||
+                (fd.tujuanAsesmen as string | undefined) ||
+                (nestedApl01?.tujuan as string | undefined) ||
+                extractedTujuan;
+            }
+          }
+
+          // Jika tujuan belum ketemu di FR.APL.01, periksa riwayat lain (misal FR.APL.02 yang menyimpan eFormData)
+          if (!extractedTujuan) {
+            for (const r of riwayatList) {
+              if (r.form_data) {
+                let fd = r.form_data as Record<string, unknown>;
+                if (typeof fd === "string") {
+                  try {
+                    fd = JSON.parse(fd);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+                if (fd && typeof fd === "object") {
+                  const nestedApl01 = fd["01. FR.APL.01 Permohonan Sertifikasi"] as
+                    | Record<string, unknown>
+                    | undefined;
+                  const possible =
+                    (fd.tujuan as string | undefined) ||
+                    (fd.tujuanAsesmen as string | undefined) ||
+                    (nestedApl01?.tujuan as string | undefined) ||
+                    (nestedApl01?.tujuanAsesmen as string | undefined);
+                  if (possible) {
+                    extractedTujuan = possible;
+                    break;
+                  }
+                }
+              }
+            }
           }
         }
 
@@ -788,7 +869,7 @@ export default function UsersManagement() {
           namaSkema: detail.skema?.namaSkema || "",
           kodeSkema: detail.skema?.kodeSkema || "",
           tuk: detail.tuk || "",
-          tujuan: detail.tujuanAsesmen || "Sertifikasi",
+          tujuan: extractedTujuan || "Sertifikasi",
           ...dp,
           schemeDetail: {
             ...detail.skema,
@@ -1330,7 +1411,7 @@ export default function UsersManagement() {
                         {user.role === "asesor" ? (
                           <span className="text-gray-400">-</span>
                         ) : (
-                          <span className="text-xs font-semibold text-slate-700 max-w-[200px] truncate inline-block" title={user.verificationData?.namaSkema as string}>
+                          <span className="text-xs font-semibold text-slate-700 max-w-[200px] inline-block" title={user.verificationData?.namaSkema as string}>
                             {(user.verificationData?.namaSkema as string) || "-"}
                           </span>
                         )}

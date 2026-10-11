@@ -31,7 +31,7 @@ export function Sidebar() {
 
   if (!user) return null;
 
-  const navItems = getNavItems(user.role);
+  const navItems = getNavItems(user.role, user.asalAsesor);
 
   return (
     <>
@@ -146,7 +146,10 @@ export function Sidebar() {
   );
 }
 
-function getNavItems(role: string | null | undefined) {
+function getNavItems(
+  role: string | null | undefined,
+  asalAsesor?: string | null,
+) {
   switch (role) {
     case "direktur":
     case "manajer":
@@ -221,7 +224,8 @@ function getNavItems(role: string | null | undefined) {
           path: "/admin/reports",
         },
       ];
-    case "asesor":
+    case "asesor": {
+      const isEksternal = asalAsesor?.toLowerCase() === "eksternal";
       return [
         {
           id: "dashboard",
@@ -241,12 +245,16 @@ function getNavItems(role: string | null | undefined) {
           icon: History,
           path: "/assessor/riwayatasesmen",
         },
-        {
-          id: "verifikasi-portofolio",
-          label: "Upload Portofolio",
-          icon: FolderCheck,
-          path: "/assessor/verifikasiportofolio",
-        },
+        ...(isEksternal
+          ? [
+              {
+                id: "verifikasi-portofolio",
+                label: "Upload Portofolio",
+                icon: FolderCheck,
+                path: "/assessor/verifikasiportofolio",
+              },
+            ]
+          : []),
         {
           id: "verifikasi-banding",
           label: "Verifikasi Banding",
@@ -260,6 +268,7 @@ function getNavItems(role: string | null | undefined) {
           path: "/assessor/konfigurasipertanyaan",
         },
       ];
+    }
     case "asesi":
       return [
         {

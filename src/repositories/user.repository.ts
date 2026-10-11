@@ -22,9 +22,20 @@ export class UserRepository {
           },
         },
         portfolio_asesor: {
-          include: {
-            master_skema: true,
-          }
+          select: {
+            id: true,
+            nama_dokumen: true,
+            status_asesor: true,
+            status: true,
+            link_portfolio: true,
+            link_surat_peminjaman: true,
+            link_surat_jawaban: true,
+            master_skema: {
+              select: {
+                namaSkema: true,
+              },
+            },
+          },
         },
       },
     });
@@ -64,11 +75,13 @@ export class UserRepository {
     });
   }
 
-  async createUser(data: BaseUserInput & { namaLengkap?: string }) {
+  async createUser(data: BaseUserInput & { namaLengkap?: string; isVerified?: boolean }) {
     const { namaLengkap, asalAsesor, ...userData } = data;
+    const isVerified = userData.role === "asesor" ? true : (data.isVerified ?? false);
     return await db.user.create({
       data: {
         ...userData,
+        isVerified,
         asalAsesor: userData.role === "asesor" ? asalAsesor : null,
         profil: namaLengkap ? {
           create: {

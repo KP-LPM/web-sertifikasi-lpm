@@ -1036,7 +1036,11 @@ export default function PengajuanSkemaPage() {
         // Simpan riwayat APL-01
         await createRiwayatAsesmen(pengajuanId, {
           form_type: "FR.APL.01",
-          form_data: payloadData,
+          form_data: {
+            ...payloadData,
+            tujuan: apl01Data.tujuan,
+            tujuanAsesmen: apl01Data.tujuan,
+          },
         }).catch((err) => console.error("Gagal simpan riwayat APL-01:", err));
 
         // Simpan riwayat APL-02

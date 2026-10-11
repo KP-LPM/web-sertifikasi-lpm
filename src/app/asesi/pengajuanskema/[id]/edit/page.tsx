@@ -59,6 +59,66 @@ export default function EditPengajuanSkema() {
         },
       ];
 
+      const dataRecord = data as unknown as Record<string, unknown>;
+      let extractedTujuan: string | undefined =
+        (dataRecord?.tujuanAsesmen as string | undefined) ||
+        (dataRecord?.tujuan as string | undefined);
+      const riwayatList = (dataRecord?.riwayat_asesmen_detail ||
+        dataRecord?.riwayat_asesmen_peserta) as Array<Record<string, unknown>> | undefined;
+      if (Array.isArray(riwayatList)) {
+        const apl01 = riwayatList.find(
+          (r) => r.form_type === "FR.APL.01" || r.formType === "FR.APL.01",
+        );
+        if (apl01 && apl01.form_data) {
+          let fd = apl01.form_data as Record<string, unknown>;
+          if (typeof fd === "string") {
+            try {
+              fd = JSON.parse(fd);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+          if (fd && typeof fd === "object") {
+            const nestedApl01 = fd["01. FR.APL.01 Permohonan Sertifikasi"] as
+              | Record<string, unknown>
+              | undefined;
+            extractedTujuan =
+              (fd.tujuan as string | undefined) ||
+              (fd.tujuanAsesmen as string | undefined) ||
+              (nestedApl01?.tujuan as string | undefined) ||
+              extractedTujuan;
+          }
+        }
+        if (!extractedTujuan) {
+          for (const r of riwayatList) {
+            if (r.form_data) {
+              let fd = r.form_data as Record<string, unknown>;
+              if (typeof fd === "string") {
+                try {
+                  fd = JSON.parse(fd);
+                } catch (e) {
+                  console.error(e);
+                }
+              }
+              if (fd && typeof fd === "object") {
+                const nestedApl01 = fd["01. FR.APL.01 Permohonan Sertifikasi"] as
+                  | Record<string, unknown>
+                  | undefined;
+                const possible =
+                  (fd.tujuan as string | undefined) ||
+                  (fd.tujuanAsesmen as string | undefined) ||
+                  (nestedApl01?.tujuan as string | undefined) ||
+                  (nestedApl01?.tujuanAsesmen as string | undefined);
+                if (possible) {
+                  extractedTujuan = possible;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+
       setApl01FormData({
         isAdmin: false,
         readOnly: false,
@@ -66,7 +126,7 @@ export default function EditPengajuanSkema() {
         namaSkema: data.skema?.namaSkema || "",
         kodeSkema: data.skema?.kodeSkema || "",
         tuk: data.tuk || "",
-        tujuan: data.tujuanAsesmen || "Sertifikasi",
+        tujuan: extractedTujuan || "Sertifikasi",
         ttdAsesi: (dp?.tandaTangan as string) || null,
         catatan: adminCatatan || "",
         ...dp,

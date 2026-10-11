@@ -17,6 +17,7 @@ import {
   Filter,
   ChevronDown,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "@/context/context";
 import { PortfolioItem } from "@/types/types";
@@ -40,9 +41,21 @@ interface BackendPortfolio {
 const DEFAULT_PORTFOLIOS: PortfolioItem[] = [];
 
 export default function VerifikasiPortofolio() {
-  const { showNotification } = useAppContext();
+  const router = useRouter();
+  const { user, showNotification } = useAppContext();
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>(DEFAULT_PORTFOLIOS);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (
+      user &&
+      user.role === "asesor" &&
+      user.asalAsesor &&
+      user.asalAsesor.toLowerCase() !== "eksternal"
+    ) {
+      router.replace("/assessor/overview");
+    }
+  }, [user, router]);
 
   const fetchPortfolios = async () => {
     try {

@@ -9,6 +9,8 @@ declare module "next-auth" {
     email: string;
     role: Role;
     namaLengkap?: string;
+    isVerified?: boolean;
+    asalAsesor?: string | null;
   }
 
   interface Session {
@@ -17,6 +19,8 @@ declare module "next-auth" {
       username: string;
       role: Role;
       namaLengkap?: string;
+      isVerified?: boolean;
+      asalAsesor?: string | null;
     } & DefaultSession["user"];
   }
 }
@@ -27,5 +31,7 @@ declare module "next-auth/jwt" {
     role: Role;
     username: string;
     namaLengkap?: string;
+    isVerified?: boolean;
+    asalAsesor?: string | null;
   }
 }

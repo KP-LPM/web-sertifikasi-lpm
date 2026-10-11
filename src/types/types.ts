@@ -132,6 +132,8 @@ export interface User {
   role: Role;
   avatar?: string;
   namaLengkap?: string;
+  isVerified?: boolean;
+  asalAsesor?: string | null;
 }
 
 export interface UserItem {

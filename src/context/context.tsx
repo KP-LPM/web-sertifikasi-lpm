@@ -183,6 +183,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         role: session.user.role,
         avatar: session.user.image || undefined,
         namaLengkap: session.user.namaLengkap,
+        isVerified: session.user.isVerified,
+        asalAsesor: session.user.asalAsesor,
       });
 
       const syncProfile = async () => {

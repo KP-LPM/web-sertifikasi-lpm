@@ -5,6 +5,7 @@ import {
 import { CreateJadwalInput, UpdateJadwalInput } from "@/schemas/jadwal.schema";
 import { NotFoundError, InvariantError } from "@/error/index";
 import { suratService } from "@/services/surat.service";
+import { db } from "@/lib/db";
 
 export class JadwalService {
   constructor(private repo: JadwalRepository = jadwalRepository) {}
@@ -27,6 +28,18 @@ export class JadwalService {
   }
 
   async create(data: CreateJadwalInput) {
+    if (data.asesor_id) {
+      const asesor = await db.user.findUnique({
+        where: { id: data.asesor_id },
+        select: { role: true, isVerified: true },
+      });
+      if (asesor && asesor.role === "asesor" && !asesor.isVerified) {
+        throw new InvariantError(
+          "Asesor belum diverifikasi oleh admin sehingga tidak dapat diikutsertakan dalam jadwal asesmen",
+        );
+      }
+    }
+
     const jadwal = await this.repo.create(data);
     if (!jadwal) {
       throw new InvariantError("Gagal membuat jadwal asesmen baru");
@@ -57,6 +70,18 @@ export class JadwalService {
 
   async update(id: number, data: UpdateJadwalInput) {
     await this.getById(id); // Validasi eksistensi
+
+    if (data.asesor_id) {
+      const asesor = await db.user.findUnique({
+        where: { id: data.asesor_id },
+        select: { role: true, isVerified: true },
+      });
+      if (asesor && asesor.role === "asesor" && !asesor.isVerified) {
+        throw new InvariantError(
+          "Asesor belum diverifikasi oleh admin sehingga tidak dapat diikutsertakan dalam jadwal asesmen",
+        );
+      }
+    }
 
     const jadwal = await this.repo.update(id, data);
     if (!jadwal) {

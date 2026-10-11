@@ -5,6 +5,8 @@ import { ClientError } from "@/error/index";
 import { sendResponse } from "@/lib/response";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 
+import { db } from "@/lib/db";
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -27,7 +29,7 @@ export async function PATCH(
     const isVerified =
       typeof body.isVerified === "boolean"
         ? body.isVerified
-        : body.action === "tolak"
+        : String(body.action).toLowerCase() === "tolak"
           ? false
           : true;
 
@@ -35,7 +37,22 @@ export async function PATCH(
       isVerified,
     });
 
+    if (updatedUser.role === "asesor") {
+      await db.portfolio_asesor.updateMany({
+        where: {
+          asesor_id: userId,
+          ...(isVerified ? { status: "Menunggu Verifikasi" } : {}),
+        },
+        data: {
+          status: isVerified ? "Terverifikasi" : "Ditolak",
+        },
+      });
+    }
+
     revalidatePath("/api/users");
+    revalidatePath("/api/portfolio");
+    revalidatePath("/admin/verifikasiberkas");
+    revalidatePath("/assessor/verifikasiportofolio");
 
     return sendResponse(200, "Status berhasil diperbarui", {
       isVerified: updatedUser.isVerified,

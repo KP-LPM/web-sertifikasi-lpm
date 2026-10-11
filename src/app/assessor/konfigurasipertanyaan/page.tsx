@@ -33,6 +33,7 @@ interface BackendKonfigurasiPertanyaan {
 export default function KonfigurasiPertanyaanList() {
   const router = useRouter();
   const {
+    user,
     konfigurasiPertanyaan,
     deleteKonfigurasiPertanyaan,
     setSelectedKonfigurasiId,
@@ -49,9 +50,14 @@ export default function KonfigurasiPertanyaanList() {
   const [newStatusToApply, setNewStatusToApply] = useState<"Aktif" | "Tidak Aktif" | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  const isAsesorUnverified = Boolean(user && user.role === "asesor" && user.isVerified === false);
+
   useEffect(() => {
     setIsMounted(true);
     async function loadBackendData() {
+      if (user && user.role === "asesor" && user.isVerified === false) {
+        return;
+      }
       try {
         const res = await getKonfigurasiPertanyaanList();
         if (Array.isArray(res) && res.length > 0) {
@@ -85,13 +91,16 @@ export default function KonfigurasiPertanyaanList() {
       }
     }
     loadBackendData();
-  }, []);
+  }, [user]);
 
-  const konfigurasiData = konfigurasiPertanyaan.filter((item) => {
-    const matchesSearch = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.skema || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return item.status === activeTab && matchesSearch;
-  });
+  const konfigurasiData = isAsesorUnverified
+    ? []
+    : konfigurasiPertanyaan.filter((item) => {
+        const matchesSearch =
+          (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.skema || "").toLowerCase().includes(searchTerm.toLowerCase());
+        return item.status === activeTab && matchesSearch;
+      });
 
   return (
     <div className="space-y-6 pb-24 text-sm text-gray-700">
@@ -109,13 +118,49 @@ export default function KonfigurasiPertanyaanList() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => router.push("/assessor/tambahkonfigurasipertanyaan")}
-          className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors shrink-0"
-        >
-          <Plus size={16} strokeWidth={2} /> Tambah Data
-        </button>
+        {!isAsesorUnverified ? (
+          <button
+            onClick={() => router.push("/assessor/tambahkonfigurasipertanyaan")}
+            className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors shrink-0"
+          >
+            <Plus size={16} strokeWidth={2} /> Tambah Data
+          </button>
+        ) : (
+          <div className="px-3.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold inline-flex items-center gap-2">
+            <AlertCircle size={15} className="text-amber-600" />
+            <span>Akun Belum Terverifikasi</span>
+          </div>
+        )}
       </div>
+
+      {isAsesorUnverified && (
+        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-100/90 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0 mt-0.5">
+              <AlertCircle size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm md:text-base font-bold text-amber-950">
+                  Akun Asesor Menunggu Verifikasi Admin
+                </h4>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
+                  Belum Diverifikasi
+                </span>
+              </div>
+              <p className="text-xs md:text-sm text-amber-800/90 mt-1 max-w-2xl leading-relaxed">
+                Akun asesor Anda belum diverifikasi oleh Administrator LSP. Anda belum dapat melihat konfigurasi pertanyaan yang tersedia atau menambah konfigurasi baru sampai berkas portofolio Anda disetujui.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push("/assessor/verifikasiportofolio")}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+          >
+            Cek Status Portofolio
+          </button>
+        </div>
+      )}
 
       <div className="bg-white p-1 rounded-xl shadow-xs border border-gray-100 flex items-center w-full max-w-[280px]">
         <button
@@ -298,6 +343,25 @@ export default function KonfigurasiPertanyaanList() {
                       </td>
                     </tr>
                   ))
+                ) : isAsesorUnverified ? (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-6 py-20 text-center text-gray-500"
+                    >
+                      <div className="flex flex-col items-center justify-center max-w-md mx-auto text-center">
+                        <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mb-3">
+                          <AlertCircle size={30} strokeWidth={2} />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-800 mb-1">
+                          Akses Konfigurasi Pertanyaan Dibatasi
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Konfigurasi pertanyaan yang tersedia tidak dapat ditampilkan karena akun asesor Anda belum diverifikasi oleh admin.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
                 ) : (
                   <tr>
                     <td

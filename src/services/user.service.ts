@@ -25,7 +25,7 @@ export class UserService {
     return user;
   }
 
-  async createUser(data: BaseUserInput & { namaLengkap?: string }) {
+  async createUser(data: BaseUserInput & { namaLengkap?: string; isVerified?: boolean }) {
     const existingUser = await this.userRepository.getUserByEmail(data.email);
     if (existingUser) {
       throw new InvariantError(

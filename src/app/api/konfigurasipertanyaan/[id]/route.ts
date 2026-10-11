@@ -7,6 +7,7 @@ import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
 import { getToken } from "next-auth/jwt";
+import { db } from "@/lib/db";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -26,6 +27,19 @@ export async function POST(request: NextRequest, context: Context) {
         403,
         "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
       );
+    }
+
+    if (token.role === "asesor") {
+      const user = await db.user.findUnique({
+        where: { id: Number(token.id) },
+        select: { isVerified: true },
+      });
+      if (!user?.isVerified) {
+        return sendResponse(
+          403,
+          "Akses ditolak. Asesor belum diverifikasi oleh admin.",
+        );
+      }
     }
 
     // 2. Await params dan validasi ID
@@ -72,6 +86,21 @@ export async function GET(request: NextRequest, context: Context) {
       windowMs: 60 * 1000,
       key: "get-konfigurasi-soal-detail",
     });
+
+    const token = await getToken({ req: request });
+    if (token && token.role === "asesor") {
+      const user = await db.user.findUnique({
+        where: { id: Number(token.id) },
+        select: { isVerified: true },
+      });
+      if (!user?.isVerified) {
+        return sendResponse(
+          403,
+          "Akses ditolak. Asesor belum diverifikasi oleh admin.",
+        );
+      }
+    }
+
     const { id } = await context.params;
     const config = await konfigurasiService.getById(Number(id));
     return sendResponse(200, "Detail konfigurasi berhasil diambil", config);

@@ -212,6 +212,7 @@ export class PengajuanRepository {
             },
           },
         },
+        riwayat_asesmen_detail: true,
       },
     });
   }

@@ -1,90 +1,9 @@
 import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { authOptions } from "@/lib/auth-options";
 
 export const runtime = "nodejs";
 
-const handler = NextAuth({
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        username: { label: "Username atau Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
-          throw new Error("Tolong isi username/email dan password!");
-        }
-
-        const user = await db.user.findFirst({
-          where: {
-            OR: [
-              { username: credentials.username },
-              { email: credentials.username },
-            ],
-          },
-          include: {
-            profil: true,
-          }
-        });
-
-        if (!user) {
-          throw new Error(
-            "Akun tidak ditemukan. Periksa kembali username atau email Anda.",
-          );
-        }
-
-        // Cek kecocokan password dengan bcrypt
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password,
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Password salah.");
-        }
-
-        return {
-          id: user.id.toString(),
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          namaLengkap: user.profil?.namaLengkap,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.username = user.username;
-        token.email = user.email;
-        token.namaLengkap = user.namaLengkap;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role;
-        session.user.username = token.username as string;
-        session.user.email = token.email as string;
-        session.user.namaLengkap = token.namaLengkap as string;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
-  session: {
-    strategy: "jwt",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-});
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+

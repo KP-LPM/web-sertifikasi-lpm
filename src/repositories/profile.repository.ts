@@ -42,7 +42,12 @@ export class ProfileRepository {
     profileData: Prisma.ProfilPenggunaCreateWithoutUserInput,
   ) {
     return await db.$transaction(async (tx) => {
-      const newUser = await tx.user.create({ data: userData });
+      const newUser = await tx.user.create({
+        data: {
+          ...userData,
+          isVerified: false,
+        },
+      });
       const newProfile = await tx.profilPengguna.create({
         data: { ...profileData, user: { connect: { id: newUser.id } } },
       });

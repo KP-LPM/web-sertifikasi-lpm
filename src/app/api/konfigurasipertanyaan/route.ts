@@ -6,6 +6,8 @@ import { CreateKonfigurasiSchema } from "@/schemas/konfigurasipertanyaan.schema"
 import { sendResponse } from "@/lib/response";
 import { ClientError } from "@/error/index";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { getToken } from "next-auth/jwt";
+import { db } from "@/lib/db";
 
 export const revalidate = 3600;
 
@@ -16,6 +18,17 @@ export async function GET(request: NextRequest) {
       windowMs: 60 * 1000,
       key: "get-konfigurasi-soal",
     });
+
+    const token = await getToken({ req: request });
+    if (token && token.role === "asesor") {
+      const user = await db.user.findUnique({
+        where: { id: Number(token.id) },
+        select: { isVerified: true },
+      });
+      if (!user?.isVerified) {
+        return sendResponse(200, "Asesor belum diverifikasi oleh admin", []);
+      }
+    }
 
     const { searchParams } = new URL(request.url);
     const skemaIdParam = searchParams.get("skema_id");
@@ -44,13 +57,19 @@ export async function POST(request: NextRequest) {
       key: "post-konfigurasi-soal",
     });
 
-    // const token = await getToken({ req: request });
-    // if (!token || (token.role !== "asesor" && !['admin', 'direktur', 'manajer', 'komite_skema', 'dewan_pengarah'].includes(token.role))) {
-    //   return sendResponse(
-    //     403,
-    //     "Akses ditolak. Hanya asesor atau admin yang diizinkan.",
-    //   );
-    // }
+    const token = await getToken({ req: request });
+    if (token && token.role === "asesor") {
+      const user = await db.user.findUnique({
+        where: { id: Number(token.id) },
+        select: { isVerified: true },
+      });
+      if (!user?.isVerified) {
+        return sendResponse(
+          403,
+          "Akses ditolak. Asesor belum diverifikasi oleh admin.",
+        );
+      }
+    }
 
     const body = await request.json();
     const validatedData = CreateKonfigurasiSchema.parse(body);

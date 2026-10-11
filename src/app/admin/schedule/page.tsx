@@ -319,6 +319,8 @@ export default function AssessmentSchedule() {
     nama?: string;
     noRegMet?: string;
     profil?: { namaLengkap?: string; nomorRegistrasiMet?: string };
+    isVerified?: boolean;
+    is_verified?: boolean;
   }
 
   interface BackendPengajuanItem {
@@ -506,7 +508,9 @@ export default function AssessmentSchedule() {
       if (usersRes.status === "fulfilled" && Array.isArray(usersRes.value)) {
         const users = usersRes.value as AvailableAsesorOption[];
         setAvailableUsers(users);
-        const asesors = users.filter((u) => u.role === "asesor");
+        const asesors = users.filter(
+          (u) => u.role === "asesor" && Boolean(u.isVerified ?? u.is_verified),
+        );
         setAvailableAsesors(asesors);
       }
 
@@ -2105,37 +2109,37 @@ export default function AssessmentSchedule() {
             <table className="w-full text-left border-collapse min-w-250">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Judul Asesmen
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-62.5 max-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Skema Sertifikasi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     Metode
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Uji
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Jam Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-50 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-50 sticky top-0 z-20 bg-[#0F172A]">
                     Asesor Ditugaskan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Surat Penugasan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-50 top-0">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-50 top-0">
                     Aksi
                   </th>
                 </tr>
@@ -2145,7 +2149,7 @@ export default function AssessmentSchedule() {
                   <tr>
                     <td
                       colSpan={10}
-                      className="px-6 py-16 text-center text-slate-400"
+                      className="px-6 py-16 text-left text-slate-400"
                     >
                       <div className="flex flex-col items-center justify-center gap-3">
                         <Loader2
@@ -2171,18 +2175,18 @@ export default function AssessmentSchedule() {
                           key={item.id}
                           className="group/row hover:bg-[#F9FAFC] transition-colors"
                         >
-                          <td className="px-6 py-4 align-middle whitespace-nowrap text-center">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-left">
                             <div className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
                               {item.namaBatch || "-"}
                             </div>
                           </td>
-                          <td className="px-6 py-4 align-middle whitespace-nowrap text-center">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-left">
                             <div className="text-[14px] font-bold text-[#008BE3] whitespace-nowrap">
                               {item.skema || "-"}
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle text-left whitespace-nowrap">
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${(item.metode || item.metode) === "Online"
                                 ? "bg-sky-50 text-[#008BE3] border-sky-200 shadow-2xs"
@@ -2193,13 +2197,13 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                          <td className="px-6 py-4 align-middle text-left whitespace-nowrap">
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs whitespace-nowrap">
                               {item.tipeTuk || "Sewaktu"}
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 align-middle text-center">
+                          <td className="px-6 py-4 align-middle text-left">
                             <div className="flex items-start gap-1.5 text-[14px] font-medium text-slate-700">
                               <MapPin
                                 size={16}
@@ -2222,7 +2226,7 @@ export default function AssessmentSchedule() {
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 align-middle whitespace-nowrap text-center text-[14px] font-semibold text-slate-600">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-left text-[14px] font-semibold text-slate-600">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar
                                 size={14}
@@ -2232,7 +2236,7 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 align-middle whitespace-nowrap text-center text-[14px] font-semibold text-slate-700">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-left text-[14px] font-semibold text-slate-700">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               <Clock
                                 size={14}
@@ -2244,7 +2248,7 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 align-middle whitespace-nowrap text-center">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-left">
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <span className="text-[14px] font-bold text-slate-800 whitespace-nowrap">
                                 {item.namaAsesor || "-"}
@@ -2252,7 +2256,7 @@ export default function AssessmentSchedule() {
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 align-middle whitespace-nowrap text-center">
+                          <td className="px-6 py-4 align-middle whitespace-nowrap text-left">
                             {item.suratTugasUrl ? (
                               item.suratTugasUrl.startsWith("http") ? (
                                 <a
@@ -2306,7 +2310,7 @@ export default function AssessmentSchedule() {
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-50">
+                          <td className="px-6 py-4 align-middle text-left sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-50">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handlePreviewAsesmen(item)}
@@ -2346,7 +2350,7 @@ export default function AssessmentSchedule() {
                         <tr>
                           <td
                             colSpan={10}
-                            className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
+                            className="px-6 py-12 text-left text-xs md:text-sm text-gray-400 font-medium"
                           >
                             Tidak ada jadwal asesmen aktif.
                           </td>
@@ -2362,25 +2366,25 @@ export default function AssessmentSchedule() {
             <table className="w-full text-left border-collapse min-w-300">
               <thead>
                 <tr className="bg-[#0F172A] border-b border-[#0F172A]">
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-62.5 sticky top-0 z-20 bg-[#0F172A]">
                     Nama Sidang Pleno
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
                     Tanggal Pelaksanaan
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-87.5 sticky top-0 z-20 bg-[#0F172A]">
                     Alamat TUK
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-30 sticky top-0 z-20 bg-[#0F172A]">
                     Total Asesi
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                     Status Sidang
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-45 top-0">
+                  <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs min-w-45 top-0">
                     Aksi
                   </th>
                 </tr>
@@ -2436,7 +2440,7 @@ export default function AssessmentSchedule() {
                           {item.tanggal || "-"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
+                      <td className="px-6 py-4 align-middle text-left whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-2xs ${item.jenisTuk === "Sewaktu"
                             ? "bg-amber-50 text-amber-700 border-amber-200"
@@ -2473,7 +2477,7 @@ export default function AssessmentSchedule() {
                       <td className="px-6 py-4 align-middle text-xs md:text-sm font-bold text-gray-700">
                         <span>{item.asesiList?.length || 0}</span>
                       </td>
-                      <td className="px-6 py-4 align-middle text-center text-xs font-bold">
+                      <td className="px-6 py-4 align-middle text-left text-xs font-bold">
                         {item.status === "Selesai" ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle size={12} /> Selesai
@@ -2484,7 +2488,7 @@ export default function AssessmentSchedule() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 align-middle text-center sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-45">
+                      <td className="px-6 py-4 align-middle text-left sticky right-0 bg-white group-hover/row:bg-[#F9FAFC] z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors min-w-45">
                         <div className="flex items-center justify-center gap-2">
                           {!readOnly && (
                             <>
@@ -2516,7 +2520,7 @@ export default function AssessmentSchedule() {
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
+                      className="px-6 py-12 text-left text-xs md:text-sm text-gray-400 font-medium"
                     >
                       Tidak ada jadwal sidang pleno.
                     </td>
