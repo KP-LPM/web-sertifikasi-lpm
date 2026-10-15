@@ -2,13 +2,40 @@ import { z } from "zod";
 
 export const CreatePlenoSchema = z.object({
   title: z.string().optional().nullable(),
+  no_sk: z.string().optional().nullable(),
   tanggal: z.string().optional().nullable(),
   alamat: z.string().optional().nullable(),
   status: z.string().default("Terjadwal"),
   skema_ids: z.array(z.number().int()).default([]),
+  attendees: z
+    .array(
+      z.object({
+        user_id: z.number().int().optional().nullable(),
+        role: z.string().trim().min(1, "Role wajib diisi"),
+        nama: z.string().trim().min(1, "Nama peserta rapat wajib diisi"),
+      }),
+    )
+    .optional(),
+  pengajuan_ids: z.array(z.number().int()).optional(),
 });
 
-export const UpdatePlenoSchema = CreatePlenoSchema.partial().extend({
+export const UpdatePlenoSchema = z.object({
+  title: z.string().optional().nullable(),
+  no_sk: z.string().optional().nullable(),
+  tanggal: z.string().optional().nullable(),
+  alamat: z.string().optional().nullable(),
+  status: z.string().optional(),
+  skema_ids: z.array(z.number().int()).optional(),
+  attendees: z
+    .array(
+      z.object({
+        user_id: z.number().int().optional().nullable(),
+        role: z.string().trim().min(1, "Role wajib diisi"),
+        nama: z.string().trim().min(1, "Nama peserta rapat wajib diisi"),
+      }),
+    )
+    .optional(),
+  pengajuan_ids: z.array(z.number().int()).optional(),
   link_surat_berita_pleno: z.string().optional().nullable(),
   link_surat_keputusan_direktur: z.string().optional().nullable(),
   link_surat_blanko_bnsp: z.string().optional().nullable(),

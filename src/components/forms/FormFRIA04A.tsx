@@ -35,6 +35,7 @@ export interface FormFRIA04AProps {
   onNext?: () => void;
   onPrev?: () => void;
   isNextDisabled?: boolean;
+  nextLabel?: string;
 }
 
 export function FormFRIA04A(props: FormFRIA04AProps) {
@@ -633,7 +634,7 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
               disabled={props.isNextDisabled}
               className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Lanjut ke Step 3 <ChevronRight size={16} />
+              {props.nextLabel || "Lanjut ke Step 4 (IA.04B)"} <ChevronRight size={16} />
             </button>
           )}
         </div>

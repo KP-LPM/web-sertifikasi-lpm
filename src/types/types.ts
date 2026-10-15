@@ -267,6 +267,8 @@ export interface AsesiPlenoItem {
 }
 
 export interface PlenoAttendee {
+  userId?: number;
+  user_id?: number | null;
   role: Role;
   nama: string;
 }

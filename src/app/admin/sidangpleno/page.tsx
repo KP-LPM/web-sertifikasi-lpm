@@ -246,7 +246,7 @@ export default function SidangPleno() {
         tempatUji: formData?.alamat || "-",
         lokasiDitetapkan: skDirekturKota || "Bandung",
         tanggalDitetapkan: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-        namaDirektur: formData?.plenoAttendees?.find(a => a.role === "direktur")?.nama || "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
+        namaDirektur: formData?.plenoAttendees?.find(a => a.role?.toLowerCase() === "direktur")?.nama || "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
         asesiList: (formData?.asesiList || []).map((a, i) => {
           const asesiObj = typeof a === "object" ? a as AsesiPlenoItem : {} as AsesiPlenoItem;
           return {
@@ -378,7 +378,7 @@ export default function SidangPleno() {
         totalJumlah: totalAsesi,
         jumlahLembarBlanko: totalKompeten,
         terbilangLembarBlanko: terbilang(totalKompeten).trim(),
-        namaKetua: formData?.plenoAttendees?.find(a => a.role === "direktur")?.nama || "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
+        namaKetua: formData?.plenoAttendees?.find(a => a.role?.toLowerCase() === "direktur")?.nama || "Prof. Dr. H. Ija Suntana, M. Ag., CLA",
       };
 
       const res = await fetch("/api/surat/blankobnsp", {
@@ -483,6 +483,8 @@ export default function SidangPleno() {
       if (!prev) return null;
       return { ...prev, [field]: value };
     });
+    setIsDirty(true);
+    setHasSavedAtLeastOnce(false);
   };
 
   // Handle Changing Candidate Status (K / BK)
@@ -524,14 +526,26 @@ export default function SidangPleno() {
       await updatePleno(formData.id, {
         no_sk: formData.noSK,
         link_surat_berita_pleno: formData.linkSuratBeritaPleno,
-        link_surat_keputusan_direktur: formData.linkSuratKeputusanDirektur,
+        link_surat_keputusan_direktur:
+          formData.linkSuratKeputusanDirektur || formData.linkSuratHasil,
         link_surat_blanko_bnsp: formData.linkSuratBlankoBNSP,
         status: formData.status,
       });
 
-      // Update asesi statuses in background
+      // Update asesi statuses in background only for modified items
       if (formData.asesiList && formData.asesiList.length > 0) {
-        for (const asesi of formData.asesiList) {
+        const changedAsesis = formData.asesiList.filter((asesi) => {
+          const original = activeSession?.asesiList?.find(
+            (a) => a.id === asesi.id,
+          );
+          return (
+            original &&
+            (original.statusPleno !== asesi.statusPleno ||
+              original.catatan !== asesi.catatan)
+          );
+        });
+
+        for (const asesi of changedAsesis) {
           if (asesi.id) {
             try {
               await updatePlenoAsesiStatus(formData.id, asesi.id, {
@@ -554,7 +568,7 @@ export default function SidangPleno() {
       // Show Toast
       setToastText({
         title: "Data Sidang Pleno Berhasil Disimpan!",
-        desc: "Perubahan telah tersimpan di server.",
+        desc: "Perubahan link surat dan pleno telah tersimpan di server.",
       });
       setShowSaveToast(true);
       setTimeout(() => setShowSaveToast(false), 3500);
@@ -713,7 +727,7 @@ export default function SidangPleno() {
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-50 sticky top-0 z-20 bg-[#0F172A]">
                       Alamat TUK
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center whitespace-nowrap min-w-37.5 sticky top-0 z-20 bg-[#0F172A]">
                       Total Asesi
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-left whitespace-nowrap min-w-45 sticky top-0 z-20 bg-[#0F172A]">
@@ -809,7 +823,7 @@ export default function SidangPleno() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700">
+                        <td className="px-6 py-4 whitespace-nowrap text-[14px] font-bold text-slate-700 text-center">
                           <span>{item.asesiList?.length || 0}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -978,19 +992,16 @@ export default function SidangPleno() {
                     formData.plenoAttendees &&
                       formData.plenoAttendees.length > 0
                       ? formData.plenoAttendees.filter(
-                        (a) => a.nama.trim() !== "" && a.role !== "direktur",
+                        (a) => a.nama.trim() !== "",
                       )
-                      : [
-                        { role: "direktur", nama: "Prof. Dr. H. Ahmad" },
-                        {
-                          role: "dewan_pengarah",
-                          nama: "Dr. Ir. H. Muhammad Zulkifli, M.T.",
-                        },
-                        {
-                          role: "komite_skema",
-                          nama: "Asep Abdul Sahid, M.T.",
-                        },
-                      ];
+                      : [];
+                  if (attendees.length === 0) {
+                    return (
+                      <span className="text-xs text-slate-400 italic">
+                        Belum ada peserta sidang pleno yang ditambahkan.
+                      </span>
+                    );
+                  }
                   return attendees.map((att, idx) => (
                     <span
                       key={idx}
@@ -1042,6 +1053,12 @@ export default function SidangPleno() {
                     onChange={(e) =>
                       handleInputChange("linkSuratBeritaPleno", e.target.value)
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSave();
+                      }
+                    }}
                     placeholder={
                       readOnly
                         ? "Belum ada link surat"
@@ -1118,6 +1135,12 @@ export default function SidangPleno() {
                         e.target.value,
                       );
                       handleInputChange("linkSuratHasil", e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSave();
+                      }
                     }}
                     placeholder={
                       readOnly
@@ -1196,6 +1219,12 @@ export default function SidangPleno() {
                     onChange={(e) =>
                       handleInputChange("linkSuratBlankoBNSP", e.target.value)
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSave();
+                      }
+                    }}
                     placeholder={
                       readOnly
                         ? "Belum ada link surat"

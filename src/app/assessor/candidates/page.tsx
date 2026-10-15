@@ -895,6 +895,7 @@ export default function AsesiList() {
                                   tglAsesmen: candidate.tglAsesmen ?? "",
                                   waktu: candidate.waktu ?? "",
                                   tipeTuk: candidate.tipeTuk ?? "",
+                                  tuk: candidate.tipeTuk ?? "",
                                   metode: "Offline",
                                   hasil:
                                     candidate.statusAsesmen ?? "Belum Dinilai",

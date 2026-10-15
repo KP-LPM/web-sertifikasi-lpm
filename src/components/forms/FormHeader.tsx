@@ -25,11 +25,17 @@ export function FormHeader({
   asesmenData,
   compact = false,
 }: FormHeaderProps) {
+  const rawTuk = asesmenData?.tipeTuk || asesmenData?.tuk || "-";
+  const tukDisplay =
+    rawTuk !== "-" && rawTuk.includes(" - ")
+      ? rawTuk.split(" - ")[0].trim()
+      : rawTuk;
+
   const data = {
     nama: asesmenData?.nama || asesmenData?.namaLengkap || "-",
     skema: asesmenData?.skema || "-",
     noSkema: asesmenData?.noSkema || asesmenData?.nomorSkema || "-",
-    tuk: asesmenData?.tuk || asesmenData?.tipeTuk || "-",
+    tuk: tukDisplay,
     tanggal: asesmenData?.tanggal || "-",
     asesor: asesmenData?.asesor || asesmenData?.asesorName || asesmenData?.namaAsesor || "-",
   };

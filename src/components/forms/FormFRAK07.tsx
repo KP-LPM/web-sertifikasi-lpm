@@ -137,6 +137,7 @@ export interface FormFRAK07Props {
   onNext?: () => void;
   onPrev?: () => void;
   isNextDisabled?: boolean;
+  nextLabel?: string;
 }
 
 export function FormFRAK07(props: FormFRAK07Props) {
@@ -671,7 +672,7 @@ export function FormFRAK07(props: FormFRAK07Props) {
               disabled={props.isNextDisabled}
               className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Lanjut ke Step 2 <ChevronRight size={16} />
+              {props.nextLabel || "Lanjut ke Step 3 (IA.04A)"} <ChevronRight size={16} />
             </button>
           )}
         </div>

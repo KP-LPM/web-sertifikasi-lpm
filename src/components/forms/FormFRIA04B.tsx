@@ -124,6 +124,7 @@ export interface FormFRIA04BProps {
   onPrev?: () => void;
   isNextDisabled?: boolean;
   onQuestionsLoaded?: (count: number) => void;
+  nextLabel?: string;
 }
 
 export function FormFRIA04B(props: FormFRIA04BProps) {
@@ -724,7 +725,7 @@ export function FormFRIA04B(props: FormFRIA04BProps) {
               disabled={props.isNextDisabled}
               className="bg-[#008BE3] hover:bg-[#0076C2] text-white px-6 py-2.5 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Lanjut ke Step 4 <ChevronRight size={16} />
+              {props.nextLabel || "Lanjut ke Step 5 (IA.07)"} <ChevronRight size={16} />
             </button>
           )}
         </div>

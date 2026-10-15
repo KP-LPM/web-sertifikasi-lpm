@@ -45,8 +45,6 @@ import {
   addPesertaJadwal,
   createPleno,
   updatePleno,
-  addPlenoAsesi,
-  addPlenoAttendee,
   getPlenoList,
   deletePleno,
 } from "@/lib/api";
@@ -901,9 +899,22 @@ export default function AssessmentSchedule() {
     );
   };
 
-  const toggleAttendeeSelection = (userObj: { nama: string; role: Role }) => {
+  const toggleAttendeeSelection = (userObj: {
+    id?: string | number;
+    userId?: number;
+    nama: string;
+    role: Role;
+  }) => {
     if (isPreviewMode) return;
     const isSelected = isAttendeeSelected(userObj.nama, userObj.role);
+    const resolvedUserId =
+      userObj.userId ||
+      (typeof userObj.id === "number"
+        ? userObj.id
+        : typeof userObj.id === "string" && userObj.id.startsWith("usr-")
+          ? Number(userObj.id.replace("usr-", ""))
+          : undefined);
+
     if (isSelected) {
       setPlenoForm((prev) => ({
         ...prev,
@@ -916,7 +927,12 @@ export default function AssessmentSchedule() {
         ...prev,
         plenoAttendees: [
           ...prev.plenoAttendees.filter((a) => a.nama.trim() !== ""),
-          { role: userObj.role, nama: userObj.nama },
+          {
+            role: userObj.role,
+            nama: userObj.nama,
+            userId: resolvedUserId,
+            user_id: resolvedUserId || null,
+          },
         ],
       }));
     }
@@ -950,9 +966,7 @@ export default function AssessmentSchedule() {
       ];
 
       const selectedAsesiObjects = mappedCompletedAssessments.filter((a) =>
-        selectedAsesiForPleno.some(
-          (item) => item.id === a.id || item.nama === a.nama,
-        ),
+        selectedAsesiForPleno.some((item) => item.id === a.id),
       );
 
       const selectedskemas = Array.from(
@@ -964,6 +978,16 @@ export default function AssessmentSchedule() {
           ? selectedskemas.join(", ")
           : plenoForm.skema || "Multi Skema";
 
+      const attendeesPayload = plenoForm.plenoAttendees
+        .filter((a) => a.nama.trim() !== "")
+        .map((a) => ({
+          user_id: a.user_id || a.userId || null,
+          role: a.role,
+          nama: a.nama,
+        }));
+
+      const pengajuanIds = selectedAsesiForPleno.map((a) => a.id);
+
       const payload = {
         title: plenoForm.title || `Sidang Pleno ${skemaLabel}`,
         tanggal: plenoForm.tanggal || new Date().toISOString(),
@@ -974,30 +998,15 @@ export default function AssessmentSchedule() {
         deskripsi: plenoForm.deskripsi,
         status: "Terjadwal",
         skema_ids: uniqueSkemaIds,
+        attendees: attendeesPayload,
+        pengajuan_ids: pengajuanIds,
       };
 
       if (isEditMode && editId !== null) {
         await updatePleno(editId, payload);
         showNotification("Berhasil memperbarui sidang pleno", "success");
       } else {
-        const result = await createPleno(payload);
-        const newPlenoId = result.id;
-
-        if (selectedAsesiForPleno.length > 0) {
-          await addPlenoAsesi(
-            newPlenoId,
-            selectedAsesiForPleno.map((a) => a.id),
-          );
-        }
-
-        for (const attendee of plenoForm.plenoAttendees) {
-          if (attendee.nama.trim() !== "") {
-            await addPlenoAttendee(newPlenoId, {
-              role: attendee.role,
-              nama: attendee.nama,
-            });
-          }
-        }
+        await createPleno(payload);
         showNotification(
           "Berhasil membuat jadwal sidang pleno baru",
           "success",
@@ -1669,7 +1678,7 @@ export default function AssessmentSchedule() {
                   </p>
                 </div>
                 <span className="text-xs font-bold text-[#008BE3] bg-[#008BE3]/10 px-2.5 py-1 rounded-md self-start sm:self-auto shrink-0">
-                  {selectedAsesiForPleno.length} asesi terpilih
+                  {selectedAsesiForPleno.length} skema asesi terpilih
                 </span>
               </div>
 
@@ -1681,7 +1690,7 @@ export default function AssessmentSchedule() {
                 ) : (
                   availableAsesiForPleno.map((asesi) => {
                     const isSelected = selectedAsesiForPleno.some(
-                      (a) => a.id === asesi.id || a.nama === asesi.nama,
+                      (a) => a.id === asesi.id,
                     );
                     return (
                       <div
@@ -1691,9 +1700,7 @@ export default function AssessmentSchedule() {
 
                           const newItems: AsesiPlenoItem[] = isSelected
                             ? selectedAsesiForPleno.filter(
-                              (item) =>
-                                item.id !== asesi.id &&
-                                item.nama !== asesi.nama,
+                              (item) => item.id !== asesi.id,
                             )
                             : [
                               ...selectedAsesiForPleno,
@@ -1705,6 +1712,7 @@ export default function AssessmentSchedule() {
                                   "-",
                                 nama: asesi.nama,
                                 skema: asesi.skema,
+                                skemaId: asesi.skemaId,
                                 asesor:
                                   typeof asesi.asesor === "string"
                                     ? asesi.asesor
@@ -1851,7 +1859,12 @@ export default function AssessmentSchedule() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-65 overflow-y-auto pr-1">
                 {(() => {
-                  const mergedUsers = availableUsers.map((u) => {
+                  const mergedUsers: {
+                    id: string;
+                    userId?: number;
+                    nama: string;
+                    role: Role;
+                  }[] = availableUsers.map((u) => {
                     let mappedRole = u.role;
                     if (mappedRole) {
                       const lower = mappedRole.toLowerCase();
@@ -1870,6 +1883,7 @@ export default function AssessmentSchedule() {
                     }
                     return {
                       id: `usr-${u.id}`,
+                      userId: u.id,
                       nama:
                         u.profil?.namaLengkap || u.nama || u.username || "-",
                       role: (mappedRole || "Asesor") as Role,
@@ -1884,6 +1898,7 @@ export default function AssessmentSchedule() {
                     ) {
                       mergedUsers.push({
                         id: `custom-${att.role}-${att.nama}`,
+                        userId: att.userId || (att as { user_id?: number }).user_id || undefined,
                         nama: att.nama,
                         role: att.role as Role,
                       });
@@ -2350,7 +2365,7 @@ export default function AssessmentSchedule() {
                         <tr>
                           <td
                             colSpan={10}
-                            className="px-6 py-12 text-left text-xs md:text-sm text-gray-400 font-medium"
+                            className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                           >
                             Tidak ada jadwal asesmen aktif.
                           </td>
@@ -2520,7 +2535,7 @@ export default function AssessmentSchedule() {
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-6 py-12 text-left text-xs md:text-sm text-gray-400 font-medium"
+                      className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
                     >
                       Tidak ada jadwal sidang pleno.
                     </td>

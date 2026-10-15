@@ -57,12 +57,14 @@ function AssessmentFormContent() {
     if (targetId) {
       getPengajuanDetail(Number(targetId)).then((data) => {
         if (!selectedAsesmen || !selectedAsesmen.nama) {
+          const tipeTuk = data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tipe_tuk || data?.master_tuk?.tipe || "Sewaktu";
           const rebuiltAsesmen = {
             id: Number(targetId),
             nama: data?.dataPribadi?.namaLengkap || "-",
             skema: data?.skema?.namaSkema || "-",
             noSkema: data?.skema?.kodeSkema || "-",
-            tuk: (data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tipe_tuk || data?.master_tuk?.tipe || "Sewaktu") + " - " + (data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.master_tuk?.nama || data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.alamat || data?.master_tuk?.alamat || "-"),
+            tuk: tipeTuk,
+            tipeTuk: tipeTuk,
             metode: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.metode || data?.metode || "Observasi Langsung",
             tglAsesmen: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.tanggal ? new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(data.jadwal_asesmen_peserta[0].jadwal_asesmen.tanggal)) : "-",
             asesor: data?.jadwal_asesmen_peserta?.[0]?.jadwal_asesmen?.users?.profil?.namaLengkap || "-",
@@ -213,11 +215,18 @@ function AssessmentFormContent() {
     return () => setExtraCrumbs([]);
   }, [selectedAsesmen?.nama, selectedAsesmen?.namaBatch, setExtraCrumbs]);
 
+  const rawTuk = selectedAsesmen?.tipeTuk || selectedAsesmen?.tuk || "-";
+  const tipeTukOnly =
+    rawTuk !== "-" && rawTuk.includes(" - ")
+      ? rawTuk.split(" - ")[0].trim()
+      : rawTuk;
+
   const asesmenData = {
     nama: selectedAsesmen?.nama ? String(selectedAsesmen.nama) : "-",
     skema: selectedAsesmen?.skema ? String(selectedAsesmen.skema) : "-",
     noSkema: selectedAsesmen?.noSkema ? String(selectedAsesmen.noSkema) : "-",
-    tuk: selectedAsesmen?.tuk ? String(selectedAsesmen.tuk) : (selectedAsesmen?.tipeTuk && selectedAsesmen?.alamat) ? `${selectedAsesmen.tipeTuk} - ${selectedAsesmen.alamat}` : selectedAsesmen?.alamat ? String(selectedAsesmen.alamat) : selectedAsesmen?.tipeTuk ? String(selectedAsesmen.tipeTuk) : "-",
+    tuk: tipeTukOnly,
+    tipeTuk: tipeTukOnly,
     metodeAsesmen: selectedAsesmen?.metode ? String(selectedAsesmen.metode) : "-",
     tanggal: selectedAsesmen?.tglAsesmen ? String(selectedAsesmen.tglAsesmen) : "-",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -455,15 +464,11 @@ function AssessmentFormContent() {
   ]);
 
   const isStep1Valid =
-    potensiAsesi.length > 0 &&
-    (noAdjustment ||
-      DEFAULT_ADJUSTMENT_OPTIONS.every((opt) => {
-        const adj = adjustments[opt.id];
-        if (!adj || adj.required === undefined || adj.required === null)
-          return false;
-        if (adj.required === true && !adj.note?.trim()) return false;
-        return true;
-      }));
+    noAdjustment ||
+    DEFAULT_ADJUSTMENT_OPTIONS.every((opt) => {
+      const adj = adjustments[opt.id];
+      return adj && adj.required !== undefined && adj.required !== null;
+    });
   const isStep2Valid =
     !!umpanBalikStep2?.trim();
   const isStep3Valid =
@@ -667,6 +672,7 @@ function AssessmentFormContent() {
               skema: asesmenData.skema,
               noSkema: asesmenData.noSkema,
               tuk: asesmenData.tuk,
+              tipeTuk: asesmenData.tipeTuk,
               tanggal: asesmenData.tanggal,
               tglAsesmen: asesmenData.tanggal,
               asesor: asesmenData.asesor,
