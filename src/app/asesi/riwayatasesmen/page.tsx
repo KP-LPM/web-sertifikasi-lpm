@@ -142,9 +142,16 @@ export default function AsesiHistoryPage() {
             if (jadwal?.waktu_mulai) {
               const dt = new Date(jadwal.waktu_mulai);
               if (!isNaN(dt.getTime())) {
-                jamAsesmen = dt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+                const hh = String(dt.getUTCHours()).padStart(2, "0");
+                const mm = String(dt.getUTCMinutes()).padStart(2, "0");
+                jamAsesmen = `${hh}.${mm} WIB`;
               } else if (typeof jadwal.waktu_mulai === "string") {
-                jamAsesmen = jadwal.waktu_mulai.substring(11, 16) + " WIB";
+                const str = jadwal.waktu_mulai.trim();
+                if (str.includes("T")) {
+                  jamAsesmen = str.substring(11, 16).replace(":", ".") + " WIB";
+                } else {
+                  jamAsesmen = str.substring(0, 5).replace(":", ".") + " WIB";
+                }
               }
             }
 
@@ -245,6 +252,34 @@ export default function AsesiHistoryPage() {
 
   const [certificatePreview, setCertificatePreview] =
     useState<(AssessmentHistory & { linkSertifikat?: string }) | null>(null);
+
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = React.useState<number | undefined>();
+
+  React.useEffect(() => {
+    const updateWidth = () => {
+      if (tableContainerRef.current) {
+        setContainerWidth(tableContainerRef.current.clientWidth);
+      }
+    };
+
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidth();
+    });
+
+    if (tableContainerRef.current) {
+      resizeObserver.observe(tableContainerRef.current);
+    }
+
+    window.addEventListener("resize", updateWidth);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -391,7 +426,7 @@ export default function AsesiHistoryPage() {
                 <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mb-4 shrink-0">
                   <AlertTriangle size={24} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">
                   Batalkan Pengajuan?
                 </h3>
                 <p className="text-slate-600 text-sm">
@@ -442,7 +477,7 @@ export default function AsesiHistoryPage() {
                     <path d="M22 2l-7 20-4-9-9-4 20-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">
                   Kirim Pengajuan Banding?
                 </h3>
                 <p className="text-slate-600 text-sm">
@@ -873,7 +908,7 @@ export default function AsesiHistoryPage() {
         </div>
 
         {/* Table representation matching exact overview layout */}
-        <div className="hidden md:block overflow-x-auto relative ">
+        <div ref={tableContainerRef} className="hidden md:block overflow-x-auto relative ">
           <table className="w-full text-left border-collapse min-w-[1600px]">
             <thead>
               <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -915,13 +950,19 @@ export default function AsesiHistoryPage() {
             <tbody className="divide-y divide-gray-100/60">
               {isLoading ? (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="px-6 py-12 text-center text-xs md:text-sm text-gray-500 font-medium"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-[#008BE3] border-t-transparent rounded-full animate-spin"></div>
-                      <span>Memuat riwayat asesmen Anda...</span>
+                  <td colSpan={11} className="p-0 border-0">
+                    <div
+                      className="sticky left-0 flex flex-col items-center justify-center gap-3 py-16 text-slate-500"
+                      style={{
+                        width: containerWidth
+                          ? `${containerWidth}px`
+                          : "100%",
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-full border-3 border-[#008BE3] border-t-transparent animate-spin"></div>
+                      <span className="font-bold text-sm text-slate-600">
+                        Memuat riwayat asesmen Anda...
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -1120,11 +1161,25 @@ export default function AsesiHistoryPage() {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
-                  >
-                    Tidak ada riwayat asesmen yang cocok.
+                  <td colSpan={11} className="p-0 border-0">
+                    <div
+                      className="sticky left-0 flex flex-col items-center justify-center gap-2 py-16 text-center text-gray-500"
+                      style={{
+                        width: containerWidth
+                          ? `${containerWidth}px`
+                          : "100%",
+                      }}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                        <FileText size={24} />
+                      </div>
+                      <span className="font-bold text-sm text-slate-700">
+                        Tidak ada riwayat asesmen yang cocok.
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        Coba sesuaikan kata kunci pencarian atau filter status Anda.
+                      </span>
+                    </div>
                   </td>
                 </tr>
               )}

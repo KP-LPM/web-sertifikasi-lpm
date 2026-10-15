@@ -107,7 +107,11 @@ export function EFormApl01({
   const handleCheck = (key: string, value: "memenuhi" | "tidak memenuhi") => {
     if (formData?.readOnly || !formData?.isAdmin) return;
     const newChecklist = { ...(formData.checklist || {}) };
-    newChecklist[key] = value;
+    if (newChecklist[key] === value) {
+      delete newChecklist[key];
+    } else {
+      newChecklist[key] = value;
+    }
     onChange({ ...formData, checklist: newChecklist });
   };
 

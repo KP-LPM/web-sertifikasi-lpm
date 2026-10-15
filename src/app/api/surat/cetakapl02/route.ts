@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 import { db } from "@/lib/db";
 import path from "path";
 import fs from "fs";
+import { generatePdfFromHtml } from "@/lib/pdf-browser";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   try {
@@ -165,18 +168,13 @@ export async function GET(req: NextRequest) {
       </html>
     `;
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+    const pdfBuffer = await generatePdfFromHtml(htmlContent, {
+      format: "A4",
+      printBackground: true,
+      margin: { top: "30px", right: "30px", bottom: "30px", left: "30px" },
     });
 
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
-
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, margin: { top: "30px", right: "30px", bottom: "30px", left: "30px" } });
-    await browser.close();
-
-    return new NextResponse(Buffer.from(pdfBuffer), {
+    return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="APL02_${pengajuan.id}.pdf"` },
     });

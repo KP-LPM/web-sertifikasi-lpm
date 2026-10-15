@@ -34,6 +34,7 @@ interface BackendBandingRecord {
   status_banding?: string;
   alasan?: string;
   penjelasan?: string;
+  keputusan_admin?: string;
   dijelaskan?: boolean;
   didiskusikan?: boolean;
   melibatkanOrangLain?: boolean;
@@ -64,6 +65,8 @@ interface BackendBandingRecord {
           tipe_tuk?: string;
           metode?: string;
           alamat?: string;
+          tanggal?: string | Date;
+          waktu_mulai?: string | Date;
           users?: {
             username?: string;
             profil?: {
@@ -77,6 +80,8 @@ interface BackendBandingRecord {
       tipe_tuk?: string;
       metode?: string;
       alamat?: string;
+      tanggal?: string | Date;
+      waktu_mulai?: string | Date;
       users?: {
         username?: string;
         profil?: {
@@ -90,6 +95,8 @@ interface BackendBandingRecord {
 export type ExtendedAssessmentItem = AssessmentItem & {
   bandingId?: number;
   alasanBanding?: string;
+  penjelasanBanding?: string;
+  catatanAsesor?: string;
   pengajuanId?: number;
   skemaId?: number;
   noSkema?: string;
@@ -149,13 +156,26 @@ function VerifikasiBandingList({
               "Asesi";
             const skemaName =
               pengajuan?.skema?.namaSkema || "Skema Asesmen";
-            const tgl = item.tanggal_pengajuan
-              ? new Date(item.tanggal_pengajuan).toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })
-              : "-";
+            const tgl = jadwal?.tanggal
+              ? (() => {
+                const d = new Date(jadwal.tanggal);
+                const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+              })()
+              : item.tanggal_pengajuan
+                ? new Date(item.tanggal_pengajuan).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
+                : "-";
+
+            const waktuAsesmen = jadwal?.waktu_mulai
+              ? (() => {
+                const d = new Date(jadwal.waktu_mulai);
+                return `${d.getUTCHours().toString().padStart(2, "0")}:${d.getUTCMinutes().toString().padStart(2, "0")} WIB`;
+              })()
+              : "09:00 WIB";
 
             return {
               id: item.id,
@@ -167,13 +187,14 @@ function VerifikasiBandingList({
               isBanding: true,
               statusBanding: item.status || "Menunggu Verifikasi",
               tglAsesmen: tgl,
-              waktu: "08:00 WIB",
+              waktu: waktuAsesmen,
               metode: jadwal?.tipe_tuk === "Online" ? "Online" : "Offline",
               tipeTuk: jadwal?.tipe_tuk || "Sewaktu",
               alamat: jadwal?.alamat || "TUK Terdaftar",
-              catatan: item.penjelasan || "",
+              catatan: item.keputusan_admin || "",
               alasanBanding: item.alasan,
-              catatanAsesor: (item as { keputusan_admin?: string }).keputusan_admin || "",
+              penjelasanBanding: item.penjelasan,
+              catatanAsesor: item.keputusan_admin || "",
               asesor:
                 jadwal?.users?.profil?.namaLengkap ||
                 jadwal?.users?.username ||
@@ -426,8 +447,14 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
   const { selectedAsesmen, setSelectedAsesmen, updateAssessmentItem, showNotification } =
     useAppContext();
   const [catatanBaru, setCatatanBaru] = useState(
-    (selectedAsesmen as { catatanAsesor?: string })?.catatanAsesor || selectedAsesmen?.catatan || ""
+    (selectedAsesmen as ExtendedAssessmentItem)?.catatanAsesor || ""
   );
+
+  useEffect(() => {
+    setCatatanBaru(
+      (selectedAsesmen as ExtendedAssessmentItem)?.catatanAsesor || ""
+    );
+  }, [selectedAsesmen]);
 
   const isReadOnly = selectedAsesmen?.statusBanding === "Disetujui" || selectedAsesmen?.statusBanding === "Ditolak" || selectedAsesmen?.status === "Disetujui" || selectedAsesmen?.status === "Ditolak";
   const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -598,12 +625,14 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
             hasil: "Kompeten" as HasilAsesmen,
             isBanding: false,
             statusBanding: "Disetujui" as string,
+            catatan: catatanBaru.trim(),
             catatanAsesor: catatanBaru.trim(),
           }
           : {
             hasil: "Belum Kompeten" as HasilAsesmen,
             isBanding: false,
             statusBanding: "Ditolak" as string,
+            catatan: catatanBaru.trim(),
             catatanAsesor: catatanBaru.trim(),
           };
 
@@ -838,7 +867,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
                       Banding ini diajukan atas alasan sebagai berikut :
                     </div>
                     <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                      {asesmen.alasanBanding || "-"}
+                      {asesmen.alasanBanding || asesmen.penjelasanBanding || "-"}
                     </div>
                   </td>
                 </tr>
@@ -984,7 +1013,7 @@ function DetailVerifikasiBanding({ onBack }: { onBack: () => void }) {
             <div className="border border-slate-200 rounded-lg overflow-hidden">
               <div className="bg-slate-50 p-4 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
                 <span>Rekomendasi / Catatan Asesor</span>
-                {Boolean(selectedAsesmen.catatan) && (
+                {Boolean((selectedAsesmen as ExtendedAssessmentItem)?.catatanAsesor) && (
                   <span className="text-xs bg-sky-100 text-sky-800 font-bold px-2.5 py-0.5 rounded-full">
                     Diperbarui
                   </span>

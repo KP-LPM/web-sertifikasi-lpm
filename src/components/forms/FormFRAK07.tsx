@@ -7,7 +7,7 @@ import { Assessment } from "@/types/types";
 
 export const DEFAULT_POTENSI_ASESI = [
   "Hasil pelatihan dan / atau pendidikan, dimana Kurikulum dan fasilitas praktek mampu telusur terhadap standar kompetensi",
-  "Hasil pelatihan dan / atau pendidikan, dimana kurikulum belum berbasiskompetensi.",
+  "Hasil pelatihan dan / atau pendidikan, dimana kurikulum belum berbasis kompetensi.",
   "Pekerja berpengalaman, dimana berasal dari industri/tempat kerja yang dalam operasionalnya mampu telusur dengan standar kompetensi",
   "Pekerja berpengalaman, dimana berasal dari industri/tempat kerja yangdalam operasionalnya belum berbasis kompetensi.",
   "Pelatihan / belajar mandiri atau otodidak.",

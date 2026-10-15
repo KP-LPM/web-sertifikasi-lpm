@@ -63,41 +63,61 @@ export async function GET(request: NextRequest) {
       let belumKompeten = 0;
 
       batch.pleno_asesi.forEach((asesi) => {
-        const finalStatus = asesi.status_pleno || asesi.rekomendasi_asesor || asesi.pengajuan_skema?.hasil_asesmen?.hasil;
-        if (finalStatus === "Kompeten" || finalStatus === "K" || finalStatus === "KOMPETEN") {
+        const rawPln = asesi.status_pleno;
+        const rawHasil = asesi.pengajuan_skema?.hasil_asesmen?.hasil;
+        const rawRek = asesi.rekomendasi_asesor;
+
+        let isK = false;
+        if (rawPln) {
+          isK = rawPln === "K" || rawPln.toLowerCase() === "kompeten";
+        } else if (rawHasil) {
+          isK = rawHasil.toLowerCase() === "kompeten" || rawHasil.toUpperCase() === "K";
+        } else if (rawRek) {
+          isK = rawRek === "K" || rawRek.toLowerCase() === "kompeten";
+        }
+
+        if (isK) {
           kompeten++;
-        } else if (
-          finalStatus === "Belum Kompeten" ||
-          finalStatus === "BK" ||
-          finalStatus === "BELUM KOMPETEN"
-        ) {
+        } else {
           belumKompeten++;
         }
       });
       const asesiList = batch.pleno_asesi
         .map((a) => {
           const cert = a.pengajuan_skema?.sertifikat;
-          // In Prisma, if it's one-to-one it's an object. If one-to-many, it's an array.
-          // In schema it says `sertifikat sertifikat?`, so it's an object.
 
-          const rek = a.rekomendasi_asesor || a.pengajuan_skema?.hasil_asesmen?.hasil || "BK";
-          const pln = a.status_pleno || rek;
-          const isRekK = rek === "K" || rek.toLowerCase() === "kompeten";
-          const isPlnK = pln === "K" || pln.toLowerCase() === "kompeten";
+          const rawPln = a.status_pleno;
+          const rawHasil = a.pengajuan_skema?.hasil_asesmen?.hasil;
+          const rawRek = a.rekomendasi_asesor;
+
+          // Status pleno (hasil sidang pleno di aksi) memiliki prioritas tertinggi
+          let isKompeten = false;
+          if (rawPln) {
+            isKompeten = rawPln === "K" || rawPln.toLowerCase() === "kompeten";
+          } else if (rawHasil) {
+            isKompeten = rawHasil.toLowerCase() === "kompeten" || rawHasil.toUpperCase() === "K";
+          } else if (rawRek) {
+            isKompeten = rawRek === "K" || rawRek.toLowerCase() === "kompeten";
+          }
+
+          const isRekK = (rawRek === "K" || rawRek?.toLowerCase() === "kompeten");
+          const isPlnK = isKompeten;
 
           return {
             id: a.pengajuan_id,
-            nama: a.pengajuan_skema?.user?.profil?.namaLengkap || "Tanpa Nama",
+            nama: a.pengajuan_skema?.user?.profil?.namaLengkap || a.pengajuan_skema?.dataPribadi?.namaLengkap || "Tanpa Nama",
             nik: a.pengajuan_skema?.dataPribadi?.nik || "-",
             skema: a.pengajuan_skema?.skema?.namaSkema || "-",
-            asesor: "Asesor LSP", // Can fetch from jadwal_asesmen or user if available
+            asesor: "Asesor LSP",
+            hasilAsesmen: isKompeten ? "Kompeten" : "Belum Kompeten",
             rekomendasiAsesor: isRekK ? "K" : "BK",
             statusPleno: isPlnK ? "K" : "BK",
+            isKompeten: isKompeten,
             noSertifikat: cert?.no_sertifikat || "",
             issueDate: cert?.tanggal_terbit ? new Date(cert.tanggal_terbit).toISOString().split("T")[0] : "",
             gdriveUrl: cert?.gdrive_url || "",
             status: cert?.status || "Belum Upload",
-            notes: "", // Add notes if needed, or cert?.catatan if available
+            notes: "",
           };
         });
 

@@ -45,10 +45,6 @@ export default function SidangPleno() {
   const [filterStatus, setFilterStatus] = useState("Semua");
 
   // Detail Form State
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [activeSession, setActiveSession] = useState<PlenoDetailData | null>(
-    null,
-  );
   const [formData, setFormData] = useState<PlenoDetailData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -129,7 +125,7 @@ export default function SidangPleno() {
         asesor:
           a.users?.profil?.namaLengkap || a.users?.username || "Asesor LSP",
         rekomendasiAsesor: a.rekomendasi_asesor || "K",
-        statusPleno: a.status_pleno || "K",
+        statusPleno: a.status_pleno || a.rekomendasi_asesor || "K",
         catatan: a.catatan || "",
       })) || [];
 
@@ -443,7 +439,6 @@ export default function SidangPleno() {
     let isMounted = true;
     const loadDetail = async () => {
       if (!selectedPlenoId) {
-        setActiveSession(null);
         setFormData(null);
         setIsDirty(false);
         return;
@@ -451,7 +446,6 @@ export default function SidangPleno() {
       const found = sessions.find((s) => s.id === selectedPlenoId);
       if (found) {
         const clone = JSON.parse(JSON.stringify(found));
-        setActiveSession(clone);
         setFormData(clone);
         setIsDirty(false);
         setHasSavedAtLeastOnce(true);
@@ -460,7 +454,6 @@ export default function SidangPleno() {
         const detail = await getPlenoDetail(selectedPlenoId);
         if (detail && isMounted) {
           const mapped = mapBackendPleno(detail);
-          setActiveSession(mapped);
           setFormData(mapped);
         }
       } catch {
@@ -532,35 +525,23 @@ export default function SidangPleno() {
         status: formData.status,
       });
 
-      // Update asesi statuses in background only for modified items
+      // Simpan seluruh status sidang pleno asesi ke database
       if (formData.asesiList && formData.asesiList.length > 0) {
-        const changedAsesis = formData.asesiList.filter((asesi) => {
-          const original = activeSession?.asesiList?.find(
-            (a) => a.id === asesi.id,
-          );
-          return (
-            original &&
-            (original.statusPleno !== asesi.statusPleno ||
-              original.catatan !== asesi.catatan)
-          );
-        });
-
-        for (const asesi of changedAsesis) {
-          if (asesi.id) {
+        for (const asesi of formData.asesiList) {
+          if (asesi.id && asesi.statusPleno) {
             try {
               await updatePlenoAsesiStatus(formData.id, asesi.id, {
                 status_pleno: asesi.statusPleno,
                 catatan: asesi.catatan,
               });
             } catch {
-              // ignore individual mock asesi errors
+              // ignore individual errors
             }
           }
         }
       }
 
       await fetchPlenoSessions();
-      setActiveSession(JSON.parse(JSON.stringify(formData)));
 
       setIsDirty(false);
       setHasSavedAtLeastOnce(true);
@@ -584,17 +565,61 @@ export default function SidangPleno() {
     }
   };
 
-  // Quick Action to complete plenary session directly from table
-  const handleCompletePlenoSession = async (sessionId: number) => {
+  // Complete Pleno Confirmation Modal State
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState<boolean>(false);
+  const [plenoToComplete, setPlenoToComplete] = useState<{ id: number; title: string } | null>(null);
+  const [isCompleting, setIsCompleting] = useState<boolean>(false);
+
+  const openCompleteModal = (session: { id: number; title?: string; skema?: string }) => {
+    setPlenoToComplete({
+      id: session.id,
+      title: session.title || `Sidang Pleno ${session.skema || ""}`,
+    });
+    setIsCompleteModalOpen(true);
+  };
+
+  const handleConfirmCompletePleno = async () => {
+    if (!plenoToComplete) return;
     try {
-      await updatePleno(sessionId, { status: "Selesai" });
+      setIsCompleting(true);
+
+      // Pastikan seluruh status sidang pleno asesi yang ada di formData tersimpan ke database sebelum pleno diselesaikan
+      if (formData && formData.id === plenoToComplete.id && formData.asesiList && formData.asesiList.length > 0) {
+        for (const asesi of formData.asesiList) {
+          if (asesi.id && asesi.statusPleno) {
+            try {
+              await updatePlenoAsesiStatus(plenoToComplete.id, asesi.id, {
+                status_pleno: asesi.statusPleno,
+                catatan: asesi.catatan,
+              });
+            } catch {
+              // ignore individual errors
+            }
+          }
+        }
+      }
+
+      await updatePleno(plenoToComplete.id, {
+        status: "Selesai",
+        ...(formData && formData.id === plenoToComplete.id
+          ? {
+              no_sk: formData.noSK,
+              link_surat_berita_pleno: formData.linkSuratBeritaPleno,
+              link_surat_keputusan_direktur:
+                formData.linkSuratKeputusanDirektur || formData.linkSuratHasil,
+              link_surat_blanko_bnsp: formData.linkSuratBlankoBNSP,
+            }
+          : {}),
+      });
       await fetchPlenoSessions();
-      if (selectedPlenoId === sessionId) {
+      if (selectedPlenoId === plenoToComplete.id) {
         setSelectedPlenoId(null);
       }
+      setIsCompleteModalOpen(false);
+      setPlenoToComplete(null);
       setToastText({
         title: "Sidang Pleno Berhasil Diselesaikan!",
-        desc: "Status sidang pleno telah diperbarui menjadi Selesai.",
+        desc: "Status sidang pleno telah diperbarui menjadi Selesai dan surat keputusan telah diterbitkan ke Kelola Surat.",
       });
       setShowSaveToast(true);
       setTimeout(() => setShowSaveToast(false), 3500);
@@ -603,6 +628,8 @@ export default function SidangPleno() {
       const msg =
         err instanceof Error ? err.message : "Gagal menyelesaikan sidang pleno";
       showNotification?.(msg, "error");
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -862,7 +889,7 @@ export default function SidangPleno() {
                               ) : (
                                 <button
                                   onClick={() =>
-                                    handleCompletePlenoSession(item.id)
+                                    openCompleteModal(item)
                                   }
                                   className="bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                                   title="Tandai Sidang Pleno sebagai Selesai"
@@ -916,17 +943,23 @@ export default function SidangPleno() {
                 </span>
               </div>
             </div>
-            {!readOnly && (
-              <button
-                type="button"
-                onClick={() => handleCompletePlenoSession(formData.id)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs shrink-0"
-                title="Selesaikan Sidang Pleno dan hapus dari daftar"
-              >
-                <CheckCircle size={16} />
-                <span>Selesaikan Sidang Pleno</span>
-              </button>
-            )}
+            {!readOnly &&
+              (formData.status === "Selesai" ? (
+                <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-bold text-xs inline-flex items-center gap-2 cursor-default">
+                  <CheckCircle size={16} className="text-emerald-600" />
+                  <span>Sidang Pleno Selesai</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openCompleteModal(formData)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs shrink-0"
+                  title="Selesaikan Sidang Pleno dan tandai sebagai Selesai"
+                >
+                  <CheckCircle size={16} />
+                  <span>Selesaikan Sidang Pleno</span>
+                </button>
+              ))}
           </div>
 
           {/* Section 1: Informasi Keputusan & Jadwal Sidang (Include Field Link Surat Berita Pleno) */}
@@ -1752,6 +1785,72 @@ export default function SidangPleno() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL KONFIRMASI: SELESAIKAN SIDANG PLENO */}
+      <AnimatePresence>
+        {isCompleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isCompleting && setIsCompleteModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full relative z-10 overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 border border-emerald-100 shadow-xs">
+                  <CheckCircle size={28} />
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-lg mb-2">
+                  Selesaikan Sidang Pleno?
+                </h3>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  Apakah Anda yakin ingin menyelesaikan sidang pleno{" "}
+                  <span className="font-bold text-slate-800">
+                    {plenoToComplete?.title}
+                  </span>
+                  ? Pastikan seluruh keputusan rekomendasi asesi dan dokumen hasil sidang telah sesuai.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  disabled={isCompleting}
+                  onClick={() => setIsCompleteModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={isCompleting}
+                  onClick={handleConfirmCompletePleno}
+                  className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {isCompleting ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Menyelesaikan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={14} />
+                      <span>Ya, Selesaikan</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

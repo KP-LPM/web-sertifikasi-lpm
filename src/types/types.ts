@@ -614,6 +614,7 @@ export interface SchemeCardProps {
   onEdit?: () => void;
   onArchive?: () => void;
   onUnarchive?: () => void;
+  onDelete?: () => void;
   onPreview?: () => void;
   readOnly?: boolean;
 }

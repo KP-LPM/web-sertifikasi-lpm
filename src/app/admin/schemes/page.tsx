@@ -29,7 +29,7 @@ import {
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { TambahSkemaForm } from "@/components/forms/TambahSkemaForm";
-import { getSkemaList, updateSkema } from "@/lib/api";
+import { getSkemaList, updateSkema, deleteSkema } from "@/lib/api";
 
 export default function ManageSchemes() {
   const { user, showNotification } = useAppContext();
@@ -242,6 +242,7 @@ export default function ManageSchemes() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedScheme, setSelectedScheme] = useState<SchemeItem | null>(null);
 
   const [categories, setCategories] = useState([
@@ -408,6 +409,28 @@ export default function ManageSchemes() {
       }
     }
     setIsArchiveModalOpen(false);
+    setSelectedScheme(null);
+  };
+
+  const openDeleteModal = (scheme: SchemeItem) => {
+    setSelectedScheme(scheme);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteScheme = async () => {
+    if (selectedScheme) {
+      try {
+        await deleteSkema(Number(selectedScheme.id));
+        await fetchSchemes();
+        showNotification?.("Skema berhasil dihapus", "success");
+      } catch (err: unknown) {
+        console.error("Gagal menghapus skema:", err);
+        const msg =
+          err instanceof Error ? err.message : "Gagal menghapus skema";
+        showNotification?.(msg, "error");
+      }
+    }
+    setIsDeleteModalOpen(false);
     setSelectedScheme(null);
   };
 
@@ -935,6 +958,7 @@ export default function ManageSchemes() {
                   onPreview={() => openPreviewModal(scheme)}
                   onArchive={() => openArchiveModal(scheme)}
                   onUnarchive={() => openArchiveModal(scheme)}
+                  onDelete={() => openDeleteModal(scheme)}
                   readOnly={readOnly}
                 />
               ))}
@@ -999,6 +1023,56 @@ export default function ManageSchemes() {
             </motion.div>
           </div>
         )}
+
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
+                  <Trash2 size={24} />
+                </div>
+                <h3 className="font-bold text-slate-900 mb-2 text-lg">
+                  Hapus Skema
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Apakah Anda yakin ingin menghapus skema{" "}
+                  <span className="font-bold text-slate-800">
+                    {selectedScheme?.nama}
+                  </span>
+                  ? Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteScheme}
+                  className="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer shadow-xs"
+                >
+                  Hapus
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -1058,6 +1132,7 @@ function SchemeCard({
   onEdit,
   onArchive,
   onUnarchive,
+  onDelete,
   onPreview,
   readOnly,
 }: SchemeCardProps) {
@@ -1124,7 +1199,7 @@ function SchemeCard({
               {scheme.status !== "Archived" && (
                 <button
                   onClick={onArchive}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200 cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors border border-transparent hover:border-amber-200 cursor-pointer"
                   title="Arsipkan"
                 >
                   <Archive size={18} />
@@ -1137,6 +1212,15 @@ function SchemeCard({
                   title="Aktifkan Skema"
                 >
                   <ArchiveRestore size={18} />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={onDelete}
+                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200 cursor-pointer"
+                  title="Hapus Skema"
+                >
+                  <Trash2 size={18} />
                 </button>
               )}
             </>

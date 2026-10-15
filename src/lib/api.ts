@@ -219,6 +219,26 @@ export async function createPengajuan(
   return json.data;
 }
 
+export async function checkPengajuanCooldown(skemaId: number): Promise<{
+  allowed: boolean;
+  remainingDays?: number;
+  lastDate?: string;
+  message?: string;
+}> {
+  const res = await fetch(
+    `${BASE_URL}/pengajuanskema?check_cooldown_skema_id=${skemaId}`,
+    {
+      credentials: "include",
+    }
+  );
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal memeriksa status cooldown pengajuan skema");
+  }
+  return json.data;
+}
+
 export async function updatePengajuan(id: number, data: UpdatePengajuanDTO) {
   const res = await fetch(`${BASE_URL}/pengajuanskema/${id}`, {
     method: "PATCH",
@@ -1182,7 +1202,7 @@ export async function createPleno(data: Record<string, unknown>) {
     const json = await res.json();
     return json.data !== undefined ? json.data : json;
   } catch (error) {
-    console.log(error);
+    console.error("[createPleno]:", error);
   }
 }
 

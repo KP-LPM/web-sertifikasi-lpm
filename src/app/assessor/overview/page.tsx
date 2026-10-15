@@ -139,7 +139,15 @@ export default function AssessorOverview() {
               tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
               alamat: j.alamat || j.master_tuk?.nama_tuk || "TUK Terdaftar",
               tanggal: j.tanggal ? new Date(j.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-",
-              waktuMulai: j.waktu_mulai ? new Date(j.waktu_mulai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "08:00 WIB",
+              waktuMulai: j.waktu_mulai
+                ? (() => {
+                  const d = new Date(j.waktu_mulai);
+                  if (!isNaN(d.getTime())) {
+                    return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")} WIB`;
+                  }
+                  return String(j.waktu_mulai).substring(0, 5) + " WIB";
+                })()
+                : "09:00 WIB",
               linkVideo: j.link_video || "-",
               candidates: batchCand.map((c) => ({
                 id: c.pengajuanId,

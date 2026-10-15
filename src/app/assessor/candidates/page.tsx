@@ -470,7 +470,6 @@ export default function AsesiList() {
                             />
                             <span>{batch.tanggal}</span>
                           </div>
-                          <span className="text-slate-300">â€¢</span>
                           <div className="flex items-center gap-1.5">
                             <Clock
                               size={14}
@@ -967,17 +966,6 @@ export default function AsesiList() {
                 Selesaikan & Hapus Batch Asesmen Ini?
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
-                Seluruh{" "}
-                <strong className="text-slate-800">
-                  {currentSelectedBatch.candidates.length} asesi
-                </strong>{" "}
-                pada batch{" "}
-                <span className="font-bold text-slate-900">
-                  {currentSelectedBatch.namaBatch}
-                </span>{" "}
-                telah selesai dinilai.
-                <br />
-                <br />
                 Setelah dikonfirmasi, batch ini akan diselesaikan secara resmi
                 dan <strong>dihapus dari daftar asesmen aktif</strong> Anda.
               </p>

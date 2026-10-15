@@ -38,6 +38,22 @@ import {
 
 export type { AsesiPlenoRecord };
 
+interface AsesiBatchItem {
+  id: number;
+  nama: string;
+  nik: string;
+  skema: string;
+  statusPleno?: string;
+  rekomendasiAsesor?: string;
+  hasilAsesmen?: string;
+  isKompeten?: boolean;
+  status?: string;
+  noSertifikat?: string;
+  issueDate?: string;
+  gdriveUrl?: string;
+  notes?: string;
+}
+
 export default function UploadSertifikat() {
   const { user, showNotification, setExtraCrumbs } = useAppContext();
   const readOnly = user?.role !== "admin";
@@ -158,7 +174,26 @@ export default function UploadSertifikat() {
             alamat: p.alamat || "Ruang Sidang Utama Gedung Rektorat",
             isOnline: !!p.isOnline,
             status: p.status === "Selesai" ? "Selesai" : "Terjadwal",
-            asesiList: (p.asesiList || []).filter((a: { statusPleno?: string }) => a.statusPleno === 'K'),
+            asesiList: (p.asesiList || []).filter((a: AsesiBatchItem) => {
+              if (a.isKompeten !== undefined) return a.isKompeten;
+              const isHasilBK =
+                a.hasilAsesmen?.toLowerCase() === "belum kompeten" ||
+                a.hasilAsesmen?.toUpperCase() === "BK";
+              const isRekBK =
+                a.rekomendasiAsesor === "BK" ||
+                a.rekomendasiAsesor?.toLowerCase() === "belum kompeten";
+              const isPlnBK =
+                a.statusPleno === "BK" ||
+                a.statusPleno?.toLowerCase() === "belum kompeten";
+              if (isHasilBK || isRekBK || isPlnBK) return false;
+              return (
+                a.statusPleno === "K" ||
+                a.statusPleno?.toLowerCase() === "kompeten" ||
+                a.rekomendasiAsesor === "K" ||
+                a.rekomendasiAsesor?.toLowerCase() === "kompeten" ||
+                a.hasilAsesmen?.toLowerCase() === "kompeten"
+              );
+            }),
           };
         });
 

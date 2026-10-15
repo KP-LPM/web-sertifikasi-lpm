@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
                         metode: true,
                         alamat: true,
                         tanggal: true,
+                        waktu_mulai: true,
                         users: {
                           select: {
                             id: true,
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
                 metode: true,
                 alamat: true,
                 tanggal: true,
+                waktu_mulai: true,
                 users: {
                   select: {
                     id: true,

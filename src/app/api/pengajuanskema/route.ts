@@ -29,6 +29,14 @@ export async function GET(request: NextRequest) {
     };
 
     const { searchParams } = new URL(request.url);
+
+    const checkCooldownSkemaId = searchParams.get("check_cooldown_skema_id");
+    if (checkCooldownSkemaId) {
+      const skemaId = Number(checkCooldownSkemaId);
+      const cooldown = await pengajuanService.checkCooldown(user.id, skemaId);
+      return sendResponse(200, "Cek status cooldown pengajuan skema", cooldown);
+    }
+
     const filters = {
       skemaId: searchParams.get("skema_id")
         ? Number(searchParams.get("skema_id"))

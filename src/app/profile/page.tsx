@@ -417,7 +417,6 @@ export default function Profile() {
       });
 
       const result = await response.json();
-      console.log("Response dari backend:", result);
 
       if (!response.ok) {
         throw new Error(result.message || "Gagal menyimpan profil ke database");

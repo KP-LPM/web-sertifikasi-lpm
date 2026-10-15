@@ -18,7 +18,6 @@ import {
   ExternalLink,
   Layers,
   UserCheck,
-  ShieldCheck,
   Globe,
   Mail,
   X,
@@ -26,7 +25,7 @@ import {
 } from "lucide-react";
 import { BatchDetail, JenisMetode, TipeTuk } from "@/types/types";
 import { useAppContext } from "@/context/context";
-import { getCandidatesList, getJadwalList, updateJadwal } from "@/lib/api";
+import { getCandidatesList, getJadwalList } from "@/lib/api";
 
 interface BackendJadwal {
   id: number;
@@ -59,7 +58,7 @@ interface BackendCandidate {
 
 export default function RiwayatAsesmen() {
   const router = useRouter();
-  const { setSelectedAsesmen, AssessmentItems, deleteBatchAssessmentItems, setExtraCrumbs } =
+  const { setSelectedAsesmen, AssessmentItems, setExtraCrumbs } =
     useAppContext();
 
   // State
@@ -69,7 +68,6 @@ export default function RiwayatAsesmen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBatchId, setSelectedBatchId] = useState<number | null>(null);
   const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [successNotification, setSuccessNotification] = useState<string | null>(
     null,
   );
@@ -136,16 +134,16 @@ export default function RiwayatAsesmen() {
               alamat: alamat,
               tanggal: j.tanggal
                 ? (() => {
-                    const d = new Date(j.tanggal);
-                    const m = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                    return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-                  })()
+                  const d = new Date(j.tanggal);
+                  const m = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                  return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                })()
                 : "-",
               waktuMulai: j.waktu_mulai
                 ? (() => {
-                    const d = new Date(j.waktu_mulai);
-                    return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
-                  })()
+                  const d = new Date(j.waktu_mulai);
+                  return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
+                })()
                 : "09:00 WIB",
               linkVideo: j.link_video || "-",
               suratTugasName: j.surat_tugas_name || "",
@@ -165,16 +163,16 @@ export default function RiwayatAsesmen() {
                   j.users?.profil?.nomorRegistrasiMet || "-",
                 tglAsesmen: j.tanggal
                   ? (() => {
-                      const d = new Date(j.tanggal);
-                      const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
-                      return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-                    })()
+                    const d = new Date(j.tanggal);
+                    const m = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                    return `${d.getUTCDate()} ${m[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+                  })()
                   : "-",
                 waktu: j.waktu_mulai
                   ? (() => {
-                      const d = new Date(j.waktu_mulai);
-                      return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
-                    })()
+                    const d = new Date(j.waktu_mulai);
+                    return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')} WIB`;
+                  })()
                   : "09:00 WIB",
                 alamat: alamat || "-",
                 tipeTuk: (j.tipe_tuk || "Sewaktu") as TipeTuk,
@@ -228,11 +226,6 @@ export default function RiwayatAsesmen() {
 
   // Selected Batch for Level 2 View
   const currentSelectedBatch = allBatches.find((b) => b.id === selectedBatchId);
-
-  const isAllCandidatesFinished = currentSelectedBatch
-    ? currentSelectedBatch.candidates.length > 0 &&
-    currentSelectedBatch.candidates.every((c) => c.status === "Selesai")
-    : false;
 
   // Filter candidates inside Level 2 view
   const filteredCandidates = currentSelectedBatch
@@ -469,7 +462,6 @@ export default function RiwayatAsesmen() {
                             />
                             <span>{batch.tanggal}</span>
                           </div>
-                          <span className="text-slate-300">â€¢</span>
                           <div className="flex items-center gap-1.5">
                             <Clock
                               size={14}
@@ -699,70 +691,7 @@ export default function RiwayatAsesmen() {
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* KODE BARU: BANNER & TOMBOL AKSI SELESAIKAN ASESMEN BATCH                  */}
-          {/* Lokasi: src/pages/assessor/Candidates.tsx                                 */}
-          {/* ========================================================================= */}
-          {currentSelectedBatch && (
-            <div
-              className={`rounded-2xl border p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs ${isAllCandidatesFinished
-                ? "bg-linear-to-r from-emerald-50 via-white to-emerald-50/60 border-emerald-300"
-                : "bg-white border-slate-200"
-                }`}
-            >
-              <div className="flex items-start md:items-center gap-4">
-                <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-colors ${isAllCandidatesFinished
-                    ? "bg-emerald-600 text-white"
-                    : "bg-slate-100 text-slate-400 border border-slate-200"
-                    }`}
-                >
-                  <ShieldCheck size={26} className="stroke-[2.2]" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-base font-black text-slate-900">
-                      Aksi Penyelesaian Batch Asesmen
-                    </h4>
-                    {isAllCandidatesFinished ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wide">
-                        Siap Diseleksikan
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 uppercase tracking-wide">
-                        Dalam Proses (
-                        {
-                          currentSelectedBatch.candidates.filter(
-                            (c) => c.status === "Selesai",
-                          ).length
-                        }
-                        /{currentSelectedBatch.candidates.length} Selesai)
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium mt-1 leading-relaxed">
-                    {isAllCandidatesFinished
-                      ? `Seluruh ${currentSelectedBatch.candidates.length} asesi pada batch ini sudah selesai dinilai. Klik tombol di kanan untuk menyelesaikan batch.`
-                      : `Selesaikan penilaian untuk semua asesi pada batch ini untuk mengaktifkan tombol penyelesaian batch.`}
-                  </p>
-                </div>
-              </div>
 
-              <div className="shrink-0 w-full md:w-auto">
-                <button
-                  disabled={!isAllCandidatesFinished}
-                  onClick={() => setShowCompleteModal(true)}
-                  className={`w-full md:w-auto px-5 py-3 rounded-xl font-black text-xs md:text-sm flex items-center justify-center gap-2.5 transition-all shadow-xs ${isAllCandidatesFinished
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-emerald-600/20 hover:shadow-md"
-                    : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                    }`}
-                >
-                  <ShieldCheck size={18} />
-                  <span>Selesaikan Asesmen Batch</span>
-                </button>
-              </div>
-            </div>
-          )}
           {/* Candidate Table Section */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -908,90 +837,7 @@ export default function RiwayatAsesmen() {
           </div>
         </div>
       )}
-      {showCompleteModal && currentSelectedBatch && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-emerald-50/60">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0">
-                  <ShieldCheck size={18} />
-                </div>
-                <h3 className="font-black text-slate-900 text-base">
-                  Konfirmasi Selesaikan Asesmen
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowCompleteModal(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-            </div>
 
-            <div className="p-6 flex flex-col items-center justify-center text-center bg-white space-y-3">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-1">
-                <CheckCircle size={32} className="stroke-[2.5]" />
-              </div>
-              <h4 className="text-base font-bold text-slate-900">
-                Selesaikan & Hapus Batch Asesmen Ini?
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
-                Seluruh{" "}
-                <strong className="text-slate-800">
-                  {currentSelectedBatch.candidates.length} asesi
-                </strong>{" "}
-                pada batch{" "}
-                <span className="font-bold text-slate-900">
-                  {currentSelectedBatch.namaBatch}
-                </span>{" "}
-                telah selesai dinilai.
-                <br />
-                <br />
-                Setelah dikonfirmasi, batch ini akan diselesaikan secara resmi
-                dan <strong>dihapus dari daftar asesmen aktif</strong> Anda.
-              </p>
-            </div>
-
-            <div className="p-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
-              <button
-                onClick={() => setShowCompleteModal(false)}
-                className="px-4 py-2 font-bold text-xs text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    await updateJadwal(currentSelectedBatch.id, {
-                      status: "Selesai",
-                    });
-
-                    const name = currentSelectedBatch.namaBatch;
-                    deleteBatchAssessmentItems(
-                      currentSelectedBatch.id.toString(),
-                    );
-                    setSelectedBatchId(null);
-                    setSelectedAsesmen(null);
-                    setShowCompleteModal(false);
-                    setSuccessNotification(
-                      `Batch "${name}" telah berhasil diselesaikan dan dihapus dari daftar asesmen Anda.`,
-                    );
-                  } catch (error) {
-                    console.error("Gagal menyelesaikan batch:", error);
-                    alert(
-                      "Gagal menyelesaikan batch asesmen. Silakan coba lagi.",
-                    );
-                  }
-                }}
-                className="px-4 py-2.5 font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <ShieldCheck size={15} />
-                Ya, Selesaikan Asesmen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

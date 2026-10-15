@@ -54,7 +54,7 @@ export async function GET(
     if (error instanceof ClientError) {
       return sendResponse(error.statusCode, error.message);
     }
-    console.log(error);
+    console.error("[GET /api/users/:id/profile]:", error);
     return sendResponse(500, "Internal server error");
   }
 }
@@ -106,7 +106,7 @@ export async function PUT(request: NextRequest) {
       return sendResponse(error.statusCode, error.message);
     }
 
-    console.error("Waduh, error simpan profil:", error);
+    console.error("[PUT /api/users/:id/profile]:", error);
     return sendResponse(500, "Gagal menyimpan data profil");
   }
 }

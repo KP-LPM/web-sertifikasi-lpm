@@ -41,16 +41,20 @@ export function SignatureField({
   }, [value]);
 
   useEffect(() => {
-    if (useProfile && profileSignature && (!value || !value.data)) {
-      onChange({ type: "auto", data: profileSignature });
+    if (useProfile && (!value || !value.data)) {
+      const sig = profileSignature || fallbackName || "Tanda Tangan";
+      onChange({ type: "auto", data: sig });
     }
-  }, [useProfile, profileSignature, value?.data, onChange]);
+  }, [useProfile, profileSignature, fallbackName, value, onChange]);
 
   const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setUseProfile(checked);
     if (checked) {
-      onChange({ type: "auto", data: profileSignature });
+      const sig = profileSignature || fallbackName || "Tanda Tangan";
+      onChange({ type: "auto", data: sig });
+    } else {
+      onChange({ type: "auto", data: "" });
     }
   };
 

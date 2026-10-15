@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 import path from "path";
 import fs from "fs";
 import {
@@ -7,6 +6,10 @@ import {
   BeritaAcaraPayload,
 } from "@/templates/SuratBeritaPleno";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
+import { generatePdfFromHtml } from "@/lib/pdf-browser";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,29 +29,14 @@ export async function POST(req: NextRequest) {
 
     const htmlContent = generateBeritaAcaraHtml(payload);
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--font-render-hinting=none",
-      ],
-    });
-
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
-
-    const pdfBuffer = await page.pdf({
+    const pdfBuffer = await generatePdfFromHtml(htmlContent, {
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
-    await browser.close();
-
-    return new NextResponse(Buffer.from(pdfBuffer), {
+    return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

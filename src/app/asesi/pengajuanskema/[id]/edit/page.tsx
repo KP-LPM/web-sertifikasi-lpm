@@ -156,32 +156,54 @@ export default function EditPengajuanSkema() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const finalDokumen = [...((apl01FormData.dokumen as any[]) || [])];
 
-      // Upload file baru yang ada di eFormData ke Supabase
+      const fileUrlCache = new Map<string, string>();
+      const getFileSignature = (file: File) =>
+        `${file.name}_${file.size}_${file.lastModified}`;
+
+      const uploadFileOnce = async (file: File, namaDokumen: string): Promise<string> => {
+        const sig = getFileSignature(file);
+        if (fileUrlCache.has(sig)) {
+          return fileUrlCache.get(sig)!;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(
+            `File "${file.name}" pada "${namaDokumen}" melebihi ukuran maksimum 5MB. Silakan kompres atau pilih file yang lebih kecil.`
+          );
+        }
+
+        const fileExt = file.name.split(".").pop() || "pdf";
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("dokumen-pengajuan")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          throw new Error(`Gagal mengunggah ${namaDokumen}: ${uploadError.message}`);
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("dokumen-pengajuan")
+          .getPublicUrl(fileName);
+
+        const url = urlData.publicUrl;
+        fileUrlCache.set(sig, url);
+        return url;
+      };
+
+      // Upload file baru yang ada di eFormData ke Supabase dengan deduplikasi
       for (const [namaDokumen, value] of Object.entries(eFormData)) {
         const files: unknown[] = Array.isArray(value) ? value : [value];
 
         for (const file of files) {
           if (file instanceof File) {
-            const fileExt = file.name.split(".").pop() || "pdf";
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-              .from("dokumen-pengajuan")
-              .upload(fileName, file);
-
-            if (uploadError) {
-              throw new Error(`Gagal mengunggah ${namaDokumen}: ${uploadError.message}`);
-            }
-
-            const { data: urlData } = supabase.storage
-              .from("dokumen-pengajuan")
-              .getPublicUrl(fileName);
-
+            const url = await uploadFileOnce(file, namaDokumen);
             const existingIndex = finalDokumen.findIndex((d) => d.namaDokumen === namaDokumen);
             if (existingIndex > -1) {
-              finalDokumen[existingIndex].fileUrl = urlData.publicUrl; // Replace existing URL
+              finalDokumen[existingIndex].fileUrl = url; // Replace existing URL
             } else {
-              finalDokumen.push({ namaDokumen, fileUrl: urlData.publicUrl }); // Push new document
+              finalDokumen.push({ namaDokumen, fileUrl: url }); // Push new document
             }
           }
         }
@@ -460,11 +482,34 @@ export default function EditPengajuanSkema() {
                     <input
                       type="file"
                       multiple
+                      accept=".pdf,.jpg,.jpeg,.png"
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       onChange={(e) => {
                         if (e.target.files && e.target.files.length > 0) {
-                          const newFiles = Array.from(e.target.files);
-                          setTempFiles([...tempFiles, ...newFiles]);
+                          const selectedFiles = Array.from(e.target.files);
+                          const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+                          const validFiles: File[] = [];
+                          const oversizedFiles: string[] = [];
+
+                          selectedFiles.forEach((file) => {
+                            if (file.size > MAX_FILE_SIZE) {
+                              oversizedFiles.push(file.name);
+                            } else {
+                              validFiles.push(file);
+                            }
+                          });
+
+                          if (oversizedFiles.length > 0) {
+                            showNotification(
+                              `File ${oversizedFiles.join(", ")} melebihi batas ukuran 5MB. Silakan kompres atau pilih file yang lebih kecil.`,
+                              "error"
+                            );
+                          }
+
+                          if (validFiles.length > 0) {
+                            setTempFiles((prev) => [...prev, ...validFiles]);
+                          }
+                          e.target.value = "";
                         }
                       }}
                     />

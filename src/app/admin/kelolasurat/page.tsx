@@ -29,6 +29,7 @@ interface BackendSuratItem {
   penerbit?: string;
   penerima?: string;
   skema?: { nama_skema?: string };
+  master_skema?: { namaSkema?: string; kodeSkema?: string };
   jumlah_asesi?: number;
   status: "Draft" | "Published" | "Archived" | string;
   no_sk?: string;
@@ -73,7 +74,7 @@ export default function KelolaSurat() {
           tanggalTerbit: item.tanggal_terbit ? new Date(item.tanggal_terbit).toISOString().split("T")[0] : "",
           penerbit: item.penerbit || "LSP UIN Sunan Gunung Djati",
           penerima: item.penerima || "Umum",
-          skemaSertifikasi: item.skema?.nama_skema || "-",
+          skemaSertifikasi: item.skema?.nama_skema || item.master_skema?.namaSkema || "-",
           jumlahAsesi: item.jumlah_asesi || 0,
           status: item.status,
           noSK: item.no_sk || "",

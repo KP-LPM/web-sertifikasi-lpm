@@ -21,6 +21,7 @@ import {
   Info,
   Headset,
   MapPin,
+  Clock,
 } from "lucide-react";
 
 import { FormDocumentTable } from "@/components/forms/asesi/FormDocumentTable";
@@ -51,6 +52,7 @@ import {
   getUsersProfile,
   getPengajuanList,
   createPengajuan,
+  checkPengajuanCooldown,
   getPengajuanDetail,
   deletePengajuan,
   createRiwayatAsesmen,
@@ -92,6 +94,8 @@ type SubmissionProfile = Profile & {
   virtualMeeting?: string;
   tukName?: string;
   alamatLengkap?: string;
+  skemaId?: number;
+  rawCreatedAt?: string | Date;
 };
 
 export default function PengajuanSkemaPage() {
@@ -302,6 +306,8 @@ export default function PengajuanSkemaPage() {
 
           return {
             id: item.id,
+            skemaId: item.skema?.id,
+            rawCreatedAt: item.createdAt,
             name: item.skema?.namaSkema || "Skema Sertifikasi",
             kode: item.skema?.kodeSkema || item.nomorPengajuan || "-",
             date: dateStr,
@@ -368,9 +374,137 @@ export default function PengajuanSkemaPage() {
     }
   }, []);
 
+  // Helper memeriksa status cooldown 7 hari untuk skema tertentu
+  const getSchemeCooldown = (schemeId?: number, schemeKode?: string) => {
+    if (!schemeId && !schemeKode) return null;
+
+    const matchingSubmissions = submissions.filter((sub) => {
+      const idMatch =
+        schemeId && sub.skemaId && Number(sub.skemaId) === Number(schemeId);
+      const codeMatch =
+        schemeKode &&
+        sub.kode &&
+        sub.kode.trim().toLowerCase() === schemeKode.trim().toLowerCase();
+      return idMatch || codeMatch;
+    });
+
+    if (matchingSubmissions.length === 0) return null;
+
+    // Ambil pengajuan yang paling baru
+    const sorted = [...matchingSubmissions].sort((a, b) => {
+      const timeA = a.rawCreatedAt ? new Date(a.rawCreatedAt).getTime() : 0;
+      const timeB = b.rawCreatedAt ? new Date(b.rawCreatedAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    const latest = sorted[0];
+    if (!latest.rawCreatedAt) return null;
+
+    const lastTime = new Date(latest.rawCreatedAt).getTime();
+    const now = Date.now();
+    const diffMs = now - lastTime;
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+    if (diffMs < sevenDaysMs) {
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      const remainingDays = Math.max(1, Math.ceil(7 - diffDays));
+      const formattedDate = new Date(latest.rawCreatedAt).toLocaleDateString(
+        "id-ID",
+        {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      );
+      return {
+        isCooldown: true,
+        remainingDays,
+        formattedDate,
+        message: `Anda sudah pernah mengajukan skema ini pada ${formattedDate}. Pengajuan ulang untuk skema yang sama hanya dapat dilakukan setelah 7 hari (tersisa sekitar ${remainingDays} hari lagi).`,
+      };
+    }
+
+    return null;
+  };
+
+  const handleSelectScheme = async (scheme: SchemeItem) => {
+    // 1. Validasi via data lokal yang sudah dimuat
+    const cooldown = getSchemeCooldown(scheme.id, scheme.kode);
+    if (cooldown) {
+      showNotification(cooldown.message, "error");
+      return;
+    }
+
+    // 2. Validasi via server API sebagai konfirmasi
+    try {
+      if (scheme.id) {
+        const check = await checkPengajuanCooldown(scheme.id);
+        if (!check.allowed) {
+          showNotification(
+            check.message ||
+              "Skema ini belum dapat diajukan kembali karena masih dalam kurun waktu 7 hari.",
+            "error"
+          );
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Gagal cek cooldown via API:", e);
+    }
+
+    setSelectedScheme(scheme);
+    setSubView("apply-form");
+    setStep(1);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("asesiActiveSchemeId", scheme.id.toString());
+    }
+  };
+
   React.useEffect(() => {
     fetchSubmissions();
   }, [fetchSubmissions, subView]);
+
+  const tableSubmissionsContainerRef = React.useRef<HTMLDivElement>(null);
+  const [submissionsContainerWidth, setSubmissionsContainerWidth] =
+    React.useState<number | undefined>();
+
+  const tableSchemesContainerRef = React.useRef<HTMLDivElement>(null);
+  const [schemesContainerWidth, setSchemesContainerWidth] =
+    React.useState<number | undefined>();
+
+  React.useEffect(() => {
+    const updateWidths = () => {
+      if (tableSubmissionsContainerRef.current) {
+        setSubmissionsContainerWidth(
+          tableSubmissionsContainerRef.current.clientWidth
+        );
+      }
+      if (tableSchemesContainerRef.current) {
+        setSchemesContainerWidth(tableSchemesContainerRef.current.clientWidth);
+      }
+    };
+
+    updateWidths();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidths();
+    });
+
+    if (tableSubmissionsContainerRef.current) {
+      resizeObserver.observe(tableSubmissionsContainerRef.current);
+    }
+    if (tableSchemesContainerRef.current) {
+      resizeObserver.observe(tableSchemesContainerRef.current);
+    }
+
+    window.addEventListener("resize", updateWidths);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateWidths);
+    };
+  }, [subView]);
+
   const [searchSub, setSearchSub] = useState("");
   const [statusSubFilter, setStatusSubFilter] = useState("Semua");
   const [dateSubFilter, setDateSubFilter] = useState("");
@@ -539,12 +673,19 @@ export default function PengajuanSkemaPage() {
       if (activeId && !selectedScheme) {
         const found = schemesData.find((s) => s.id === Number(activeId));
         if (found) {
+          const cooldown = getSchemeCooldown(found.id, found.kode);
+          if (cooldown) {
+            sessionStorage.removeItem("asesiActiveSchemeId");
+            showNotification(cooldown.message, "error");
+            setSubView("list");
+            return;
+          }
           setSelectedScheme(found);
           setSubView("apply-form");
         }
       }
     }
-  }, [schemesData, selectedScheme]);
+  }, [schemesData, selectedScheme, submissions]);
 
   React.useEffect(() => {
     const fetchProfil = async () => {
@@ -946,39 +1087,139 @@ export default function PengajuanSkemaPage() {
 
   const handleSubmitForm = async () => {
     try {
+      if (selectedScheme) {
+        const cooldown = getSchemeCooldown(
+          selectedScheme.id,
+          selectedScheme.kode
+        );
+        if (cooldown) {
+          showNotification(cooldown.message, "error");
+          return;
+        }
+      }
+
       showNotification(
         "Mengunggah dokumen dan memproses pengajuan...",
         "success",
       );
 
-      const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> =
-        [];
+      // Kumpulkan daftar nama dokumen primer (Persyaratan Dasar & Bukti Administratif)
+      const primaryDocNames = new Set([
+        ...(selectedScheme?.persyaratanDasar || []).map((req) =>
+          typeof req === "string" ? req : req.namaDokumen
+        ),
+        ...(selectedScheme?.persyaratanAdministrasi || []).map((req) =>
+          typeof req === "string" ? req : req.namaDokumen
+        ),
+      ]);
 
-      for (const [namaDokumen, value] of Object.entries(eFormData)) {
+      const uploadedDokumen: Array<{ namaDokumen: string; fileUrl: string }> = [];
+      const fileUrlCache = new Map<string, string>();
+      const getFileSignature = (file: File) =>
+        `${file.name}_${file.size}_${file.lastModified}`;
+
+      // Helper unggah file ke Supabase storage (hanya 1x per file unik)
+      const uploadFileOnce = async (file: File, namaDokumen: string): Promise<string> => {
+        const sig = getFileSignature(file);
+        if (fileUrlCache.has(sig)) {
+          return fileUrlCache.get(sig)!;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(
+            `File "${file.name}" pada "${namaDokumen}" melebihi ukuran maksimum 5MB. Silakan kompres atau pilih file yang lebih kecil.`
+          );
+        }
+
+        const fileExt = file.name.split(".").pop() || "pdf";
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("dokumen-pengajuan")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          throw new Error(
+            `Gagal mengunggah ${namaDokumen}: ${uploadError.message}`,
+          );
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("dokumen-pengajuan")
+          .getPublicUrl(fileName);
+
+        const url = urlData.publicUrl;
+        fileUrlCache.set(sig, url);
+        return url;
+      };
+
+      // TAHAP 1: Unggah dokumen primer terlebih dahulu (Persyaratan Dasar & Bukti Administratif)
+      for (const namaDokumen of primaryDocNames) {
+        if (!namaDokumen || !eFormData[namaDokumen]) continue;
+        const value = eFormData[namaDokumen];
         const files: unknown[] = Array.isArray(value) ? value : [value];
 
         for (const file of files) {
           if (file instanceof File) {
-            const fileExt = file.name.split(".").pop() || "pdf";
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-              .from("dokumen-pengajuan")
-              .upload(fileName, file);
-
-            if (uploadError) {
-              throw new Error(
-                `Gagal mengunggah ${namaDokumen}: ${uploadError.message}`,
-              );
-            }
-
-            const { data: urlData } = supabase.storage
-              .from("dokumen-pengajuan")
-              .getPublicUrl(fileName);
-
+            const url = await uploadFileOnce(file, namaDokumen);
             uploadedDokumen.push({
               namaDokumen: namaDokumen,
-              fileUrl: urlData.publicUrl,
+              fileUrl: url,
+            });
+          } else if (typeof file === "string" && file.startsWith("http")) {
+            uploadedDokumen.push({
+              namaDokumen: namaDokumen,
+              fileUrl: file,
+            });
+          }
+        }
+      }
+
+      // TAHAP 2: Dokumen Bukti Kompetensi & dokumen lainnya
+      // Untuk Bukti Kompetensi yang mengambil dari Persyaratan Dasar / Bukti Administratif,
+      // langsung gunakan link/URL publik yang sama tanpa mengunggah kembali ke database storage!
+      for (const [namaDokumen, value] of Object.entries(eFormData)) {
+        if (
+          primaryDocNames.has(namaDokumen) ||
+          namaDokumen.startsWith("01. FR.APL.01") ||
+          namaDokumen.startsWith("02. FR.APL.02")
+        ) {
+          continue;
+        }
+
+        const files: unknown[] = Array.isArray(value) ? value : [value];
+        for (const file of files) {
+          if (file instanceof File) {
+            const sig = getFileSignature(file);
+            if (fileUrlCache.has(sig)) {
+              // Re-use link publik yang sama dari dokumen yang sudah diunggah!
+              const existingUrl = fileUrlCache.get(sig)!;
+              uploadedDokumen.push({
+                namaDokumen: namaDokumen,
+                fileUrl: existingUrl,
+              });
+            } else {
+              // Jika file belum diunggah, baru unggah sekali
+              const url = await uploadFileOnce(file, namaDokumen);
+              uploadedDokumen.push({
+                namaDokumen: namaDokumen,
+                fileUrl: url,
+              });
+            }
+          } else if (typeof file === "string" && file.startsWith("http")) {
+            uploadedDokumen.push({
+              namaDokumen: namaDokumen,
+              fileUrl: file,
+            });
+          } else if (
+            file &&
+            typeof file === "object" &&
+            "fileUrl" in file &&
+            typeof (file as { fileUrl: unknown }).fileUrl === "string"
+          ) {
+            uploadedDokumen.push({
+              namaDokumen: namaDokumen,
+              fileUrl: (file as { fileUrl: string }).fileUrl,
             });
           }
         }
@@ -1043,10 +1284,43 @@ export default function PengajuanSkemaPage() {
           },
         }).catch((err) => console.error("Gagal simpan riwayat APL-01:", err));
 
+        // Siapkan salinan eFormData untuk APL-02 di mana objek File digantikan dengan link publik yang telah diunggah
+        const cleanApl02FormData: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(eFormData)) {
+          if (Array.isArray(v)) {
+            cleanApl02FormData[k] = v.map((item) => {
+              if (item instanceof File) {
+                const sig = getFileSignature(item);
+                const url = fileUrlCache.get(sig) || "";
+                return {
+                  name: item.name,
+                  size: item.size,
+                  type: item.type,
+                  url: url,
+                  fileUrl: url,
+                };
+              }
+              return item;
+            });
+          } else if (v instanceof File) {
+            const sig = getFileSignature(v);
+            const url = fileUrlCache.get(sig) || "";
+            cleanApl02FormData[k] = {
+              name: v.name,
+              size: v.size,
+              type: v.type,
+              url: url,
+              fileUrl: url,
+            };
+          } else {
+            cleanApl02FormData[k] = v;
+          }
+        }
+
         // Simpan riwayat APL-02
         await createRiwayatAsesmen(pengajuanId, {
           form_type: "FR.APL.02",
-          form_data: eFormData,
+          form_data: cleanApl02FormData,
         }).catch((err) => console.error("Gagal simpan riwayat APL-02:", err));
       }
 
@@ -1284,7 +1558,10 @@ export default function PengajuanSkemaPage() {
                   </div>
                 </div>
 
-                <div className="hidden md:block overflow-x-auto relative ">
+                <div
+                  ref={tableSubmissionsContainerRef}
+                  className="hidden md:block overflow-x-auto relative"
+                >
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -1326,10 +1603,17 @@ export default function PengajuanSkemaPage() {
                     <tbody className="divide-y divide-gray-100/60 font-medium">
                       {isLoadingSubmissions ? (
                         <tr>
-                          <td colSpan={11} className="px-6 py-12 text-center">
-                            <div className="flex flex-col items-center justify-center gap-3 text-slate-500">
-                              <div className="w-6 h-6 rounded-full border-2 border-[#008BE3] border-t-transparent animate-spin"></div>
-                              <span className="font-bold text-sm">
+                          <td colSpan={11} className="p-0 border-0">
+                            <div
+                              className="sticky left-0 flex flex-col items-center justify-center gap-3 py-16 text-slate-500"
+                              style={{
+                                width: submissionsContainerWidth
+                                  ? `${submissionsContainerWidth}px`
+                                  : "100%",
+                              }}
+                            >
+                              <div className="w-8 h-8 rounded-full border-3 border-[#008BE3] border-t-transparent animate-spin"></div>
+                              <span className="font-bold text-sm text-slate-600">
                                 Memuat daftar permohonan...
                               </span>
                             </div>
@@ -1649,11 +1933,25 @@ export default function PengajuanSkemaPage() {
                         ))
                       ) : (
                         <tr>
-                          <td
-                            colSpan={11}
-                            className="px-6 py-8 text-center text-gray-500 font-medium"
-                          >
-                            Belum ada permohonan sertifikasi.
+                          <td colSpan={11} className="p-0 border-0">
+                            <div
+                              className="sticky left-0 flex flex-col items-center justify-center gap-2 py-16 text-center text-gray-500"
+                              style={{
+                                width: submissionsContainerWidth
+                                  ? `${submissionsContainerWidth}px`
+                                  : "100%",
+                              }}
+                            >
+                              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                                <FileText size={24} />
+                              </div>
+                              <span className="font-bold text-sm text-slate-700">
+                                Belum ada permohonan sertifikasi.
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                Klik tombol &quot;+ Ajukan Skema&quot; untuk mengajukan permohonan sertifikasi baru.
+                              </span>
+                            </div>
                           </td>
                         </tr>
                       )}
@@ -2227,7 +2525,10 @@ export default function PengajuanSkemaPage() {
           </div>
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto relative ">
+            <div
+              ref={tableSchemesContainerRef}
+              className="overflow-x-auto relative"
+            >
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#0F172A] border-b border-[#0F172A]">
@@ -2249,10 +2550,17 @@ export default function PengajuanSkemaPage() {
                 <tbody className="divide-y divide-gray-100/60 font-medium">
                   {isLoadingSchemes ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center justify-center gap-3 text-slate-500">
-                          <div className="w-6 h-6 rounded-full border-2 border-[#008BE3] border-t-transparent animate-spin"></div>
-                          <span className="font-bold text-sm">
+                      <td colSpan={4} className="p-0 border-0">
+                        <div
+                          className="sticky left-0 flex flex-col items-center justify-center gap-3 py-16 text-slate-500"
+                          style={{
+                            width: schemesContainerWidth
+                              ? `${schemesContainerWidth}px`
+                              : "100%",
+                          }}
+                        >
+                          <div className="w-8 h-8 rounded-full border-3 border-[#008BE3] border-t-transparent animate-spin"></div>
+                          <span className="font-bold text-sm text-slate-600">
                             Memuat data skema dari server...
                           </span>
                         </div>
@@ -2301,31 +2609,65 @@ export default function PengajuanSkemaPage() {
                                   <path d="M9 18l6-6-6-6" />
                                 </svg>
                               </button>
-                              <span className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
-                                {scheme.nama}
-                              </span>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-[#008BE3] text-sm line-clamp-2 leading-tight">
+                                  {scheme.nama}
+                                </span>
+                                {(() => {
+                                  const cd = getSchemeCooldown(
+                                    scheme.id,
+                                    scheme.kode
+                                  );
+                                  return cd ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 font-medium mt-0.5">
+                                      <Clock className="w-3 h-3" />
+                                      Pernah diajukan ({cd.formattedDate})
+                                    </span>
+                                  ) : null;
+                                })()}
+                              </div>
                             </td>
                             <td className="px-6 py-4 text-gray-400 font-mono text-xs">
                               {scheme.kode}
                             </td>
                             <td className="px-6 py-4 text-center sticky right-0 bg-white z-10 border-l border-gray-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] group-hover/row:bg-[#F9FAFC] transition-colors whitespace-nowrap">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedScheme(scheme);
-                                  setSubView("apply-form");
-                                  setStep(1);
-                                  if (typeof window !== "undefined") {
-                                    sessionStorage.setItem(
-                                      "asesiActiveSchemeId",
-                                      scheme.id.toString(),
-                                    );
-                                  }
-                                }}
-                                className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer"
-                              >
-                                Ajukan
-                              </button>
+                              {(() => {
+                                const cooldown = getSchemeCooldown(
+                                  scheme.id,
+                                  scheme.kode
+                                );
+                                if (cooldown) {
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        showNotification(
+                                          cooldown.message,
+                                          "error"
+                                        );
+                                      }}
+                                      title={cooldown.message}
+                                      className="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                                    >
+                                      <Clock className="w-3.5 h-3.5" />
+                                      <span>Tersisa {cooldown.remainingDays} Hari</span>
+                                    </button>
+                                  );
+                                }
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectScheme(scheme);
+                                    }}
+                                    className="bg-white hover:bg-sky-50 text-[#008BE3] border border-[#008BE3] px-5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer"
+                                  >
+                                    Ajukan
+                                  </button>
+                                );
+                              })()}
                             </td>
                           </tr>
                           {expandedSchemes.includes(schemeKey) && (
@@ -2370,11 +2712,25 @@ export default function PengajuanSkemaPage() {
                     })
                   ) : (
                     <tr>
-                      <td
-                        colSpan={4}
-                        className="px-6 py-8 text-center text-gray-400 font-medium"
-                      >
-                        Tidak ada skema sertifikasi yang ditemukan.
+                      <td colSpan={4} className="p-0 border-0">
+                        <div
+                          className="sticky left-0 flex flex-col items-center justify-center gap-2 py-16 text-center text-gray-500"
+                          style={{
+                            width: schemesContainerWidth
+                              ? `${schemesContainerWidth}px`
+                              : "100%",
+                          }}
+                        >
+                          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                            <Search size={24} />
+                          </div>
+                          <span className="font-bold text-sm text-slate-700">
+                            Tidak ada skema sertifikasi yang ditemukan.
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            Coba ubah kata kunci pencarian Anda.
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -2456,6 +2812,26 @@ export default function PengajuanSkemaPage() {
               </div>
             </div>
           </div>
+
+          {(() => {
+            const cooldown = selectedScheme
+              ? getSchemeCooldown(selectedScheme.id, selectedScheme.kode)
+              : null;
+            if (!cooldown) return null;
+            return (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl flex items-start gap-3 text-sm shadow-sm">
+                <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-amber-900">
+                    Masa Tunggu Pengajuan (Cooldown 7 Hari)
+                  </p>
+                  <p className="text-xs text-amber-700 mt-0.5">
+                    {cooldown.message}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 md:p-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-200 mb-6 pb-2 lg:pb-0 gap-4">
@@ -3784,10 +4160,12 @@ export default function PengajuanSkemaPage() {
                           if (e.target.value) {
                             const docName = e.target.value;
                             const files = (eFormData[docName] as File[]) || [];
-                            setTempFiles([
-                              ...tempFiles,
-                              ...(Array.isArray(files) ? files : []),
-                            ]);
+                            const fileList = Array.isArray(files) ? files : [files];
+                            setTempFiles((prev) => {
+                              const existingNames = new Set(prev.map((f) => f.name));
+                              const toAdd = fileList.filter((f) => f instanceof File && !existingNames.has(f.name));
+                              return [...prev, ...toAdd];
+                            });
                             e.target.value = "";
                           }
                         }}
@@ -3860,11 +4238,34 @@ export default function PengajuanSkemaPage() {
                         <input
                           type="file"
                           multiple
+                          accept=".pdf,.jpg,.jpeg,.png"
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           onChange={(e) => {
                             if (e.target.files && e.target.files.length > 0) {
-                              const newFiles = Array.from(e.target.files);
-                              setTempFiles([...tempFiles, ...newFiles]);
+                              const selectedFiles = Array.from(e.target.files);
+                              const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+                              const validFiles: File[] = [];
+                              const oversizedFiles: string[] = [];
+
+                              selectedFiles.forEach((file) => {
+                                if (file.size > MAX_FILE_SIZE) {
+                                  oversizedFiles.push(file.name);
+                                } else {
+                                  validFiles.push(file);
+                                }
+                              });
+
+                              if (oversizedFiles.length > 0) {
+                                showNotification(
+                                  `File ${oversizedFiles.join(", ")} melebihi batas ukuran 5MB. Silakan kompres atau pilih file yang lebih kecil.`,
+                                  "error"
+                                );
+                              }
+
+                              if (validFiles.length > 0) {
+                                setTempFiles((prev) => [...prev, ...validFiles]);
+                              }
+                              e.target.value = "";
                             }
                           }}
                         />

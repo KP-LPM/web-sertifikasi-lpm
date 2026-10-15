@@ -44,6 +44,15 @@ export class PengajuanService {
       throw new InvariantError("Skema sertifikasi tidak valid atau tidak ditemukan");
     }
 
+    // Periksa apakah asesi pernah mengajukan skema ini dalam 7 hari terakhir
+    const cooldown = await this.checkCooldown(data.userId, data.skemaId);
+    if (!cooldown.allowed) {
+      throw new InvariantError(
+        cooldown.message ||
+        "Pengajuan skema ini belum mencapai batas 7 hari dari pengajuan terakhir Anda."
+      );
+    }
+
     if (!data.versiKonfigurasi) {
       const aktifKonfig = await db.konfigurasi_pertanyaan.findFirst({
         where: {
@@ -228,6 +237,46 @@ export class PengajuanService {
 
     await this.checkAccess(id, user);
     return await this.repo.updatePenilaianAsesorMandiri(id, unitId, data);
+  }
+
+  // 11. Periksa batas cooldown 7 hari pengajuan skema untuk asesi
+  async checkCooldown(userId: number, skemaId: number) {
+    const lastPengajuan = await this.repo.getLastPengajuanByUserAndSkema(
+      userId,
+      skemaId
+    );
+    if (!lastPengajuan) {
+      return { allowed: true };
+    }
+
+    const lastDate = new Date(
+      lastPengajuan.createdAt || lastPengajuan.tglPengajuan
+    );
+    const now = new Date();
+    const diffMs = now.getTime() - lastDate.getTime();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+    if (diffMs < sevenDaysMs) {
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      const remainingDays = Math.max(1, Math.ceil(7 - diffDays));
+      const formattedDate = lastDate.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+      const namaSkema = lastPengajuan.skema?.namaSkema
+        ? ` "${lastPengajuan.skema.namaSkema}"`
+        : "";
+
+      return {
+        allowed: false,
+        lastDate,
+        remainingDays,
+        message: `Anda sudah pernah mengajukan skema${namaSkema} pada tanggal ${formattedDate}. Pengajuan ulang untuk skema yang sama hanya dapat dilakukan setelah 7 hari (tersisa sekitar ${remainingDays} hari lagi).`,
+      };
+    }
+
+    return { allowed: true };
   }
 }
 

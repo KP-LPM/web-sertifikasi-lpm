@@ -139,6 +139,32 @@ export class PengajuanRepository {
     });
   }
 
+  // Ambil pengajuan terakhir berdasarkan userId dan skemaId
+  async getLastPengajuanByUserAndSkema(userId: number, skemaId: number) {
+    return await db.pengajuanSkema.findFirst({
+      where: {
+        userId,
+        skemaId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        nomorPengajuan: true,
+        status: true,
+        createdAt: true,
+        tglPengajuan: true,
+        skema: {
+          select: {
+            namaSkema: true,
+            kodeSkema: true,
+          },
+        },
+      },
+    });
+  }
+
   // 3. Ambil Detail Pengajuan Lengkap
   async getBasicInfo(id: number) {
     return await db.pengajuanSkema.findUnique({

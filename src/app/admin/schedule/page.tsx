@@ -19,7 +19,6 @@ import {
   FileText,
   Sparkles,
   Printer,
-  Loader2,
   User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -61,8 +60,35 @@ export default function AssessmentSchedule() {
   const [plenoSessions, setPlenoSessions] = useState<PlenoDetailData[]>([]);
   const isPlenoOnlyRole = false;
   const readOnly = user?.role !== "admin";
-
   const [confirmAsesmenId, setConfirmAsesmenId] = useState<number | null>(null);
+
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = React.useState<number | undefined>();
+
+  React.useEffect(() => {
+    const updateWidth = () => {
+      if (tableContainerRef.current) {
+        setContainerWidth(tableContainerRef.current.clientWidth);
+      }
+    };
+
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidth();
+    });
+
+    if (tableContainerRef.current) {
+      resizeObserver.observe(tableContainerRef.current);
+    }
+
+    window.addEventListener("resize", updateWidth);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
 
   // Pleno State
   const [isPlenoModalOpen, setIsPlenoModalOpen] = useState(false);
@@ -1033,7 +1059,9 @@ export default function AssessmentSchedule() {
 
   const filteredPleno = plenoSessions.filter(
     (item) =>
+      item.status?.toLowerCase() !== "selesai" &&
       (String(item.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
         item.skema.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (filterStatus === "Semua" || item.status === filterStatus),
   );
@@ -2119,7 +2147,7 @@ export default function AssessmentSchedule() {
           </div>
         </div>
 
-        <div className="overflow-x-auto relative">
+        <div ref={tableContainerRef} className="overflow-x-auto relative">
           {activeTab === "asesmen" && (
             <table className="w-full text-left border-collapse min-w-250">
               <thead>
@@ -2162,18 +2190,19 @@ export default function AssessmentSchedule() {
               <tbody className="divide-y divide-gray-100/60">
                 {isJadwalLoading ? (
                   <tr>
-                    <td
-                      colSpan={10}
-                      className="px-6 py-16 text-left text-slate-400"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <Loader2
-                          className="animate-spin text-[#008BE3]"
-                          size={32}
-                        />
-                        <p className="text-sm font-semibold text-slate-600">
+                    <td colSpan={11} className="p-0 border-0">
+                      <div
+                        className="sticky left-0 flex flex-col items-center justify-center gap-3 py-16 text-slate-500"
+                        style={{
+                          width: containerWidth
+                            ? `${containerWidth}px`
+                            : "100%",
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-full border-3 border-[#008BE3] border-t-transparent animate-spin"></div>
+                        <span className="font-bold text-sm text-slate-600">
                           Memuat data jadwal asesmen...
-                        </p>
+                        </span>
                       </div>
                     </td>
                   </tr>
@@ -2363,11 +2392,25 @@ export default function AssessmentSchedule() {
                         s.status !== "Menunggu Pleno" && s.status !== "Selesai",
                     ).length === 0 && (
                         <tr>
-                          <td
-                            colSpan={10}
-                            className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
-                          >
-                            Tidak ada jadwal asesmen aktif.
+                          <td colSpan={11} className="p-0 border-0">
+                            <div
+                              className="sticky left-0 flex flex-col items-center justify-center gap-2 py-16 text-center text-gray-500"
+                              style={{
+                                width: containerWidth
+                                  ? `${containerWidth}px`
+                                  : "100%",
+                              }}
+                            >
+                              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                                <Calendar size={24} />
+                              </div>
+                              <span className="font-bold text-sm text-slate-700">
+                                Tidak ada jadwal asesmen aktif.
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                Coba ubah kata kunci pencarian atau filter jadwal Anda.
+                              </span>
+                            </div>
                           </td>
                         </tr>
                       )}
@@ -2405,7 +2448,25 @@ export default function AssessmentSchedule() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100/60">
-                {filteredPleno.length > 0 ? (
+                {isJadwalLoading ? (
+                  <tr>
+                    <td colSpan={7} className="p-0 border-0">
+                      <div
+                        className="sticky left-0 flex flex-col items-center justify-center gap-3 py-16 text-slate-500"
+                        style={{
+                          width: containerWidth
+                            ? `${containerWidth}px`
+                            : "100%",
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-full border-3 border-[#008BE3] border-t-transparent animate-spin"></div>
+                        <span className="font-bold text-sm text-slate-600">
+                          Memuat data jadwal sidang pleno...
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredPleno.length > 0 ? (
                   filteredPleno.map((item) => (
                     <tr
                       key={item.id}
@@ -2533,11 +2594,25 @@ export default function AssessmentSchedule() {
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-xs md:text-sm text-gray-400 font-medium"
-                    >
-                      Tidak ada jadwal sidang pleno.
+                    <td colSpan={7} className="p-0 border-0">
+                      <div
+                        className="sticky left-0 flex flex-col items-center justify-center gap-2 py-16 text-center text-gray-500"
+                        style={{
+                          width: containerWidth
+                            ? `${containerWidth}px`
+                            : "100%",
+                        }}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                          <Calendar size={24} />
+                        </div>
+                        <span className="font-bold text-sm text-slate-700">
+                          Tidak ada jadwal sidang pleno aktif.
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          Belum ada sidang pleno yang dibuat atau terjadwal.
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 )}

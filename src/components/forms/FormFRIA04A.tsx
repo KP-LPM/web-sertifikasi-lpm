@@ -219,35 +219,51 @@ export function FormFRIA04A(props: FormFRIA04AProps) {
       <div className="space-y-6 text-sm">
         {/* Table Kelompok Pekerjaan */}
         <div className="border border-slate-300 overflow-x-auto">
-          <table className="w-full border-collapse min-w-150">
-            <thead>
+          <table className="w-full border-collapse min-w-[600px]">
+            <tbody>
               <tr className="bg-white border-b border-slate-300">
-                <th className="border border-slate-300 p-3">
-                  Kelompok Pekerjaan 1
+                <td
+                  rowSpan={displayUnits.length > 0 ? displayUnits.length + 1 : 2}
+                  className="border border-slate-300 p-3 text-center align-middle font-bold w-44 text-slate-900"
+                >
+                  <div className="leading-snug">
+                    Kelompok<br />Pekerjaan 1
+                  </div>
+                </td>
+                <th className="border border-slate-300 p-2.5 text-center w-16 font-bold text-slate-900">
+                  No.
                 </th>
-                <th className="border border-slate-300 p-3">Kode Unit</th>
-                <th className="border border-slate-300 p-3 text-left">
+                <th className="border border-slate-300 p-2.5 text-center w-48 font-bold text-slate-900">
+                  Kode Unit
+                </th>
+                <th className="border border-slate-300 p-2.5 text-center font-bold text-slate-900">
                   Judul Unit
                 </th>
               </tr>
-            </thead>
-            <tbody>
-              {displayUnits.map((u, idx) => (
-                <tr key={idx}>
-                  {idx === 0 && (
-                    <td
-                      className="border border-slate-300 p-3 text-center align-top font-bold"
-                      rowSpan={displayUnits.length}
-                    >
-                      Kelompok Pekerjaan 1
+              {displayUnits.length > 0 ? (
+                displayUnits.map((u, idx) => (
+                  <tr key={idx} className="border-b border-slate-300">
+                    <td className="border border-slate-300 p-2.5 text-center text-slate-900">
+                      {idx + 1}.
                     </td>
-                  )}
-                  <td className="border border-slate-300 p-3 text-center font-mono text-xs">
-                    {u.code}
+                    <td className="border border-slate-300 p-2.5 text-center text-slate-900">
+                      {u.code}
+                    </td>
+                    <td className="border border-slate-300 p-2.5 text-left text-slate-900">
+                      {u.title}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="border border-slate-300 p-3 text-center text-slate-400 italic"
+                  >
+                    Tidak ada unit kompetensi
                   </td>
-                  <td className="border border-slate-300 p-3">{u.title}</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

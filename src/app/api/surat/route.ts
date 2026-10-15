@@ -49,6 +49,14 @@ export async function GET(request: NextRequest) {
 
     let finalData: FinalSuratItem[] = [];
 
+    // Pastikan surat-surat dari sidang pleno yang sudah selesai tersinkronisasi ke kelola surat
+    try {
+      const { plenoService } = await import("@/services/pleno.service");
+      await plenoService.syncAllCompletedPlenoSurat();
+    } catch (syncErr) {
+      console.warn("Gagal auto-sync surat sidang pleno:", syncErr);
+    }
+
     // Jika kategori tidak ada (atau bukan surat_masuk/surat_keluar eksklusif), ambil sertifikat
     if (!kategori || kategori === "sertifikat" || kategori === "all") {
       const { sertifikatService } = await import("@/services/sertifikat.service");
