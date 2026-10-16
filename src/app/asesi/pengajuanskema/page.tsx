@@ -3989,11 +3989,11 @@ export default function PengajuanSkemaPage() {
 
       {/* VIEW 5: DOCUMENT / UPLOAD MODAL */}
       {activeModalDoc && !activeModalDoc?.isEForm && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
           <div
-            className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc?.isPreview ? "max-w-4xl" : "max-w-lg"} overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+            className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc?.isPreview ? "max-w-xl" : "max-w-lg"} max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto`}
           >
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-slate-800 text-sm truncate pr-4">
                 {activeModalDoc?.isPreview
                   ? "Pratinjau Dokumen: "
@@ -4013,7 +4013,7 @@ export default function PengajuanSkemaPage() {
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1">
               {activeModalDoc?.isPreview ? (
                 (() => {
                   // Multi-file preview: from eFormData (array of File) or single URL from doc list
@@ -4063,7 +4063,7 @@ export default function PengajuanSkemaPage() {
                         </div>
                       )}
 
-                      <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[60vh] flex items-center justify-center">
+                      <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[38vh] max-h-[340px] min-h-[220px] flex items-center justify-center">
                         {current ? (
                           isImg ? (
                             <img src={current.url} alt="Preview" className="w-full h-full object-contain bg-slate-100" />
@@ -4302,7 +4302,7 @@ export default function PengajuanSkemaPage() {
                 </>
               )}
             </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-xl">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-xl shrink-0">
               <button
                 onClick={() => {
                   setActiveModalDoc(null);

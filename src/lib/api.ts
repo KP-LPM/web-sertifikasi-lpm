@@ -1424,7 +1424,10 @@ export async function downloadSuratTugas(payload: Record<string, unknown>) {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error("Gagal mendownload Surat Tugas");
+  if (!res.ok) {
+    const errData = await res.json().catch(() => null);
+    throw new Error(errData?.details || errData?.error || "Gagal mendownload Surat Tugas");
+  }
 
   const blob = await res.blob();
   const downloadUrl = window.URL.createObjectURL(blob);

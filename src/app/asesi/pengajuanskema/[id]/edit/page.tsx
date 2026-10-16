@@ -372,9 +372,9 @@ export default function EditPengajuanSkema() {
 
       {/* DOCUMENT / UPLOAD MODAL */}
       {activeModalDoc && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc.isPreview ? 'max-w-4xl' : 'max-w-lg'} overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
+          <div className={`bg-white rounded-xl shadow-xl w-full ${activeModalDoc.isPreview ? 'max-w-xl' : 'max-w-lg'} max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto`}>
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-slate-800 text-sm">
                 {activeModalDoc.isPreview ? "Pratinjau Dokumen: " : "Lampirkan File Ulang: "}
                 {(activeModalDoc.name as ReactNode)}
@@ -390,10 +390,10 @@ export default function EditPengajuanSkema() {
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1">
               {activeModalDoc.isPreview ? (
                 <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[65vh] flex items-center justify-center">
+                  <div className="w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative h-[38vh] max-h-[340px] min-h-[220px] flex items-center justify-center">
                     {(() => {
                       const files = activeModalDoc.name ? (eFormData[activeModalDoc.name] as File[]) : [];
                       const file = files?.[0];
@@ -544,7 +544,7 @@ export default function EditPengajuanSkema() {
                 </>
               )}
             </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-xl">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-xl shrink-0">
               <button
                 onClick={() => {
                   setActiveModalDoc(null);

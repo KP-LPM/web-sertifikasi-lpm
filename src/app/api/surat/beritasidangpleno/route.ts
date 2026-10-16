@@ -50,9 +50,10 @@ export async function POST(req: NextRequest) {
         { status: error.status },
       );
     }
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Error saat generate Berita Acara PDF:", error);
     return NextResponse.json(
-      { error: "Gagal membuat file Berita Acara PDF." },
+      { error: "Gagal membuat file Berita Acara PDF.", details: errorMessage },
       { status: 500 },
     );
   }

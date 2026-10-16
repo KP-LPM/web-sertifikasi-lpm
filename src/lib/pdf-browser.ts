@@ -12,6 +12,7 @@ export async function getPdfBrowser(): Promise<Browser> {
     (process.env.NODE_ENV === "production" && process.platform === "linux");
 
   if (isServerless) {
+    chromium.setGraphicsMode = false;
     const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
 
     return (await puppeteerCore.launch({

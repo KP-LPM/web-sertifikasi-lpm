@@ -57,9 +57,10 @@ export async function POST(req: NextRequest) {
         { status: error.status },
       );
     }
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Error saat generate Surat Tugas PDF:", error);
     return NextResponse.json(
-      { error: "Gagal membuat file Surat Tugas PDF." },
+      { error: "Gagal membuat file Surat Tugas PDF.", details: errorMessage },
       { status: 500 },
     );
   }

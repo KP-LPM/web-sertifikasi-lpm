@@ -49,9 +49,10 @@ export async function POST(req: NextRequest) {
         { status: error.status },
       );
     }
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Error generate Permohonan Blanko PDF:", error);
     return NextResponse.json(
-      { error: "Gagal membuat file Surat Permohonan Blanko PDF." },
+      { error: "Gagal membuat file Surat Permohonan Blanko PDF.", details: errorMessage },
       { status: 500 },
     );
   }
