@@ -1,5 +1,11 @@
+if (!process.env.AWS_LAMBDA_JS_RUNTIME) {
+  process.env.AWS_LAMBDA_JS_RUNTIME = "nodejs20.x";
+}
+
 import puppeteerCore, { Browser, PDFOptions } from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
+import fs from "fs";
+import path from "path";
 
 const CHROMIUM_PACK_URL =
   "https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar";
@@ -13,10 +19,32 @@ export async function getPdfBrowser(): Promise<Browser> {
 
   if (isServerless) {
     chromium.setGraphicsMode = false;
+
+    // Jika /tmp/chromium sudah ada dari request sebelumnya tapi al2023 belum diekstrak, bersihkan agar diekstrak ulang lengkap dengan shared libraries
+    if (fs.existsSync("/tmp/chromium") && !fs.existsSync("/tmp/al2023")) {
+      try {
+        fs.unlinkSync("/tmp/chromium");
+      } catch {}
+    }
+
     const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
 
+    // Set LD_LIBRARY_PATH agar loader Linux di Vercel dapat menemukan libnss3.so, libnspr4.so, dsb.
+    const al2023Dir = "/tmp/al2023";
+    const al2Dir = "/tmp/al2";
+    const chromiumDir = path.dirname(executablePath);
+    const existingLd = process.env.LD_LIBRARY_PATH || "";
+    process.env.LD_LIBRARY_PATH = `${al2023Dir}:${al2023Dir}/lib:${al2Dir}:${chromiumDir}:${existingLd}`;
+
     return (await puppeteerCore.launch({
-      args: [...chromium.args, "--font-render-hinting=none"],
+      args: [
+        ...chromium.args,
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--font-render-hinting=none",
+      ],
       defaultViewport: chromium.defaultViewport,
       executablePath,
       headless: chromium.headless,
