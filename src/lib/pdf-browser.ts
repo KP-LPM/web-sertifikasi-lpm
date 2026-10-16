@@ -1,6 +1,10 @@
 if (!process.env.AWS_LAMBDA_JS_RUNTIME) {
   process.env.AWS_LAMBDA_JS_RUNTIME = "nodejs20.x";
 }
+if (!process.env.FONTCONFIG_PATH) {
+  process.env.FONTCONFIG_PATH = "/tmp/fonts";
+}
+process.env.HOME = "/tmp";
 
 import puppeteerCore, { Browser, PDFOptions } from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
@@ -35,6 +39,27 @@ export async function getPdfBrowser(): Promise<Browser> {
     const chromiumDir = path.dirname(executablePath);
     const existingLd = process.env.LD_LIBRARY_PATH || "";
     process.env.LD_LIBRARY_PATH = `${al2023Dir}:${al2023Dir}/lib:${al2Dir}:${chromiumDir}:${existingLd}`;
+
+    // Pastikan font fallback dari @sparticuz/chromium disalin ke ~/.fonts untuk fontconfig
+    try {
+      const fontsDir = "/tmp/fonts";
+      const dotFontsDir = "/tmp/.fonts";
+      if (!fs.existsSync(dotFontsDir)) {
+        fs.mkdirSync(dotFontsDir, { recursive: true });
+      }
+      if (fs.existsSync(fontsDir)) {
+        const fontFiles = fs.readdirSync(fontsDir);
+        for (const file of fontFiles) {
+          const src = path.join(fontsDir, file);
+          const dest = path.join(dotFontsDir, file);
+          if (!fs.existsSync(dest)) {
+            try {
+              fs.copyFileSync(src, dest);
+            } catch {}
+          }
+        }
+      }
+    } catch {}
 
     return (await puppeteerCore.launch({
       args: [
@@ -87,7 +112,35 @@ export async function generatePdfFromHtml(
   try {
     browser = await getPdfBrowser();
     const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
+
+    // Suntikkan font Open Sans ke HTML agar teks dijamin tampil pada serverless Linux
+    const fontInjection = `
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+      <style>
+        body, p, span, h1, h2, h3, h4, td, th, div, a {
+          font-family: 'Open Sans', Arial, Helvetica, sans-serif !important;
+        }
+      </style>
+    `;
+
+    const finalHtml = htmlContent.includes("<head>")
+      ? htmlContent.replace("<head>", `<head>${fontInjection}`)
+      : `${fontInjection}${htmlContent}`;
+
+    try {
+      await page.setContent(finalHtml, {
+        waitUntil: ["load", "networkidle0"],
+        timeout: 10000,
+      });
+    } catch {
+      await page.setContent(finalHtml, { waitUntil: "domcontentloaded" });
+    }
+
+    // Tunggu hingga seluruh font siap sebelum render ke PDF
+    await page.evaluateHandle("document.fonts.ready").catch(() => {});
+
     const pdfBuffer = await page.pdf(pdfOptions);
     return new Uint8Array(pdfBuffer);
   } finally {

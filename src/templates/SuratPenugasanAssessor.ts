@@ -35,7 +35,7 @@ export function generateSuratTugasHtml(data: SuratTugasPayload): string {
         margin: 0;
       }
       body {
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: 'Open Sans', Arial, Helvetica, sans-serif;
         font-size: 11pt;
         line-height: 1.45;
         color: #000;
