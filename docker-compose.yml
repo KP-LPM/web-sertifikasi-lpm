@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Database PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: lpm-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password_rahasia_anda
+      POSTGRES_DB: web_sertifikasi_lpm
+      TZ: Asia/Jakarta
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # opsional: buka jika ingin diakses dari GUI laptop (DBeaver/Navicat)
+    networks:
+      - lpm-network
+
+  # Aplikasi Next.js
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lpm-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:password_rahasia_anda@db:5432/web_sertifikasi_lpm?schema=public"
+      NEXTAUTH_URL: "https://domain-anda.com" # atau IP VPS
+      NEXTAUTH_SECRET: "generate_random_secret_string"
+      # Supabase tetap untuk storage
+      NEXT_PUBLIC_SUPABASE_URL: "https://xxxx.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJh..."
+    depends_on:
+      - db
+    networks:
+      - lpm-network
+
+volumes:
+  postgres_data:
+
+networks:
+  lpm-network:
+    driver: bridge
