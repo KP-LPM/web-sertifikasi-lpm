@@ -113,14 +113,16 @@ export async function generatePdfFromHtml(
     browser = await getPdfBrowser();
     const page = await browser.newPage();
 
-    // Suntikkan font Open Sans ke HTML agar teks dijamin tampil pada serverless Linux
+    // Sediakan web font pendukung (Open Sans & Tinos yang identik Times New Roman)
+    // tanpa memaksa override !important agar style bawaan template (Times New Roman / Arial / dsb.) tetap dihormati
     const fontInjection = `
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
       <style>
-        body, p, span, h1, h2, h3, h4, td, th, div, a {
-          font-family: 'Open Sans', Arial, Helvetica, sans-serif !important;
+        @font-face {
+          font-family: 'Times New Roman';
+          src: local('Times New Roman'), local('TimesNewRoman'), local('Liberation Serif'), local('Nimbus Roman No9 L');
         }
       </style>
     `;

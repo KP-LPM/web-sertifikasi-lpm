@@ -209,7 +209,7 @@ export function generateSertifikatHtml(data: SertifikatPayload): string {
       /* Bottom Sign Front */
       .bottom-section {
         position: absolute;
-        bottom: 15mm;
+        bottom: 30mm;
         left: 20mm;
         right: 20mm;
         text-align: center;

@@ -2256,7 +2256,7 @@ export default function AssessmentSchedule() {
                               <div>
                                 <span className="block font-bold text-slate-800">
                                   {item.tuk ||
-                                    "Gedung PTIPD UIN Sunan Gunung Djati Bandung"}
+                                    ""}
                                 </span>
                                 {(!item.tuk ||
                                   !item.tuk
@@ -2536,17 +2536,9 @@ export default function AssessmentSchedule() {
                           />
                           <div>
                             <span className="block font-bold text-slate-800">
-                              {item.tuk ||
-                                "Gedung PTIPD UIN Sunan Gunung Djati Bandung"}
+                              {item.alamat ||
+                                ""}
                             </span>
-                            {(!item.tuk ||
-                              !item.tuk
-                                .toLowerCase()
-                                .includes("online")) && (
-                                <span className="text-[11px] text-gray-500 font-medium block mt-0.5">
-                                  {item.alamat || "Jl. A.H. Nasution No. 105, Cipadung, Cibiru"}
-                                </span>
-                              )}
                           </div>
                         </span>
                       </td>
