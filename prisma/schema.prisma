@@ -693,6 +693,16 @@ model riwayat_asesmen_detail {
   @@index([asesor_id], map: "idx_riwayat_asesmen_detail_asesor_id")
 }
 
+model user_guide {
+  id         Int      @id @default(autoincrement())
+  role       String   @unique @db.VarChar(50)
+  link_ppt   String   @map("link_ppt")
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(6)
+
+  @@map("user_guide")
+}
+
 enum Role {
   asesi
   asesor

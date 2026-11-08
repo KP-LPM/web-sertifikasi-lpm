@@ -1489,7 +1489,7 @@ export default function AssessmentSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-75 overflow-y-auto pr-2 pb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 m ax-h-75 overflow-y-auto pr-2 pb-2">
                 {!formData.skema ? (
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Pilih skema sertifikasi terlebih dahulu.
@@ -1498,7 +1498,7 @@ export default function AssessmentSchedule() {
                   <div className="col-span-1 md:col-span-2 text-center py-8 text-slate-500 text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     Tidak ada asesi yang tersedia untuk skema
                     <span className="font-bold text-slate-800">
-                      {formData.skema}
+                      {" " + formData.skema + " "}
                     </span>
                     dengan metode
                     <span className="font-bold text-[#008BE3]">

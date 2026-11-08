@@ -1439,3 +1439,56 @@ export async function downloadSuratTugas(payload: Record<string, unknown>) {
   link.remove();
   window.URL.revokeObjectURL(downloadUrl);
 }
+
+// ============================================================
+// USER GUIDE API FUNCTIONS
+// ============================================================
+
+export async function getUserGuide(role?: string) {
+  const params = new URLSearchParams();
+  if (role) params.append("role", role);
+
+  const url = `${BASE_URL}/user-guide${params.toString() ? `?${params.toString()}` : ""}`;
+  const res = await cachedFetch(url, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal mengambil data User Guide");
+  }
+  return json.data;
+}
+
+export async function getAllUserGuides() {
+  const res = await fetch(`${BASE_URL}/user-guide?all=true`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal mengambil semua User Guide");
+  }
+  return json.data;
+}
+
+export async function upsertUserGuide(data: {
+  role: "asesi" | "asesor" | "admin";
+  link_ppt: string;
+}) {
+  const res = await fetch(`${BASE_URL}/user-guide`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Gagal menyimpan User Guide");
+  }
+  return json.data;
+}
+

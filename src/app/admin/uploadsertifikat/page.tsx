@@ -826,7 +826,7 @@ export default function UploadSertifikat() {
                     <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider whitespace-nowrap sticky top-0 z-20 bg-[#0F172A]">
                       Tautan Google Drive
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 whitespace-nowrap top-0 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
+                    <th className="px-6 py-4 text-xs font-bold text-white/90 uppercase tracking-wider text-center sticky right-0 bg-[#0F172A] z-30 border-l border-white/10 whitespace-nowrap top-0 min-w-44 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)]">
                       Aksi
                     </th>
                   </tr>
@@ -945,7 +945,7 @@ export default function UploadSertifikat() {
                         </td>
 
                         {/* ACTION COLUMN ON THE RIGHT */}
-                        <td className="px-6 py-4 align-middle text-center bg-white group-hover:bg-slate-50/80 sticky right-0 z-10 border-l border-slate-100 whitespace-nowrap">
+                        <td className="px-6 py-4 align-middle text-center bg-white group-hover:bg-slate-50 sticky right-0 z-10 border-l border-slate-100 shadow-[-6px_0_15px_-4px_rgba(0,0,0,0.06)] transition-colors whitespace-nowrap">
                           {readOnly ? (
                             <button
                               onClick={() =>

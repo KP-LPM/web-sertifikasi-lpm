@@ -10,7 +10,12 @@ import {
   User as UserIcon,
   LogOut,
 } from "lucide-react";
-import { getUsersProfile, getPengajuanList, getJadwalList } from "@/lib/api";
+import {
+  getUsersProfile,
+  getPengajuanList,
+  getJadwalList,
+  getUserGuide,
+} from "@/lib/api";
 
 function getProfilePath() {
   return "/profile";
@@ -41,6 +46,7 @@ export function Header() {
     requestNavigation,
     registeredProfile,
     setRegisteredProfile,
+    showNotification,
   } = useAppContext();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -55,6 +61,26 @@ export function Header() {
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [guideUrl, setGuideUrl] = useState<string>("");
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUserGuideLink = async () => {
+      if (!user?.role) return;
+      try {
+        const res = await getUserGuide(user.role);
+        if (isMounted && res?.link_ppt) {
+          setGuideUrl(res.link_ppt);
+        }
+      } catch (error) {
+        console.warn("Gagal memuat user guide:", error);
+      }
+    };
+    fetchUserGuideLink();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.role]);
 
   useEffect(() => {
     const fetchHeaderProfile = async () => {
@@ -190,6 +216,30 @@ export function Header() {
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   };
 
+  const handleOpenUserGuide = async () => {
+    let targetUrl = guideUrl;
+    if (!targetUrl) {
+      try {
+        const res = await getUserGuide(user.role);
+        if (res?.link_ppt) {
+          targetUrl = res.link_ppt;
+          setGuideUrl(res.link_ppt);
+        }
+      } catch (err) {
+        console.error("Gagal mengambil link User Guide:", err);
+      }
+    }
+
+    if (targetUrl) {
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+    } else {
+      showNotification(
+        "Link User Guide untuk role Anda belum tersedia.",
+        "error",
+      );
+    }
+  };
+
   return (
     <header
       className={`sticky top-0 z-40 h-20 bg-[#F8F9FC]/95 backdrop-blur-md border-b border-slate-200 px-6 flex justify-between items-center w-full transition-all duration-300 md:pl-24 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-76"}`}
@@ -204,8 +254,20 @@ export function Header() {
         </button>
       </div>
 
-      {/* Right: Notification Bell, Initial-based Avatar Card */}
-      <div className="flex items-center gap-4 sm:gap-6">
+      {/* Right: Guide Button, Notification Bell, Initial-based Avatar Card */}
+      <div className="flex items-center gap-3 sm:gap-5">
+        {/* User Guide Button */}
+        <button
+          onClick={handleOpenUserGuide}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+          title="Buka Panduan Pengguna (User Guide)"
+        >
+          <span className="w-4 h-4 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-black leading-none shrink-0">
+            ?
+          </span>
+          <span>Guide</span>
+        </button>
+
         {/* Bell Icon */}
         <div className="relative" ref={notifRef}>
           <button
