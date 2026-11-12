@@ -11,6 +11,8 @@ import {
   Eye,
   X,
   Loader2,
+  Upload,
+  ExternalLink,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -23,6 +25,7 @@ import {
 } from "@/types/types";
 import { useAppContext } from "@/context/context";
 import { createSkema, updateSkema, getKonfigurasiPertanyaanList, getKonfigurasiPertanyaanDetail } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { FormFRAK07 } from "../forms/FormFRAK07";
 import { FormFRIA04A } from "../forms/FormFRIA04A";
 import { FormFRIA04B } from "../forms/FormFRIA04B";
@@ -93,6 +96,7 @@ export function TambahSkemaForm({
       nomorRegistrasi: initialData?.nomorRegistrasi || "",
       statusAktif: initialData?.statusAktif ?? false, // Default false / Draft
       konfigurasiSoalId: initialData?.konfigurasiSoalId || undefined,
+      templateSertifikatUrl: initialData?.templateSertifikatUrl || null,
       persyaratanDasar:
         initialData?.persyaratanDasar && initialData.persyaratanDasar.length > 0
           ? initialData.persyaratanDasar.map((p, idx) => ({
@@ -193,6 +197,59 @@ export function TambahSkemaForm({
   const [activeFormTab, setActiveFormTab] = useState<"fria04a" | "frak07" | "fria04b" | "fria07" | "">("");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
+  const [templateFileName, setTemplateFileName] = useState<string>("");
+
+  const handleUploadTemplatePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setValidationError("File template sertifikat wajib berformat PDF (.pdf).");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setValidationError("Ukuran file PDF template sertifikat maksimal 10MB.");
+      return;
+    }
+
+    setIsUploadingTemplate(true);
+    setValidationError(null);
+    try {
+      const fileExt = file.name.split(".").pop() || "pdf";
+      const fileName = `template-sertifikat/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("dokumen-pengajuan")
+        .upload(fileName, file, {
+          contentType: "application/pdf",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(`Gagal mengunggah template PDF: ${uploadError.message}`);
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("dokumen-pengajuan")
+        .getPublicUrl(fileName);
+
+      setTemplateFileName(file.name);
+      setFormState((prev) => ({
+        ...prev,
+        templateSertifikatUrl: urlData.publicUrl,
+      }));
+    } catch (err) {
+      console.error("Gagal upload template PDF:", err);
+      setValidationError(
+        err instanceof Error ? err.message : "Gagal mengunggah file PDF template sertifikat.",
+      );
+    } finally {
+      setIsUploadingTemplate(false);
+      e.target.value = "";
+    }
+  };
 
   const [availableConfigs, setAvailableConfigs] = useState(konfigurasiPertanyaan);
 
@@ -589,6 +646,7 @@ export function TambahSkemaForm({
       nomorRegistrasi: formState.nomorRegistrasi?.trim() || undefined,
       statusAktif: formState.statusAktif,
       konfigurasiSoalId: formState.konfigurasiSoalId || undefined,
+      templateSertifikatUrl: formState.templateSertifikatUrl ?? null,
       persyaratanDasar: formState.persyaratanDasar
         .filter((p) => p.namaDokumen.trim() !== "")
         .map((p, idx) => ({
@@ -872,6 +930,96 @@ export function TambahSkemaForm({
               <p className="text-[11px] text-slate-400 mt-1">
                 Nomor registrasi skema pada BNSP
               </p>
+            </div>
+          </div>
+
+          {/* Template PDF Sertifikat */}
+          <div className="pt-1">
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              File Template Sertifikat (PDF)
+            </label>
+            <div className="border-2 border-dashed border-slate-200 hover:border-[#008BE3]/50 rounded-xl p-4 bg-slate-50/50 transition-all">
+              {formState.templateSertifikatUrl ? (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-sky-50 text-[#008BE3] flex items-center justify-center shrink-0 border border-sky-100">
+                      <FileText size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-slate-800 truncate">
+                        {templateFileName ||
+                          decodeURIComponent(
+                            formState.templateSertifikatUrl.split("/").pop() ||
+                              "Template_Sertifikat.pdf",
+                          )}
+                      </p>
+                      <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                        <CheckCircle2 size={12} /> Template PDF Tersimpan
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={formState.templateSertifikatUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 text-xs font-bold text-[#008BE3] bg-sky-50 hover:bg-[#008BE3] hover:text-white border border-sky-200 rounded-lg transition-all inline-flex items-center gap-1.5"
+                    >
+                      <ExternalLink size={13} /> Lihat PDF
+                    </a>
+                    <label className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                      <Upload size={13} /> Ganti
+                      <input
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        onChange={handleUploadTemplatePdf}
+                        disabled={isUploadingTemplate}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTemplateFileName("");
+                        setFormState((prev) => ({
+                          ...prev,
+                          templateSertifikatUrl: null,
+                        }));
+                      }}
+                      className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                      title="Hapus Template PDF"
+                      data-bypass-confirm="true"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center py-4 cursor-pointer text-center">
+                  <div className="w-10 h-10 rounded-full bg-sky-50 text-[#008BE3] flex items-center justify-center mb-2 border border-sky-100">
+                    {isUploadingTemplate ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <Upload size={20} />
+                    )}
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-slate-800">
+                    {isUploadingTemplate
+                      ? "Mengunggah Template PDF..."
+                      : "Klik untuk mengunggah Template Sertifikat (PDF)"}
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-1">
+                    Format .PDF (Maks. 10MB). Digunakan sebagai dasar cetak sertifikat skema ini.
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    onChange={handleUploadTemplatePdf}
+                    disabled={isUploadingTemplate}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           </div>
 

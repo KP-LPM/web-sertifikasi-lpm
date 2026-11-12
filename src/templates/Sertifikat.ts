@@ -1,3 +1,5 @@
+import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage } from "pdf-lib";
+
 export interface UnitKompetensiItem {
   no: number;
   kodeUnit: string;
@@ -18,12 +20,221 @@ export interface SertifikatPayload {
   tanggalTerbitEn: string;
   namaDirektur: string;
   namaManajerSertifikasi: string;
+  templateSertifikatUrl?: string | null;
   logoGarudaBase64?: string;
   fotoAsesiBase64?: string;
   ttdAsesiBase64?: string;
   ttdDirekturBase64?: string;
   ttdManajerBase64?: string;
   unitList: UnitKompetensiItem[];
+}
+
+interface OverlayTextOptions {
+  page: PDFPage;
+  text: string;
+  centerX: number;
+  baselineY: number;
+  boxWidth: number;
+  boxHeight: number;
+  boxPaddingBottom?: number;
+  font: PDFFont;
+  fontSize: number;
+  underline?: boolean;
+}
+
+function drawWhiteBoxAndCenteredText({
+  page,
+  text,
+  centerX,
+  baselineY,
+  boxWidth,
+  boxHeight,
+  boxPaddingBottom,
+  font,
+  fontSize,
+  underline = false,
+}: OverlayTextOptions) {
+  const paddingBottom = boxPaddingBottom ?? Math.max(3, fontSize * 0.3);
+
+  // 1. Gambar kotak putih (white rectangle) untuk menutupi teks/placeholder pada template PDF
+  page.drawRectangle({
+    x: centerX - boxWidth / 2,
+    y: baselineY - paddingBottom,
+    width: boxWidth,
+    height: boxHeight,
+    color: rgb(1, 1, 1),
+  });
+
+  // 2. Gambar teks spesifik di atas kotak putih (centered)
+  const safeText = text || "-";
+  const textWidth = font.widthOfTextAtSize(safeText, fontSize);
+  const textX = centerX - textWidth / 2;
+
+  page.drawText(safeText, {
+    x: textX,
+    y: baselineY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  });
+
+  // 3. Tambahkan garis bawah jika diperlukan (misal nama pemegang / manajer di halaman 2)
+  if (underline && safeText.trim().length > 0) {
+    page.drawLine({
+      start: { x: textX, y: baselineY - 1.8 },
+      end: { x: textX + textWidth, y: baselineY - 1.8 },
+      thickness: 0.8,
+      color: rgb(0, 0, 0),
+    });
+  }
+}
+
+/**
+ * Menimpa template PDF sertifikat dengan kotak putih (white-out overlay)
+ * dan menuliskan data spesifik asesi di atasnya.
+ * Mendukung ukuran standar sertifikat 215mm x 330mm (F4) maupun A4 secara proporsional.
+ */
+export async function generateSertifikatPdfFromTemplate(
+  templatePdfBytes: Uint8Array | ArrayBuffer,
+  data: SertifikatPayload,
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(templatePdfBytes);
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+
+  const pages = pdfDoc.getPages();
+  if (pages.length === 0) {
+    throw new Error("File template PDF tidak memiliki halaman.");
+  }
+
+  // ============================================================================
+  // HALAMAN 1: DEPAN SERTIFIKAT
+  // ============================================================================
+  const page1 = pages[0];
+  const { width: w1, height: h1 } = page1.getSize();
+  const centerX1 = w1 / 2;
+  const scale1 = h1 / 935.43; // Rasio terhadap tinggi standar 330mm (935.43 pt)
+
+  // 1. Nomor Sertifikat (di bawah "CERTIFICATE OF COMPETENCE")
+  drawWhiteBoxAndCenteredText({
+    page: page1,
+    text: `No. ${data.nomorSertifikat}`,
+    centerX: centerX1,
+    baselineY: h1 * 0.7817,
+    boxWidth: w1 * 0.65,
+    boxHeight: 16 * scale1,
+    boxPaddingBottom: 4 * scale1,
+    font: fontRegular,
+    fontSize: 11 * scale1,
+  });
+
+  // 2. Nama Pemegang Sertifikat (di bawah "This is to certify that,")
+  drawWhiteBoxAndCenteredText({
+    page: page1,
+    text: data.namaPemegang,
+    centerX: centerX1,
+    baselineY: h1 * 0.6865,
+    boxWidth: w1 * 0.80,
+    boxHeight: 22 * scale1,
+    boxPaddingBottom: 6 * scale1,
+    font: fontBold,
+    fontSize: 16 * scale1,
+  });
+
+  // 3. Nomor Registrasi (di bawah Nama Pemegang Sertifikat)
+  drawWhiteBoxAndCenteredText({
+    page: page1,
+    text: `No. Reg. ${data.nomorRegistrasi}`,
+    centerX: centerX1,
+    baselineY: h1 * 0.6536,
+    boxWidth: w1 * 0.65,
+    boxHeight: 16 * scale1,
+    boxPaddingBottom: 4 * scale1,
+    font: fontRegular,
+    fontSize: 11 * scale1,
+  });
+
+  // 4. Tempat & Tanggal Terbit (di atas "Atas nama Badan Nasional Sertifikasi Profesi")
+  drawWhiteBoxAndCenteredText({
+    page: page1,
+    text: `${data.kotaTerbit}, ${data.tanggalTerbitId}`,
+    centerX: centerX1,
+    baselineY: h1 * 0.3376,
+    boxWidth: w1 * 0.60,
+    boxHeight: 16 * scale1,
+    boxPaddingBottom: 4 * scale1,
+    font: fontRegular,
+    fontSize: 11 * scale1,
+  });
+
+  // 5. Nama Direktur (di atas "Direktur / Director")
+  drawWhiteBoxAndCenteredText({
+    page: page1,
+    text: data.namaDirektur,
+    centerX: centerX1,
+    baselineY: h1 * 0.1475,
+    boxWidth: w1 * 0.65,
+    boxHeight: 22 * scale1,
+    boxPaddingBottom: 4 * scale1,
+    font: fontBold,
+    fontSize: 11.5 * scale1,
+  });
+
+  // ============================================================================
+  // HALAMAN 2: BELAKANG SERTIFIKAT (DAFTAR UNIT KOMPETENSI & TTD)
+  // ============================================================================
+  if (pages.length > 1) {
+    const page2 = pages[1];
+    const { width: w2, height: h2 } = page2.getSize();
+    const scale2 = h2 / 935.43;
+
+    // Posisi horizontal kolom kiri (Pemegang Sertifikat) & kolom kanan (Manajer Sertifikasi)
+    const holderCenterX = w2 * 0.3311;
+    const managerCenterX = w2 * 0.6932;
+
+    // 6. Nama Pemegang Sertifikat di bawah kotak foto (menutup "Nama Pemilik" di atas "Tanda tangan pemilik")
+    drawWhiteBoxAndCenteredText({
+      page: page2,
+      text: data.namaPemegang,
+      centerX: holderCenterX,
+      baselineY: h2 * 0.1385,
+      boxWidth: w2 * 0.36,
+      boxHeight: 14.5 * scale2,
+      boxPaddingBottom: 4.2 * scale2,
+      font: fontBold,
+      fontSize: 11 * scale2,
+      underline: true,
+    });
+
+    // 7. Tempat & Tanggal Terbit di kolom kanan atas (menutup "Bandung, Tgl Bln Tahun" di atas "Atas Nama...")
+    drawWhiteBoxAndCenteredText({
+      page: page2,
+      text: `${data.kotaTerbit}, ${data.tanggalTerbitId}`,
+      centerX: managerCenterX,
+      baselineY: h2 * 0.3113,
+      boxWidth: w2 * 0.45,
+      boxHeight: 13.5 * scale2,
+      boxPaddingBottom: 3.6 * scale2,
+      font: fontRegular,
+      fontSize: 10 * scale2,
+    });
+
+    // 8. Nama Manajer Sertifikasi di kolom kanan bawah (menutup nama manajer di atas "Manajer Sertifikasi")
+    drawWhiteBoxAndCenteredText({
+      page: page2,
+      text: data.namaManajerSertifikasi,
+      centerX: managerCenterX,
+      baselineY: h2 * 0.1385,
+      boxWidth: w2 * 0.45,
+      boxHeight: 14.5 * scale2,
+      boxPaddingBottom: 4.2 * scale2,
+      font: fontBold,
+      fontSize: 11.5 * scale2,
+      underline: true,
+    });
+  }
+
+  return await pdfDoc.save();
 }
 
 export function generateSertifikatHtml(data: SertifikatPayload): string {

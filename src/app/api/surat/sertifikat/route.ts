@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import {
   generateSertifikatHtml,
+  generateSertifikatPdfFromTemplate,
   SertifikatPayload,
 } from "@/templates/Sertifikat";
 import { rateLimitApi, RateLimitError } from "@/lib/rate-limit";
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
         tanggalTerbitEn: `${bulanEn[monthIndex]} ${day}, ${year}`,
         namaDirektur: "Prof. Dr. H. Ija Suntana, M.Ag., CLA.",
         namaManajerSertifikasi: "Ichsan Taufik, MT., CIQA",
+        templateSertifikatUrl: pengajuan.skema?.templateSertifikatUrl || body.templateSertifikatUrl || null,
         unitList: pengajuan.skema?.unitKompetensi.map((u, i) => ({
           no: i + 1,
           kodeUnit: u.kodeUnit,
@@ -85,25 +87,54 @@ export async function POST(req: NextRequest) {
       payload = body as SertifikatPayload;
     }
 
-    // Baca logo Garuda dari folder public menjadi Base64 Data URI
-    const garudaPath = path.join(process.cwd(), "public", "logo-garuda.png");
-    if (fs.existsSync(garudaPath)) {
-      const garudaBuffer = fs.readFileSync(garudaPath);
-      payload.logoGarudaBase64 = `data:image/png;base64,${garudaBuffer.toString("base64")}`;
+    let finalPdfBytes: Uint8Array | Buffer | null = null;
+    const templateUrl = payload.templateSertifikatUrl || body.templateSertifikatUrl;
+
+    // 1. Jika skema memiliki file Template PDF yang telah diupload, ambil PDF tersebut lalu timpa dengan kotak putih + teks spesifik
+    if (templateUrl && typeof templateUrl === "string") {
+      try {
+        const templateResponse = await fetch(templateUrl);
+        if (templateResponse.ok) {
+          const templateArrayBuffer = await templateResponse.arrayBuffer();
+          finalPdfBytes = await generateSertifikatPdfFromTemplate(
+            templateArrayBuffer,
+            payload,
+          );
+        } else {
+          console.warn(
+            `Gagal mengunduh template PDF dari ${templateUrl} (status ${templateResponse.status}), beralih ke base PDF.`,
+          );
+        }
+      } catch (err) {
+        console.warn("Gagal mengambil file template PDF skema, beralih ke base PDF:", err);
+      }
     }
 
-    // Render HTML dengan Base64
-    const htmlContent = generateSertifikatHtml(payload);
+    // 2. Fallback: jika skema belum memiliki upload template PDF, buat base PDF terlebih dahulu lalu terapkan overlay kotak putih + teks
+    if (!finalPdfBytes) {
+      const garudaPath = path.join(process.cwd(), "public", "logo-garuda.png");
+      if (fs.existsSync(garudaPath)) {
+        const garudaBuffer = fs.readFileSync(garudaPath);
+        payload.logoGarudaBase64 = `data:image/png;base64,${garudaBuffer.toString("base64")}`;
+      }
 
-    const pdfBuffer = await generatePdfFromHtml(htmlContent, {
-      width: "215mm",
-      height: "330mm",
-      printBackground: true,
-      preferCSSPageSize: true,
-      margin: { top: "0", right: "0", bottom: "0", left: "0" },
-    });
+      const htmlContent = generateSertifikatHtml(payload);
 
-    return new NextResponse(pdfBuffer as unknown as BodyInit, {
+      const basePdfBuffer = await generatePdfFromHtml(htmlContent, {
+        width: "215mm",
+        height: "330mm",
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: { top: "0", right: "0", bottom: "0", left: "0" },
+      });
+
+      finalPdfBytes = await generateSertifikatPdfFromTemplate(
+        basePdfBuffer,
+        payload,
+      );
+    }
+
+    return new NextResponse(Buffer.from(finalPdfBytes) as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

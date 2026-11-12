@@ -160,6 +160,8 @@ export default function ManageSchemes() {
     namaSkemaEn?: string;
     bidangSkemaId?: string;
     bidangSkemaEn?: string;
+    templateSertifikatUrl?: string | null;
+    template_sertifikat_url?: string | null;
     konfigurasi_soal_id?: number | null;
   }
 
@@ -180,6 +182,7 @@ export default function ManageSchemes() {
           namaSkemaEn: s.namaSkemaEn || "",
           bidangSkemaId: s.bidangSkemaId || "",
           bidangSkemaEn: s.bidangSkemaEn || "",
+          templateSertifikatUrl: s.templateSertifikatUrl || s.template_sertifikat_url || null,
           konfigurasiSoalId: s.konfigurasi_soal_id,
           unitKompetensi: s.unitKompetensi?.map((u, idx: number) => ({
             kodeUnit: u.kodeUnit,
@@ -567,6 +570,7 @@ export default function ManageSchemes() {
       namaSkemaEn: selectedScheme.namaSkemaEn || "",
       bidangSkemaId: selectedScheme.bidangSkemaId || "",
       bidangSkemaEn: selectedScheme.bidangSkemaEn || "",
+      templateSertifikatUrl: selectedScheme.templateSertifikatUrl || null,
       konfigurasiSoalId: selectedScheme.konfigurasiSoalId ? Number(selectedScheme.konfigurasiSoalId) : undefined,
       statusAktif: selectedScheme.status === "Active",
       persyaratanDasar: selectedScheme.persyaratanDasar?.map((p, idx) => ({
@@ -767,6 +771,28 @@ export default function ManageSchemes() {
                   value={formData.status}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-800"
                 />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Template Sertifikat (PDF)
+                </label>
+                {selectedScheme?.templateSertifikatUrl ? (
+                  <a
+                    href={selectedScheme.templateSertifikatUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-50 text-[#008BE3] border border-sky-200 rounded-lg text-sm font-bold hover:bg-sky-100 transition-colors"
+                  >
+                    Lihat Template PDF
+                  </a>
+                ) : (
+                  <input
+                    type="text"
+                    disabled
+                    value="Belum diupload (Menggunakan template standar)"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 font-semibold text-slate-500"
+                  />
+                )}
               </div>
             </div>
           </div>

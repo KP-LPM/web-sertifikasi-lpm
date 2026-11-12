@@ -52,6 +52,7 @@ export const BaseSkemaItemSchema = z.object({
   nomorRegistrasi: z.string().trim().optional(),
   deskripsi: z.string().trim().optional(),
   konfigurasiSoalId: z.number().int().positive().optional(),
+  templateSertifikatUrl: z.string().trim().nullable().optional(),
 });
 
 // ==========================================

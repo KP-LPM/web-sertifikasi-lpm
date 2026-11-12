@@ -79,6 +79,7 @@ model MasterSkema {
   bidangSkemaEn                                                                   String?                    @map("bidang_skema_en")
   bidangSkemaId                                                                   String?                    @map("bidang_skema_id")
   namaSkemaEn                                                                     String?                    @map("nama_skema_en")
+  templateSertifikatUrl                                                           String?                    @map("template_sertifikat_url")
   jadwal_asesmen                                                                  jadwal_asesmen[]
   konfigurasi_pertanyaan_konfigurasi_pertanyaan_skema_idTomaster_skema            konfigurasi_pertanyaan[]   @relation("konfigurasi_pertanyaan_skema_idTomaster_skema")
   master_bukti_administratif                                                      MasterBuktiAdministratif[]

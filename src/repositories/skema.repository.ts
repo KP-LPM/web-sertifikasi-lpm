@@ -76,6 +76,7 @@ export class SkemaRepository {
       nomorSertifikat,
       nomorRegistrasi,
       konfigurasiSoalId,
+      templateSertifikatUrl,
       persyaratanDasar,
       buktiAdministratif,
       persyaratanAdministrasi,
@@ -91,6 +92,7 @@ export class SkemaRepository {
         nomor_sertifikat: nomorSertifikat,
         nomor_registrasi: nomorRegistrasi,
         konfigurasi_soal_id: konfigurasiSoalId ? Number(konfigurasiSoalId) : null,
+        templateSertifikatUrl: templateSertifikatUrl ?? null,
 
         persyaratanDasar: persyaratanDasar?.length
           ? {
@@ -156,6 +158,7 @@ export class SkemaRepository {
       nomorSertifikat,
       nomorRegistrasi,
       konfigurasiSoalId,
+      templateSertifikatUrl,
       persyaratanDasar,
       buktiAdministratif,
       persyaratanAdministrasi,
@@ -177,6 +180,9 @@ export class SkemaRepository {
         }),
         ...(konfigurasiSoalId !== undefined && {
           konfigurasi_soal_id: konfigurasiSoalId ? Number(konfigurasiSoalId) : null,
+        }),
+        ...(templateSertifikatUrl !== undefined && {
+          templateSertifikatUrl: templateSertifikatUrl ?? null,
         }),
 
         ...(persyaratanDasar && {

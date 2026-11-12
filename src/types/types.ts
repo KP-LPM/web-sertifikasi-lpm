@@ -321,6 +321,7 @@ export interface MasterSkemaFormState {
   persyaratanAdministrasi: PersyaratanAdministrasi[];
   unitKompetensi: UnitKompetensiItem[];
   konfigurasiSoalId?: number; // konfigurasi_pertanyaan.id
+  templateSertifikatUrl?: string | null;
 }
 
 export interface MasterSkemaElemenPayload {
@@ -353,6 +354,7 @@ export interface MasterSkemaPayload {
   persyaratanAdministrasi?: PersyaratanAdministrasi[];
   unitKompetensi?: MasterSkemaUnitPayload[];
   konfigurasiSoalId?: number; // konfigurasi_pertanyaan.id
+  templateSertifikatUrl?: string | null;
 }
 
 export interface ScheduleItem {
@@ -415,6 +417,7 @@ export interface SchemeItem {
   bidangSkemaId?: string;
   bidangSkemaEn?: string;
   konfigurasiSoalId?: number | string | null;
+  templateSertifikatUrl?: string | null;
 }
 
 export interface RequirementItem {
